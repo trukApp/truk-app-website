@@ -32,8 +32,14 @@ const TransportManagement = () => {
                 </div>
 
                 <div className={styles.cardContainer}>
-                    <img src="https://jai-mp.s3.eu-north-1.amazonaws.com/settings-3110.png" alt="Icon" className={styles.settingImage} />
-                    <h3 className={styles.cardheading}>Master data</h3>
+                    <a href="/masterdata" className={styles.cardLink}>
+                        <img
+                        src="https://jai-mp.s3.eu-north-1.amazonaws.com/settings-3110.png"
+                        alt="Icon"
+                        className={styles.settingImage}
+                        />
+                        <h3 className={styles.cardheading}>Master Data</h3>
+                    </a>
                 </div>
             </div>
 

@@ -427,5 +427,6 @@ const CreateOrder: React.FC = () => {
     );
 };
 
-export default withAuthComponent(CreateOrder);
+// export default withAuthComponent(CreateOrder);
+export default CreateOrder
 
