@@ -25,7 +25,6 @@ interface Package {
 
 interface PackagesTableProps {
     packages: Package[];
-    // onSelectionChange: (selected: Package[]) => void;
 }
 
 const PackagesTable: React.FC<PackagesTableProps> = ({ packages }) => {
@@ -34,7 +33,6 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ packages }) => {
     const [selectionModel, setSelectionModel] = useState<number[]>([]);
 
     useEffect(() => {
-        // When packages are available in Redux, set the selectionModel
         if (selectedPackages.length > 0) {
             const selectedRowIds = selectedPackages.map((pkg: any) => packages.findIndex(p => p.packageName === pkg.packageName));
             setSelectionModel(selectedRowIds);
@@ -61,7 +59,7 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ packages }) => {
     const handleSelectionChange = (selectionModel: any) => {
         // Ensure selectionModel is an array of selected row ids
         const selectedPackages = selectionModel.map((id: any) => packages[id]);
-        dispatch(setSelectedPackages(selectedPackages)); // Dispatch the selected packages to Redux
+        dispatch(setSelectedPackages(selectedPackages));
     };
 
     return (
@@ -71,7 +69,7 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ packages }) => {
                 columns={columns}
                 checkboxSelection
                 onRowSelectionModelChange={handleSelectionChange}
-                rowSelectionModel={selectionModel} // Pre-select rows based on the Redux store
+                rowSelectionModel={selectionModel}
             />
         </div>
     );
