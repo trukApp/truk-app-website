@@ -209,7 +209,7 @@ const Lanes: React.FC = () => {
 
   // Form submission handler
   const handleSubmit = (values: LaneDetails) => {
-    console.log(values);
+    console.log('lane details :', values);
   };
 
   return (
