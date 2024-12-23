@@ -114,7 +114,7 @@ const Vehicles: React.FC = () => {
   };
 
   const handleSubmit = (values: VehicleDetails) => {
-    console.log(values);
+    console.log('vehicle values :', values);
   };
 
   return (
