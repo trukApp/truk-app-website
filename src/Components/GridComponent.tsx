@@ -3,6 +3,7 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 
 interface DataGridComponentProps {
   columns: GridColDef[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   rows?: any[];
   isLoading: boolean;
   pageSizeOptions?: number[];

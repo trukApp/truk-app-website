@@ -14,7 +14,7 @@ import DriverForm from '@/Components/BusinessPartnersForms/DriverForm';
 import SuppilerForm from '@/Components/BusinessPartnersForms/SuppilerForm';
 import CarriersForm from '@/Components/BusinessPartnersForms/CarriersForm';
 import AgentForm from '@/Components/BusinessPartnersForms/AgentForm';
-// Other form components (SuppilerForm, CarriersForm, etc.)
+import styles from './businessPartners.module.css'
 
 // Validation schema using Yup
 const validationSchema = Yup.object().shape({
@@ -100,6 +100,33 @@ const BusinessPartnersPage: React.FC = () => {
                 {({ values, handleChange, handleBlur, errors, touched }) => (
                     <Form>
                         <Grid container spacing={2}>
+                            {/* Business Partner Type Dropdown */}
+                            <div className={styles.dropDownContainer}>
+                                <Grid item xs={12} md={3}>
+                                    <TextField
+                                        fullWidth
+                                        select
+                                        label="Business Partner Type"
+                                        name="businessPartnerType"
+                                        value={values.businessPartnerType}
+                                        onChange={handleChange}
+                                        onBlur={handleBlur}
+                                        error={touched.businessPartnerType && Boolean(errors.businessPartnerType)}
+                                        helperText={touched.businessPartnerType && errors.businessPartnerType}
+
+                                    >
+                                        <MenuItem value="customers">Customers</MenuItem>
+                                        <MenuItem value="suppliers">Suppliers</MenuItem>
+                                        <MenuItem value="carriers">Carriers</MenuItem>
+                                        <MenuItem value="agents">Agents</MenuItem>
+                                        <MenuItem value="drivers">Drivers</MenuItem>
+                                    </TextField>
+                                </Grid>
+                            </div>
+                            <Grid item xs={12}>
+                                <h2 className={styles.basicDetailsHeading}>Basic Details</h2>
+                            </Grid>
+
                             {/* First Name */}
                             <Grid item xs={12} sm={6}>
                                 <TextField
@@ -111,6 +138,7 @@ const BusinessPartnersPage: React.FC = () => {
                                     onBlur={handleBlur}
                                     error={touched.firstName && Boolean(errors.firstName)}
                                     helperText={touched.firstName && errors.firstName}
+                                    className={styles.textInputField}
                                 />
                             </Grid>
 
@@ -125,6 +153,7 @@ const BusinessPartnersPage: React.FC = () => {
                                     onBlur={handleBlur}
                                     error={touched.lastName && Boolean(errors.lastName)}
                                     helperText={touched.lastName && errors.lastName}
+                                    className={styles.textInputField}
                                 />
                             </Grid>
 
@@ -139,6 +168,7 @@ const BusinessPartnersPage: React.FC = () => {
                                     onBlur={handleBlur}
                                     error={touched.phoneNumber && Boolean(errors.phoneNumber)}
                                     helperText={touched.phoneNumber && errors.phoneNumber}
+                                    className={styles.textInputField}
                                 />
                             </Grid>
 
@@ -153,11 +183,12 @@ const BusinessPartnersPage: React.FC = () => {
                                     onBlur={handleBlur}
                                     error={touched.idProof && Boolean(errors.idProof)}
                                     helperText={touched.idProof && errors.idProof}
+                                    className={styles.textInputField}
                                 />
                             </Grid>
 
                             {/* Address */}
-                            <Grid item xs={12}>
+                            <Grid item xs={12} sm={6}>
                                 <TextField
                                     fullWidth
                                     label="Address"
@@ -167,6 +198,7 @@ const BusinessPartnersPage: React.FC = () => {
                                     onBlur={handleBlur}
                                     error={touched.address && Boolean(errors.address)}
                                     helperText={touched.address && errors.address}
+                                    className={styles.textInputField}
                                 />
                             </Grid>
 
@@ -181,6 +213,7 @@ const BusinessPartnersPage: React.FC = () => {
                                     onBlur={handleBlur}
                                     error={touched.pincode && Boolean(errors.pincode)}
                                     helperText={touched.pincode && errors.pincode}
+                                    className={styles.textInputField}
                                 />
                             </Grid>
 
@@ -195,6 +228,7 @@ const BusinessPartnersPage: React.FC = () => {
                                     onBlur={handleBlur}
                                     error={touched.city && Boolean(errors.city)}
                                     helperText={touched.city && errors.city}
+                                    className={styles.textInputField}
                                 />
                             </Grid>
 
@@ -209,6 +243,7 @@ const BusinessPartnersPage: React.FC = () => {
                                     onBlur={handleBlur}
                                     error={touched.state && Boolean(errors.state)}
                                     helperText={touched.state && errors.state}
+                                    className={styles.textInputField}
                                 />
                             </Grid>
 
@@ -223,42 +258,24 @@ const BusinessPartnersPage: React.FC = () => {
                                     onBlur={handleBlur}
                                     error={touched.country && Boolean(errors.country)}
                                     helperText={touched.country && errors.country}
+                                    className={styles.textInputField}
                                 />
                             </Grid>
 
-                            {/* Business Partner Type Dropdown */}
-                            <Grid item xs={12}>
-                                <TextField
-                                    fullWidth
-                                    select
-                                    label="Business Partner Type"
-                                    name="businessPartnerType"
-                                    value={values.businessPartnerType}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    error={touched.businessPartnerType && Boolean(errors.businessPartnerType)}
-                                    helperText={touched.businessPartnerType && errors.businessPartnerType}
-                                >
-                                    <MenuItem value="customers">Customers</MenuItem>
-                                    <MenuItem value="suppliers">Suppliers</MenuItem>
-                                    <MenuItem value="carriers">Carriers</MenuItem>
-                                    <MenuItem value="agents">Agents</MenuItem>
-                                    <MenuItem value="drivers">Drivers</MenuItem>
-                                </TextField>
-                            </Grid>
-
-                            {values.businessPartnerType === 'customers' && <CustomerForm />}
-                            {values.businessPartnerType === 'suppliers' && <SuppilerForm />}
-                            {values.businessPartnerType === 'carriers' && <CarriersForm />}
-                            {values.businessPartnerType === 'agents' && <AgentForm />}
-                            {values.businessPartnerType === 'drivers' && <DriverForm />}
 
 
-                            <Grid item xs={12}>
-                                <Button type="submit" variant="contained" color="primary" fullWidth>
-                                    Submit
-                                </Button>
-                            </Grid>
+                        </Grid>
+
+                        {values.businessPartnerType === 'customers' && <CustomerForm />}
+                        {values.businessPartnerType === 'suppliers' && <SuppilerForm />}
+                        {values.businessPartnerType === 'carriers' && <CarriersForm />}
+                        {values.businessPartnerType === 'agents' && <AgentForm />}
+                        {values.businessPartnerType === 'drivers' && <DriverForm />}
+
+                        <Grid className={styles.submitButtonContainer}>
+                            <Button type="submit" variant="contained" color="primary" className={styles.submitButton}>
+                                Submit
+                            </Button>
                         </Grid>
                     </Form>
                 )}
