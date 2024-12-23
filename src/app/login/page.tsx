@@ -38,6 +38,7 @@ const LoginPage: React.FC = () => {
         // Redirect to callbackUrl or default to home page ('/')
         window.location.href = callbackUrl; // Redirect after successful login
       }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       setError('An unexpected error occurred. Please try again.');
     } finally {
@@ -112,7 +113,7 @@ const LoginPage: React.FC = () => {
           {loading ? <CircularProgress size={24} color="inherit" /> : 'Login'}
         </Button>
         <Typography variant="body2" align="center" marginTop="10px">
-          Don't have an account? <a href="/signup">Sign up</a>
+          Don&apos;t have an account? <a href="/signup">Sign up</a>
         </Typography>
       </Box>
     </Box>

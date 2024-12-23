@@ -1,0 +1,35 @@
+.dropDownContainer {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.textInputField {
+  height: 40px;
+  margin-bottom: 30px;
+}
+
+.basicDetailsHeading {
+  font-size: 20px;
+  font-weight: bolder;
+  font-family: "Roboto";
+  margin-left: 10px;
+  margin-bottom: 15px;
+}
+
+.submitButtonContainer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.submitButton {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-right: 35px;
+  padding-left: 35px;
+  margin-top: 20px;
+}

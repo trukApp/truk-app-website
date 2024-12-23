@@ -1,6 +1,60 @@
 import React from 'react';
 import { TextField, Grid, MenuItem } from '@mui/material';
 import { useFormikContext } from 'formik';
+import styles from './BusinessPartners.module.css'
+import { DataGridComponent } from '../GridComponent';
+import { GridColDef } from '@mui/x-data-grid';
+
+const dummyCarrierData = [
+    {
+        id: 1,
+        carrierName: "Express Logistics",
+        carrierVehicleType: "Truck",
+        vehicleNumber: "AB-1234",
+        carrierCapacity: "15 Tons",
+        operatingRegions: "California, Nevada, Arizona",
+    },
+    {
+        id: 2,
+        carrierName: "Fast Freight",
+        carrierVehicleType: "Van",
+        vehicleNumber: "XY-5678",
+        carrierCapacity: "2 Tons",
+        operatingRegions: "Texas, Oklahoma, Louisiana",
+    },
+    {
+        id: 3,
+        carrierName: "Reliable Movers",
+        carrierVehicleType: "Trailer",
+        vehicleNumber: "MN-9101",
+        carrierCapacity: "30 Tons",
+        operatingRegions: "New York, Pennsylvania, New Jersey",
+    },
+    {
+        id: 4,
+        carrierName: "Eco Transport",
+        carrierVehicleType: "Electric Van",
+        vehicleNumber: "EV-1122",
+        carrierCapacity: "1.5 Tons",
+        operatingRegions: "Washington, Oregon, California",
+    },
+    {
+        id: 5,
+        carrierName: "Swift Haulage",
+        carrierVehicleType: "Container Truck",
+        vehicleNumber: "CT-3344",
+        carrierCapacity: "25 Tons",
+        operatingRegions: "Florida, Georgia, Alabama",
+    },
+];
+
+const carrierColumns: GridColDef[] = [
+    { field: 'carrierName', headerName: 'Carrier Name', width: 200 },
+    { field: 'carrierVehicleType', headerName: 'Vehicle Type', width: 150 },
+    { field: 'vehicleNumber', headerName: 'Vehicle Number', width: 150 },
+    { field: 'carrierCapacity', headerName: 'Capacity', width: 150 },
+    { field: 'operatingRegions', headerName: 'Operating Regions', flex: 1 },
+];
 
 interface CarriersFormValues {
     carrierName: string;
@@ -24,7 +78,7 @@ const CarriersForm: React.FC = () => {
 
     return (
         <div>
-            <h3>Carrier Details</h3>
+            <h3 className={styles.mainHeding}>Carrier Details</h3>
             <Grid container spacing={2}>
                 {/* Carrier Name */}
                 <Grid item xs={12} sm={6}>
@@ -103,6 +157,15 @@ const CarriersForm: React.FC = () => {
                         helperText={touched.operatingRegions && errors.operatingRegions}
                     />
                 </Grid>
+            </Grid>
+            <Grid item xs={12} style={{ marginTop: '50px' }}>
+                <DataGridComponent
+                    columns={carrierColumns}
+                    rows={dummyCarrierData}
+                    isLoading={false}
+                    pageSizeOptions={[10, 20]}
+                    initialPageSize={10}
+                />
             </Grid>
         </div>
     );

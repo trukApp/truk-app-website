@@ -1,6 +1,9 @@
 import React from 'react';
 import { TextField, Grid } from '@mui/material';
 import { useFormikContext } from 'formik';
+import styles from './BusinessPartners.module.css'
+import { DataGridComponent } from '../GridComponent';
+import { GridColDef } from '@mui/x-data-grid';
 
 interface CustomerFormValues {
     businessName: string;
@@ -14,12 +17,64 @@ interface CustomerFormValues {
     businessId: string;
 }
 
+
+const dummyCustomersData = [
+    {
+        id: 1,
+        businessName: 'Tech Solutions',
+        businessType: 'IT Services',
+        officeLocation: 'Building 1, Tech Park',
+        address: '123 Tech Street, Silicon Valley',
+        pincode: '560001',
+        state: 'California',
+        country: 'USA',
+        district: 'Santa Clara',
+        businessId: 'TS001',
+    },
+    {
+        id: 2,
+        businessName: 'Green Farms',
+        businessType: 'Agriculture',
+        officeLocation: 'Farmhouse Lane',
+        address: '456 Green Road, Countryside',
+        pincode: '400002',
+        state: 'Texas',
+        country: 'USA',
+        district: 'Austin',
+        businessId: 'GF002',
+    },
+    {
+        id: 3,
+        businessName: 'EduCare',
+        businessType: 'Education',
+        officeLocation: 'Knowledge Tower',
+        address: '789 Education Blvd, Metro City',
+        pincode: '600003',
+        state: 'New York',
+        country: 'USA',
+        district: 'Brooklyn',
+        businessId: 'EC003',
+    },
+];
+
+const columns: GridColDef[] = [
+    { field: 'businessName', headerName: 'Business Name', width: 200 },
+    { field: 'businessType', headerName: 'Business Type', width: 150 },
+    { field: 'officeLocation', headerName: 'Office Location', width: 200 },
+    { field: 'address', headerName: 'Address', flex: 1, minWidth: 250 },
+    { field: 'pincode', headerName: 'Pincode', width: 100 },
+    { field: 'state', headerName: 'State', width: 150 },
+    { field: 'country', headerName: 'Country', width: 150 },
+    { field: 'district', headerName: 'District', width: 150 },
+    { field: 'businessId', headerName: 'Business ID', width: 150 },
+];
+
 const CustomerForm: React.FC = () => {
     const { values, handleChange, handleBlur, errors, touched } = useFormikContext<CustomerFormValues>();
 
     return (
         <div>
-            <h3>Customer Details</h3>
+            <h3 className={styles.mainHeding}>Customer Details</h3>
             <Grid container spacing={2}>
                 {/* Business Name */}
                 <Grid item xs={12} sm={6}>
@@ -64,7 +119,7 @@ const CustomerForm: React.FC = () => {
                 </Grid>
 
                 {/* Address */}
-                <Grid item xs={12}>
+                <Grid item xs={12} md={6}>
                     <TextField
                         fullWidth
                         label="Address"
@@ -146,7 +201,17 @@ const CustomerForm: React.FC = () => {
                         helperText={touched.businessId && errors.businessId}
                     />
                 </Grid>
+                <Grid item xs={12} style={{ marginTop: '50px' }}>
+                    <DataGridComponent
+                        columns={columns}
+                        rows={dummyCustomersData}
+                        isLoading={false}
+                        pageSizeOptions={[10, 20]}
+                        initialPageSize={10}
+                    />
+                </Grid>
             </Grid>
+
         </div>
     );
 };
