@@ -9,7 +9,7 @@ import UnitsOfMeasurement from "@/Components/UnitsOfMeasurement";
 import Resources from "@/Components/Resources";
 
 const MasterData: React.FC = () => {
-  const [selectedOption, setSelectedOption] = useState<string>("Vehicles");
+  const [selectedOption, setSelectedOption] = useState<string>("Resources");
 
   const renderComponent = () => {
     switch (selectedOption) {

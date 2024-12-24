@@ -31,7 +31,7 @@ const Header = () => {
 
   const user = {
     name: "Teja Bandaru", // Replace with actual user data
-    profileImage: "https://static.vecteezy.com/system/resources/previews/024/237/864/non_2x/big-set-of-yellow-emoji-funny-emoticons-faces-with-facial-expressions-vector.jpg",
+    profileImage: "https://cdn.pixabay.com/photo/2024/02/28/15/14/ai-generated-8602228_640.jpg",
   };
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -65,7 +65,7 @@ const Header = () => {
       <Toolbar>
         {/* Logo */}
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          Truk App
+          Truk App 🚚
         </Typography>
 
         {/* Desktop View */}
