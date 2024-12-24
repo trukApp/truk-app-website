@@ -1,16 +1,20 @@
 'use client';
 import React, { useState } from "react";
-import { Box, FormControl, InputLabel, MenuItem, Select, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import Vehicles from "@/Components/Vehicles";
 import Lanes from "@/Components/Lanes";
 import Locations from "@/Components/Locations";
 import PackagingInfo from "@/Components/PackagingInfo";
+import UnitsOfMeasurement from "@/Components/UnitsOfMeasurement";
+import Resources from "@/Components/Resources";
 
 const MasterData: React.FC = () => {
   const [selectedOption, setSelectedOption] = useState<string>("Vehicles");
 
   const renderComponent = () => {
     switch (selectedOption) {
+      case "Resources":
+        return <Resources />;
       case "Vehicles":
         return <Vehicles />;
       case "Lanes":
@@ -19,15 +23,25 @@ const MasterData: React.FC = () => {
         return <Locations />;
       case "Packaging Info":
         return <PackagingInfo />;
+      case "Uom":
+        return <UnitsOfMeasurement />;
       default:
         return null;
     }
   };
 
+  const tiles = [
+  { label: "Resources", value: "Resources" },
+    { label: "Vehicles", value: "Vehicles" },
+    { label: "Lanes", value: "Lanes" },
+    { label: "Locations", value: "Locations" },
+    { label: "Packaging Info", value: "Packaging Info" },
+    { label: "Uom", value: "Uom" },
+  ];
+
   return (
     <Box
       sx={{
-        // maxWidth: "800px",
         margin: "auto",
         padding: "20px",
         backgroundColor: "#f9f9f9",
@@ -35,19 +49,34 @@ const MasterData: React.FC = () => {
         boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
       }}
     >
-      <FormControl fullWidth sx={{ marginBottom: "10px",width:'200px' , height:'40px' }}>
-        {/* <InputLabel id="master-data-select-label">Select Option</InputLabel> */}
-        <Select 
-          labelId="master-data-select-label"
-          value={selectedOption}
-          onChange={(e) => setSelectedOption(e.target.value)}
-        >
-          <MenuItem value="Vehicles">Vehicles</MenuItem>
-          <MenuItem value="Lanes">Lanes</MenuItem>
-          <MenuItem value="Locations">Locations</MenuItem>
-          <MenuItem value="Packaging Info">Packaging Info</MenuItem>
-        </Select>
-      </FormControl>
+      {/* Tile Menu */}
+      <Box
+        sx={{
+          display: "flex",
+          gap: "10px",
+          marginBottom: "20px",
+        }}
+      >
+        {tiles.map((tile) => (
+          <Box
+            key={tile.value}
+            onClick={() => setSelectedOption(tile.value)}
+            sx={{
+              cursor: "pointer",
+              padding: "10px 20px",
+              backgroundColor: selectedOption === tile.value ? "#1976d2" : "#e0e0e0",
+              color: selectedOption === tile.value ? "#fff" : "#000",
+              borderRadius: "4px",
+              boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.1)",
+              textAlign: "center",
+            }}
+          >
+            <Typography>{tile.label}</Typography>
+          </Box>
+        ))}
+      </Box>
+
+      {/* Render Selected Component */}
       <Box>{renderComponent()}</Box>
     </Box>
   );
