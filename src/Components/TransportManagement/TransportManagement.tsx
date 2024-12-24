@@ -10,8 +10,13 @@ const TransportManagement = () => {
         console.log('Navigating to Create Package Page');
         router.push('/createpackage');
     }
+
     const navigateToBusinessPartnersPage = () => {
         router.push('/businesspartners');
+    }
+
+    const navigateToProductMasterPage = () => {
+        router.push('/productmaster');
     }
 
     return (
@@ -23,7 +28,7 @@ const TransportManagement = () => {
                     <h3 className={styles.cardheading}>Transport unit creation</h3>
                 </div>
 
-                <div className={styles.cardContainer}>
+                <div className={styles.cardContainer} onClick={navigateToProductMasterPage}>
                     <img src="https://jai-mp.s3.eu-north-1.amazonaws.com/settings-3110.png" alt="Icon" className={styles.settingImage} />
                     <h3 className={styles.cardheading}>Product master</h3>
                 </div>
