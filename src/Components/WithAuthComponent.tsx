@@ -5,17 +5,6 @@ import { CircularProgress } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import React, { useEffect } from 'react';
 
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string;
-      name: string;
-      email?: string;
-      accessToken: string;
-      refreshToken: string;
-    };
-  }
-}
 
 export const withAuthComponent = (WrappedComponent: React.FC): React.FC => {
   const AuthWrapper: React.FC = (props) => {
