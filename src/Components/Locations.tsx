@@ -1,14 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   Box,
   Button,
   Grid,
   TextField,
   Typography,
-  // FormControlLabel,
-  // Checkbox,
 } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
@@ -22,7 +20,6 @@ const validationSchema = Yup.object({
 });
 
 const Locations: React.FC = () => {
-  const [coordinates, setCoordinates] = useState({ lat: '', lng: '' });
   const locationInputRef = useRef<HTMLInputElement | null>(null);
   console.log(coordinates)
   const formik = useFormik({
@@ -38,7 +35,8 @@ const Locations: React.FC = () => {
       city: '',
       state: '',
       country: '',
-      pincode: ''
+      pincode: '',
+      vehiclesNearBy: '',
     },
     validationSchema,
     onSubmit: (values) => {
@@ -74,8 +72,7 @@ const Locations: React.FC = () => {
 
         // Look for postal_code in the results
         const postalCodeComponent = data.results
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .flatMap((result: { address_components: any; }) => result.address_components)
+          .flatMap((result: { address_components: []; }) => result.address_components)
           .find((component: { types: string | string[]; }) => component.types.includes('postal_code'));
 
         if (postalCodeComponent) {
@@ -101,7 +98,6 @@ const Locations: React.FC = () => {
         if (place?.geometry?.location) {
           const lat = place.geometry.location.lat();
           const lng = place.geometry.location.lng();
-          setCoordinates({ lat: lat.toString(), lng: lng.toString() });
           setFieldValue('longitude', lat.toString());
           setFieldValue('latitude', lng.toString());
 
@@ -334,7 +330,10 @@ const Locations: React.FC = () => {
                 inputProps={{ maxLength: 3 }}
               />
             </Grid>
+
+
           </Grid>
+          <Typography sx={{ marginTop: '20px' }}>Vehicles operated at this location</Typography>
         </Grid>
       </Grid>
       <Box sx={{ marginTop: '24px', textAlign: 'center' }}>

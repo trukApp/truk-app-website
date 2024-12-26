@@ -8,7 +8,7 @@ import PackagingInfo from "@/Components/PackagingInfo";
 import UnitsOfMeasurement from "@/Components/UnitsOfMeasurement";
 
 const MasterData: React.FC = () => {
-  const [selectedOption, setSelectedOption] = useState<string>("Locations");
+  const [selectedOption, setSelectedOption] = useState<string>("Vehicles");
 
   const renderComponent = () => {
     switch (selectedOption) {

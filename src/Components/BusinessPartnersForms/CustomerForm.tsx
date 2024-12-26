@@ -96,6 +96,58 @@ const CustomerForm: React.FC = () => {
                         helperText={touched.locationId && errors.locationId}
                     />
                 </Grid>
+
+                <Grid item xs={12} sm={6}>
+                    <TextField
+                        fullWidth
+                        label="Pincode"
+                        name="pincode"
+                        value={values.pincode}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        error={touched.pincode && Boolean(errors.pincode)}
+                        helperText={touched.pincode && errors.pincode}
+                    />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                    <TextField
+                        fullWidth
+                        label="City"
+                        name="city"
+                        value={values.city}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        error={touched.city && Boolean(errors.city)}
+                        helperText={touched.city && errors.city}
+                    />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                    <TextField
+                        fullWidth
+                        label="District"
+                        name="district"
+                        value={values.district}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        error={touched.district && Boolean(errors.district)}
+                        helperText={touched.district && errors.district}
+                    />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                    <TextField
+                        fullWidth
+                        label="Country"
+                        name="country"
+                        value={values.country}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        error={touched.country && Boolean(errors.country)}
+                        helperText={touched.country && errors.country}
+                    />
+                </Grid>
                 {/* Add other fields for pincode, state, city, district, and country */}
             </Grid>
 
@@ -143,7 +195,7 @@ const CustomerForm: React.FC = () => {
             {/* Shipping Section */}
             <h3 className={styles.mainHeding}>Shipping</h3>
             <Grid container spacing={2} style={{ marginBottom: '30px' }}>
-                <Grid item xs={12}>
+                <Grid item xs={12} sm={6}>
                     <TextField
                         fullWidth
                         label="Location of Source"
