@@ -5,10 +5,10 @@ import { CircularProgress } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import React, { useEffect } from 'react';
 
-interface Tokens {
-    accessToken: string;
-    refreshToken: string;
-}
+// interface Tokens {
+//     accessToken: string;
+//     refreshToken: string;
+// }
 export const withAuthComponent = (WrappedComponent: React.FC,) => {
     const AuthWrapper: React.FC = (props) => {
         return (
@@ -22,8 +22,8 @@ export const withAuthComponent = (WrappedComponent: React.FC,) => {
         const { data: session, status } = useSession();
         const router = useRouter();
         console.log("server session :", session)
-        localStorage.setItem("accessToken", session?.user?.accessToken);
-        localStorage.setItem("refreshToken", session?.user?.refreshToken);
+        // localStorage.setItem("accessToken", session?.user?.accessToken);
+        // localStorage.setItem("refreshToken", session?.user?.refreshToken);
 
         useEffect(() => {
             if (status === 'unauthenticated') {
