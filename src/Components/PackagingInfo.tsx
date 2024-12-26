@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Button, Grid, TextField, Typography, MenuItem } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { GridColDef } from '@mui/x-data-grid';
 import { DataGridComponent } from './GridComponent';
 
 // Define types for form values
@@ -177,6 +177,7 @@ const PackagingInfo: React.FC = () => {
   const unitOptions = ['cm', 'm', 'in', 'ft'];
   const weightUnitOptions = ['kg', 'g', 'lb', 'oz'];
   const [globalUnit, setGlobalUnit] = useState('cm');
+  console.log(globalUnit)
 
   const formik = useFormik<PackagingInfoFormValues>({
     initialValues: {
@@ -212,7 +213,7 @@ const PackagingInfo: React.FC = () => {
     setFieldValue('heightUnit', selectedUnit);
   };
 
- useEffect(() => {
+  useEffect(() => {
     const length = parseFloat(values.length) || 0;
     const width = parseFloat(values.width) || 0;
     const height = parseFloat(values.height) || 0;
@@ -481,13 +482,13 @@ const PackagingInfo: React.FC = () => {
 
       <div style={{ marginTop: '80px' }}>
         <DataGridComponent
-            columns={columns}
-            rows={dummyData}
-            isLoading={false}  
-            pageSizeOptions={[10, 20]}  
-            initialPageSize={10}  
-              />
-        </div>
+          columns={columns}
+          rows={dummyData}
+          isLoading={false}
+          pageSizeOptions={[10, 20]}
+          initialPageSize={10}
+        />
+      </div>
     </>
   );
 };

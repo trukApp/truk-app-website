@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Box, Button, Grid, MenuItem, TextField, Typography } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
+// import { DataGrid } from '@mui/x-data-grid';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { DataGridComponent } from './GridComponent';
@@ -177,17 +177,17 @@ const Resources: React.FC = () => {
 
         {/* Submit Button */}
         <Box display="flex" justifyContent="center" mt={2}>
-            <Button type="submit" variant="contained" color="primary"
+          <Button type="submit" variant="contained" color="primary"
             sx={{
-                paddingLeft: "20px",
-                paddingRight: "20px",
-                paddingTop: "6px",
-                paddingBottom: "6px",
-                fontSize: "16px",
-                alignSelf: "center",
-                display: "flex",
-                justifyContent: "center",
-                textTransform: "none",  
+              paddingLeft: "20px",
+              paddingRight: "20px",
+              paddingTop: "6px",
+              paddingBottom: "6px",
+              fontSize: "16px",
+              alignSelf: "center",
+              display: "flex",
+              justifyContent: "center",
+              textTransform: "none",
             }}>
             Add Resource
           </Button>
@@ -195,14 +195,14 @@ const Resources: React.FC = () => {
       </Box>
 
       {/* DataGrid for Resources */}
-      <div style={{ width: '100%',marginTop:'40px' }}>
+      <div style={{ width: '100%', marginTop: '40px' }}>
         <DataGridComponent
-            columns={columns}
-            rows={data}
-            isLoading={false}  
-            pageSizeOptions={[10, 20]}  
-            initialPageSize={10}  
-         
+          columns={columns}
+          rows={data}
+          isLoading={false}
+          pageSizeOptions={[10, 20]}
+          initialPageSize={10}
+
         />
       </div>
     </Box>

@@ -1,7 +1,6 @@
 "use client"
 
 import React, { useEffect, useRef } from "react";
-import { addSingleMarkers } from "./markers/addSingleMarkers";
 import { addClusterMarkers } from "./markers/addClusterMarkers";
 
 const DEFAULT_CENTER = { lat: 28.4595, lng: 77.0266 };

@@ -136,8 +136,13 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ packages }) => {
         { field: 'receiverPincode', headerName: 'Receiver Pincode', width: 150 },
     ];
 
-    const rows = packages.map((pkg,) => ({
+    // const rows = packages.map((pkg, index: number) => ({
+    //     id: index,
+    //     ...pkg,
+    // }));
+    const rows = packages.map((pkg, index: number) => ({
         ...pkg,
+        id: index,
     }));
 
     const handleSelectionChange = (selectionModel: number[]) => {

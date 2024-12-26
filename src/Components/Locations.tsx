@@ -8,14 +8,13 @@ import {
   TextField,
   Typography,
   MenuItem,
-  InputLabel,
   FormControl,
   Select,
   FormHelperText,
 } from '@mui/material';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { GridColDef } from '@mui/x-data-grid';
 import { DataGridComponent } from './GridComponent';
 
 const columns: GridColDef[] = [
@@ -163,7 +162,7 @@ const dummyData = [
     notes: 'High-security location.',
   },
 ];
-const countries = ['India','USA', 'Canada', 'Australia', 'Germany'];
+const countries = ['India', 'USA', 'Canada', 'Australia', 'Germany'];
 
 // Initial Values
 const initialValues = {
@@ -172,7 +171,7 @@ const initialValues = {
   city: '',
   state: '',
   postalCode: '',
-  country: countries[0] ,
+  country: countries[0],
   contactPerson: '',
   phoneNumber: '',
   email: '',
@@ -380,13 +379,13 @@ const Locations: React.FC = () => {
 
       <div style={{ marginTop: '80px' }}>
         <DataGridComponent
-            columns={columns}
-            rows={dummyData}
-            isLoading={false}  
-            pageSizeOptions={[10, 20]}  
-            initialPageSize={10}  
-              />
-        </div>
+          columns={columns}
+          rows={dummyData}
+          isLoading={false}
+          pageSizeOptions={[10, 20]}
+          initialPageSize={10}
+        />
+      </div>
     </Box>
   );
 };
