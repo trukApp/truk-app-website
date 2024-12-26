@@ -1,217 +1,224 @@
 import React from 'react';
-import { TextField, Grid } from '@mui/material';
+import { TextField, Grid, Checkbox, FormControlLabel } from '@mui/material';
 import { useFormikContext } from 'formik';
-import styles from './BusinessPartners.module.css'
+import styles from './BusinessPartners.module.css';
 import { DataGridComponent } from '../GridComponent';
 import { GridColDef } from '@mui/x-data-grid';
 
 interface CustomerFormValues {
-    businessName: string;
-    businessType: string;
-    officeLocation: string;
-    address: string;
+    customerId: string;
+    name: string;
+    locationId: string;
     pincode: string;
     state: string;
-    country: string;
+    city: string;
     district: string;
-    businessId: string;
+    country: string;
+
+    contactPerson: string;
+    contactNumber: string;
+    emailId: string;
+
+    locationOfSource: string[];
+    podRelevant: boolean;
+
+    shipToParty: string;
+    soldToParty: string;
+    billToParty: string;
 }
 
+const columns: GridColDef[] = [
+    { field: 'customerId', headerName: 'Customer ID', width: 150 },
+    { field: 'name', headerName: 'Name', width: 200 },
+    { field: 'locationId', headerName: 'Location ID', width: 150 },
+    { field: 'pincode', headerName: 'Pincode', width: 100 },
+    { field: 'state', headerName: 'State', width: 150 },
+    { field: 'city', headerName: 'City', width: 150 },
+    { field: 'district', headerName: 'District', width: 150 },
+    { field: 'country', headerName: 'Country', width: 150 },
+];
 
 const dummyCustomersData = [
     {
         id: 1,
-        businessName: 'Tech Solutions',
-        businessType: 'IT Services',
-        officeLocation: 'Building 1, Tech Park',
-        address: '123 Tech Street, Silicon Valley',
-        pincode: '560001',
+        customerId: 'CUST001',
+        name: 'John Doe',
+        locationId: 'LOC123',
+        pincode: '123456',
         state: 'California',
+        city: 'Los Angeles',
+        district: 'Downtown',
         country: 'USA',
-        district: 'Santa Clara',
-        businessId: 'TS001',
     },
-    {
-        id: 2,
-        businessName: 'Green Farms',
-        businessType: 'Agriculture',
-        officeLocation: 'Farmhouse Lane',
-        address: '456 Green Road, Countryside',
-        pincode: '400002',
-        state: 'Texas',
-        country: 'USA',
-        district: 'Austin',
-        businessId: 'GF002',
-    },
-    {
-        id: 3,
-        businessName: 'EduCare',
-        businessType: 'Education',
-        officeLocation: 'Knowledge Tower',
-        address: '789 Education Blvd, Metro City',
-        pincode: '600003',
-        state: 'New York',
-        country: 'USA',
-        district: 'Brooklyn',
-        businessId: 'EC003',
-    },
-];
-
-const columns: GridColDef[] = [
-    { field: 'businessName', headerName: 'Business Name', width: 200 },
-    { field: 'businessType', headerName: 'Business Type', width: 150 },
-    { field: 'officeLocation', headerName: 'Office Location', width: 200 },
-    { field: 'address', headerName: 'Address', flex: 1, minWidth: 250 },
-    { field: 'pincode', headerName: 'Pincode', width: 100 },
-    { field: 'state', headerName: 'State', width: 150 },
-    { field: 'country', headerName: 'Country', width: 150 },
-    { field: 'district', headerName: 'District', width: 150 },
-    { field: 'businessId', headerName: 'Business ID', width: 150 },
 ];
 
 const CustomerForm: React.FC = () => {
-    const { values, handleChange, handleBlur, errors, touched } = useFormikContext<CustomerFormValues>();
+    const { values, handleChange, handleBlur, errors, touched, setFieldValue } = useFormikContext<CustomerFormValues>();
 
     return (
         <div>
-            <h3 className={styles.mainHeding}>Customer Details</h3>
-            <Grid container spacing={2}>
-                {/* Business Name */}
+            {/* General Data Section */}
+            <h3 className={styles.mainHeding}>General Data</h3>
+            <Grid container spacing={2} style={{ marginBottom: '30px' }}>
                 <Grid item xs={12} sm={6}>
                     <TextField
                         fullWidth
-                        label="Business Name"
-                        name="businessName"
-                        value={values.businessName}
+                        label="Customer ID"
+                        name="customerId"
+                        value={values.customerId}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        error={touched.businessName && Boolean(errors.businessName)}
-                        helperText={touched.businessName && errors.businessName}
+                        error={touched.customerId && Boolean(errors.customerId)}
+                        helperText={touched.customerId && errors.customerId}
                     />
                 </Grid>
-
-                {/* Business Type */}
                 <Grid item xs={12} sm={6}>
                     <TextField
                         fullWidth
-                        label="Business Type"
-                        name="businessType"
-                        value={values.businessType}
+                        label="Name"
+                        name="name"
+                        value={values.name}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        error={touched.businessType && Boolean(errors.businessType)}
-                        helperText={touched.businessType && errors.businessType}
+                        error={touched.name && Boolean(errors.name)}
+                        helperText={touched.name && errors.name}
                     />
                 </Grid>
-
-                {/* Office Location */}
                 <Grid item xs={12} sm={6}>
                     <TextField
                         fullWidth
-                        label="Office Location"
-                        name="officeLocation"
-                        value={values.officeLocation}
+                        label="Location ID"
+                        name="locationId"
+                        value={values.locationId}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        error={touched.officeLocation && Boolean(errors.officeLocation)}
-                        helperText={touched.officeLocation && errors.officeLocation}
+                        error={touched.locationId && Boolean(errors.locationId)}
+                        helperText={touched.locationId && errors.locationId}
                     />
                 </Grid>
+                {/* Add other fields for pincode, state, city, district, and country */}
+            </Grid>
 
-                {/* Address */}
-                <Grid item xs={12} md={6}>
-                    <TextField
-                        fullWidth
-                        label="Address"
-                        name="address"
-                        value={values.address}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={touched.address && Boolean(errors.address)}
-                        helperText={touched.address && errors.address}
-                    />
-                </Grid>
-
-                {/* Pincode */}
+            {/* Correspondence Section */}
+            <h3 className={styles.mainHeding}>Correspondence</h3>
+            <Grid container spacing={2} style={{ marginBottom: '30px' }}>
                 <Grid item xs={12} sm={6}>
                     <TextField
                         fullWidth
-                        label="Pincode"
-                        name="pincode"
-                        value={values.pincode}
+                        label="Contact Person"
+                        name="contactPerson"
+                        value={values.contactPerson}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        error={touched.pincode && Boolean(errors.pincode)}
-                        helperText={touched.pincode && errors.pincode}
+                        error={touched.contactPerson && Boolean(errors.contactPerson)}
+                        helperText={touched.contactPerson && errors.contactPerson}
                     />
                 </Grid>
-
-                {/* State */}
                 <Grid item xs={12} sm={6}>
                     <TextField
                         fullWidth
-                        label="State"
-                        name="state"
-                        value={values.state}
+                        label="Contact Number"
+                        name="contactNumber"
+                        value={values.contactNumber}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        error={touched.state && Boolean(errors.state)}
-                        helperText={touched.state && errors.state}
+                        error={touched.contactNumber && Boolean(errors.contactNumber)}
+                        helperText={touched.contactNumber && errors.contactNumber}
                     />
                 </Grid>
-
-                {/* Country */}
                 <Grid item xs={12} sm={6}>
                     <TextField
                         fullWidth
-                        label="Country"
-                        name="country"
-                        value={values.country}
+                        label="Email ID"
+                        name="emailId"
+                        value={values.emailId}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        error={touched.country && Boolean(errors.country)}
-                        helperText={touched.country && errors.country}
-                    />
-                </Grid>
-
-                {/* District */}
-                <Grid item xs={12} sm={6}>
-                    <TextField
-                        fullWidth
-                        label="District"
-                        name="district"
-                        value={values.district}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={touched.district && Boolean(errors.district)}
-                        helperText={touched.district && errors.district}
-                    />
-                </Grid>
-
-                {/* Business ID */}
-                <Grid item xs={12} sm={6}>
-                    <TextField
-                        fullWidth
-                        label="Business ID"
-                        name="businessId"
-                        value={values.businessId}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={touched.businessId && Boolean(errors.businessId)}
-                        helperText={touched.businessId && errors.businessId}
-                    />
-                </Grid>
-                <Grid item xs={12} style={{ marginTop: '50px' }}>
-                    <DataGridComponent
-                        columns={columns}
-                        rows={dummyCustomersData}
-                        isLoading={false}
-                        pageSizeOptions={[10, 20]}
-                        initialPageSize={10}
+                        error={touched.emailId && Boolean(errors.emailId)}
+                        helperText={touched.emailId && errors.emailId}
                     />
                 </Grid>
             </Grid>
 
+            {/* Shipping Section */}
+            <h3 className={styles.mainHeding}>Shipping</h3>
+            <Grid container spacing={2} style={{ marginBottom: '30px' }}>
+                <Grid item xs={12}>
+                    <TextField
+                        fullWidth
+                        label="Location of Source"
+                        name="locationOfSource"
+                        value={values.locationOfSource.join(', ')}
+                        onChange={(e) => setFieldValue('locationOfSource', e.target.value.split(', '))}
+                        onBlur={handleBlur}
+                        error={touched.locationOfSource && Boolean(errors.locationOfSource)}
+                        helperText={touched.locationOfSource && errors.locationOfSource}
+                    />
+                </Grid>
+                <Grid item xs={12}>
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={values.podRelevant}
+                                onChange={(e) => setFieldValue('podRelevant', e.target.checked)}
+                            />
+                        }
+                        label="POD Relevant"
+                    />
+                </Grid>
+            </Grid>
+
+            {/* Partner Functions Section */}
+            <h3 className={styles.mainHeding}>Partner Functions</h3>
+            <Grid container spacing={2} style={{ marginBottom: '30px' }}>
+                <Grid item xs={12} sm={6}>
+                    <TextField
+                        fullWidth
+                        label="Ship To Party"
+                        name="shipToParty"
+                        value={values.shipToParty}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        error={touched.shipToParty && Boolean(errors.shipToParty)}
+                        helperText={touched.shipToParty && errors.shipToParty}
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                    <TextField
+                        fullWidth
+                        label="Sold To Party"
+                        name="soldToParty"
+                        value={values.soldToParty}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        error={touched.soldToParty && Boolean(errors.soldToParty)}
+                        helperText={touched.soldToParty && errors.soldToParty}
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                    <TextField
+                        fullWidth
+                        label="Bill To Party"
+                        name="billToParty"
+                        value={values.billToParty}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        error={touched.billToParty && Boolean(errors.billToParty)}
+                        helperText={touched.billToParty && errors.billToParty}
+                    />
+                </Grid>
+            </Grid>
+
+            {/* Customer List */}
+            <Grid item xs={12} style={{ marginTop: '50px' }}>
+                <DataGridComponent
+                    columns={columns}
+                    rows={dummyCustomersData}
+                    isLoading={false}
+                    pageSizeOptions={[10, 20]}
+                    initialPageSize={10}
+                />
+            </Grid>
         </div>
     );
 };

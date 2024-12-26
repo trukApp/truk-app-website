@@ -3,35 +3,23 @@ import React, { useState } from 'react';
 import { Stepper, Step, StepLabel, Button, Typography } from '@mui/material';
 import PackagesTable from '@/Components/CreateOrderTables/PackagesTable';
 import TrucksTable from '@/Components/CreateOrderTables/TrucksTable';
-import { useAppSelector, useAppDispatch } from '@/store';
+import { useAppSelector } from '@/store';
 import styles from './createorder.module.css'
 import { MapComponent } from '@/Components/MapComponent';
-import { useRouter } from 'next/navigation';
-import { signOut } from 'next-auth/react';
-import { withAuthComponent } from '@/Components/WithAuthComponent';
+// import { withAuthComponent } from '@/Components/WithAuthComponent';
 import Header from '@/Components/Header';
 
 const CreateOrder: React.FC = () => {
-    const dispatch = useAppDispatch();
     const [activeStep, setActiveStep] = useState(0);
-    const selectedPackages = useAppSelector((state: any) => state.auth.selectedPackages);
-    const selectedTrucks = useAppSelector((state: any) => state.auth.selectedTrucks);
-
-    const router = useRouter();
-    // const { data: news, isLoading } = useGetAllLatestNewsQuery()
-    // console.log('news is  : ', news)
-
-    const handleLogout = async () => {
-        const isConfirmed = window.confirm("Are you sure you want to log out?");
-        if (isConfirmed) {
-            await signOut({ redirect: false });
-            router.push("/login");
-        }
-    };
-
-
+    const selectedPackages = useAppSelector(
+        (state) => state.auth.selectedPackages || []
+    );
+    const selectedTrucks = useAppSelector(
+        (state) => state.auth.selectedTrucks || []
+    );
     const packages = [
         {
+            id: 1,
             packageName: 'Sample Package 1',
             weight: '5kg',
             length: '20cm',
@@ -51,6 +39,7 @@ const CreateOrder: React.FC = () => {
             receiverPhone: '+1 555-987-6543',
         },
         {
+            id: 2,
             packageName: 'Sample Package 2',
             weight: '3kg',
             length: '30cm',
@@ -70,6 +59,7 @@ const CreateOrder: React.FC = () => {
             receiverPhone: '+1 555-333-4444',
         },
         {
+            id: 3,
             packageName: 'Sample Package 3',
             weight: '2kg',
             length: '25cm',
@@ -89,6 +79,7 @@ const CreateOrder: React.FC = () => {
             receiverPhone: '+1 555-777-8888',
         },
         {
+            id: 4,
             packageName: 'Sample Package 4',
             weight: '6kg',
             length: '40cm',
@@ -108,6 +99,7 @@ const CreateOrder: React.FC = () => {
             receiverPhone: '+1 555-121-2323',
         },
         {
+            id: 5,
             packageName: 'Sample Package 5',
             weight: '4kg',
             length: '22cm',
@@ -127,6 +119,7 @@ const CreateOrder: React.FC = () => {
             receiverPhone: '+1 555-565-6767',
         },
         {
+            id: 6,
             packageName: 'Sample Package 6',
             weight: '7kg',
             length: '35cm',
@@ -146,6 +139,7 @@ const CreateOrder: React.FC = () => {
             receiverPhone: '+1 555-909-1010',
         },
         {
+            id: 7,
             packageName: 'Sample Package 7',
             weight: '3.5kg',
             length: '28cm',
@@ -165,6 +159,7 @@ const CreateOrder: React.FC = () => {
             receiverPhone: '+1 555-434-5454',
         },
         {
+            id: 8,
             packageName: 'Sample Package 8',
             weight: '8kg',
             length: '50cm',
@@ -184,6 +179,7 @@ const CreateOrder: React.FC = () => {
             receiverPhone: '+1 555-878-9898',
         },
         {
+            id: 9,
             packageName: 'Sample Package 9',
             weight: '2.5kg',
             length: '15cm',
@@ -203,6 +199,7 @@ const CreateOrder: React.FC = () => {
             receiverPhone: '+1 555-232-3434',
         },
         {
+            id: 10,
             packageName: 'Sample Package 10',
             weight: '4.5kg',
             length: '25cm',
@@ -352,8 +349,8 @@ const CreateOrder: React.FC = () => {
         console.log("Final Trucks Selections are: ", selectedTrucks)
     }
     return (
-      <div>
-        <Header/>
+        <div>
+            <Header />
             <Stepper activeStep={activeStep} alternativeLabel>
                 {steps.map((label) => (
                     <Step key={label}>
@@ -383,14 +380,14 @@ const CreateOrder: React.FC = () => {
                         <Typography variant="h6">Review Your Order</Typography>
                         <div>
                             <strong>Selected Packages:</strong>
-                            {selectedPackages.map((pkg: any, index: number) => (
+                            {selectedPackages.map((pkg, index: number) => (
                                 <div key={index}>{pkg.packageName}</div>
                             ))}
                         </div>
 
                         <div >
                             <strong>Selected Truck:</strong>
-                            {selectedTrucks.map((pkg: any, index: number) => (
+                            {selectedTrucks.map((pkg, index: number) => (
                                 <div key={index}>{pkg.truckNumber}</div>
                             ))}
                         </div>
@@ -427,6 +424,5 @@ const CreateOrder: React.FC = () => {
     );
 };
 
-// export default withAuthComponent(CreateOrder);
 export default CreateOrder
 

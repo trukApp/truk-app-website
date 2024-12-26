@@ -1,7 +1,7 @@
 import React from 'react';
 import { TextField, Grid, MenuItem } from '@mui/material';
 import { useFormikContext } from 'formik';
-import styles from './BusinessPartners.module.css'
+// import styles from './BusinessPartners.module.css'
 import { DataGridComponent } from '../GridComponent';
 
 interface AgentFormValues {

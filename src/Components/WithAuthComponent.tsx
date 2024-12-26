@@ -5,42 +5,57 @@ import { CircularProgress } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import React, { useEffect } from 'react';
 
-interface Tokens {
-    accessToken: string;
-    refreshToken: string;
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+      name: string;
+      email?: string;
+      accessToken: string;
+      refreshToken: string;
+    };
+  }
 }
-export const withAuthComponent = (WrappedComponent: React.FC,) => {
-    const AuthWrapper: React.FC = (props) => {
-        return (
-            <SessionProvider>
-                <AuthCheck {...props} />
-            </SessionProvider>
-        );
-    };
 
-    const AuthCheck: React.FC = (props) => {
-        const { data: session, status } = useSession();
-        const router = useRouter();
-        console.log("server session :", session)
-        localStorage.setItem("accessToken", session?.user?.accessToken);
-        localStorage.setItem("refreshToken", session?.user?.refreshToken);
+export const withAuthComponent = (WrappedComponent: React.FC): React.FC => {
+  const AuthWrapper: React.FC = (props) => {
+    return (
+      <SessionProvider>
+        <AuthCheck {...props} />
+      </SessionProvider>
+    );
+  };
 
-        useEffect(() => {
-            if (status === 'unauthenticated') {
-                router.push(`/login?callbackUrl=${encodeURIComponent(location.pathname)}`);
-            }
-        }, [status, router]);
+  const AuthCheck: React.FC = (props) => {
+    const { data: session, status } = useSession();
+      const router = useRouter();
+      console.log("session is :", session)
 
-        if (status === 'loading') {
-            return (
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-                    <CircularProgress />
-                </div>
-            );
-        }
+    useEffect(() => {
+      if (session?.user?.accessToken) {
+        localStorage.setItem('accessToken', session.user.accessToken);
+      }
+      if (session?.user?.refreshToken) {
+        localStorage.setItem('refreshToken', session.user.refreshToken);
+      }
+    }, [session]);
 
-        return session ? <WrappedComponent {...props} /> : null;
-    };
+    useEffect(() => {
+      if (status === 'unauthenticated') {
+        router.push(`/login?callbackUrl=${encodeURIComponent(location.pathname)}`);
+      }
+    }, [status, router]);
 
-    return AuthWrapper;
+    if (status === 'loading') {
+      return (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+          <CircularProgress />
+        </div>
+      );
+    }
+
+    return session ? <WrappedComponent {...props} /> : null;
+  };
+
+  return AuthWrapper;
 };

@@ -17,8 +17,6 @@ import {
   Inventory as InventoryIcon,
   Logout as LogoutIcon,
   Person as PersonIcon,
-  PrivacyTip as PrivacyTipIcon,
-  Gavel as GavelIcon,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";

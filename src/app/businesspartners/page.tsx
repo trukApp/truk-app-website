@@ -46,27 +46,38 @@ const validationSchema = Yup.object().shape({
 
 const BusinessPartnersPage: React.FC = () => {
     const initialValues = {
-        firstName: '',
-        lastName: '',
-        phoneNumber: '',
-        idProof: '',
-        address: '',
-        pincode: '',
-        city: '',
-        state: '',
-        country: '',
         businessPartnerType: 'customers',
         // Customer-specific initial values
-        businessName: '',
-        businessType: '',
-        officeLocation: '',
+        customerId: '',
+        name: '',
+        locationId: '',
+        pincode: '',
+        state: '',
+        city: '',
         district: '',
-        businessId: '',
+        country: '',
+
+        contactPerson: '',
+        contactNumber: '',
+        emailId: '',
+
+        locationOfSource: [],
+        podRelevant: false,
+
+        shipToParty: '',
+        soldToParty: '',
+        billToParty: '',
         //Driver form 
+        driverID: '',
+        driverName: '',
+        locationID: '',
+        address: '',
         drivingLicense: '',
-        fromTime: '',
-        toTime: '',
-        experience: '',
+        expiryDate: '',
+        driverContactNumber: '',
+        emailID: '',
+        vehicleTypes: [],
+        loggedIntoApp: true,
         //Suppiler Form
         transporterId: '',
         vehicleType: '',
@@ -83,7 +94,7 @@ const BusinessPartnersPage: React.FC = () => {
         agencyId: '',
         serviceArea: '',
         modeOfTransport: '',
-        contactNumber: '',
+        agentcontactNumber: '',
     };
 
     const handleSubmit = (values: typeof initialValues) => {
@@ -123,147 +134,6 @@ const BusinessPartnersPage: React.FC = () => {
                                     </TextField>
                                 </Grid>
                             </div>
-                            <Grid item xs={12}>
-                                <h2 className={styles.basicDetailsHeading}>Basic Details</h2>
-                            </Grid>
-
-                            {/* First Name */}
-                            <Grid item xs={12} sm={6}>
-                                <TextField
-                                    fullWidth
-                                    label="First Name"
-                                    name="firstName"
-                                    value={values.firstName}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    error={touched.firstName && Boolean(errors.firstName)}
-                                    helperText={touched.firstName && errors.firstName}
-                                    className={styles.textInputField}
-                                />
-                            </Grid>
-
-                            {/* Last Name */}
-                            <Grid item xs={12} sm={6}>
-                                <TextField
-                                    fullWidth
-                                    label="Last Name"
-                                    name="lastName"
-                                    value={values.lastName}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    error={touched.lastName && Boolean(errors.lastName)}
-                                    helperText={touched.lastName && errors.lastName}
-                                    className={styles.textInputField}
-                                />
-                            </Grid>
-
-                            {/* Phone Number */}
-                            <Grid item xs={12} sm={6}>
-                                <TextField
-                                    fullWidth
-                                    label="Phone Number"
-                                    name="phoneNumber"
-                                    value={values.phoneNumber}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    error={touched.phoneNumber && Boolean(errors.phoneNumber)}
-                                    helperText={touched.phoneNumber && errors.phoneNumber}
-                                    className={styles.textInputField}
-                                />
-                            </Grid>
-
-                            {/* ID Proof */}
-                            <Grid item xs={12} sm={6}>
-                                <TextField
-                                    fullWidth
-                                    label="ID Proof"
-                                    name="idProof"
-                                    value={values.idProof}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    error={touched.idProof && Boolean(errors.idProof)}
-                                    helperText={touched.idProof && errors.idProof}
-                                    className={styles.textInputField}
-                                />
-                            </Grid>
-
-                            {/* Address */}
-                            <Grid item xs={12} sm={6}>
-                                <TextField
-                                    fullWidth
-                                    label="Address"
-                                    name="address"
-                                    value={values.address}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    error={touched.address && Boolean(errors.address)}
-                                    helperText={touched.address && errors.address}
-                                    className={styles.textInputField}
-                                />
-                            </Grid>
-
-                            {/* Pincode */}
-                            <Grid item xs={12} sm={6}>
-                                <TextField
-                                    fullWidth
-                                    label="Pincode"
-                                    name="pincode"
-                                    value={values.pincode}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    error={touched.pincode && Boolean(errors.pincode)}
-                                    helperText={touched.pincode && errors.pincode}
-                                    className={styles.textInputField}
-                                />
-                            </Grid>
-
-                            {/* City */}
-                            <Grid item xs={12} sm={6}>
-                                <TextField
-                                    fullWidth
-                                    label="City"
-                                    name="city"
-                                    value={values.city}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    error={touched.city && Boolean(errors.city)}
-                                    helperText={touched.city && errors.city}
-                                    className={styles.textInputField}
-                                />
-                            </Grid>
-
-                            {/* State */}
-                            <Grid item xs={12} sm={6}>
-                                <TextField
-                                    fullWidth
-                                    label="State"
-                                    name="state"
-                                    value={values.state}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    error={touched.state && Boolean(errors.state)}
-                                    helperText={touched.state && errors.state}
-                                    className={styles.textInputField}
-                                />
-                            </Grid>
-
-                            {/* Country */}
-                            <Grid item xs={12} sm={6}>
-                                <TextField
-                                    fullWidth
-                                    label="Country"
-                                    name="country"
-                                    value={values.country}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    error={touched.country && Boolean(errors.country)}
-                                    helperText={touched.country && errors.country}
-                                    className={styles.textInputField}
-                                />
-                            </Grid>
-
-
-
                         </Grid>
 
                         {values.businessPartnerType === 'customers' && <CustomerForm />}
@@ -277,7 +147,9 @@ const BusinessPartnersPage: React.FC = () => {
                                 Submit
                             </Button>
                         </Grid>
+
                     </Form>
+
                 )}
             </Formik>
         </Box>

@@ -4,7 +4,6 @@ import { TextField, Button, IconButton, InputAdornment } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import Footer from "@/Components/Footer";
 
 const Profile = () => {
   const initialProfileData = {

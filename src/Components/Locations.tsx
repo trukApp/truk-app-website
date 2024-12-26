@@ -17,7 +17,7 @@ import * as Yup from 'yup';
 const validationSchema = Yup.object({
   locationId: Yup.string().required('Location ID is required'),
   locationDescription: Yup.string().required('Location description is required'),
-   locationType : Yup.string().required('Location type is required'),
+  locationType : Yup.string().required('Location type is required'),
 
 });
 
@@ -37,11 +37,9 @@ const Locations: React.FC = () => {
       latitude:'',
       timeZone: '',
       city: '',
-      state: '', 
+      state: '',
       country: '',
       pincode : ''
-      
-     
     },
     validationSchema,
     onSubmit: (values) => {
@@ -93,7 +91,7 @@ useEffect(() => {
 
   if (window.google && locationInputRef.current) {
     const autocomplete = new google.maps.places.Autocomplete(locationInputRef.current, {
-      types: ['address'],  
+      types: ['address'],
     });
 
     autocomplete.addListener('place_changed', () => {
@@ -124,7 +122,6 @@ useEffect(() => {
           const component = components.find((c) => c.types.includes(type));
           return component ? component.long_name : '';
         };
-        
 
         // Extract city, state, country, and postal code
         const city = getComponent('locality') || getComponent('administrative_area_level_2');
@@ -159,13 +156,12 @@ return (
       </Typography>
 
       <Grid container spacing={2}>
-      
+
       <Grid container spacing={2}>
-         <Typography variant="h6" align="center" gutterBottom>
+        <Typography variant="h6" align="center" gutterBottom>
         General info
       </Typography>
       <Grid container spacing={2}>
-        
   <Grid item xs={12} sm={6} md={2.4}>
     <TextField
       fullWidth
@@ -189,7 +185,7 @@ return (
             label="Location Description*"
             name="locationDescription"
             value={values.locationDescription}
-            inputRef={locationInputRef}  
+            inputRef={locationInputRef}
             onChange={handleChange}
             onBlur={handleBlur}
             error={touched.locationDescription && Boolean(errors.locationDescription)}
@@ -200,12 +196,11 @@ return (
     <TextField
       fullWidth
       size="small" disabled
-      label="Longitude*" 
+      label="Longitude*"
       name="longitude"
       value={values.longitude}
       onChange={handleChange}
       onBlur={handleBlur}
-      
     />
   </Grid>
   <Grid item xs={12} sm={6} md={2.4}>
@@ -216,7 +211,7 @@ return (
       name="latitude"
       value={values.latitude}
       onChange={handleChange}
-      onBlur={handleBlur} 
+      onBlur={handleBlur}
     />
         </Grid>
       <Grid item xs={12} sm={6} md={2.4}>
@@ -240,7 +235,7 @@ return (
       name="city"
       value={values.city}
       onChange={handleChange}
-      onBlur={handleBlur} 
+      onBlur={handleBlur}
     />
           </Grid>
                 <Grid item xs={12} sm={6} md={2.4}>
@@ -251,7 +246,7 @@ return (
       name="state"
       value={values.state}
       onChange={handleChange}
-      onBlur={handleBlur} 
+      onBlur={handleBlur}
     />
           </Grid>
                 <Grid item xs={12} sm={6} md={2.4}>
@@ -262,7 +257,7 @@ return (
       name="timeZone"
       value={values.country}
       onChange={handleChange}
-      onBlur={handleBlur} 
+      onBlur={handleBlur}
     />
           </Grid>
                 <Grid item xs={12} sm={6} md={2.4}>
@@ -276,13 +271,12 @@ return (
       onBlur={handleBlur} disabled
     />
   </Grid>
-          
 
         <Grid item xs={12} sm={6} md={2.4}>
           <TextField
             fullWidth
             size="small"
-            select 
+            select
             name="locationType"
             value={values.locationType}
             onChange={handleChange}
@@ -328,7 +322,6 @@ return (
             inputProps={{ maxLength: 13 }}
           />
         </Grid>
-          
         <Grid item xs={12} sm={6} md={2.4}>
     <TextField
       fullWidth
@@ -337,16 +330,13 @@ return (
       name="iataCode"
       value={values.iataCode}
       onChange={handleChange}
-      onBlur={handleBlur} 
+      onBlur={handleBlur}
       inputProps={{ maxLength: 3 }}
     />
         </Grid>
       </Grid>
     </Grid>
   </Grid>
-    
-    
-
       <Box sx={{ marginTop: '24px', textAlign: 'center' }}>
         <Button variant="contained" color="primary" type="submit">
           Submit

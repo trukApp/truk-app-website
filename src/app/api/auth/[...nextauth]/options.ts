@@ -1,17 +1,22 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-// Function to get a new access token using refresh token
 const refreshAccessToken = async (refreshToken: string) => {
-  console.log("Attempting to refresh access token with refresh token:", refreshToken);
+  console.log(
+    "Attempting to refresh access token with refresh token:",
+    refreshToken
+  );
   try {
-    const response = await fetch(`https://jaimp-api.onelovepc.com/jaiMp/log/refresh-token`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ refreshToken }),
-    });
+    const response = await fetch(
+      `https://jaimp-api.onelovepc.com/jaiMp/log/refresh-token`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ refreshToken }),
+      }
+    );
 
     console.log("Refresh token API response status:", response.status);
 
@@ -22,7 +27,7 @@ const refreshAccessToken = async (refreshToken: string) => {
     const data = await response.json();
     console.log("Token data received from refresh API:", data);
     return {
-      accessToken: data.accessToken, 
+      accessToken: data.accessToken,
       // refreshToken: data.refreshToken || refreshToken,
       accessTokenExpires: Date.now() + 24 * 60 * 60 * 1000, // 1 day
     };
@@ -39,8 +44,16 @@ export const options: NextAuthOptions = {
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        phone: { label: "Phone Number", type: "text", placeholder: "Enter your phone number" },
-        password: { label: "Password", type: "password", placeholder: "Enter your password" },
+        phone: {
+          label: "Phone Number",
+          type: "text",
+          placeholder: "Enter your phone number",
+        },
+        password: {
+          label: "Password",
+          type: "password",
+          placeholder: "Enter your password",
+        },
       },
       async authorize(credentials) {
         if (!credentials?.phone || !credentials?.password) {
@@ -48,17 +61,20 @@ export const options: NextAuthOptions = {
         }
 
         try {
-          const response = await fetch(`https://jaimp-api.onelovepc.com/jaiMp/log/login`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              mobile: credentials.phone,
-              pin: parseInt(credentials.password),
-              unq_d_id: "uniqueid",
-            }),
-          });
+          const response = await fetch(
+            `https://jaimp-api.onelovepc.com/jaiMp/log/login`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                mobile: credentials.phone,
+                pin: parseInt(credentials.password),
+                unq_d_id: "uniqueid",
+              }),
+            }
+          );
           console.log("Signin response status:", response.status);
 
           if (!response.ok) {
@@ -92,16 +108,16 @@ export const options: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.name = user.name;
-        token.phone = user.phone;
-        token.accessToken = user.accessToken;
-        token.refreshToken = user.refreshToken;
-        token.accessTokenExpires = Date.now() + 24 * 60  * 60 * 1000;  
+        token.phone = (user as any).phone;
+        token.accessToken = (user as any).accessToken;
+        token.refreshToken =(user as any).refreshToken;
+        token.accessTokenExpires = Date.now() + 24 * 60 * 60 * 1000;
         console.log("User signed in:", user);
       }
 
       // Return previous token if the access token has not expired yet
-      if (token.accessTokenExpires && Date.now() < token?.accessTokenExpires) {
-        console.log("Token still available")
+      if (token?.accessToken ) {
+        console.log("Token still available");
         return token;
       }
 
@@ -109,7 +125,7 @@ export const options: NextAuthOptions = {
 
       // Access token has expired, try to update it
       if (token.refreshToken) {
-        const refreshedTokens = await refreshAccessToken(token?.refreshToken);
+        const refreshedTokens = await refreshAccessToken((token as any)?.refreshToken);
         if (refreshedTokens && !refreshedTokens.error) {
           console.log("Access token refreshed successfully:", refreshedTokens);
           return {
@@ -119,7 +135,10 @@ export const options: NextAuthOptions = {
             // refreshToken: refreshedTokens.refreshToken ?? token.refreshToken, // Uncomment if refresh token is rotated
           };
         } else {
-          console.error("Failed to refresh access token:", refreshedTokens?.error);
+          console.error(
+            "Failed to refresh access token:",
+            refreshedTokens?.error
+          );
           return {
             ...token,
             error: "RefreshAccessTokenError",
@@ -147,7 +166,7 @@ export const options: NextAuthOptions = {
         phone: token.phone,
         accessToken: token.accessToken,
         refreshToken: token.refreshToken,
-      };
+      } as any;
       return session;
     },
   },

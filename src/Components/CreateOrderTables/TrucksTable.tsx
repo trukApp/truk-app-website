@@ -18,19 +18,16 @@ interface Truck {
 
 interface TrucksTableProps {
     trucks: Truck[];
-    // onSelectionChange: (selected: Truck[]) => void;
 }
 
 const TrucksTable: React.FC<TrucksTableProps> = ({ trucks }) => {
     const dispatch = useAppDispatch();
-    const selectedTrucks = useAppSelector((state: any) => state.auth.selectedTrucks);
+    const selectedTrucks = useAppSelector((state) => state.auth.selectedTrucks || []);
     const [selectionModel, setSelectionModel] = useState<number[]>([]);
-
     useEffect(() => {
-        // When trucks are available in Redux, set the selectionModel
         if (selectedTrucks.length > 0) {
-            const selectedRowIds = selectedTrucks.map((truck: any) =>
-                trucks.findIndex((t) => t.truckName === truck.truckName)
+            const selectedRowIds = selectedTrucks.map((truck: Truck) =>
+                trucks.findIndex((t) => t.id === truck.id)
             );
             setSelectionModel(selectedRowIds);
         }
@@ -49,15 +46,17 @@ const TrucksTable: React.FC<TrucksTableProps> = ({ trucks }) => {
         { field: 'id', headerName: 'ID', width: 100 },
     ];
 
-    const rows = trucks.map((truck: any, index: any) => ({
-        id: index,
-        ...truck,
-    }));
+    // const rows = trucks.map((truck: Truck) => ({
+    //     ...truck,
+    // }));
 
-    const handleSelectionChange = (selectionModel: any) => {
-        // Ensure selectionModel is an array of selected row ids
-        const selectedTrucks = selectionModel.map((id: any) => trucks[id]);
-        dispatch(setSelectedTrucks(selectedTrucks)); // Dispatch the selected trucks to Redux
+    const rows = trucks.map((truck: Truck, index: number) => ({
+        ...truck,
+        id: index,
+    }));
+    const handleSelectionChange = (selectionModel: number[]) => {
+        const selectedTrucks = selectionModel.map((id: number) => trucks[id]);
+        dispatch(setSelectedTrucks(selectedTrucks));
     };
 
     return (
@@ -66,8 +65,11 @@ const TrucksTable: React.FC<TrucksTableProps> = ({ trucks }) => {
                 rows={rows}
                 columns={columns}
                 checkboxSelection
-                onRowSelectionModelChange={handleSelectionChange}
-                rowSelectionModel={selectionModel} // Pre-select rows based on the Redux store
+                // onRowSelectionModelChange={handleSelectionChange}
+                onRowSelectionModelChange={(model) =>
+                    handleSelectionChange(model as number[])
+                }
+                rowSelectionModel={selectionModel}
             />
         </div>
     );
