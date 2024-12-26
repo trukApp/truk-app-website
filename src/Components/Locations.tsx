@@ -21,7 +21,6 @@ const validationSchema = Yup.object({
 
 const Locations: React.FC = () => {
   const locationInputRef = useRef<HTMLInputElement | null>(null);
-  console.log(coordinates)
   const formik = useFormik({
     initialValues: {
       locationId: '',
