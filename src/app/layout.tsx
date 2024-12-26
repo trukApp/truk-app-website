@@ -30,6 +30,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <head>
+        <script
+          async
+          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`}
+        ></script>
+      </head>
         <ReduxProvider>
           <Header />
           <div style={{ marginTop: '50px', padding: '20px' }}>
