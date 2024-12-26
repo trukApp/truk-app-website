@@ -11,7 +11,7 @@ import {
   Select,
   FormHelperText,
 } from "@mui/material";
-import { Formik, Field, Form, ErrorMessage } from "formik";
+import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import { DataGridComponent } from "./GridComponent";
 
@@ -45,6 +45,7 @@ const columns = [
   { field: "volume", headerName: "Volume", width: 130 },
   { field: "unit", headerName: "Unit", width: 120 },
 ];
+
 
 interface VehicleDetails {
   vehicleNumber: string;
@@ -182,7 +183,7 @@ const Vehicles: React.FC = () => {
                     size="small"
                     label={field.replace(/([A-Z])/g, " $1")}
                     name={field}
-                    value={(values as any)[field]}
+                    // value={(values as VehicleDetails)[field]}
                     onChange={handleChange}
                     error={touched[field as keyof VehicleDetails] && !!errors[field as keyof VehicleDetails]}
                     helperText={
@@ -211,7 +212,7 @@ const Vehicles: React.FC = () => {
                       label={dimension}
                       name={dimension}
                       type="number"
-                      value={(values as any)[dimension]}
+                      // value={(values as any)[dimension]}
                       onChange={(e) => {
                         handleChange(e);
                         const volume = calculateVolume({
@@ -256,44 +257,44 @@ const Vehicles: React.FC = () => {
               </Grid>
 
               {/* Submit Button */}
-                          <Grid item xs={12}>
-        <div style={{display:'flex', flexDirection:'row', justifyContent:'center'}}>
-         <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            focusRipple
-            sx={{
-                paddingLeft: "20px",
-                paddingRight: "20px",
-                paddingTop: "6px",
-                paddingBottom: "6px",
-                fontSize: "16px",
-                alignSelf: "center",
-                display: "flex",
-                justifyContent: "center",
-                textTransform: "none",  
-            }}
-            >
-            Add vehicle
-            </Button>
-            </div>
+              <Grid item xs={12}>
+                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    focusRipple
+                    sx={{
+                      paddingLeft: "20px",
+                      paddingRight: "20px",
+                      paddingTop: "6px",
+                      paddingBottom: "6px",
+                      fontSize: "16px",
+                      alignSelf: "center",
+                      display: "flex",
+                      justifyContent: "center",
+                      textTransform: "none",
+                    }}
+                  >
+                    Add vehicle
+                  </Button>
+                </div>
 
               </Grid>
             </Grid>
           </Form>
         )}
       </Formik>
-      <div style={{marginTop:'80px'}}>
+      <div style={{ marginTop: '80px' }}>
         <DataGridComponent
-            columns={columns}
-            rows={dummyData}
-            isLoading={false}  
-            pageSizeOptions={[10, 20]}  
-            initialPageSize={10}  
-              />
-        </div>
-          
+          columns={columns}
+          rows={dummyData}
+          isLoading={false}
+          pageSizeOptions={[10, 20]}
+          initialPageSize={10}
+        />
+      </div>
+
     </Box>
   );
 };
