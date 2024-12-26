@@ -127,7 +127,7 @@ const BusinessPartnersPage: React.FC = () => {
 
                                     >
                                         <MenuItem value="customers">Customers</MenuItem>
-                                        <MenuItem value="suppliers">Suppliers</MenuItem>
+                                        <MenuItem value="suppliers">Vendors</MenuItem>
                                         <MenuItem value="carriers">Carriers</MenuItem>
                                         <MenuItem value="agents">Agents</MenuItem>
                                         <MenuItem value="drivers">Drivers</MenuItem>
