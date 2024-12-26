@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
 export interface IPackage {
-  id: Number;
+  id: number;
   packageName: string;
   weight: string;
   length: string;
@@ -23,7 +23,7 @@ export interface IPackage {
 }
 
 export interface ITruck {
-  id: Number;
+  id: number;
   ownerName: string;
   truckNumber: string;
   height: string;
