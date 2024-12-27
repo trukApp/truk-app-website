@@ -1,18 +1,18 @@
-
 "use client";
 
-import React from "react";
+import React, { useState } from 'react';
 import { Formik, Form, } from "formik";
 import * as Yup from "yup";
 import {
   TextField,
-  Grid, 
+  Grid,
   Box,
   Typography,
   Checkbox,
   FormControlLabel,
   MenuItem,
   Button,
+  Collapse,
 } from "@mui/material";
 import { DataGridComponent } from "./GridComponent";
 import { GridColDef } from "@mui/x-data-grid";
@@ -101,37 +101,16 @@ const rows = Array.from({ length: 10 }, (_, id) => ({
   vehicleType: id % 2 === 0 ? "Truck" : "Van",
   vehicleGroup: `Group-${id + 1}`,
   ownership: id % 2 === 0 ? "Owned" : "Leased",
-  // payloadWeight: (1000 + id * 100).toString(),
-  // cubicCapacity: (5000 + id * 100).toString(),
-  // interiorLength: (15 + id).toString(),
-  // interiorWidth: (5 + id * 0.5).toString(),
-  // interiorHeight: (6 + id * 0.3).toString(),
-  // tareWeight: (2000 + id * 50).toString(),
-  // maxGrossWeight: (3000 + id * 150).toString(),
-  // tareVolume: (40 + id).toString(),
-  // maxLength: (20 + id).toString(),
-  // maxWidth: (8 + id).toString(),
-  // maxHeight: (10 + id).toString(),
-  // platformHeight: (3 + id * 0.2).toString(),
-  // topDeckHeight: (2.5 + id * 0.1).toString(),
-  // doorWidth: (4 + id * 0.2).toString(),
-  // doorHeight: (6 + id * 0.3).toString(),
-  // doorLength: (7 + id * 0.4).toString(),
-  // avgCost: (100000 + id * 5000).toString(),
-  // downtimeStart: "2024-02-01",
-  // downtimeEnd: "2024-02-10",
-  // downtimeLocation: `Location-${id + 1}`,
-  // downtimeDescription: `Maintenance required for vehicle ${id + 1}`,
-  // downtimeReason: `Reason-${id + 1}`,
 }));
 
 
 const VehicleForm: React.FC = () => {
-    const initialValues = {
+  const [showForm, setShowForm] = useState(false);
+  const initialValues = {
     locationId: "",
     timeZone: "",
     unlimitedUsage: false,
-    individualResources: null,
+    individualResources: '',
     validityFrom: "",
     validityTo: "",
     vehicleType: "",
@@ -160,759 +139,769 @@ const VehicleForm: React.FC = () => {
     downtimeDescription: "",
     downtimeReason: "",
   };
-  
-//     const columns: GridColDef[] = Object.keys(initialValues).map((key) => ({
-//   field: key,
-//   headerName: key.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase()),
-//   width: 250,
-//   flex: key === "downtimeDescription" ? 2 : 1, // Adjust column width for long text fields
-// }));
 
-const columns: GridColDef[] = [
-  { field: "locationId", headerName: "Location ID", width: 150 },
-  { field: "timeZone", headerName: "Time Zone", width: 150 },
-  { field: "unlimitedUsage", headerName: "Unlimited Usage", width: 150, type: "boolean" },
-  { field: "individualResources", headerName: "Individual Resources", width: 200 },
-  { field: "validityFrom", headerName: "Validity From", width: 150 },
-  { field: "validityTo", headerName: "Validity To", width: 150 },
-  { field: "vehicleType", headerName: "Vehicle Type", width: 150 },
-  { field: "vehicleGroup", headerName: "Vehicle Group", width: 150 },
-  { field: "ownership", headerName: "Ownership", width: 150 },
-];
+  const columns: GridColDef[] = [
+    { field: "locationId", headerName: "Location ID", width: 150 },
+    { field: "timeZone", headerName: "Time Zone", width: 150 },
+    { field: "unlimitedUsage", headerName: "Unlimited Usage", width: 150, type: "boolean" },
+    { field: "individualResources", headerName: "Individual Resources", width: 200 },
+    { field: "validityFrom", headerName: "Validity From", width: 150 },
+    { field: "validityTo", headerName: "Validity To", width: 150 },
+    { field: "vehicleType", headerName: "Vehicle Type", width: 150 },
+    { field: "vehicleGroup", headerName: "Vehicle Group", width: 150 },
+    { field: "ownership", headerName: "Ownership", width: 150 },
+  ];
   const handleSubmit = (values: FormValues) => {
     console.log("Form submitted with values:", values);
   };
 
   return (
     <>
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h5" align="center" gutterBottom>
-        Vehicle Master data
-      </Typography>
-      <Formik
-        initialValues={initialValues}
-        validationSchema={validationSchema}
-        onSubmit={handleSubmit}
-      >
-        {({ values, errors, touched, handleChange, handleBlur }) => (
-          <Form>
-            <Grid>
-            {/* General Data */}
-            <Typography variant="h6" mt={1} mb={1}>1. General Data</Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6} md={2.4}>
-                <TextField
-                  fullWidth
-                  // label="Vehicle ID (Auto Generated)"
-                  value="Vehicle ID (Auto-Generated)"
-                  disabled
-                  size="small"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={2.4}>
-                <TextField
-                  fullWidth
-                  label="Location ID"
-                  name="locationId"
-                  value={values.locationId}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.locationId && Boolean(errors.locationId)}
-                  helperText={touched.locationId && errors.locationId}
-                  size="small"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={2.4}>
-                <TextField
-                  fullWidth
-                  label="Time Zone"
-                  name="timeZone"
-                  value={values.timeZone}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.timeZone && Boolean(errors.timeZone)}
-                  helperText={touched.timeZone && errors.timeZone}
-                  size="small"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={values.unlimitedUsage}
-                      onChange={(e) =>
-                        handleChange({
-                          target: {
-                            name: "unlimitedUsage",
-                            value: e.target.checked,
-                          },
-                        })
-                      }
-                    />
-                  }
-                  label="Unlimited Usage"
-                />
-              </Grid>
-              {!values.unlimitedUsage && (
-                <Grid item xs={12} sm={6} md={2.4}>
-                  <TextField
-                    fullWidth
-                    label="Individual Resources"
-                    name="individualResources"
-                    type="number"
-                    value={values.individualResources}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    error={
-                      touched.individualResources &&
-                      Boolean(errors.individualResources)
-                    }
-                    helperText={
-                      touched.individualResources &&
-                      errors.individualResources
-                    }
-                    size="small"
-                  />
-                </Grid>
+      <Box sx={{ p: 3 }}>
+        <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => setShowForm((prev) => !prev)}
+          >
+            {showForm ? 'Close Form' : 'Create Vechile'}
+          </Button>
+          <Button variant="outlined" color="secondary">
+            Mass Upload
+          </Button>
+        </Box>
+        <Typography variant="h5" align="center" gutterBottom>
+          Vehicle Master data
+        </Typography>
+        <Collapse in={showForm}>
+          <Box marginBottom={4} padding={2} border="1px solid #ccc" borderRadius={2}>
+            <Formik
+              initialValues={initialValues}
+              validationSchema={validationSchema}
+              onSubmit={handleSubmit}
+            >
+              {({ values, errors, touched, handleChange, handleBlur }) => (
+                <Form>
+                  <Grid>
+                    {/* General Data */}
+                    <Typography variant="h6" mt={1} mb={1}>1. General Data</Typography>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} sm={6} md={2.4}>
+                        <TextField
+                          fullWidth
+                          // label="Vehicle ID (Auto Generated)"
+                          value="Vehicle ID (Auto-Generated)"
+                          disabled
+                          size="small"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={2.4}>
+                        <TextField
+                          fullWidth
+                          label="Location ID"
+                          name="locationId"
+                          value={values.locationId}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.locationId && Boolean(errors.locationId)}
+                          helperText={touched.locationId && errors.locationId}
+                          size="small"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={2.4}>
+                        <TextField
+                          fullWidth
+                          label="Time Zone"
+                          name="timeZone"
+                          value={values.timeZone}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.timeZone && Boolean(errors.timeZone)}
+                          helperText={touched.timeZone && errors.timeZone}
+                          size="small"
+                        />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={values.unlimitedUsage}
+                              onChange={(e) =>
+                                handleChange({
+                                  target: {
+                                    name: "unlimitedUsage",
+                                    value: e.target.checked,
+                                  },
+                                })
+                              }
+                            />
+                          }
+                          label="Unlimited Usage"
+                        />
+                      </Grid>
+                      {!values.unlimitedUsage && (
+                        <Grid item xs={12} sm={6} md={2.4}>
+                          <TextField
+                            fullWidth
+                            label="Individual Resources"
+                            name="individualResources"
+                            type="number"
+                            value={values.individualResources}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            error={
+                              touched.individualResources &&
+                              Boolean(errors.individualResources)
+                            }
+                            helperText={
+                              touched.individualResources &&
+                              errors.individualResources
+                            }
+                            size="small"
+                          />
+                        </Grid>
+                      )}
+                    </Grid>
+
+                    {/* Transportation Details */}
+                    <Typography variant="h6" mt={3} mb={1}>
+                      2. Transportation Details
+                    </Typography>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} sm={6} md={2.4}>
+                        <TextField
+                          fullWidth
+                          label="Validity From"
+                          name="validityFrom"
+                          type="date"
+                          InputLabelProps={{ shrink: true }}
+                          value={values.validityFrom}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.validityFrom && Boolean(errors.validityFrom)}
+                          helperText={touched.validityFrom && errors.validityFrom}
+                          size="small"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={2.4}>
+                        <TextField
+                          fullWidth
+                          label="Validity To"
+                          name="validityTo"
+                          type="date"
+                          InputLabelProps={{ shrink: true }}
+                          value={values.validityTo}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.validityTo && Boolean(errors.validityTo)}
+                          helperText={touched.validityTo && errors.validityTo}
+                          size="small"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={2.4}>
+                        <TextField
+                          select
+                          fullWidth
+                          label="Vehicle Type"
+                          name="vehicleType"
+                          value={values.vehicleType}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.vehicleType && Boolean(errors.vehicleType)}
+                          helperText={touched.vehicleType && errors.vehicleType}
+                          size="small"
+                        >
+                          <MenuItem value="Truck">Truck</MenuItem>
+                          <MenuItem value="Trailer">Trailer</MenuItem>
+                          <MenuItem value="Container">Container</MenuItem>
+                        </TextField>
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={2.4}>
+                        <TextField
+                          fullWidth
+                          label="Vehicle Group"
+                          name="vehicleGroup"
+                          value={values.vehicleGroup}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.vehicleGroup && Boolean(errors.vehicleGroup)}
+                          helperText={touched.vehicleGroup && errors.vehicleGroup}
+                          size="small"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={2.4}>
+                        <TextField
+                          select
+                          fullWidth
+                          label="Ownership"
+                          name="ownership"
+                          value={values.ownership}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.ownership && Boolean(errors.ownership)}
+                          helperText={touched.ownership && errors.ownership}
+                          size="small"
+                        >
+                          <MenuItem value="Self">Self</MenuItem>
+                          <MenuItem value="Carrier">Carrier</MenuItem>
+                        </TextField>
+                      </Grid>
+                    </Grid>
+
+                    {/* Capacity */}
+                    <Typography variant="h6" mt={3} mb={1}>
+                      3. Capacity
+                    </Typography>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} sm={6} md={1.6}>
+                        <TextField
+                          fullWidth
+                          label="Payload Weight"
+                          name="payloadWeight"
+                          type="number"
+                          value={values.payloadWeight}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.payloadWeight && Boolean(errors.payloadWeight)}
+                          helperText={touched.payloadWeight && errors.payloadWeight}
+                          size="small"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={0.8}>
+                        <TextField
+                          fullWidth
+                          select
+                          defaultValue={units[0]}
+
+                          size="small"
+                        >
+                          {units.map((unit) => (
+                            <MenuItem key={unit} value={unit}>
+                              {unit}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+                      </Grid>
+
+                      {/* Cubic Capacity */}
+                      <Grid item xs={12} sm={6} md={1.6}>
+                        <TextField
+                          fullWidth
+                          label="Cubic Capacity"
+                          name="cubicCapacity"
+                          type="number"
+                          value={values.cubicCapacity}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={
+                            touched.cubicCapacity && Boolean(errors.cubicCapacity)
+                          }
+                          helperText={touched.cubicCapacity && errors.cubicCapacity}
+                          size="small"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={0.8}>
+                        <TextField
+                          fullWidth
+                          select defaultValue={units[0]}
+
+                          size="small"
+                        >
+                          {units.map((unit) => (
+                            <MenuItem key={unit} value={unit}>
+                              {unit}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+                      </Grid>
+
+                      {/* Interior Length */}
+                      <Grid item xs={12} sm={6} md={1.6}>
+                        <TextField
+                          fullWidth
+                          label="Interior Length"
+                          name="interiorLength"
+                          type="number"
+                          value={values.interiorLength}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={
+                            touched.interiorLength && Boolean(errors.interiorLength)
+                          }
+                          helperText={touched.interiorLength && errors.interiorLength}
+                          size="small"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={0.8}>
+                        <TextField
+                          fullWidth
+                          select
+
+                          name="interiorLengthUoM" defaultValue={units[0]}
+                          // value={values.interiorLengthUoM || ""}
+                          onChange={handleChange}
+                          size="small"
+                        >
+                          {units.map((unit) => (
+                            <MenuItem key={unit} value={unit}>
+                              {unit}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+                      </Grid>
+
+                      {/* Interior Width */}
+                      <Grid item xs={12} sm={6} md={1.6}>
+                        <TextField
+                          fullWidth
+                          label="Interior Width"
+                          name="interiorWidth"
+                          type="number"
+                          value={values.interiorWidth}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={
+                            touched.interiorWidth && Boolean(errors.interiorWidth)
+                          }
+                          helperText={touched.interiorWidth && errors.interiorWidth}
+                          size="small"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={0.8}>
+                        <TextField
+                          fullWidth
+                          select
+
+                          name="interiorWidthUoM" defaultValue={units[0]}
+                          // value={values.interiorWidthUoM || ""}
+                          onChange={handleChange}
+                          size="small"
+                        >
+                          {units.map((unit) => (
+                            <MenuItem key={unit} value={unit}>
+                              {unit}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+                      </Grid>
+
+                      {/* Interior Height */}
+                      <Grid item xs={12} sm={6} md={1.6}>
+                        <TextField
+                          fullWidth
+                          label="Interior Height"
+                          name="interiorHeight"
+                          type="number"
+                          value={values.interiorHeight}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={
+                            touched.interiorHeight && Boolean(errors.interiorHeight)
+                          }
+                          helperText={touched.interiorHeight && errors.interiorHeight}
+                          size="small"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={0.8}>
+                        <TextField
+                          fullWidth
+                          select
+
+                          name="interiorHeightUoM" defaultValue={units[0]}
+                          // value={values.interiorHeightUoM || ""}
+                          onChange={handleChange}
+                          size="small"
+                        >
+                          {units.map((unit) => (
+                            <MenuItem key={unit} value={unit}>
+                              {unit}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+                      </Grid>
+                    </Grid>
+
+                    {/* Physical Properties */}
+                    <Typography variant="h6" mt={3} mb={1}>
+                      4. Physical Properties
+                    </Typography>
+                    <Grid container spacing={2}>
+                      {/* Tare Weight */}
+                      <Grid item xs={12} sm={6} md={1.6}>
+                        <TextField
+                          fullWidth
+                          label="Tare Weight"
+                          name="tareWeight"
+                          type="number"
+                          value={values.tareWeight}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.tareWeight && Boolean(errors.tareWeight)}
+                          helperText={touched.tareWeight && errors.tareWeight}
+                          size="small"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={0.8}>
+                        <TextField
+                          fullWidth
+                          select
+
+                          name="tareWeightUoM" defaultValue={units[0]}
+                          // value={values.tareWeightUoM || ""}
+                          onChange={handleChange}
+                          size="small"
+                        >
+                          {units.map((unit) => (
+                            <MenuItem key={unit} value={unit}>
+                              {unit}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+                      </Grid>
+
+                      {/* Max. Gross Weight */}
+                      <Grid item xs={12} sm={6} md={1.6}>
+                        <TextField
+                          fullWidth
+                          label="Max. Gross Weight"
+                          name="maxGrossWeight"
+                          type="number"
+                          value={values.maxGrossWeight}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={
+                            touched.maxGrossWeight && Boolean(errors.maxGrossWeight)
+                          }
+                          helperText={
+                            touched.maxGrossWeight && errors.maxGrossWeight
+                          }
+                          size="small"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={0.8}>
+                        <TextField
+                          fullWidth
+                          select
+
+                          name="maxGrossWeightUoM" defaultValue={units[0]}
+                          // value={values.maxGrossWeightUoM || ""}
+                          onChange={handleChange}
+                          size="small"
+                        >
+                          {units.map((unit) => (
+                            <MenuItem key={unit} value={unit}>
+                              {unit}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+                      </Grid>
+
+                      {/* Tare Volume */}
+                      <Grid item xs={12} sm={6} md={1.6}>
+                        <TextField
+                          fullWidth
+                          label="Tare Volume"
+                          name="tareVolume"
+                          type="number"
+                          value={values.tareVolume}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.tareVolume && Boolean(errors.tareVolume)}
+                          helperText={touched.tareVolume && errors.tareVolume}
+                          size="small"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={0.8}>
+                        <TextField
+                          fullWidth
+                          select
+
+                          name="tareVolumeUoM" defaultValue={units[0]}
+                          // value={values.tareVolumeUoM || ""}
+                          onChange={handleChange}
+                          size="small"
+                        >
+                          {units.map((unit) => (
+                            <MenuItem key={unit} value={unit}>
+                              {unit}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+                      </Grid>
+
+                      {/* Max. Length */}
+                      <Grid item xs={12} sm={6} md={1.6}>
+                        <TextField
+                          fullWidth
+                          label="Max. Length"
+                          name="maxLength"
+                          type="number"
+                          value={values.maxLength}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.maxLength && Boolean(errors.maxLength)}
+                          helperText={touched.maxLength && errors.maxLength}
+                          size="small"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={0.8}>
+                        <TextField
+                          fullWidth
+                          select
+
+                          name="maxLengthUoM" defaultValue={units[0]}
+                          // value={values.maxLengthUoM || ""}
+                          onChange={handleChange}
+                          size="small"
+                        >
+                          {units.map((unit) => (
+                            <MenuItem key={unit} value={unit}>
+                              {unit}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+                      </Grid>
+
+                      {/* Max. Width */}
+                      <Grid item xs={12} sm={6} md={1.6}>
+                        <TextField
+                          fullWidth
+                          label="Max. Width"
+                          name="maxWidth"
+                          type="number"
+                          value={values.maxWidth}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.maxWidth && Boolean(errors.maxWidth)}
+                          helperText={touched.maxWidth && errors.maxWidth}
+                          size="small"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={0.8}>
+                        <TextField
+                          fullWidth
+                          select
+
+                          name="maxWidthUoM" defaultValue={units[0]}
+                          // value={values.maxWidthUoM || ""}
+                          onChange={handleChange}
+                          size="small"
+                        >
+                          {units.map((unit) => (
+                            <MenuItem key={unit} value={unit}>
+                              {unit}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+                      </Grid>
+
+                      {/* Max. Height */}
+                      <Grid item xs={12} sm={6} md={1.6}>
+                        <TextField
+                          fullWidth
+                          label="Max. Height"
+                          name="maxHeight"
+                          type="number"
+                          value={values.maxHeight}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.maxHeight && Boolean(errors.maxHeight)}
+                          helperText={touched.maxHeight && errors.maxHeight}
+                          size="small"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={0.8}>
+                        <TextField
+                          fullWidth
+                          select
+
+                          name="maxHeightUoM" defaultValue={units[0]}
+                          // value={values.maxHeightUoM || ""}
+                          onChange={handleChange}
+                          size="small"
+                        >
+                          {units.map((unit) => (
+                            <MenuItem key={unit} value={unit}>
+                              {unit}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={1.6}>
+                        <TextField
+                          fullWidth
+                          label="Tare Weight"
+                          name="tareWeight"
+                          type="number"
+                          value={values.tareWeight}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.tareWeight && Boolean(errors.tareWeight)}
+                          helperText={touched.tareWeight && errors.tareWeight}
+                          size="small"
+                        />
+                      </Grid>
+
+                      {/* UoM Dropdown */}
+                      <Grid item xs={12} sm={6} md={0.8}>
+                        <TextField
+                          fullWidth
+                          select
+
+                          name="tareWeightUoM" defaultValue={units[0]}
+                          // value={values.tareWeightUoM || ''}
+                          onChange={handleChange}
+                          size="small"
+                        >
+                          {units.map((unit) => (
+                            <MenuItem key={unit} value={unit}>
+                              {unit}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+                      </Grid>
+                    </Grid>
+
+                    {/* Downtimes */}
+                    <Typography variant="h6" mt={3} mb={1}>
+                      5. Downtimes
+                    </Typography>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} sm={6} md={2.4}>
+                        <TextField
+                          fullWidth
+                          label="Start From"
+                          name="downtimeStart"
+                          type="datetime-local"
+                          InputLabelProps={{ shrink: true }}
+                          value={values.downtimeStart}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={
+                            touched.downtimeStart && Boolean(errors.downtimeStart)
+                          }
+                          helperText={touched.downtimeStart && errors.downtimeStart}
+                          size="small"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={2.4}>
+                        <TextField
+                          fullWidth
+                          label="Ends At"
+                          name="downtimeEnd"
+                          type="datetime-local"
+                          InputLabelProps={{ shrink: true }}
+                          value={values.downtimeEnd}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.downtimeEnd && Boolean(errors.downtimeEnd)}
+                          helperText={touched.downtimeEnd && errors.downtimeEnd}
+                          size="small"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={2.4}>
+                        <TextField
+                          fullWidth
+                          label="Location"
+                          name="downtimeLocation"
+                          value={values.downtimeLocation}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={
+                            touched.downtimeLocation &&
+                            Boolean(errors.downtimeLocation)
+                          }
+                          helperText={
+                            touched.downtimeLocation && errors.downtimeLocation
+                          }
+                          size="small"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={2.4}>
+                        <TextField
+                          fullWidth
+                          label="Description"
+                          name="downtimeDescription"
+                          value={values.downtimeDescription}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.downtimeDescription && Boolean(errors.downtimeDescription)}
+                          helperText={touched.downtimeDescription && errors.downtimeDescription}
+                          size="small"
+                        />
+                      </Grid>
+
+                      {/* Reason */}
+                      <Grid item xs={12} sm={6} md={2.4}>
+                        <TextField
+                          fullWidth
+                          select
+                          label="Reason"
+                          name="downtimeReason"
+                          value={values.downtimeReason}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.downtimeReason && Boolean(errors.downtimeReason)}
+                          helperText={touched.downtimeReason && errors.downtimeReason}
+                          size="small"
+                        >
+                          {downtimeReasons.map((reason) => (
+                            <MenuItem key={reason} value={reason}>
+                              {reason}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+                      </Grid>
+                    </Grid>
+
+                    {/* Additional Details */}
+                    <Typography variant="h5" mt={3}>
+                      6. Additional Details
+                    </Typography>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} sm={6} md={2.4}>
+                        <TextField
+                          fullWidth
+                          label="Avg. Cost of Transportation (Price Per Ton)"
+                          name="avgCost"
+                          type="number"
+                          value={values.avgCost}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.avgCost && Boolean(errors.avgCost)}
+                          helperText={touched.avgCost && errors.avgCost}
+                          size="small"
+                        />
+                      </Grid>
+                    </Grid>
+
+
+                    <Box mt={3} textAlign='center'>
+                      <Button variant="contained" color="primary" type="submit">
+                        Submit
+                      </Button>
+                    </Box>
+                  </Grid>
+                </Form>
               )}
-            </Grid>
+            </Formik>
+          </Box>
+        </Collapse>
 
-            {/* Transportation Details */}
-            <Typography variant="h6" mt={3} mb={1}>
-              2. Transportation Details
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6} md={2.4}>
-                <TextField
-                  fullWidth
-                  label="Validity From"
-                  name="validityFrom"
-                  type="date"
-                  InputLabelProps={{ shrink: true }}
-                  value={values.validityFrom}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.validityFrom && Boolean(errors.validityFrom)}
-                  helperText={touched.validityFrom && errors.validityFrom}
-                  size="small"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={2.4}>
-                <TextField
-                  fullWidth
-                  label="Validity To"
-                  name="validityTo"
-                  type="date"
-                  InputLabelProps={{ shrink: true }}
-                  value={values.validityTo}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.validityTo && Boolean(errors.validityTo)}
-                  helperText={touched.validityTo && errors.validityTo}
-                  size="small"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={2.4}>
-                <TextField
-                  select
-                  fullWidth
-                  label="Vehicle Type"
-                  name="vehicleType"
-                  value={values.vehicleType}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.vehicleType && Boolean(errors.vehicleType)}
-                  helperText={touched.vehicleType && errors.vehicleType}
-                  size="small"
-                >
-                  <MenuItem value="Truck">Truck</MenuItem>
-                  <MenuItem value="Trailer">Trailer</MenuItem>
-                  <MenuItem value="Container">Container</MenuItem>
-                </TextField>
-              </Grid>
-              <Grid item xs={12} sm={6} md={2.4}>
-                <TextField
-                  fullWidth
-                  label="Vehicle Group"
-                  name="vehicleGroup"
-                  value={values.vehicleGroup}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.vehicleGroup && Boolean(errors.vehicleGroup)}
-                  helperText={touched.vehicleGroup && errors.vehicleGroup}
-                  size="small"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={2.4}>
-                <TextField
-                  select
-                  fullWidth
-                  label="Ownership"
-                  name="ownership"
-                  value={values.ownership}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.ownership && Boolean(errors.ownership)}
-                  helperText={touched.ownership && errors.ownership}
-                  size="small"
-                >
-                  <MenuItem value="Self">Self</MenuItem>
-                  <MenuItem value="Carrier">Carrier</MenuItem>
-                </TextField>
-              </Grid>
-            </Grid>
-
-            {/* Capacity */}
-            <Typography variant="h6" mt={3} mb={1}>
-              3. Capacity
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6} md={1.6}>
-                <TextField
-                  fullWidth
-                  label="Payload Weight"
-                  name="payloadWeight"
-                  type="number"
-                  value={values.payloadWeight}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.payloadWeight && Boolean(errors.payloadWeight)}
-                  helperText={touched.payloadWeight && errors.payloadWeight}
-                  size="small"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={0.8}>
-                <TextField
-                  fullWidth
-                  select 
-                  defaultValue={units[0]}
-                  
-                  size="small"
-                >
-                  {units.map((unit) => (
-                    <MenuItem key={unit} value={unit}>
-                      {unit}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-   
-              {/* Cubic Capacity */}
-              <Grid item xs={12} sm={6} md={1.6}>
-                <TextField
-                  fullWidth
-                  label="Cubic Capacity"
-                  name="cubicCapacity"
-                  type="number"
-                  value={values.cubicCapacity}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={
-                    touched.cubicCapacity && Boolean(errors.cubicCapacity)
-                  }
-                  helperText={touched.cubicCapacity && errors.cubicCapacity}
-                  size="small"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={0.8}>
-                <TextField
-                  fullWidth
-                  select defaultValue={units[0]}
-                  
-                  size="small"
-                >
-                  {units.map((unit) => (
-                    <MenuItem key={unit} value={unit}>
-                      {unit}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-
-              {/* Interior Length */}
-              <Grid item xs={12} sm={6} md={1.6}>
-                <TextField
-                  fullWidth
-                  label="Interior Length"
-                  name="interiorLength"
-                  type="number"
-                  value={values.interiorLength}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={
-                    touched.interiorLength && Boolean(errors.interiorLength)
-                  }
-                  helperText={touched.interiorLength && errors.interiorLength}
-                  size="small"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={0.8}>
-                <TextField
-                  fullWidth
-                  select
-                  
-                  name="interiorLengthUoM" defaultValue={units[0]}
-                  // value={values.interiorLengthUoM || ""}
-                  onChange={handleChange}
-                  size="small"
-                >
-                  {units.map((unit) => (
-                    <MenuItem key={unit} value={unit}>
-                      {unit}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-
-              {/* Interior Width */}
-              <Grid item xs={12} sm={6} md={1.6}>
-                <TextField
-                  fullWidth
-                  label="Interior Width"
-                  name="interiorWidth"
-                  type="number"
-                  value={values.interiorWidth}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={
-                    touched.interiorWidth && Boolean(errors.interiorWidth)
-                  }
-                  helperText={touched.interiorWidth && errors.interiorWidth}
-                  size="small"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={0.8}>
-                <TextField
-                  fullWidth
-                  select
-                  
-                  name="interiorWidthUoM" defaultValue={units[0]}
-                  // value={values.interiorWidthUoM || ""}
-                  onChange={handleChange}
-                  size="small"
-                >
-                  {units.map((unit) => (
-                    <MenuItem key={unit} value={unit}>
-                      {unit}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-
-              {/* Interior Height */}
-              <Grid item xs={12} sm={6} md={1.6}>
-                <TextField
-                  fullWidth
-                  label="Interior Height"
-                  name="interiorHeight"
-                  type="number"
-                  value={values.interiorHeight}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={
-                    touched.interiorHeight && Boolean(errors.interiorHeight)
-                  }
-                  helperText={touched.interiorHeight && errors.interiorHeight}
-                  size="small"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={0.8}>
-                <TextField
-                  fullWidth
-                  select
-                  
-                  name="interiorHeightUoM" defaultValue={units[0]}
-                  // value={values.interiorHeightUoM || ""}
-                  onChange={handleChange}
-                  size="small"
-                >
-                  {units.map((unit) => (
-                    <MenuItem key={unit} value={unit}>
-                      {unit}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-            </Grid>
-
-            {/* Physical Properties */}
-            <Typography variant="h6" mt={3} mb={1}>
-              4. Physical Properties
-            </Typography>
-         <Grid container spacing={2}>
-              {/* Tare Weight */}
-              <Grid item xs={12} sm={6} md={1.6}>
-                <TextField
-                  fullWidth
-                  label="Tare Weight"
-                  name="tareWeight"
-                  type="number"
-                  value={values.tareWeight}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.tareWeight && Boolean(errors.tareWeight)}
-                  helperText={touched.tareWeight && errors.tareWeight}
-                  size="small"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={0.8}>
-                <TextField
-                  fullWidth
-                  select
-                  
-                  name="tareWeightUoM" defaultValue={units[0]}
-                  // value={values.tareWeightUoM || ""}
-                  onChange={handleChange}
-                  size="small"
-                >
-                  {units.map((unit) => (
-                    <MenuItem key={unit} value={unit}>
-                      {unit}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-
-              {/* Max. Gross Weight */}
-              <Grid item xs={12} sm={6} md={1.6}>
-                <TextField
-                  fullWidth
-                  label="Max. Gross Weight"
-                  name="maxGrossWeight"
-                  type="number"
-                  value={values.maxGrossWeight}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={
-                    touched.maxGrossWeight && Boolean(errors.maxGrossWeight)
-                  }
-                  helperText={
-                    touched.maxGrossWeight && errors.maxGrossWeight
-                  }
-                  size="small"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={0.8}>
-                <TextField
-                  fullWidth
-                  select
-                  
-                  name="maxGrossWeightUoM" defaultValue={units[0]}
-                  // value={values.maxGrossWeightUoM || ""}
-                  onChange={handleChange}
-                  size="small"
-                >
-                  {units.map((unit) => (
-                    <MenuItem key={unit} value={unit}>
-                      {unit}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-
-              {/* Tare Volume */}
-              <Grid item xs={12} sm={6} md={1.6}>
-                <TextField
-                  fullWidth
-                  label="Tare Volume"
-                  name="tareVolume"
-                  type="number"
-                  value={values.tareVolume}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.tareVolume && Boolean(errors.tareVolume)}
-                  helperText={touched.tareVolume && errors.tareVolume}
-                  size="small"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={0.8}>
-                <TextField
-                  fullWidth
-                  select
-                  
-                  name="tareVolumeUoM" defaultValue={units[0]}
-                  // value={values.tareVolumeUoM || ""}
-                  onChange={handleChange}
-                  size="small"
-                >
-                  {units.map((unit) => (
-                    <MenuItem key={unit} value={unit}>
-                      {unit}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-
-              {/* Max. Length */}
-              <Grid item xs={12} sm={6} md={1.6}>
-                <TextField
-                  fullWidth
-                  label="Max. Length"
-                  name="maxLength"
-                  type="number"
-                  value={values.maxLength}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.maxLength && Boolean(errors.maxLength)}
-                  helperText={touched.maxLength && errors.maxLength}
-                  size="small"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={0.8}>
-                <TextField
-                  fullWidth
-                  select
-                  
-                  name="maxLengthUoM" defaultValue={units[0]}
-                  // value={values.maxLengthUoM || ""}
-                  onChange={handleChange}
-                  size="small"
-                >
-                  {units.map((unit) => (
-                    <MenuItem key={unit} value={unit}>
-                      {unit}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-
-              {/* Max. Width */}
-              <Grid item xs={12} sm={6} md={1.6}>
-                <TextField
-                  fullWidth
-                  label="Max. Width"
-                  name="maxWidth"
-                  type="number"
-                  value={values.maxWidth}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.maxWidth && Boolean(errors.maxWidth)}
-                  helperText={touched.maxWidth && errors.maxWidth}
-                  size="small"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={0.8}>
-                <TextField
-                  fullWidth
-                  select
-                  
-                  name="maxWidthUoM" defaultValue={units[0]}
-                  // value={values.maxWidthUoM || ""}
-                  onChange={handleChange}
-                  size="small"
-                >
-                  {units.map((unit) => (
-                    <MenuItem key={unit} value={unit}>
-                      {unit}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-
-              {/* Max. Height */}
-              <Grid item xs={12} sm={6} md={1.6}>
-                <TextField
-                  fullWidth
-                  label="Max. Height"
-                  name="maxHeight"
-                  type="number"
-                  value={values.maxHeight}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.maxHeight && Boolean(errors.maxHeight)}
-                  helperText={touched.maxHeight && errors.maxHeight}
-                  size="small"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={0.8}>
-                <TextField
-                  fullWidth
-                  select
-                  
-                  name="maxHeightUoM" defaultValue={units[0]}
-                  // value={values.maxHeightUoM || ""}
-                  onChange={handleChange}
-                  size="small"
-                >
-                  {units.map((unit) => (
-                    <MenuItem key={unit} value={unit}>
-                      {unit}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-                          <Grid item xs={12} sm={6} md={1.6}>
-              <TextField
-                fullWidth
-                label="Tare Weight"
-                name="tareWeight"
-                type="number"
-                value={values.tareWeight}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={touched.tareWeight && Boolean(errors.tareWeight)}
-                helperText={touched.tareWeight && errors.tareWeight}
-                size="small"
-              />
-            </Grid>
-
-            {/* UoM Dropdown */}
-            <Grid item xs={12} sm={6} md={0.8}>
-              <TextField
-                fullWidth
-                select
-                
-                name="tareWeightUoM" defaultValue={units[0]}
-                // value={values.tareWeightUoM || ''}
-                onChange={handleChange}
-                size="small"
-              >
-                {units.map((unit) => (
-                  <MenuItem key={unit} value={unit}>
-                    {unit}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-            </Grid>
-
-            {/* Downtimes */}
-            <Typography variant="h6" mt={3} mb={1}>
-              5. Downtimes
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6} md={2.4}>
-                <TextField
-                  fullWidth
-                  label="Start From"
-                  name="downtimeStart"
-                  type="datetime-local"
-                  InputLabelProps={{ shrink: true }}
-                  value={values.downtimeStart}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={
-                    touched.downtimeStart && Boolean(errors.downtimeStart)
-                  }
-                  helperText={touched.downtimeStart && errors.downtimeStart}
-                  size="small"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={2.4}>
-                <TextField
-                  fullWidth
-                  label="Ends At"
-                  name="downtimeEnd"
-                  type="datetime-local"
-                  InputLabelProps={{ shrink: true }}
-                  value={values.downtimeEnd}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.downtimeEnd && Boolean(errors.downtimeEnd)}
-                  helperText={touched.downtimeEnd && errors.downtimeEnd}
-                  size="small"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={2.4}>
-                <TextField
-                  fullWidth
-                  label="Location"
-                  name="downtimeLocation"
-                  value={values.downtimeLocation}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={
-                    touched.downtimeLocation &&
-                    Boolean(errors.downtimeLocation)
-                  }
-                  helperText={
-                    touched.downtimeLocation && errors.downtimeLocation
-                  }
-                  size="small"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={2.4}>
-              <TextField
-                fullWidth
-                label="Description"
-                name="downtimeDescription"
-                value={values.downtimeDescription}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={touched.downtimeDescription && Boolean(errors.downtimeDescription)}
-                helperText={touched.downtimeDescription && errors.downtimeDescription}
-                size="small"
-              />
-            </Grid>
-
-            {/* Reason */}
-            <Grid item xs={12} sm={6} md={2.4}>
-              <TextField
-                fullWidth
-                select
-                label="Reason"
-                name="downtimeReason"
-                value={values.downtimeReason}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={touched.downtimeReason && Boolean(errors.downtimeReason)}
-                helperText={touched.downtimeReason && errors.downtimeReason}
-                size="small"
-              >
-                {downtimeReasons.map((reason) => (
-                  <MenuItem key={reason} value={reason}>
-                    {reason}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-            </Grid>
-
-            {/* Additional Details */}
-            <Typography variant="h5" mt={3}>
-              6. Additional Details
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6} md={2.4}>
-                <TextField
-                  fullWidth
-                  label="Avg. Cost of Transportation (Price Per Ton)"
-                  name="avgCost"
-                  type="number"
-                  value={values.avgCost}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.avgCost && Boolean(errors.avgCost)}
-                  helperText={touched.avgCost && errors.avgCost}
-                  size="small"
-                />
-              </Grid>
-            </Grid>
-
-
-              <Box mt={3}>
-              <Button variant="contained" color="primary" type="submit">
-                Submit
-              </Button>
-              </Box>
-              </Grid>
-          </Form>
-        )}
-      </Formik>
-    </Box>
+      </Box>
 
       {/* Data grid */}
-    <div style={{ marginTop:"40px"}}> 
+      <div style={{ marginTop: "40px" }}>
         <DataGridComponent
-        columns={columns}
-        rows={rows}
-        isLoading={false} // Set true to show loading state
-        pageSizeOptions={[5, 10, 20]} // Optional: customize page size options
-        initialPageSize={5} // Optional: default page size
-      />
-    </div>
+          columns={columns}
+          rows={rows}
+          isLoading={false} // Set true to show loading state
+          pageSizeOptions={[5, 10, 20]} // Optional: customize page size options
+          initialPageSize={5} // Optional: default page size
+        />
+      </div>
 
-      </>
+    </>
   );
 };
 
