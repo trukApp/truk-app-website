@@ -166,25 +166,17 @@ return (
           />
         </Grid>
         <Grid item xs={12} sm={6} md={2.4}>
-        <TextField
-          fullWidth
-          size="small"
-          label="IATA Code (3 Characters Length)"
-          name="iataCode"
-          value={values.iataCode}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          inputProps={{ maxLength: 3 }}
-        />
-          </Grid>
-
-        
-
-
-
-
-      
-          
+          <TextField
+            fullWidth
+            size="small"
+            label="IATA Code (3 Characters Length)"
+            name="iataCode"
+            value={values.iataCode}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            inputProps={{ maxLength: 3 }}
+          />
+        </Grid>
         </Grid>
 
         <Grid container spacing={2}  mt={1} sx={{marginLeft:'3px'}}>
@@ -269,15 +261,15 @@ return (
       />
             </Grid>
             <Grid item xs={12} sm={6} md={2.4}>
-      <TextField
-        fullWidth
-        size="small" 
-        label="Country"
-        name="country"
-        value={values.country}
-        onChange={handleChange}
-        onBlur={handleBlur}
-      />
+              <TextField
+                fullWidth
+                size="small" 
+                label="Country"
+                name="country"
+                value={values.country}
+                onChange={handleChange}
+                onBlur={handleBlur}
+              />
             </Grid>
             <Grid item xs={12} sm={6} md={2.4}>
       <TextField
