@@ -1,443 +1,400 @@
-'use client';
+"use client";
+import React, { useState } from 'react';
+import {
+  Box,
+  Button,
+  Collapse,
+  Grid,
+  MenuItem,
+  TextField,
+  Typography,
 
-import React from 'react';
-import { Box, Button, Grid, TextField, Typography, MenuItem, FormControl, InputLabel, Select, FormHelperText } from '@mui/material';
-import { Formik, Field, Form } from 'formik';
+} from '@mui/material';
+import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { DataGridComponent } from './GridComponent';
 import { GridColDef } from '@mui/x-data-grid';
+import { DataGridComponent } from './GridComponent';
 
-const dummyData = [
-  {
-    id: 1,
-    laneName: 'Lane A',
-    origin: 'City 1',
-    destination: 'City 2',
-    distance: 150,
-    time: '2h 30m',
-    routeType: 'Highway',
-    laneStatus: 'Active',
-    pricePerKm: 15,
-    tollCharges: 50,
-    notes: 'Heavy traffic during peak hours',
-  },
-  {
-    id: 2,
-    laneName: 'Lane B',
-    origin: 'City 3',
-    destination: 'City 4',
-    distance: 200,
-    time: '3h 15m',
-    routeType: 'Expressway',
-    laneStatus: 'Inactive',
-    pricePerKm: 12,
-    tollCharges: 30,
-    notes: 'Smooth road conditions',
-  },
-  {
-    id: 3,
-    laneName: 'Lane C',
-    origin: 'City 5',
-    destination: 'City 6',
-    distance: 180,
-    time: '2h 50m',
-    routeType: 'City',
-    laneStatus: 'Under Construction',
-    pricePerKm: 18,
-    tollCharges: 60,
-    notes: 'Roadwork in progress',
-  },
-  {
-    id: 4,
-    laneName: 'Lane D',
-    origin: 'City 7',
-    destination: 'City 8',
-    distance: 120,
-    time: '1h 45m',
-    routeType: 'Rural Road',
-    laneStatus: 'Active',
-    pricePerKm: 10,
-    tollCharges: 20,
-    notes: 'Scenic route',
-  },
-  {
-    id: 5,
-    laneName: 'Lane E',
-    origin: 'City 9',
-    destination: 'City 10',
-    distance: 250,
-    time: '4h',
-    routeType: 'Highway',
-    laneStatus: 'Active',
-    pricePerKm: 14,
-    tollCharges: 40,
-    notes: 'Clear weather conditions',
-  },
-  {
-    id: 6,
-    laneName: 'Lane F',
-    origin: 'City 11',
-    destination: 'City 12',
-    distance: 300,
-    time: '5h',
-    routeType: 'Expressway',
+const TransportationLanes = () => {
+  const [showForm, setShowForm] = useState(false);
+  const formik = useFormik({
+    initialValues: {
+      // General Data
+      laneId: '', // Auto-generated
+      sourceLocationId: '',
+      destinationLocationId: '',
 
-    laneStatus: 'Inactive',
-    pricePerKm: 20,
-    tollCharges: 100,
-    notes: 'Toll charges apply',
-  },
-  {
-    id: 7,
-    laneName: 'Lane G',
-    origin: 'City 13',
-    destination: 'City 14',
-    distance: 90,
-    time: '1h 20m',
-    routeType: 'City',
+      // Transport Data
+      vehicleType: '',
+      transportStartDate: '',
+      transportEndDate: '',
+      transportDistance: '',
+      transportDuration: '',
+      transportCost: '',
 
-    laneStatus: 'Active',
-    pricePerKm: 8,
-    tollCharges: 10,
-    notes: 'Frequent stops required',
-  },
-  {
-    id: 8,
-    laneName: 'Lane H',
-    origin: 'City 15',
-    destination: 'City 16',
-    distance: 400,
-    time: '7h',
-    routeType: 'Rural Road',
+      // Carrier Data
+      carrierId: '',
+      carrierName: '', // Auto-populated
+      carrierVehicleType: '',
+      carrierStartDate: '',
+      carrierEndDate: '',
+      carrierCost: '',
+    },
+    validationSchema: Yup.object({
+      // General Data
+      sourceLocationId: Yup.string().required('Source Location ID is required'),
+      destinationLocationId: Yup.string().required('Destination Location ID is required'),
 
-    laneStatus: 'Under Construction',
-    pricePerKm: 25,
-    tollCharges: 120,
-    notes: 'Long route with delays',
-  },
-  {
-    id: 9,
-    laneName: 'Lane I',
-    origin: 'City 17',
-    destination: 'City 18',
-    distance: 350,
-    time: '6h',
-    routeType: 'Highway',
+      // Transport Data
+      vehicleType: Yup.string().required('Vehicle Type is required'),
+      transportStartDate: Yup.date().required('Start Date is required'),
+      transportEndDate: Yup.date().required('End Date is required'),
+      transportDistance: Yup.string().required('Transport Distance is required'),
+      transportDuration: Yup.string().required('Transport Duration is required'),
+      transportCost: Yup.string().required('Transport Cost is required'),
 
-    laneStatus: 'Active',
-    pricePerKm: 16,
-    tollCharges: 75,
-    notes: 'Checkpoints along the way',
-  },
-  {
-    id: 10,
-    laneName: 'Lane J',
-    origin: 'City 19',
-    destination: 'City 20',
-    distance: 50,
-    time: '40m',
-    routeType: 'City',
+      // Carrier Data
+      carrierId: Yup.string().required('Carrier ID is required'),
+      carrierName: Yup.string().required('Carrier Name is required'),
+      carrierVehicleType: Yup.string().required('Vehicle Type is required'),
+      carrierStartDate: Yup.date().required('Start Date is required'),
+      carrierEndDate: Yup.date().required('End Date is required'),
+      carrierCost: Yup.string().required('Carrier Cost is required'),
+    }),
+    onSubmit: (values) => {
+      console.log('Form Submitted:', values);
+    },
+  });
 
-    laneStatus: 'Active',
-    pricePerKm: 5,
-    tollCharges: 0,
-    notes: 'Short distance route',
-  },
-];
+  const rows = Array.from({ length: 10 }, (_, id) => ({
+    id,
+    laneId: `LANE-${id + 1}`,
+    sourceLocationId: `SRC-${100 + id}`,
+    destinationLocationId: `DST-${200 + id}`,
+    vehicleType: id % 2 === 0 ? "Truck" : "Van",
+    transportStartDate: "2024-01-10",
+    transportEndDate: "2024-01-15",
+    transportDistance: `${100 + id * 10} km`,
+    transportDuration: `${8 + id} hours`,
+    transportCost: `$${1000 + id * 50}`,
+    carrierId: `CARRIER-${id + 1}`,
+    carrierName: `Carrier ${id + 1}`,
+    carrierVehicleType: id % 2 === 0 ? "Heavy Duty" : "Light Duty",
+    carrierStartDate: "2024-01-11",
+    carrierEndDate: "2024-01-14",
+    carrierCost: `$${800 + id * 40}`,
+  }));
 
-const columns: GridColDef[] = [
-  { field: 'laneName', headerName: 'Lane Name', width: 150, },
-  { field: 'origin', headerName: 'Origin', width: 150, },
-  { field: 'destination', headerName: 'Destination', width: 150, },
-  { field: 'distance', headerName: 'Distance (km)', type: 'number', width: 150, },
-  { field: 'time', headerName: 'Time', width: 150, },
-  { field: 'routeType', headerName: 'Route Type', width: 150, },
-  { field: 'laneStatus', headerName: 'Lane Status', width: 150, },
-  { field: 'pricePerKm', headerName: 'Price per Km', type: 'number', width: 100, },
-  { field: 'tollCharges', headerName: 'Toll Charges', type: 'number', width: 100, },
-  { field: 'notes', headerName: 'Notes', flex: 2, width: 200, },
-];
-
-
-
-
-// Defining types for lane details
-interface LaneDetails {
-  laneName: string;
-  origin: string;
-  destination: string;
-  distance: string;
-  time: string;
-  routeType: string;
-  laneStatus: string;
-  pricePerKm: string;
-  tollCharges: string;
-  notes: string;
-}
-
-// Validation Schema using Yup
-const validationSchema = Yup.object({
-  laneName: Yup.string().required('Lane Name is required'),
-  origin: Yup.string().required('Origin is required'),
-  destination: Yup.string().required('Destination is required'),
-  distance: Yup.number().required('Distance is required').positive('Distance must be a positive number'),
-  time: Yup.string().required('Time is required'),
-  routeType: Yup.string().required('Route Type is required'),
-  laneStatus: Yup.string().required('Lane Status is required'),
-  pricePerKm: Yup.number().required('Price per Km is required').positive('Price must be a positive number'),
-  tollCharges: Yup.number().required('Toll Charges are required').positive('Toll Charges must be a positive number'),
-  notes: Yup.string().required('Notes are required'),
-});
-
-const Lanes: React.FC = () => {
-  // Default lane details
-  const initialValues: LaneDetails = {
-    laneName: '',
-    origin: '',
-    destination: '',
-    distance: '',
-    time: '',
-    routeType: '',
-    laneStatus: '',
-    pricePerKm: '',
-    tollCharges: '',
-    notes: '',
-  };
-
-  const routeTypes = ['Highway', 'City', 'Expressway', 'Rural Road'];
-  const laneStatusOptions = ['Active', 'Inactive', 'Under Construction'];
-
-  // Form submission handler
-  const handleSubmit = (values: LaneDetails) => {
-    console.log('lane details :', values);
-  };
+  const columns: GridColDef[] = [
+    { field: "laneId", headerName: "Lane ID", width: 150 },
+    { field: "sourceLocationId", headerName: "Source Location", width: 150 },
+    { field: "destinationLocationId", headerName: "Destination Location", width: 180 },
+    { field: "vehicleType", headerName: "Vehicle Type", width: 150 },
+    { field: "transportStartDate", headerName: "Transport Start Date", width: 180 },
+    { field: "transportEndDate", headerName: "Transport End Date", width: 180 },
+    { field: "transportDistance", headerName: "Transport Distance", width: 160 },
+    { field: "transportDuration", headerName: "Transport Duration", width: 160 },
+    { field: "transportCost", headerName: "Transport Cost", width: 150 },
+    { field: "carrierId", headerName: "Carrier ID", width: 150 },
+    { field: "carrierName", headerName: "Carrier Name", width: 180 },
+    { field: "carrierVehicleType", headerName: "Carrier Vehicle Type", width: 180 },
+    { field: "carrierStartDate", headerName: "Carrier Start Date", width: 180 },
+    { field: "carrierEndDate", headerName: "Carrier End Date", width: 180 },
+    { field: "carrierCost", headerName: "Carrier Cost", width: 150 },
+  ];
 
   return (
     <>
-      <Formik
-        initialValues={initialValues}
-        validationSchema={validationSchema}
-        onSubmit={handleSubmit}
-      >
-        {({ errors, touched, handleChange, handleBlur, values }) => (
-          <Form>
-            <Box
-              sx={{
-                width: '100%',
-                padding: '20px',
-                boxSizing: 'border-box',
-                backgroundColor: '#f9f9f9',
-              }}
-            >
-              <Typography variant="h5" align="center" gutterBottom>
-                Lane Details
-              </Typography>
-              <Grid container spacing={2}>
-                {/* Lane Name */}
-                <Grid item xs={12} sm={6} md={2.4}>
-                  <Field
-                    as={TextField}
-                    fullWidth
-                    label="Lane Name"
-                    name="laneName"
-                    variant="outlined"
-                    size="small"
-                    error={touched.laneName && Boolean(errors.laneName)}
-                    helperText={touched.laneName && errors.laneName}
-                  />
+      <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => setShowForm((prev) => !prev)}
+        >
+          {showForm ? 'Close Form' : 'Create Lane'}
+        </Button>
+        <Button variant="outlined" color="secondary">
+          Mass Upload
+        </Button>
+      </Box>
+      <Collapse in={showForm}>
+        <Box marginBottom={4} padding={2} border="1px solid #ccc" borderRadius={2}>
+          <form onSubmit={formik.handleSubmit}>
+            <Typography variant="h5" align="center" gutterBottom>
+              Transportation Lanes Master data
+            </Typography>
+            <Box  >
+              {/* General Data */}
+              <Box sx={{ marginBottom: 3 }}>
+                <h3>1. General Data</h3>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth
+                      id="laneId" disabled
+                      name="laneId"
+                      label="Lane ID (Auto-generated)"
+                      value={formik.values.laneId}
+                      onChange={formik.handleChange}
+                      InputProps={{ readOnly: true }}
+                      size="small"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth
+                      id="sourceLocationId"
+                      name="sourceLocationId"
+                      label="Source Location ID*"
+                      value={formik.values.sourceLocationId}
+                      onChange={formik.handleChange}
+                      error={formik.touched.sourceLocationId && Boolean(formik.errors.sourceLocationId)}
+                      helperText={formik.touched.sourceLocationId && formik.errors.sourceLocationId}
+                      size="small"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth
+                      id="destinationLocationId"
+                      name="destinationLocationId"
+                      label="Destination Location ID*"
+                      value={formik.values.destinationLocationId}
+                      onChange={formik.handleChange}
+                      error={
+                        formik.touched.destinationLocationId &&
+                        Boolean(formik.errors.destinationLocationId)
+                      }
+                      helperText={formik.touched.destinationLocationId && formik.errors.destinationLocationId}
+                      size="small"
+                    />
+                  </Grid>
                 </Grid>
+              </Box>
 
-                {/* Origin */}
-                <Grid item xs={12} sm={6} md={2.4}>
-                  <Field
-                    as={TextField}
-                    fullWidth
-                    label="Origin"
-                    name="origin"
-                    variant="outlined"
-                    size="small"
-                    error={touched.origin && Boolean(errors.origin)}
-                    helperText={touched.origin && errors.origin}
-                  />
-                </Grid>
-
-                {/* Destination */}
-                <Grid item xs={12} sm={6} md={2.4}>
-                  <Field
-                    as={TextField}
-                    fullWidth
-                    label="Destination"
-                    name="destination"
-                    variant="outlined"
-                    size="small"
-                    error={touched.destination && Boolean(errors.destination)}
-                    helperText={touched.destination && errors.destination}
-                  />
-                </Grid>
-
-                {/* Distance */}
-                <Grid item xs={12} sm={6} md={2.4}>
-                  <Field
-                    as={TextField}
-                    fullWidth
-                    label="Distance (km)"
-                    name="distance"
-                    type="number"
-                    variant="outlined"
-                    size="small"
-                    error={touched.distance && Boolean(errors.distance)}
-                    helperText={touched.distance && errors.distance}
-                  />
-                </Grid>
-
-                {/* Time */}
-                <Grid item xs={12} sm={6} md={2.4}>
-                  <Field
-                    as={TextField}
-                    fullWidth
-                    label="Time"
-                    name="time"
-                    variant="outlined"
-                    size="small"
-                    error={touched.time && Boolean(errors.time)}
-                    helperText={touched.time && errors.time}
-                  />
-                </Grid>
-
-                {/* Route Type */}
-                <Grid item xs={12} sm={6} md={2.4}>
-                  <FormControl fullWidth size="small" error={touched.routeType && Boolean(errors.routeType)}>
-                    <InputLabel>Route Type</InputLabel>
-                    <Field
-                      as={Select}
-                      label="Route Type"
-                      name="routeType"
-                      value={values.routeType}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      error={touched.routeType && Boolean(errors.routeType)}
+              {/* Transport Data */}
+              <Box sx={{ marginBottom: 3 }}>
+                <h3>2. Transport Data</h3>
+                <Grid container spacing={2}>
+                  {/* <Grid item xs={12} sm={6} md={2.4}>
+              <TextField
+                fullWidth
+                id="vehicleType"
+                name="vehicleType"
+                label="Vehicle Type*"
+                value={formik.values.vehicleType}
+                onChange={formik.handleChange}
+                error={formik.touched.vehicleType && Boolean(formik.errors.vehicleType)}
+                helperText={formik.touched.vehicleType && formik.errors.vehicleType}
+                size="small"
+              />
+            </Grid> */}
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      select
+                      fullWidth
+                      label="Vehicle Type"
+                      name="vehicleType"
+                      value={formik.values.vehicleType}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      error={formik.touched.vehicleType && Boolean(formik.errors.vehicleType)}
+                      helperText={formik.touched.vehicleType && formik.errors.vehicleType}
+                      size="small"
                     >
-                      {routeTypes.map((type) => (
-                        <MenuItem key={type} value={type}>
-                          {type}
-                        </MenuItem>
-                      ))}
-                    </Field>
-                    <FormHelperText sx={{ color: 'red' }}>{touched.routeType && errors.routeType}</FormHelperText>
-                  </FormControl>
+                      <MenuItem value="Truck">Truck</MenuItem>
+                      <MenuItem value="Trailer">Trailer</MenuItem>
+                      <MenuItem value="Container">Container</MenuItem>
+                    </TextField>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth
+                      id="transportStartDate"
+                      name="transportStartDate"
+                      label="Start Date*"
+                      type="date"
+                      value={formik.values.transportStartDate}
+                      onChange={formik.handleChange}
+                      error={formik.touched.transportStartDate && Boolean(formik.errors.transportStartDate)}
+                      helperText={formik.touched.transportStartDate && formik.errors.transportStartDate}
+                      size="small"
+                      InputLabelProps={{ shrink: true }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth
+                      id="transportEndDate"
+                      name="transportEndDate"
+                      label="End Date*"
+                      type="date"
+                      value={formik.values.transportEndDate}
+                      onChange={formik.handleChange}
+                      error={formik.touched.transportEndDate && Boolean(formik.errors.transportEndDate)}
+                      helperText={formik.touched.transportEndDate && formik.errors.transportEndDate}
+                      size="small"
+                      InputLabelProps={{ shrink: true }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth
+                      id="transportDistance"
+                      name="transportDistance"
+                      label="Transport Distance* (UoM)"
+                      value={formik.values.transportDistance}
+                      onChange={formik.handleChange}
+                      error={formik.touched.transportDistance && Boolean(formik.errors.transportDistance)}
+                      helperText={formik.touched.transportDistance && formik.errors.transportDistance}
+                      size="small"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth
+                      id="transportDuration"
+                      name="transportDuration"
+                      label="Transport Duration* (UoM)"
+                      value={formik.values.transportDuration}
+                      onChange={formik.handleChange}
+                      error={formik.touched.transportDuration && Boolean(formik.errors.transportDuration)}
+                      helperText={formik.touched.transportDuration && formik.errors.transportDuration}
+                      size="small"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth
+                      id="transportCost"
+                      name="transportCost"
+                      label="Transport Cost* (UoM)"
+                      value={formik.values.transportCost}
+                      onChange={formik.handleChange}
+                      error={formik.touched.transportCost && Boolean(formik.errors.transportCost)}
+                      helperText={formik.touched.transportCost && formik.errors.transportCost}
+                      size="small"
+                    />
+                  </Grid>
                 </Grid>
+              </Box>
 
-
-
-                {/* Lane Status */}
-                <Grid item xs={12} sm={6} md={2.4}>
-                  <FormControl fullWidth size="small" error={touched.laneStatus && Boolean(errors.laneStatus)}>
-                    <InputLabel>Lane Status</InputLabel>
-                    <Field
-                      as={Select}
-                      label="Lane Status"
-                      name="laneStatus"
-                      value={values.laneStatus}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      error={touched.laneStatus && Boolean(errors.laneStatus)}
-                    >
-                      {laneStatusOptions.map((status) => (
-                        <MenuItem key={status} value={status}>
-                          {status}
-                        </MenuItem>
-                      ))}
-                    </Field>
-                    <FormHelperText>{touched.laneStatus && errors.laneStatus}</FormHelperText>
-                  </FormControl>
+              {/* Carrier Data */}
+              <Box sx={{ marginBottom: 3 }}>
+                <h3>3. Carrier Data</h3>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth
+                      id="carrierId"
+                      name="carrierId"
+                      label="Carrier ID*"
+                      value={formik.values.carrierId}
+                      onChange={formik.handleChange}
+                      error={formik.touched.carrierId && Boolean(formik.errors.carrierId)}
+                      helperText={formik.touched.carrierId && formik.errors.carrierId}
+                      size="small"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth
+                      id="carrierName"
+                      name="carrierName"
+                      label="Carrier Name* (Auto-populated)"
+                      value={formik.values.carrierName}
+                      onChange={formik.handleChange}
+                      error={formik.touched.carrierName && Boolean(formik.errors.carrierName)}
+                      helperText={formik.touched.carrierName && formik.errors.carrierName}
+                      size="small"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth
+                      id="carrierVehicleType"
+                      name="carrierVehicleType"
+                      label="Vehicle Type*"
+                      value={formik.values.carrierVehicleType}
+                      onChange={formik.handleChange}
+                      error={
+                        formik.touched.carrierVehicleType && Boolean(formik.errors.carrierVehicleType)
+                      }
+                      helperText={formik.touched.carrierVehicleType && formik.errors.carrierVehicleType}
+                      size="small"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth
+                      id="carrierStartDate"
+                      name="carrierStartDate"
+                      label="Start Date*"
+                      type="date"
+                      value={formik.values.carrierStartDate}
+                      onChange={formik.handleChange}
+                      error={formik.touched.carrierStartDate && Boolean(formik.errors.carrierStartDate)}
+                      helperText={formik.touched.carrierStartDate && formik.errors.carrierStartDate}
+                      size="small"
+                      InputLabelProps={{ shrink: true }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth
+                      id="carrierEndDate"
+                      name="carrierEndDate"
+                      label="End Date*"
+                      type="date"
+                      value={formik.values.carrierEndDate}
+                      onChange={formik.handleChange}
+                      error={formik.touched.carrierEndDate && Boolean(formik.errors.carrierEndDate)}
+                      helperText={formik.touched.carrierEndDate && formik.errors.carrierEndDate}
+                      size="small"
+                      InputLabelProps={{ shrink: true }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth
+                      id="carrierCost"
+                      name="carrierCost"
+                      label="Carrier Cost* (UoM)"
+                      value={formik.values.carrierCost}
+                      onChange={formik.handleChange}
+                      error={formik.touched.carrierCost && Boolean(formik.errors.carrierCost)}
+                      helperText={formik.touched.carrierCost && formik.errors.carrierCost}
+                      size="small"
+                    />
+                  </Grid>
                 </Grid>
+              </Box>
 
-                {/* Price per Km */}
-                <Grid item xs={12} sm={6} md={2.4}>
-                  <Field
-                    as={TextField}
-                    fullWidth
-                    label="Price per Km"
-                    name="pricePerKm"
-                    type="number"
-                    variant="outlined"
-                    size="small"
-                    error={touched.pricePerKm && Boolean(errors.pricePerKm)}
-                    helperText={touched.pricePerKm && errors.pricePerKm}
-                  />
-                </Grid>
-
-                {/* Toll Charges */}
-                <Grid item xs={12} sm={6} md={2.4}>
-                  <Field
-                    as={TextField}
-                    fullWidth
-                    label="Toll Charges"
-                    name="tollCharges"
-                    type="number"
-                    variant="outlined"
-                    size="small"
-                    error={touched.tollCharges && Boolean(errors.tollCharges)}
-                    helperText={touched.tollCharges && errors.tollCharges}
-                  />
-                </Grid>
-
-                {/* Notes */}
-                <Grid item xs={12} sm={6} md={2.4}>
-                  <Field
-                    as={TextField}
-                    fullWidth
-                    label="Notes"
-                    name="notes"
-                    variant="outlined"
-                    size="small"
-                    multiline
-                    // rows={3}
-                    error={touched.notes && Boolean(errors.notes)}
-                    helperText={touched.notes && errors.notes}
-                  />
-                </Grid>
-
-                {/* Submit Button */}
-                <Grid item xs={12}>
-                  <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      color="primary"
-                      sx={{
-                        paddingLeft: '20px',
-                        paddingRight: '20px',
-                        paddingTop: '6px',
-                        paddingBottom: '6px',
-                        fontSize: '16px',
-                        alignSelf: 'center',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        textTransform: 'none',
-                      }}
-                    >
-                      Save lane
-                    </Button>
-                  </div>
-                </Grid>
-              </Grid>
+              {/* Submit Button */}
+              <Box sx={{ textAlign: 'center', marginTop: 3 }}>
+                <Button type="submit" variant="contained" color="primary">
+                  Submit
+                </Button>
+              </Box>
             </Box>
-          </Form>
-        )}
-      </Formik>
+          </form>
+        </Box>
+      </Collapse>
 
-      <div style={{ marginTop: '80px' }}>
+
+      {/* data grid */}
+      <div style={{ marginTop: "40px" }}>
         <DataGridComponent
           columns={columns}
-          rows={dummyData}
-          isLoading={false}
-          pageSizeOptions={[10, 20]}
-          initialPageSize={10}
+          rows={rows}
+          isLoading={false} // Set true to show loading state
+          pageSizeOptions={[5, 10, 20]} // Optional: customize page size options
+          initialPageSize={5} // Optional: default page size
         />
       </div>
+
     </>
   );
 };
 
-export default Lanes;
+export default TransportationLanes;

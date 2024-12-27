@@ -1,6 +1,7 @@
-import React from 'react';
-import { TextField, Grid, } from '@mui/material';
-import { useFormikContext } from 'formik';
+import React, { useState } from 'react';
+import { Box, Button, Collapse, Grid, TextField, FormControlLabel, Checkbox } from '@mui/material';
+import { Formik, Form } from 'formik';
+import * as Yup from 'yup';
 import styles from './BusinessPartners.module.css';
 import { DataGridComponent } from '../GridComponent';
 
@@ -31,7 +32,6 @@ const dummyDriverData = [
     vehicleTypes: ['Truck', 'Van'],
     loggedIntoApp: true,
   },
-  // Add more dummy data as needed
 ];
 
 const driverColumns = [
@@ -47,129 +47,201 @@ const driverColumns = [
 ];
 
 const DriverForm: React.FC = () => {
-  const { values, handleChange, handleBlur, errors, touched } = useFormikContext<DriverFormValues>();
+  const [showForm, setShowForm] = useState(false);
+
+  const initialDriverValues: DriverFormValues = {
+    driverID: '',
+    driverName: '',
+    locationID: '',
+    address: '',
+    drivingLicense: '',
+    expiryDate: '',
+    driverContactNumber: '',
+    emailID: '',
+    vehicleTypes: [],
+    loggedIntoApp: false,
+  };
+
+  const driverValidationSchema = Yup.object({
+    driverID: Yup.string().required('Driver ID is required'),
+    driverName: Yup.string().required('Driver Name is required'),
+    locationID: Yup.string().required('Location ID is required'),
+    address: Yup.string().required('Address is required'),
+    drivingLicense: Yup.string().required('Driving License is required'),
+    expiryDate: Yup.string().required('Expiry Date is required'),
+    driverContactNumber: Yup.string().required('Contact Number is required'),
+    emailID: Yup.string().email('Invalid email format').required('Email ID is required'),
+  });
+
+  const handleDriverSubmit = (values: DriverFormValues) => {
+    console.log('Driver Form Submitted:', values);
+  };
 
   return (
-    <div>
-      {/* General Data */}
-      <h4 className={styles.mainHeding}>General Data</h4>
-      <Grid container spacing={2} style={{ marginBottom: '30px' }}>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            label="Driver ID"
-            name="driverID"
-            value={values.driverID}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            error={touched.driverID && Boolean(errors.driverID)}
-            helperText={touched.driverID && errors.driverID}
-            required
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            label="Name"
-            name="name"
-            value={values.driverName}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            error={touched.driverName && Boolean(errors.driverName)}
-            helperText={touched.driverName && errors.driverName}
-            required
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            label="Location ID"
-            name="locationID"
-            value={values.locationID}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            error={touched.locationID && Boolean(errors.locationID)}
-            helperText={touched.locationID && errors.locationID}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            label="Address"
-            name="address"
-            value={values.address}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            error={touched.address && Boolean(errors.address)}
-            helperText={touched.address && errors.address}
-          />
-        </Grid>
-      </Grid>
+    <div className={styles.formsMainContainer}>
+      <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
+        <Button variant="contained" color="primary" onClick={() => setShowForm((prev) => !prev)}>
+          {showForm ? 'Close Form' : 'Create Driver'}
+        </Button>
+        <Button variant="outlined" color="secondary">
+          Mass Upload
+        </Button>
+      </Box>
 
-      {/* Correspondence */}
-      <h4 className={styles.mainHeding}>Correspondence</h4>
-      <Grid container spacing={2} style={{ marginBottom: '30px' }}>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            label="Driving License Number"
-            name="drivingLicense"
-            value={values.drivingLicense}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            error={touched.drivingLicense && Boolean(errors.drivingLicense)}
-            helperText={touched.drivingLicense && errors.drivingLicense}
-            required
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            label="Expiry Date"
-            name="expiryDate"
-            type="date"
-            value={values.expiryDate}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            error={touched.expiryDate && Boolean(errors.expiryDate)}
-            helperText={touched.expiryDate && errors.expiryDate}
-            InputLabelProps={{ shrink: true }}
-            required
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            label="Contact Number"
-            name="contactNumber"
-            value={values.driverContactNumber}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            error={touched.driverContactNumber && Boolean(errors.driverContactNumber)}
-            helperText={touched.driverContactNumber && errors.driverContactNumber}
-            required
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            label="Email ID"
-            name="emailID"
-            type="email"
-            value={values.emailID}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            error={touched.emailID && Boolean(errors.emailID)}
-            helperText={touched.emailID && errors.emailID}
-            required
-          />
-        </Grid>
-      </Grid>
+      <Collapse in={showForm}>
+        <Box marginBottom={4} padding={2} border="1px solid #ccc" borderRadius={2}>
+          <Formik
+            initialValues={initialDriverValues}
+            validationSchema={driverValidationSchema}
+            onSubmit={handleDriverSubmit}
+          >
+            {({ values, handleChange, handleBlur, errors, touched, setFieldValue }) => (
+              <Form>
+                <h4 className={styles.mainHeading}>General Data</h4>
+                <Grid container spacing={2} style={{ marginBottom: '30px' }}>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Driver ID"
+                      name="driverID"
+                      value={values.driverID}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.driverID && Boolean(errors.driverID)}
+                      helperText={touched.driverID && errors.driverID}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Driver Name"
+                      name="driverName"
+                      value={values.driverName}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.driverName && Boolean(errors.driverName)}
+                      helperText={touched.driverName && errors.driverName}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Location ID"
+                      name="locationID"
+                      value={values.locationID}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.locationID && Boolean(errors.locationID)}
+                      helperText={touched.locationID && errors.locationID}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Address"
+                      name="address"
+                      value={values.address}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.address && Boolean(errors.address)}
+                      helperText={touched.address && errors.address}
+                    />
+                  </Grid>
+                </Grid>
 
-      {/* Vehicle Types Handling */}
-      {/* <h4 className={styles.mainHeding}>Vehicle Types Handling</h4> */}
+                <h4 className={styles.mainHeading}>Correspondence</h4>
+                <Grid container spacing={2} style={{ marginBottom: '30px' }}>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Driving License"
+                      name="drivingLicense"
+                      value={values.drivingLicense}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.drivingLicense && Boolean(errors.drivingLicense)}
+                      helperText={touched.drivingLicense && errors.drivingLicense}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Expiry Date"
+                      name="expiryDate"
+                      type="date"
+                      value={values.expiryDate}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.expiryDate && Boolean(errors.expiryDate)}
+                      helperText={touched.expiryDate && errors.expiryDate}
+                      InputLabelProps={{ shrink: true }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Contact Number"
+                      name="driverContactNumber"
+                      value={values.driverContactNumber}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.driverContactNumber && Boolean(errors.driverContactNumber)}
+                      helperText={touched.driverContactNumber && errors.driverContactNumber}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Email ID"
+                      name="emailID"
+                      type="email"
+                      value={values.emailID}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.emailID && Boolean(errors.emailID)}
+                      helperText={touched.emailID && errors.emailID}
+                    />
+                  </Grid>
+                </Grid>
 
-      {/* Data Grid */}
+                <h4 className={styles.mainHeading}>Vehicle & Status</h4>
+                <Grid container spacing={2} style={{ marginBottom: '30px' }}>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Vehicle Types"
+                      name="vehicleTypes"
+                      value={values.vehicleTypes.join(', ')}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.vehicleTypes && Boolean(errors.vehicleTypes)}
+                      helperText={touched.vehicleTypes && errors.vehicleTypes}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={values.loggedIntoApp}
+                          onChange={(e) => setFieldValue('loggedIntoApp', e.target.checked)}
+                        />
+                      }
+                      label="Logged Into App"
+                    />
+                  </Grid>
+                </Grid>
+
+                <Box marginTop={3} textAlign="center">
+                  <Button type="submit" variant="contained" color="primary">
+                    Submit
+                  </Button>
+                </Box>
+              </Form>
+            )}
+          </Formik>
+        </Box>
+      </Collapse>
+
       <Grid item xs={12} style={{ marginTop: '50px' }}>
         <DataGridComponent
           columns={driverColumns}
@@ -179,6 +251,7 @@ const DriverForm: React.FC = () => {
           initialPageSize={10}
         />
       </Grid>
+
     </div>
   );
 };
