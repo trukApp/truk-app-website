@@ -28,7 +28,7 @@ const ProductMasterPage = () => {
         expirationDate: '',
         bestBeforeDate: '',
         stackingFactor: '',
-        documents: null,
+        documents: '',
         locationIds: '',
         packagingType: '',
         generatePackagingLabel: false,
@@ -38,7 +38,6 @@ const ProductMasterPage = () => {
         hazardousStorage: false,
         skuNumber: '',
         hsncode: '',
-        documents: '',
     };
 
     const validationSchema = Yup.object({
