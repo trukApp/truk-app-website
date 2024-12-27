@@ -2,6 +2,8 @@ import React from 'react';
 import { Box, Button, MenuItem, TextField, Select, FormControl, InputLabel, OutlinedInput, Grid, Typography } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import { GridColDef } from '@mui/x-data-grid';
+import { DataGridComponent } from './GridComponent';
 
 const PackagingForm = () => {
   const formik = useFormik({
@@ -27,7 +29,25 @@ const PackagingForm = () => {
 
   const handlingUnitOptions = ['Pallet', 'Container', 'Crate', 'Box', 'Drum', 'Bag', 'Sack'];
 
+  const rows = Array.from({ length: 10 }, (_, id) => ({
+  id,
+  packagingTypeId: `PKG-${id + 1}`,
+  packagingTypeName: `Type ${id + 1}`,
+  packagingDimensionsUoM: id % 2 === 0 ? "cm" : "inches",
+  packagingDimensions: `${50 + id * 5} x ${30 + id * 3} x ${20 + id * 2}`,
+  handlingUnitType: id % 2 === 0 ? "Pallet" : "Crate",
+  }));
+  
+  const columns: GridColDef[] = [
+  { field: "packagingTypeId", headerName: "Packaging Type ID", width: 200, editable: false },
+  { field: "packagingTypeName", headerName: "Packaging Name", width: 200 },
+  { field: "packagingDimensionsUoM", headerName: "Dimensions UoM", width: 180 },
+  { field: "packagingDimensions", headerName: "Dimensions", width: 250 },
+  { field: "handlingUnitType", headerName: "Handling Unit Type", width: 200 },
+];
+
   return (
+<>
     <form onSubmit={formik.handleSubmit}>
           <Typography variant="h5" align='center' gutterBottom>
         Packaging master
@@ -129,6 +149,18 @@ const PackagingForm = () => {
         </Button>
       </Box>
     </form>
+
+    {/* Data grid */}
+    <div style={{ marginTop:"60px"}}>
+        <DataGridComponent
+          columns={columns}
+          rows={rows}
+          isLoading={false}
+          pageSizeOptions={[5, 10, 20]}
+          initialPageSize={5}
+          />
+    </div>
+      </>
   );
 };
 

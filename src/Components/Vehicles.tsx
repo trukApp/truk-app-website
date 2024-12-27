@@ -14,6 +14,8 @@ import {
   MenuItem,
   Button,
 } from "@mui/material";
+import { DataGridComponent } from "./GridComponent";
+import { GridColDef } from "@mui/x-data-grid";
 
 const units = ["g", "kg", "ton", "cm", "m", "inch"];
 interface FormValues {
@@ -87,6 +89,43 @@ const validationSchema = Yup.object({
   downtimeReason: Yup.string().required("Reason is required"),
 });
 
+// Generate dummy data
+const rows = Array.from({ length: 10 }, (_, id) => ({
+  id,
+  locationId: `LOC-${id + 1}`,
+  timeZone: "UTC+05:30",
+  unlimitedUsage: id % 2 === 0,
+  individualResources: `Resource-${id + 1}`,
+  validityFrom: "2024-01-01",
+  validityTo: "2024-12-31",
+  vehicleType: id % 2 === 0 ? "Truck" : "Van",
+  vehicleGroup: `Group-${id + 1}`,
+  ownership: id % 2 === 0 ? "Owned" : "Leased",
+  // payloadWeight: (1000 + id * 100).toString(),
+  // cubicCapacity: (5000 + id * 100).toString(),
+  // interiorLength: (15 + id).toString(),
+  // interiorWidth: (5 + id * 0.5).toString(),
+  // interiorHeight: (6 + id * 0.3).toString(),
+  // tareWeight: (2000 + id * 50).toString(),
+  // maxGrossWeight: (3000 + id * 150).toString(),
+  // tareVolume: (40 + id).toString(),
+  // maxLength: (20 + id).toString(),
+  // maxWidth: (8 + id).toString(),
+  // maxHeight: (10 + id).toString(),
+  // platformHeight: (3 + id * 0.2).toString(),
+  // topDeckHeight: (2.5 + id * 0.1).toString(),
+  // doorWidth: (4 + id * 0.2).toString(),
+  // doorHeight: (6 + id * 0.3).toString(),
+  // doorLength: (7 + id * 0.4).toString(),
+  // avgCost: (100000 + id * 5000).toString(),
+  // downtimeStart: "2024-02-01",
+  // downtimeEnd: "2024-02-10",
+  // downtimeLocation: `Location-${id + 1}`,
+  // downtimeDescription: `Maintenance required for vehicle ${id + 1}`,
+  // downtimeReason: `Reason-${id + 1}`,
+}));
+
+
 const VehicleForm: React.FC = () => {
     const initialValues = {
     locationId: "",
@@ -121,12 +160,31 @@ const VehicleForm: React.FC = () => {
     downtimeDescription: "",
     downtimeReason: "",
   };
+  
+//     const columns: GridColDef[] = Object.keys(initialValues).map((key) => ({
+//   field: key,
+//   headerName: key.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase()),
+//   width: 250,
+//   flex: key === "downtimeDescription" ? 2 : 1, // Adjust column width for long text fields
+// }));
 
+const columns: GridColDef[] = [
+  { field: "locationId", headerName: "Location ID", width: 150 },
+  { field: "timeZone", headerName: "Time Zone", width: 150 },
+  { field: "unlimitedUsage", headerName: "Unlimited Usage", width: 150, type: "boolean" },
+  { field: "individualResources", headerName: "Individual Resources", width: 200 },
+  { field: "validityFrom", headerName: "Validity From", width: 150 },
+  { field: "validityTo", headerName: "Validity To", width: 150 },
+  { field: "vehicleType", headerName: "Vehicle Type", width: 150 },
+  { field: "vehicleGroup", headerName: "Vehicle Group", width: 150 },
+  { field: "ownership", headerName: "Ownership", width: 150 },
+];
   const handleSubmit = (values: FormValues) => {
     console.log("Form submitted with values:", values);
   };
 
   return (
+    <>
     <Box sx={{ p: 3 }}>
       <Typography variant="h5" align="center" gutterBottom>
         Vehicle Master data
@@ -842,6 +900,19 @@ const VehicleForm: React.FC = () => {
         )}
       </Formik>
     </Box>
+
+      {/* Data grid */}
+    <div style={{ marginTop:"40px"}}> 
+        <DataGridComponent
+        columns={columns}
+        rows={rows}
+        isLoading={false} // Set true to show loading state
+        pageSizeOptions={[5, 10, 20]} // Optional: customize page size options
+        initialPageSize={5} // Optional: default page size
+      />
+    </div>
+
+      </>
   );
 };
 
