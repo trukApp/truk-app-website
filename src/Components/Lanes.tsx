@@ -10,6 +10,8 @@ import {
 } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import { GridColDef } from '@mui/x-data-grid';
+import { DataGridComponent } from './GridComponent';
 
 const TransportationLanes = () => {
   const formik = useFormik({
@@ -61,7 +63,45 @@ const TransportationLanes = () => {
     },
   });
 
+  const rows = Array.from({ length: 10 }, (_, id) => ({
+  id,
+  laneId: `LANE-${id + 1}`,
+  sourceLocationId: `SRC-${100 + id}`,
+  destinationLocationId: `DST-${200 + id}`,
+  vehicleType: id % 2 === 0 ? "Truck" : "Van",
+  transportStartDate: "2024-01-10",
+  transportEndDate: "2024-01-15",
+  transportDistance: `${100 + id * 10} km`,
+  transportDuration: `${8 + id} hours`,
+  transportCost: `$${1000 + id * 50}`,
+  carrierId: `CARRIER-${id + 1}`,
+  carrierName: `Carrier ${id + 1}`,
+  carrierVehicleType: id % 2 === 0 ? "Heavy Duty" : "Light Duty",
+  carrierStartDate: "2024-01-11",
+  carrierEndDate: "2024-01-14",
+  carrierCost: `$${800 + id * 40}`,
+  }));
+  
+  const columns: GridColDef[] = [
+  { field: "laneId", headerName: "Lane ID", width: 150 },
+  { field: "sourceLocationId", headerName: "Source Location", width: 150 },
+  { field: "destinationLocationId", headerName: "Destination Location", width: 180 },
+  { field: "vehicleType", headerName: "Vehicle Type", width: 150 },
+  { field: "transportStartDate", headerName: "Transport Start Date", width: 180 },
+  { field: "transportEndDate", headerName: "Transport End Date", width: 180 },
+  { field: "transportDistance", headerName: "Transport Distance", width: 160 },
+  { field: "transportDuration", headerName: "Transport Duration", width: 160 },
+  { field: "transportCost", headerName: "Transport Cost", width: 150 },
+  { field: "carrierId", headerName: "Carrier ID", width: 150 },
+  { field: "carrierName", headerName: "Carrier Name", width: 180 },
+  { field: "carrierVehicleType", headerName: "Carrier Vehicle Type", width: 180 },
+  { field: "carrierStartDate", headerName: "Carrier Start Date", width: 180 },
+  { field: "carrierEndDate", headerName: "Carrier End Date", width: 180 },
+  { field: "carrierCost", headerName: "Carrier Cost", width: 150 },
+];
+
   return (
+    <>
     <form onSubmit={formik.handleSubmit}>
          <Typography variant="h5" align="center" gutterBottom>
         Transportation Lanes Master data
@@ -321,6 +361,19 @@ const TransportationLanes = () => {
         </Box>
       </Box>
     </form>
+      
+      {/* data grid */}
+      <div style={{ marginTop:"40px"}}> 
+              <DataGridComponent
+              columns={columns}
+              rows={rows}
+              isLoading={false} // Set true to show loading state
+              pageSizeOptions={[5, 10, 20]} // Optional: customize page size options
+              initialPageSize={5} // Optional: default page size
+            />
+      </div>
+      
+      </>
   );
 };
 

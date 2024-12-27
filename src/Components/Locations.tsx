@@ -16,6 +16,8 @@ import {
 } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import { DataGridComponent } from './GridComponent';
+import { GridColDef } from '@mui/x-data-grid';
 
 // Validation schema
 const validationSchema = Yup.object({
@@ -64,10 +66,48 @@ const Locations: React.FC = () => {
     },
   });
 
-  const { values, errors, touched, handleChange, handleBlur, handleSubmit } =formik;
+  const { values, errors, touched, handleChange, handleBlur, handleSubmit } = formik;
+  
+  const rows = Array.from({ length: 10 }, (_, id) => ({
+  id,
+  locationId: `LOC-${id + 1}`,
+  locationDescription: `Location Description ${id + 1}`,
+  locationType: id % 2 === 0 ? "Warehouse" : "Depot",
+  glnCode: `GLN-${1000 + id}`,
+  iataCode: `IATA-${200 + id}`,
+  longitude: (78.4 + id * 0.1).toFixed(2),
+  latitude: (17.3 + id * 0.1).toFixed(2),
+  timeZone: "UTC+05:30",
+  city: `City-${id + 1}`,
+  district: `District-${id + 1}`,
+  state: `State-${id + 1}`,
+  country: "India",
+  pincode: `5000${id}`,
+  locationContactName: `Contact Name ${id + 1}`,
+  locationContactNumber: `98765432${id}`,
+  }));
+  
+  const columns: GridColDef[] = [
+  { field: "locationId", headerName: "Location ID", width: 150 },
+  { field: "locationDescription", headerName: "Description", width: 200 },
+  { field: "locationType", headerName: "Type", width: 150 },
+  { field: "glnCode", headerName: "GLN Code", width: 150 },
+  { field: "iataCode", headerName: "IATA Code", width: 150 },
+  { field: "longitude", headerName: "Longitude", width: 150 },
+  { field: "latitude", headerName: "Latitude", width: 150 },
+  { field: "timeZone", headerName: "Time Zone", width: 150 },
+  { field: "city", headerName: "City", width: 150 },
+  { field: "district", headerName: "District", width: 150 },
+  { field: "state", headerName: "State", width: 150 },
+  { field: "country", headerName: "Country", width: 150 },
+  { field: "pincode", headerName: "Pincode", width: 150 },
+  { field: "locationContactName", headerName: "Contact Name", width: 200 },
+  { field: "locationContactNumber", headerName: "Contact Number", width: 150 },
+];
 
-return (
-    <Box
+  return (
+    <>
+      <Box
       component="form"
       onSubmit={handleSubmit}
       sx={{
@@ -378,7 +418,20 @@ return (
           Submit
         </Button>
       </Box>
-    </Box>
+      </Box>
+
+      {/* Data grid */}
+       <div style={{ marginTop:"40px"}}> 
+              <DataGridComponent
+                    columns={columns}
+                    rows={rows}
+                    isLoading={false} // Set true to show loading state
+                    pageSizeOptions={[5, 10, 20]} // Optional: customize page size options
+                    initialPageSize={5} // Optional: default page size
+                  />
+      </div>
+
+    </>
   );
 };
 
