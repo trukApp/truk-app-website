@@ -1,7 +1,29 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-// Function to get a new access token using refresh token
+declare module "next-auth" {
+  interface User {
+    id: string;
+    name: string;
+    phone: string;
+    accessToken: string;
+    refreshToken: string;
+  }
+
+  interface Session {
+    user: User;
+  }
+
+  interface JWT {
+    id: string;
+    name: string;
+    phone: string;
+    accessToken: string;
+    refreshToken: string;
+    accessTokenExpires: number;
+    error?: string;
+  }
+}
 const refreshAccessToken = async (refreshToken: string) => {
   console.log(
     "Attempting to refresh access token with refresh token:",
@@ -110,14 +132,14 @@ export const options: NextAuthOptions = {
         token.id = user.id;
         token.name = user.name;
         token.phone = user.phone;
-        token.accessToken = user.accessToken;
-        token.refreshToken = user.refreshToken;
+        token.accessToken = user?.accessToken;
+        token.refreshToken =user?.refreshToken;
         token.accessTokenExpires = Date.now() + 24 * 60 * 60 * 1000;
         console.log("User signed in:", user);
       }
 
       // Return previous token if the access token has not expired yet
-      if (token.accessTokenExpires && Date.now() < token?.accessTokenExpires) {
+      if (token?.accessToken ) {
         console.log("Token still available");
         return token;
       }
@@ -126,7 +148,7 @@ export const options: NextAuthOptions = {
 
       // Access token has expired, try to update it
       if (token.refreshToken) {
-        const refreshedTokens = await refreshAccessToken(token?.refreshToken);
+        const refreshedTokens = await refreshAccessToken(user?.refreshToken);
         if (refreshedTokens && !refreshedTokens.error) {
           console.log("Access token refreshed successfully:", refreshedTokens);
           return {
@@ -162,12 +184,12 @@ export const options: NextAuthOptions = {
       }
 
       session.user = {
-        id: token.id,
-        name: token.name,
-        phone: token.phone,
-        accessToken: token.accessToken,
-        refreshToken: token.refreshToken,
-      };
+        id: token.id as string,
+        name: token.name as string,
+        phone: token.phone as string,
+        accessToken: token.accessToken as string,
+        refreshToken: token.refreshToken as string,
+      } ;
       return session;
     },
   },

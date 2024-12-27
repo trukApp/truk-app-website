@@ -6,15 +6,12 @@ import Lanes from "@/Components/Lanes";
 import Locations from "@/Components/Locations";
 import PackagingInfo from "@/Components/PackagingInfo";
 import UnitsOfMeasurement from "@/Components/UnitsOfMeasurement";
-import Resources from "@/Components/Resources";
 
 const MasterData: React.FC = () => {
-  const [selectedOption, setSelectedOption] = useState<string>("Resources");
+  const [selectedOption, setSelectedOption] = useState<string>("Lanes");
 
   const renderComponent = () => {
     switch (selectedOption) {
-      case "Resources":
-        return <Resources />;
       case "Vehicles":
         return <Vehicles />;
       case "Lanes":
@@ -31,7 +28,6 @@ const MasterData: React.FC = () => {
   };
 
   const tiles = [
-  { label: "Resources", value: "Resources" },
     { label: "Vehicles", value: "Vehicles" },
     { label: "Lanes", value: "Lanes" },
     { label: "Locations", value: "Locations" },
