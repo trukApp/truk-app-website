@@ -1,394 +1,405 @@
-// import React from 'react';
-// import { TextField, Grid, MenuItem } from '@mui/material';
-// import { useFormikContext } from 'formik';
-// import styles from './BusinessPartners.module.css'
-
-// import { DataGridComponent } from '../GridComponent';
-
-// const dummyTransporterData = [
-//     {
-//         id: 1,
-//         transporterId: 'TR001',
-//         vehicleType: 'Truck',
-//         capacity: '15 Tons',
-//         operatingRoutes: 'Delhi - Mumbai',
-//     },
-//     {
-//         id: 2,
-//         transporterId: 'TR002',
-//         vehicleType: 'Mini Van',
-//         capacity: '2 Tons',
-//         operatingRoutes: 'Bangalore - Chennai',
-//     },
-//     {
-//         id: 3,
-//         transporterId: 'TR003',
-//         vehicleType: 'Container',
-//         capacity: '30 Tons',
-//         operatingRoutes: 'Kolkata - Hyderabad',
-//     },
-//     {
-//         id: 4,
-//         transporterId: 'TR004',
-//         vehicleType: 'Pickup Truck',
-//         capacity: '5 Tons',
-//         operatingRoutes: 'Pune - Ahmedabad',
-//     },
-//     {
-//         id: 5,
-//         transporterId: 'TR005',
-//         vehicleType: 'Trailer',
-//         capacity: '50 Tons',
-//         operatingRoutes: 'Chandigarh - Jaipur',
-//     },
-// ];
+import React, { useState } from 'react';
+import { Box, Button, Collapse, Grid, TextField, FormControlLabel, Checkbox } from '@mui/material';
+import { Formik, Form } from 'formik';
+import * as Yup from 'yup';
+import { DataGridComponent } from '../GridComponent';
+import styles from './BusinessPartners.module.css'
+import { GridColDef } from '@mui/x-data-grid';
 
 
-// const transporterColumns = [
-//     { field: 'transporterId', headerName: 'Transporter ID', width: 150 },
-//     { field: 'vehicleType', headerName: 'Vehicle Type', width: 150 },
-//     { field: 'capacity', headerName: 'Capacity', width: 150 },
-//     { field: 'operatingRoutes', headerName: 'Operating Routes', flex: 1 },
-// ];
+const dummyVendors = [
+    {
+        id: 1,
+        supplierId: 'SUP001',
+        name: 'ABC Supplies Co.',
+        locationId: 'LOC123',
+        pincode: '110001',
+        city: 'New Delhi',
+        district: 'Central Delhi',
+        country: 'India',
+        contactPerson: 'Rajesh Sharma',
+        contactNumber: '9876543210',
+        emailId: 'rajesh@abcsupplies.com',
+        locationOfSource: ['Delhi', 'Mumbai'],
+        podRelevant: true,
+        orderingAddress: '123, Connaught Place, New Delhi',
+        goodsSupplier: 'Electronics',
+        forwardingAgent: 'Fast Logistics'
+    },
+    {
+        id: 2,
+        supplierId: 'SUP002',
+        name: 'Global Trade Ltd.',
+        locationId: 'LOC456',
+        pincode: '400001',
+        city: 'Mumbai',
+        district: 'South Mumbai',
+        country: 'India',
+        contactPerson: 'Priya Mehta',
+        contactNumber: '9988776655',
+        emailId: 'priya@globaltrade.com',
+        locationOfSource: ['Mumbai', 'Chennai'],
+        podRelevant: false,
+        orderingAddress: '45, Nariman Point, Mumbai',
+        goodsSupplier: 'Textiles',
+        forwardingAgent: 'Swift Transport'
+    },
+    {
+        id: 3,
+        supplierId: 'SUP003',
+        name: 'TechMart Solutions',
+        locationId: 'LOC789',
+        pincode: '560001',
+        city: 'Bangalore',
+        district: 'Bangalore Urban',
+        country: 'India',
+        contactPerson: 'Ankit Verma',
+        contactNumber: '9123456789',
+        emailId: 'ankit@techmart.com',
+        locationOfSource: ['Bangalore', 'Hyderabad'],
+        podRelevant: true,
+        orderingAddress: '12, MG Road, Bangalore',
+        goodsSupplier: 'IT Hardware',
+        forwardingAgent: 'Reliable Logistics'
+    },
+    {
+        id: 4,
+        supplierId: 'SUP004',
+        name: 'EcoGoods Traders',
+        locationId: 'LOC321',
+        pincode: '700001',
+        city: 'Kolkata',
+        district: 'Kolkata',
+        country: 'India',
+        contactPerson: 'Suman Banerjee',
+        contactNumber: '9876543100',
+        emailId: 'suman@ecogoods.com',
+        locationOfSource: ['Kolkata', 'Guwahati'],
+        podRelevant: false,
+        orderingAddress: '76, Park Street, Kolkata',
+        goodsSupplier: 'Organic Products',
+        forwardingAgent: 'Green Transport'
+    },
+    {
+        id: 5,
+        supplierId: 'SUP005',
+        name: 'Mega Builders Pvt. Ltd.',
+        locationId: 'LOC654',
+        pincode: '122001',
+        city: 'Gurgaon',
+        district: 'Gurgaon',
+        country: 'India',
+        contactPerson: 'Arjun Singh',
+        contactNumber: '9012345678',
+        emailId: 'arjun@megabuilders.com',
+        locationOfSource: ['Delhi NCR', 'Lucknow'],
+        podRelevant: true,
+        orderingAddress: '45, Cyber City, Gurgaon',
+        goodsSupplier: 'Construction Materials',
+        forwardingAgent: 'BuildFast Couriers'
+    }
+];
 
-// interface SupplierFormValues {
-//     transporterId: string;
-//     vehicleType: string;
-//     capacity: string;
-//     operatingRoutes: string;
-// }
-
-// const vehicleTypes = ['Truck', 'Van', 'Container', 'Tanker'];
-
-// const SuppilerForm: React.FC = () => {
-//     const { values, handleChange, handleBlur, errors, touched } = useFormikContext<SupplierFormValues>();
-
-//     return (
-//         <div>
-//             <h3 className={styles.mainHeding}>Supplier Details</h3>
-//             <Grid container spacing={2}>
-//                 {/* Transporter ID */}
-//                 <Grid item xs={12} sm={6}>
-//                     <TextField
-//                         fullWidth
-//                         label="Transporter ID"
-//                         name="transporterId"
-//                         value={values.transporterId}
-//                         onChange={handleChange}
-//                         onBlur={handleBlur}
-//                         error={touched.transporterId && Boolean(errors.transporterId)}
-//                         helperText={touched.transporterId && errors.transporterId}
-//                     />
-//                 </Grid>
-
-//                 {/* Vehicle Type */}
-//                 <Grid item xs={12} sm={6}>
-//                     <TextField
-//                         fullWidth
-//                         select
-//                         label="Vehicle Type"
-//                         name="vehicleType"
-//                         value={values.vehicleType}
-//                         onChange={handleChange}
-//                         onBlur={handleBlur}
-//                         error={touched.vehicleType && Boolean(errors.vehicleType)}
-//                         helperText={touched.vehicleType && errors.vehicleType}
-//                     >
-//                         {vehicleTypes.map((type) => (
-//                             <MenuItem key={type} value={type}>
-//                                 {type}
-//                             </MenuItem>
-//                         ))}
-//                     </TextField>
-//                 </Grid>
-
-//                 {/* Capacity */}
-//                 <Grid item xs={12} sm={6}>
-//                     <TextField
-//                         fullWidth
-//                         label="Capacity (in Tons)"
-//                         name="capacity"
-//                         type="number"
-//                         value={values.capacity}
-//                         onChange={handleChange}
-//                         onBlur={handleBlur}
-//                         error={touched.capacity && Boolean(errors.capacity)}
-//                         helperText={touched.capacity && errors.capacity}
-//                     />
-//                 </Grid>
-
-//                 {/* Operating Routes */}
-//                 <Grid item xs={12}>
-//                     <TextField
-//                         fullWidth
-//                         label="Operating Routes"
-//                         name="operatingRoutes"
-//                         value={values.operatingRoutes}
-//                         onChange={handleChange}
-//                         onBlur={handleBlur}
-//                         error={touched.operatingRoutes && Boolean(errors.operatingRoutes)}
-//                         helperText={touched.operatingRoutes && errors.operatingRoutes}
-//                         multiline
-//                         rows={3}
-//                     />
-//                 </Grid>
-//             </Grid>
-//             <Grid item xs={12} style={{ marginTop: '50px' }}>
-//                 <DataGridComponent
-//                     columns={transporterColumns}
-//                     rows={dummyTransporterData}
-//                     isLoading={false}
-//                     pageSizeOptions={[10, 20]}
-//                     initialPageSize={10}
-//                 />
-//             </Grid>
-//         </div>
-//     );
-// };
-
-// export default SuppilerForm;
+const columns: GridColDef[] = [
+    { field: 'supplierId', headerName: 'Supplier ID', width: 150 },
+    { field: 'name', headerName: 'Name', width: 200 },
+    { field: 'locationId', headerName: 'Location ID', width: 150 },
+    { field: 'pincode', headerName: 'Pincode', width: 100 },
+    { field: 'city', headerName: 'City', width: 150 },
+    { field: 'district', headerName: 'District', width: 150 },
+    { field: 'country', headerName: 'Country', width: 150 },
+    { field: 'contactPerson', headerName: 'Contact Person', width: 200 },
+    { field: 'contactNumber', headerName: 'Contact Number', width: 150 },
+    { field: 'emailId', headerName: 'Email ID', width: 200 },
+    { field: 'locationOfSource', headerName: 'Location of Source', width: 250 },
+    { field: 'podRelevant', headerName: 'POD Relevant', width: 150 },
+    { field: 'orderingAddress', headerName: 'Ordering Address', width: 250 },
+    { field: 'goodsSupplier', headerName: 'Goods Supplier', width: 200 },
+    { field: 'forwardingAgent', headerName: 'Forwarding Agent', width: 200 }
+];
 
 
+const SupplierForm: React.FC = () => {
+    const [showForm, setShowForm] = useState(false);
 
-import React from 'react';
-import { TextField, Grid, Checkbox, FormControlLabel } from '@mui/material';
-import { useFormikContext } from 'formik';
-import styles from './BusinessPartners.module.css';
+    const initialSupplierValues = {
+        supplierId: '',
+        name: '',
+        locationId: '',
+        pincode: '',
+        city: '',
+        district: '',
+        country: '',
+        contactPerson: '',
+        contactNumber: '',
+        emailId: '',
+        locationOfSource: [],
+        podRelevant: false,
+        orderingAddress: '',
+        goodsSupplier: '',
+        forwardingAgent: ''
+    };
 
+    const supplierValidationSchema = Yup.object({
+        supplierId: Yup.string().required('Supplier ID is required'),
+        name: Yup.string().required('Name is required'),
+        locationId: Yup.string().required('Location ID is required'),
+        pincode: Yup.string().required('Pincode is required'),
+        city: Yup.string().required('City is required'),
+        district: Yup.string().required('District is required'),
+        country: Yup.string().required('Country is required'),
+        contactPerson: Yup.string().required('Contact Person is required'),
+        contactNumber: Yup.string().required('Contact Number is required'),
+        emailId: Yup.string().email('Invalid email format').required('Email ID is required'),
+        locationOfSource: Yup.array().min(1, 'At least one location is required'),
+        orderingAddress: Yup.string().required('Ship To Party is required'),
+        goodsSupplier: Yup.string().required('Sold To Party is required'),
+        forwardingAgent: Yup.string().required('Bill To Party is required')
+    });
 
-interface SupplierFormValues {
-    vendorId: string;
-    name: string;
-    locationId: string;
-    address: string;
-    correspondence: string;
-    contactPerson: string;
-    contactNumber: string;
-    emailId: string;
-    locationOfDestinations: string[];
-    podRelevant: boolean;
-    orderingAddress: string;
-    goodsSupplier: string;
-    forwardingAgent: string;
-}
-
-const SuppilerForm: React.FC = () => {
-    const {
-        values,
-        handleChange,
-        handleBlur,
-        errors,
-        touched,
-        setFieldValue,
-    } = useFormikContext<SupplierFormValues>();
+    const handleSupplierSubmit = (values: typeof initialSupplierValues) => {
+        console.log('Supplier Form Submitted:', values);
+    };
 
     return (
-        <div>
-            <h3 className={styles.mainHeding}>General Data</h3>
-            <Grid container spacing={2}>
-                {/* Vendor ID */}
-                <Grid item xs={12} sm={6}>
-                    <TextField
-                        fullWidth
-                        label="Vendor ID"
-                        name="vendorId"
-                        value={values.vendorId}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={touched.vendorId && Boolean(errors.vendorId)}
-                        helperText={touched.vendorId && errors.vendorId}
-                    />
-                </Grid>
+        <div className={styles.formsMainContainer}>
 
-                {/* Name */}
-                <Grid item xs={12} sm={6}>
-                    <TextField
-                        fullWidth
-                        label="Name"
-                        name="name"
-                        value={values.name}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={touched.name && Boolean(errors.name)}
-                        helperText={touched.name && errors.name}
-                    />
-                </Grid>
+            <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
+                <Button variant="contained" color="primary" onClick={() => setShowForm((prev) => !prev)}>
+                    {showForm ? 'Close Form' : 'Create Vendor'}
+                </Button>
+                <Button variant="outlined" color="secondary">
+                    Mass Upload
+                </Button>
+            </Box>
 
-                {/* Location ID */}
-                <Grid item xs={12} sm={6}>
-                    <TextField
-                        fullWidth
-                        label="Location ID"
-                        name="locationId"
-                        value={values.locationId}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={touched.locationId && Boolean(errors.locationId)}
-                        helperText={touched.locationId && errors.locationId}
-                    />
-                </Grid>
+            <Collapse in={showForm}>
+                <Box marginBottom={4} padding={2} border="1px solid #ccc" borderRadius={2}>
+                    <Formik
+                        initialValues={initialSupplierValues}
+                        validationSchema={supplierValidationSchema}
+                        onSubmit={handleSupplierSubmit}
+                    >
+                        {({ values, handleChange, handleBlur, errors, touched, setFieldValue }) => (
+                            <Form>
+                                <h3 className={styles.mainHeading}>General Data</h3>
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            fullWidth
+                                            label="Supplier ID"
+                                            name="supplierId"
+                                            value={values.supplierId}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.supplierId && Boolean(errors.supplierId)}
+                                            helperText={touched.supplierId && errors.supplierId}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            fullWidth
+                                            label="Name"
+                                            name="name"
+                                            value={values.name}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.name && Boolean(errors.name)}
+                                            helperText={touched.name && errors.name}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            fullWidth
+                                            label="Location ID"
+                                            name="locationId"
+                                            value={values.locationId}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.locationId && Boolean(errors.locationId)}
+                                            helperText={touched.locationId && errors.locationId}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            fullWidth
+                                            label="Pincode"
+                                            name="pincode"
+                                            value={values.pincode}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.pincode && Boolean(errors.pincode)}
+                                            helperText={touched.pincode && errors.pincode}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            fullWidth
+                                            label="City"
+                                            name="city"
+                                            value={values.city}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.city && Boolean(errors.city)}
+                                            helperText={touched.city && errors.city}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            fullWidth
+                                            label="District"
+                                            name="district"
+                                            value={values.district}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.district && Boolean(errors.district)}
+                                            helperText={touched.district && errors.district}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            fullWidth
+                                            label="Country"
+                                            name="country"
+                                            value={values.country}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.country && Boolean(errors.country)}
+                                            helperText={touched.country && errors.country}
+                                        />
+                                    </Grid>
+                                </Grid>
 
-                {/* Address */}
-                <Grid item xs={12} sm={6}>
-                    <TextField
-                        fullWidth
-                        label="Address"
-                        name="address"
-                        value={values.address}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={touched.address && Boolean(errors.address)}
-                        helperText={touched.address && errors.address}
-                        disabled
-                    />
-                </Grid>
 
-                {/* Correspondence */}
-                <Grid item xs={12}>
-                    <TextField
-                        fullWidth
-                        label="Correspondence"
-                        name="correspondence"
-                        value={values.correspondence}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={touched.correspondence && Boolean(errors.correspondence)}
-                        helperText={touched.correspondence && errors.correspondence}
-                        multiline
-                        rows={3}
-                    />
-                </Grid>
+                                <h3 className={styles.mainHeading}>Correspondence</h3>
+                                <Grid container spacing={2} style={{ marginBottom: '30px' }}>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            fullWidth
+                                            label="Contact Person"
+                                            name="contactPerson"
+                                            value={values.contactPerson}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.contactPerson && Boolean(errors.contactPerson)}
+                                            helperText={touched.contactPerson && errors.contactPerson}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            fullWidth
+                                            label="Contact Number"
+                                            name="contactNumber"
+                                            value={values.contactNumber}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.contactNumber && Boolean(errors.contactNumber)}
+                                            helperText={touched.contactNumber && errors.contactNumber}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            fullWidth
+                                            label="Email ID"
+                                            name="emailId"
+                                            value={values.emailId}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.emailId && Boolean(errors.emailId)}
+                                            helperText={touched.emailId && errors.emailId}
+                                        />
+                                    </Grid>
+                                </Grid>
 
-                {/* Contact Person */}
-                <Grid item xs={12} sm={6}>
-                    <TextField
-                        fullWidth
-                        label="Contact Person"
-                        name="contactPerson"
-                        value={values.contactPerson}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={touched.contactPerson && Boolean(errors.contactPerson)}
-                        helperText={touched.contactPerson && errors.contactPerson}
-                    />
-                </Grid>
+                                <h3 className={styles.mainHeading}>Shipping</h3>
+                                <Grid container spacing={2} style={{ marginBottom: '30px' }}>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            fullWidth
+                                            label="Location of Source"
+                                            name="locationOfSource"
+                                            value={values.locationOfSource.join(', ')}
+                                            onChange={(e) => setFieldValue('locationOfSource', e.target.value.split(', '))}
+                                            onBlur={handleBlur}
+                                            error={touched.locationOfSource && Boolean(errors.locationOfSource)}
+                                            helperText={touched.locationOfSource && errors.locationOfSource}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <FormControlLabel
+                                            control={
+                                                <Checkbox
+                                                    checked={values.podRelevant}
+                                                    onChange={(e) => setFieldValue('podRelevant', e.target.checked)}
+                                                />
+                                            }
+                                            label="POD Relevant"
+                                        />
+                                    </Grid>
+                                </Grid>
 
-                {/* Contact Number */}
-                <Grid item xs={12} sm={6}>
-                    <TextField
-                        fullWidth
-                        label="Contact Number"
-                        name="contactNumber"
-                        type="tel"
-                        value={values.contactNumber}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={touched.contactNumber && Boolean(errors.contactNumber)}
-                        helperText={touched.contactNumber && errors.contactNumber}
-                    />
-                </Grid>
+                                <h3 className={styles.mainHeading}>Partner Functions</h3>
+                                <Grid container spacing={2} style={{ marginBottom: '30px' }}>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            fullWidth
+                                            label="Ordering Address"
+                                            name="orderingAddress"
+                                            value={values.orderingAddress}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.orderingAddress && Boolean(errors.orderingAddress)}
+                                            helperText={touched.orderingAddress && errors.orderingAddress}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            fullWidth
+                                            label="Goods Supplier"
+                                            name="goodsSupplier"
+                                            value={values.goodsSupplier}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.goodsSupplier && Boolean(errors.goodsSupplier)}
+                                            helperText={touched.goodsSupplier && errors.goodsSupplier}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            fullWidth
+                                            label="Forwarding Agent"
+                                            name="forwardingAgent"
+                                            value={values.forwardingAgent}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.forwardingAgent && Boolean(errors.forwardingAgent)}
+                                            helperText={touched.forwardingAgent && errors.forwardingAgent}
+                                        />
+                                    </Grid>
+                                </Grid>
 
-                {/* Email ID */}
-                <Grid item xs={12} sm={6}>
-                    <TextField
-                        fullWidth
-                        label="Email ID"
-                        name="emailId"
-                        type="email"
-                        value={values.emailId}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={touched.emailId && Boolean(errors.emailId)}
-                        helperText={touched.emailId && errors.emailId}
-                    />
-                </Grid>
+                                <Box marginTop={3} textAlign="center">
+                                    <Button type="submit" variant="contained" color="primary">
+                                        Submit
+                                    </Button>
+                                </Box>
+                            </Form>
+                        )}
+                    </Formik>
+                </Box>
+            </Collapse>
 
-                {/* Location of Destinations */}
-                <Grid item xs={12} sm={6}>
-                    <TextField
-                        fullWidth
-                        label="Location of Destinations"
-                        name="locationOfDestinations"
-                        // value={values.locationOfDestinations.join(', ')}
-                        onChange={(e) =>
-                            setFieldValue(
-                                'locationOfDestinations',
-                                e.target.value.split(',').map((item) => item.trim())
-                            )
-                        }
-                        onBlur={handleBlur}
-                        error={
-                            touched.locationOfDestinations &&
-                            Boolean(errors.locationOfDestinations)
-                        }
-                        helperText={
-                            touched.locationOfDestinations && errors.locationOfDestinations
-                        }
-                    />
-                </Grid>
-
-                {/* POD Relevant */}
-                <Grid item xs={12}>
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                name="podRelevant"
-                                checked={values.podRelevant}
-                                onChange={handleChange}
-                                onBlur={handleBlur}
-                            />
-                        }
-                        label="POD Relevant"
-                    />
-                </Grid>
-            </Grid>
-
-            <h3 className={styles.mainHeding}>Partner Functions</h3>
-            <Grid container spacing={2}>
-                {/* Ordering Address */}
-                <Grid item xs={12} sm={6}>
-                    <TextField
-                        fullWidth
-                        label="Ordering Address"
-                        name="orderingAddress"
-                        value={values.orderingAddress}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={touched.orderingAddress && Boolean(errors.orderingAddress)}
-                        helperText={touched.orderingAddress && errors.orderingAddress}
-                    />
-                </Grid>
-
-                {/* Goods Supplier */}
-                <Grid item xs={12} sm={6}>
-                    <TextField
-                        fullWidth
-                        label="Goods Supplier"
-                        name="goodsSupplier"
-                        value={values.goodsSupplier}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={touched.goodsSupplier && Boolean(errors.goodsSupplier)}
-                        helperText={touched.goodsSupplier && errors.goodsSupplier}
-                    />
-                </Grid>
-
-                {/* Forwarding Agent */}
-                <Grid item xs={12} sm={6}>
-                    <TextField
-                        fullWidth
-                        label="Forwarding Agent"
-                        name="forwardingAgent"
-                        value={values.forwardingAgent}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={touched.forwardingAgent && Boolean(errors.forwardingAgent)}
-                        helperText={touched.forwardingAgent && errors.forwardingAgent}
-                    />
-                </Grid>
+            <Grid item xs={12} style={{ marginTop: '50px' }}>
+                <DataGridComponent
+                    columns={columns}
+                    rows={dummyVendors}
+                    isLoading={false}
+                    pageSizeOptions={[10, 20]}
+                    initialPageSize={10}
+                />
             </Grid>
         </div>
     );
 };
 
-export default SuppilerForm;
+export default SupplierForm;

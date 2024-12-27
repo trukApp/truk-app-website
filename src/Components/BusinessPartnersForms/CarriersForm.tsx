@@ -1,7 +1,8 @@
-import React from 'react';
-import { TextField, Grid, MenuItem } from '@mui/material';
-import { useFormikContext } from 'formik';
-import styles from './BusinessPartners.module.css'
+import React, { useState } from 'react';
+import { Box, Button, Collapse, Grid, TextField, Checkbox, FormControlLabel } from '@mui/material';
+import { Formik, Form } from 'formik';
+import * as Yup from 'yup';
+import styles from './BusinessPartners.module.css'; // Import your styles
 import { DataGridComponent } from '../GridComponent';
 import { GridColDef } from '@mui/x-data-grid';
 
@@ -56,108 +57,208 @@ const carrierColumns: GridColDef[] = [
     { field: 'operatingRegions', headerName: 'Operating Regions', flex: 1 },
 ];
 
-interface CarriersFormValues {
-    carrierName: string;
-    carrierVehicleType: string;
-    vehicleNumber: string;
-    carrierCapacity: string;
-    operatingRegions: string;
-}
+const CarrierForm: React.FC = () => {
+    const [showForm, setShowForm] = useState(false);
 
-const vehicleTypes = [
-    'Truck',
-    'Van',
-    'Container',
-    'Tanker',
-    'Refrigerated Vehicle',
-    'Trailer',
-];
+    const initialCarrierValues = {
+        carrierId: '',
+        name: '',
+        contactPerson: '',
+        contactNumber: '',
+        emailId: '',
+        location: '',
+        serviceType: '',
+        vehicleDetails: '',
+        deliveryArea: '',
+        isActive: false
+    };
 
-const CarriersForm: React.FC = () => {
-    const { values, handleChange, handleBlur, errors, touched } = useFormikContext<CarriersFormValues>();
+    const carrierValidationSchema = Yup.object({
+        carrierId: Yup.string().required('Carrier ID is required'),
+        name: Yup.string().required('Name is required'),
+        contactPerson: Yup.string().required('Contact Person is required'),
+        contactNumber: Yup.string().required('Contact Number is required'),
+        emailId: Yup.string().email('Invalid email format').required('Email ID is required'),
+        location: Yup.string().required('Location is required'),
+        serviceType: Yup.string().required('Service Type is required'),
+        vehicleDetails: Yup.string().required('Vehicle Details are required'),
+        deliveryArea: Yup.string().required('Delivery Area is required'),
+        isActive: Yup.boolean()
+    });
+
+    const handleCarrierSubmit = (values: typeof initialCarrierValues) => {
+        console.log('Carrier Form Submitted:', values);
+    };
 
     return (
-        <div>
-            <h3 className={styles.mainHeding}>Carrier Details</h3>
-            <Grid container spacing={2}>
-                {/* Carrier Name */}
-                <Grid item xs={12} sm={6}>
-                    <TextField
-                        fullWidth
-                        label="Carrier Name"
-                        name="carrierName"
-                        value={values.carrierName}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={touched.carrierName && Boolean(errors.carrierName)}
-                        helperText={touched.carrierName && errors.carrierName}
-                    />
-                </Grid>
+        <div className={styles.formsMainContainer}>
 
-                {/* Vehicle Type */}
-                <Grid item xs={12} sm={6}>
-                    <TextField
-                        fullWidth
-                        select
-                        label="Vehicle Type"
-                        name="vehicleType"
-                        value={values.carrierVehicleType}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={touched.carrierVehicleType && Boolean(errors.carrierVehicleType)}
-                        helperText={touched.carrierVehicleType && errors.carrierVehicleType}
+            <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
+                <Button variant="contained" color="primary" onClick={() => setShowForm((prev) => !prev)}>
+                    {showForm ? 'Close Form' : 'Create Carrier'}
+                </Button>
+                <Button variant="outlined" color="secondary">
+                    Mass Upload
+                </Button>
+            </Box>
+
+
+            <Collapse in={showForm}>
+                <Box marginBottom={4} padding={2} border="1px solid #ccc" borderRadius={2}>
+                    <Formik
+                        initialValues={initialCarrierValues}
+                        validationSchema={carrierValidationSchema}
+                        onSubmit={handleCarrierSubmit}
                     >
-                        {vehicleTypes.map((type) => (
-                            <MenuItem key={type} value={type}>
-                                {type}
-                            </MenuItem>
-                        ))}
-                    </TextField>
-                </Grid>
+                        {({ values, handleChange, handleBlur, errors, touched, setFieldValue }) => (
+                            <Form>
+                                <h3 className={styles.mainHeading}>Carrier Details</h3>
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            fullWidth
+                                            label="Carrier ID"
+                                            name="carrierId"
+                                            value={values.carrierId}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.carrierId && Boolean(errors.carrierId)}
+                                            helperText={touched.carrierId && errors.carrierId}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            fullWidth
+                                            label="Name"
+                                            name="name"
+                                            value={values.name}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.name && Boolean(errors.name)}
+                                            helperText={touched.name && errors.name}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            fullWidth
+                                            label="Contact Person"
+                                            name="contactPerson"
+                                            value={values.contactPerson}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.contactPerson && Boolean(errors.contactPerson)}
+                                            helperText={touched.contactPerson && errors.contactPerson}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            fullWidth
+                                            label="Contact Number"
+                                            name="contactNumber"
+                                            value={values.contactNumber}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.contactNumber && Boolean(errors.contactNumber)}
+                                            helperText={touched.contactNumber && errors.contactNumber}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            fullWidth
+                                            label="Email ID"
+                                            name="emailId"
+                                            value={values.emailId}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.emailId && Boolean(errors.emailId)}
+                                            helperText={touched.emailId && errors.emailId}
+                                        />
+                                    </Grid>
+                                </Grid>
 
-                {/* Vehicle Number */}
-                <Grid item xs={12} sm={6}>
-                    <TextField
-                        fullWidth
-                        label="Vehicle Number"
-                        name="vehicleNumber"
-                        value={values.vehicleNumber}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={touched.vehicleNumber && Boolean(errors.vehicleNumber)}
-                        helperText={touched.vehicleNumber && errors.vehicleNumber}
-                    />
-                </Grid>
+                                <h3 className={styles.mainHeading}>Service Details</h3>
+                                <Grid container spacing={2} style={{ marginBottom: '30px' }}>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            fullWidth
+                                            label="Location"
+                                            name="location"
+                                            value={values.location}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.location && Boolean(errors.location)}
+                                            helperText={touched.location && errors.location}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            fullWidth
+                                            label="Service Type"
+                                            name="serviceType"
+                                            value={values.serviceType}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.serviceType && Boolean(errors.serviceType)}
+                                            helperText={touched.serviceType && errors.serviceType}
+                                        />
+                                    </Grid>
+                                </Grid>
 
-                {/* Capacity */}
-                <Grid item xs={12} sm={6}>
-                    <TextField
-                        fullWidth
-                        label="Capacity (Tons)"
-                        name="capacity"
-                        type="number"
-                        value={values.carrierCapacity}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={touched.carrierCapacity && Boolean(errors.carrierCapacity)}
-                        helperText={touched.carrierCapacity && errors.carrierCapacity}
-                    />
-                </Grid>
+                                <h3 className={styles.mainHeading}>Vehicle & Delivery Details</h3>
+                                <Grid container spacing={2} style={{ marginBottom: '30px' }}>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            fullWidth
+                                            label="Vehicle Details"
+                                            name="vehicleDetails"
+                                            value={values.vehicleDetails}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.vehicleDetails && Boolean(errors.vehicleDetails)}
+                                            helperText={touched.vehicleDetails && errors.vehicleDetails}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            fullWidth
+                                            label="Delivery Area"
+                                            name="deliveryArea"
+                                            value={values.deliveryArea}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.deliveryArea && Boolean(errors.deliveryArea)}
+                                            helperText={touched.deliveryArea && errors.deliveryArea}
+                                        />
+                                    </Grid>
+                                </Grid>
 
-                {/* Operating Regions */}
-                <Grid item xs={12}>
-                    <TextField
-                        fullWidth
-                        label="Operating Regions"
-                        name="operatingRegions"
-                        value={values.operatingRegions}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={touched.operatingRegions && Boolean(errors.operatingRegions)}
-                        helperText={touched.operatingRegions && errors.operatingRegions}
-                    />
-                </Grid>
-            </Grid>
+                                <h3 className={styles.mainHeading}>Status</h3>
+                                <Grid container spacing={2} style={{ marginBottom: '30px' }}>
+                                    <Grid item xs={12}>
+                                        <FormControlLabel
+                                            control={
+                                                <Checkbox
+                                                    checked={values.isActive}
+                                                    onChange={(e) => setFieldValue('isActive', e.target.checked)}
+                                                />
+                                            }
+                                            label="Is Active"
+                                        />
+                                    </Grid>
+                                </Grid>
+
+                                <Box marginTop={3} textAlign="center">
+                                    <Button type="submit" variant="contained" color="primary">
+                                        Submit
+                                    </Button>
+                                </Box>
+                            </Form>
+                        )}
+                    </Formik>
+                </Box>
+            </Collapse>
+
+
             <Grid item xs={12} style={{ marginTop: '50px' }}>
                 <DataGridComponent
                     columns={carrierColumns}
@@ -171,4 +272,4 @@ const CarriersForm: React.FC = () => {
     );
 };
 
-export default CarriersForm;
+export default CarrierForm;
