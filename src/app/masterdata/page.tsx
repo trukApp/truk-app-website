@@ -8,7 +8,7 @@ import PackagingInfo from "@/Components/PackagingInfo";
 import UnitsOfMeasurement from "@/Components/UnitsOfMeasurement";
 
 const MasterData: React.FC = () => {
-  const [selectedOption, setSelectedOption] = useState<string>("Vehicles");
+  const [selectedOption, setSelectedOption] = useState<string>("Lanes");
 
   const renderComponent = () => {
     switch (selectedOption) {
@@ -27,7 +27,7 @@ const MasterData: React.FC = () => {
     }
   };
 
-  const tiles = [ 
+  const tiles = [
     { label: "Vehicles", value: "Vehicles" },
     { label: "Lanes", value: "Lanes" },
     { label: "Locations", value: "Locations" },

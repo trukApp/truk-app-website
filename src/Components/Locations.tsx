@@ -1,10 +1,16 @@
 'use client';
 
-import React,{useEffect , useRef} from 'react';
+import React  from 'react';
 import {
   Box,
   Button,
+  Chip,
+  FormControl,
   Grid,
+  InputLabel,
+  MenuItem,
+  OutlinedInput,
+  Select,
   TextField,
   Typography,
 } from '@mui/material';
@@ -13,15 +19,25 @@ import * as Yup from 'yup';
 
 // Validation schema
 const validationSchema = Yup.object({
-  locationId: Yup.string().required('Location ID is required'),
   locationDescription: Yup.string().required('Location description is required'),
-  locationType: Yup.string().required('Location type is required'), 
+  locationType: Yup.string().required('Location type is required'),
+    // vehiclesNearBy: Yup.array()
+    // .min(1, 'Select at least one vehicle')
+    // .required('Required'),
 
 });
 
-const Locations: React.FC = () => {
-  const locationInputRef = useRef<HTMLInputElement | null>(null);
+const Locations: React.FC = () => { 
 
+  // Static data for vehicle options
+  const vehicleOptions = [
+    { id: '1', name: 'Truck - 001' },
+    { id: '2', name: 'Trailer - 002' },
+    { id: '3', name: 'Container - 003' },
+    { id: '4', name: 'Truck - 004' },
+    { id: '5', name: 'Trailer - 005' },
+  ];
+  
 
   const formik = useFormik({
     initialValues: {
@@ -34,10 +50,13 @@ const Locations: React.FC = () => {
       latitude:'',
       timeZone: '',
       city: '',
+      district:'',
       state: '',
       country: '',
       pincode: '',
-      vehiclesNearBy: '',
+      vehiclesNearBy: [],
+      locationContactName: '',
+      locationContactNumber: ''
     },
     validationSchema,
     onSubmit: (values) => {
@@ -45,98 +64,7 @@ const Locations: React.FC = () => {
     },
   });
 
-  const { values, errors, touched,setFieldValue, handleChange, handleBlur, handleSubmit } =formik;
-
-useEffect(() => {
-  const fetchTimeZone = async (lat: number, lng: number) => {
-    try {
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/timezone/json?location=${lat},${lng}&timestamp=${Math.floor(
-          Date.now() / 1000
-        )}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
-      );
-      const data = await response.json();
-      if (data?.timeZoneId) {
-        setFieldValue('timeZone', data.timeZoneId); // Set the time zone
-      }
-    } catch (error) {
-      console.error('Failed to fetch time zone:', error);
-    }
-  };
-
-  const fetchPostalCode = async (lat: number, lng: number) => {
-  try {
-    const response = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
-    );
-    const data = await response.json();
-
-    // Look for postal_code in the results
-    const postalCodeComponent = data.results
-      .flatMap((result: { address_components: []; }) => result.address_components)
-      .find((component: { types: string | string[]; }) => component.types.includes('postal_code'));
-
-    if (postalCodeComponent) {
-      setFieldValue('pincode', postalCodeComponent.long_name);
-    } else {
-      console.warn('Postal code not found in geocoding results.');
-    }
-  } catch (error) {
-    console.error('Failed to fetch postal code:', error);
-  }
-};
-
-
-  if (window.google && locationInputRef.current) {
-    const autocomplete = new google.maps.places.Autocomplete(locationInputRef.current, {
-      types: ['address'],
-    });
-
-    autocomplete.addListener('place_changed', () => {
-      const place = autocomplete.getPlace();
-      console.log('Place details:', place);
-
-      if (place?.geometry?.location) {
-        const lat = place.geometry.location.lat();
-        const lng = place.geometry.location.lng(); 
-        setFieldValue('longitude', lat.toString());
-        setFieldValue('latitude', lng.toString());
-
-        // Fetch and set the time zone
-        fetchTimeZone(lat, lng);
-        fetchPostalCode(lat,lng)
-      }
-
-      if (place?.formatted_address) {
-        setFieldValue('locationDescription', place.formatted_address);
-      }
-
-      if (place?.address_components) {
-        const components = place.address_components;
-
-        // Helper function to extract address components
-        const getComponent = (type: string) => {
-          const component = components.find((c) => c.types.includes(type));
-          return component ? component.long_name : '';
-        };
-
-        // Extract city, state, country, and postal code
-        const city = getComponent('locality') || getComponent('administrative_area_level_2');
-        const state = getComponent('administrative_area_level_1');
-        const country = getComponent('country');
-        const pincode = getComponent('postal_code');
-        console.log("postal code :", pincode)
-
-        // Set extracted values
-        setFieldValue('city', city);
-        setFieldValue('state', state);
-        setFieldValue('country', country);
-        setFieldValue('pincode', pincode);
-      }
-    });
-  }
-}, [setFieldValue]);
-
+  const { values, errors, touched, handleChange, handleBlur, handleSubmit } =formik;
 
 return (
     <Box
@@ -156,25 +84,23 @@ return (
 
       <Grid container spacing={2}>
         <Typography variant="h6" align="center" gutterBottom>
-        General info
+        1. General info
       </Typography>
       <Grid container spacing={2}>
-  <Grid item xs={12} sm={6} md={2.4}>
-    <TextField
-      fullWidth
-      size="small"
-      label="Location ID* (Auto-generated)"
-      name="locationId"
-      value={values.locationId}
-      onChange={handleChange}
-      onBlur={handleBlur}
-      error={touched.locationId && Boolean(errors.locationId)}
-      helperText={touched.locationId && errors.locationId}
-      InputProps={{
-        readOnly: true, // To make it auto-generated and non-editable
-      }}
-    />
-  </Grid>
+          <Grid item xs={12} sm={6} md={2.4}>
+            <TextField
+              fullWidth disabled
+              size="small"
+              label="Location ID* (Auto-generated)"
+              name="locationId"
+              value={values.locationId}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              InputProps={{
+                readOnly: true,
+              }}
+            />
+          </Grid>
           <Grid item xs={12} sm={6} md={2.4}>
           <TextField
             fullWidth
@@ -182,94 +108,13 @@ return (
             label="Location Description*"
             name="locationDescription"
             value={values.locationDescription}
-            inputRef={locationInputRef}
             onChange={handleChange}
             onBlur={handleBlur}
             error={touched.locationDescription && Boolean(errors.locationDescription)}
             helperText={touched.locationDescription && errors.locationDescription}
           />
-        </Grid>
-          <Grid item xs={12} sm={6} md={2.4}>
-    <TextField
-      fullWidth
-      size="small" disabled
-      label="Longitude*"
-      name="longitude"
-      value={values.longitude}
-      onChange={handleChange}
-      onBlur={handleBlur}
-    />
-  </Grid>
-  <Grid item xs={12} sm={6} md={2.4}>
-    <TextField
-      fullWidth
-      size="small" disabled
-      label="Latitude*"
-      name="latitude"
-      value={values.latitude}
-      onChange={handleChange}
-      onBlur={handleBlur}
-    />
-        </Grid>
-      <Grid item xs={12} sm={6} md={2.4}>
-    <TextField
-      fullWidth
-      size="small" disabled
-      label="Time Zone*"
-      name="timeZone"
-      value={values.timeZone}
-      onChange={handleChange}
-      onBlur={handleBlur}
-      error={touched.timeZone && Boolean(errors.timeZone)}
-      helperText={touched.timeZone && errors.timeZone}
-    />
           </Grid>
-        <Grid item xs={12} sm={6} md={2.4}>
-    <TextField
-      fullWidth disabled
-      size="small"
-      label="City"
-      name="city"
-      value={values.city}
-      onChange={handleChange}
-      onBlur={handleBlur}
-    />
-          </Grid>
-                <Grid item xs={12} sm={6} md={2.4}>
-    <TextField
-      fullWidth disabled
-      size="small"
-      label="State"
-      name="state"
-      value={values.state}
-      onChange={handleChange}
-      onBlur={handleBlur}
-    />
-          </Grid>
-                <Grid item xs={12} sm={6} md={2.4}>
-    <TextField
-      fullWidth
-      size="small" disabled
-      label="Country"
-      name="timeZone"
-      value={values.country}
-      onChange={handleChange}
-      onBlur={handleBlur}
-    />
-          </Grid>
-                <Grid item xs={12} sm={6} md={2.4}>
-    <TextField
-      fullWidth
-      size="small"
-      label="Pincode"
-      name="pincode"
-      value={values.pincode}
-      onChange={handleChange}
-      onBlur={handleBlur} disabled
-    />
-  </Grid>
-
-        <Grid item xs={12} sm={6} md={2.4}>
+                  <Grid item xs={12} sm={6} md={2.4}>
           <TextField
             fullWidth
             size="small"
@@ -305,8 +150,9 @@ return (
             <option value="rail junction">Rail Junction</option>
             <option value="border cross point">Border Cross Point</option>
           </TextField>
-        </Grid>
+          </Grid>
 
+          
         <Grid item xs={12} sm={6} md={2.4}>
           <TextField
             fullWidth
@@ -320,21 +166,219 @@ return (
           />
         </Grid>
         <Grid item xs={12} sm={6} md={2.4}>
-    <TextField
-      fullWidth
-      size="small"
-      label="IATA Code (3 Characters Length)"
-      name="iataCode"
-      value={values.iataCode}
-      onChange={handleChange}
-      onBlur={handleBlur}
-      inputProps={{ maxLength: 3 }}
-    />
+        <TextField
+          fullWidth
+          size="small"
+          label="IATA Code (3 Characters Length)"
+          name="iataCode"
+          value={values.iataCode}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          inputProps={{ maxLength: 3 }}
+        />
           </Grid>
+
+        
+
+
+
+
       
           
         </Grid>
-        <Typography sx={{ marginTop: '20px'}}>Vehicles operated at this location</Typography>
+
+        <Grid container spacing={2}  mt={1} sx={{marginLeft:'3px'}}>
+              <Typography  gutterBottom>
+                Geographical data
+              </Typography>
+          <Grid container spacing={2} >
+            <Grid item xs={12} sm={6} md={2.4}>
+              <TextField
+                fullWidth
+                size="small" 
+                label="Longitude*"
+                name="longitude"
+                value={values.longitude}
+                onChange={handleChange}
+                onBlur={handleBlur}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={2.4}>
+              <TextField
+                fullWidth
+                size="small" 
+                label="Latitude*"
+                name="latitude"
+                value={values.latitude}
+                onChange={handleChange}
+                onBlur={handleBlur}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={2.4}>
+              <TextField
+                fullWidth
+                size="small" 
+                label="Time Zone*"
+                name="timeZone"
+                value={values.timeZone}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={touched.timeZone && Boolean(errors.timeZone)}
+                helperText={touched.timeZone && errors.timeZone}
+              />
+            </Grid>
+          </Grid>
+        </Grid>
+        
+        <Grid container spacing={2} ml={1} mt={2}>
+             <Typography variant="h6" align="center" gutterBottom >
+        2. Address
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6} md={2.4}>
+      <TextField
+        fullWidth 
+        size="small"
+        label="City"
+        name="city"
+        value={values.city}
+        onChange={handleChange}
+        onBlur={handleBlur}
+      />
+            </Grid>
+             <Grid item xs={12} sm={6} md={2.4}>
+                <TextField
+                  fullWidth 
+                  size="small"
+                  label="District"
+                  name="district"
+                  value={values.district}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                />
+            </Grid>
+            <Grid item xs={12} sm={6} md={2.4}>
+      <TextField
+        fullWidth 
+        size="small"
+        label="State"
+        name="state"
+        value={values.state}
+        onChange={handleChange}
+        onBlur={handleBlur}
+      />
+            </Grid>
+            <Grid item xs={12} sm={6} md={2.4}>
+      <TextField
+        fullWidth
+        size="small" 
+        label="Country"
+        name="country"
+        value={values.country}
+        onChange={handleChange}
+        onBlur={handleBlur}
+      />
+            </Grid>
+            <Grid item xs={12} sm={6} md={2.4}>
+      <TextField
+        fullWidth
+        size="small"
+        label="Pincode"
+        name="pincode"
+        value={values.pincode}
+        onChange={handleChange}
+        onBlur={handleBlur} 
+      />
+            </Grid>
+            </Grid>
+        </Grid>
+
+        <Grid  spacing={4}  mt={2} ml={1}>
+            <Typography variant="h6"  mb={1}  >
+        3. Vehicles
+      </Typography>
+            
+      
+      
+<Box sx={{ marginBottom: 2 }}>
+  <FormControl fullWidth sx={{ minWidth:'280px' }}>  
+    <InputLabel
+      id="vehiclesNearBy-label" 
+    >
+      Vehicles operated at this location
+    </InputLabel>
+    <Select
+      labelId="vehiclesNearBy-label"
+      id="vehiclesNearBy"
+      multiple
+      value={formik.values.vehiclesNearBy}
+      onChange={(event) => formik.setFieldValue('vehiclesNearBy', event.target.value)}
+      input={
+        <OutlinedInput
+          label="Vehicles Operated Nearby"
+        />
+      }
+      renderValue={(selected) => (
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+          {selected.map((value) => {
+            const vehicle = vehicleOptions.find((v) => v.id === value);
+            return vehicle ? <Chip key={value} label={vehicle.name} /> : null;
+          })}
+        </Box>
+      )}
+  
+    >
+      {vehicleOptions.map((option) => (
+        <MenuItem key={option.id} value={option.id}>
+          {option.name}
+        </MenuItem>
+      ))}
+    </Select>
+    {formik.touched.vehiclesNearBy && formik.errors.vehiclesNearBy && (
+      <Box sx={{ color: 'red', fontSize: '0.8rem', marginTop: 1 }}>
+        {formik.errors.vehiclesNearBy}
+      </Box>
+    )}
+  </FormControl>
+</Box>
+
+
+        
+        </Grid>
+
+                <Grid container spacing={2} ml={1} mt={2}>
+             <Typography variant="h6" align="center" gutterBottom >
+        4. Additional details
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6} md={2.4}>
+      <TextField
+        fullWidth 
+        size="small"
+        label="Location contact name"
+        name="locationContactName"
+        value={values.locationContactName}
+        onChange={handleChange}
+        onBlur={handleBlur}
+      />
+            </Grid>
+             <Grid item xs={12} sm={6} md={2.4}>
+                <TextField
+                  fullWidth 
+                  size="small"
+                  label="Location contact number"
+                  name="locationContactNumber"
+                  value={values.locationContactNumber}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                />
+            </Grid>
+          
+            </Grid>
+        </Grid>
+
+
+    
     </Grid>
   </Grid>
       <Box sx={{ marginTop: '24px', textAlign: 'center' }}>

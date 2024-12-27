@@ -1,7 +1,6 @@
 
 "use client";
 
-
 import React from "react";
 import { Formik, Form, } from "formik";
 import * as Yup from "yup";
@@ -129,8 +128,8 @@ const VehicleForm: React.FC = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>
-        Vehicle Details Form
+      <Typography variant="h5" align="center" gutterBottom>
+        Vehicle Master data
       </Typography>
       <Formik
         initialValues={initialValues}
@@ -141,7 +140,7 @@ const VehicleForm: React.FC = () => {
           <Form>
             <Grid>
             {/* General Data */}
-            <Typography variant="h5">1. General Data</Typography>
+            <Typography variant="h6" mt={1} mb={1}>1. General Data</Typography>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6} md={2.4}>
                 <TextField
@@ -221,7 +220,7 @@ const VehicleForm: React.FC = () => {
             </Grid>
 
             {/* Transportation Details */}
-            <Typography variant="h5" mt={3} mb={2}>
+            <Typography variant="h6" mt={3} mb={1}>
               2. Transportation Details
             </Typography>
             <Grid container spacing={2}>
@@ -306,7 +305,7 @@ const VehicleForm: React.FC = () => {
             </Grid>
 
             {/* Capacity */}
-            <Typography variant="h5" mt={3} mb={2}>
+            <Typography variant="h6" mt={3} mb={1}>
               3. Capacity
             </Typography>
             <Grid container spacing={2}>
@@ -327,8 +326,9 @@ const VehicleForm: React.FC = () => {
               <Grid item xs={12} sm={6} md={0.8}>
                 <TextField
                   fullWidth
-                  select
-                  label="UoM"
+                  select 
+                  defaultValue={units[0]}
+                  
                   size="small"
                 >
                   {units.map((unit) => (
@@ -359,8 +359,8 @@ const VehicleForm: React.FC = () => {
               <Grid item xs={12} sm={6} md={0.8}>
                 <TextField
                   fullWidth
-                  select
-                  label="UoM"
+                  select defaultValue={units[0]}
+                  
                   size="small"
                 >
                   {units.map((unit) => (
@@ -392,8 +392,8 @@ const VehicleForm: React.FC = () => {
                 <TextField
                   fullWidth
                   select
-                  label="UoM"
-                  name="interiorLengthUoM"
+                  
+                  name="interiorLengthUoM" defaultValue={units[0]}
                   // value={values.interiorLengthUoM || ""}
                   onChange={handleChange}
                   size="small"
@@ -427,8 +427,8 @@ const VehicleForm: React.FC = () => {
                 <TextField
                   fullWidth
                   select
-                  label="UoM"
-                  name="interiorWidthUoM"
+                  
+                  name="interiorWidthUoM" defaultValue={units[0]}
                   // value={values.interiorWidthUoM || ""}
                   onChange={handleChange}
                   size="small"
@@ -462,8 +462,8 @@ const VehicleForm: React.FC = () => {
                 <TextField
                   fullWidth
                   select
-                  label="UoM"
-                  name="interiorHeightUoM"
+                  
+                  name="interiorHeightUoM" defaultValue={units[0]}
                   // value={values.interiorHeightUoM || ""}
                   onChange={handleChange}
                   size="small"
@@ -478,7 +478,7 @@ const VehicleForm: React.FC = () => {
             </Grid>
 
             {/* Physical Properties */}
-            <Typography variant="h5" mt={3} mb={2}>
+            <Typography variant="h6" mt={3} mb={1}>
               4. Physical Properties
             </Typography>
          <Grid container spacing={2}>
@@ -501,8 +501,8 @@ const VehicleForm: React.FC = () => {
                 <TextField
                   fullWidth
                   select
-                  label="UoM"
-                  name="tareWeightUoM"
+                  
+                  name="tareWeightUoM" defaultValue={units[0]}
                   // value={values.tareWeightUoM || ""}
                   onChange={handleChange}
                   size="small"
@@ -538,8 +538,8 @@ const VehicleForm: React.FC = () => {
                 <TextField
                   fullWidth
                   select
-                  label="UoM"
-                  name="maxGrossWeightUoM"
+                  
+                  name="maxGrossWeightUoM" defaultValue={units[0]}
                   // value={values.maxGrossWeightUoM || ""}
                   onChange={handleChange}
                   size="small"
@@ -571,8 +571,8 @@ const VehicleForm: React.FC = () => {
                 <TextField
                   fullWidth
                   select
-                  label="UoM"
-                  name="tareVolumeUoM"
+                  
+                  name="tareVolumeUoM" defaultValue={units[0]}
                   // value={values.tareVolumeUoM || ""}
                   onChange={handleChange}
                   size="small"
@@ -604,8 +604,8 @@ const VehicleForm: React.FC = () => {
                 <TextField
                   fullWidth
                   select
-                  label="UoM"
-                  name="maxLengthUoM"
+                  
+                  name="maxLengthUoM" defaultValue={units[0]}
                   // value={values.maxLengthUoM || ""}
                   onChange={handleChange}
                   size="small"
@@ -637,8 +637,8 @@ const VehicleForm: React.FC = () => {
                 <TextField
                   fullWidth
                   select
-                  label="UoM"
-                  name="maxWidthUoM"
+                  
+                  name="maxWidthUoM" defaultValue={units[0]}
                   // value={values.maxWidthUoM || ""}
                   onChange={handleChange}
                   size="small"
@@ -670,8 +670,8 @@ const VehicleForm: React.FC = () => {
                 <TextField
                   fullWidth
                   select
-                  label="UoM"
-                  name="maxHeightUoM"
+                  
+                  name="maxHeightUoM" defaultValue={units[0]}
                   // value={values.maxHeightUoM || ""}
                   onChange={handleChange}
                   size="small"
@@ -703,8 +703,8 @@ const VehicleForm: React.FC = () => {
               <TextField
                 fullWidth
                 select
-                label="UoM"
-                name="tareWeightUoM"
+                
+                name="tareWeightUoM" defaultValue={units[0]}
                 // value={values.tareWeightUoM || ''}
                 onChange={handleChange}
                 size="small"
@@ -719,7 +719,7 @@ const VehicleForm: React.FC = () => {
             </Grid>
 
             {/* Downtimes */}
-            <Typography variant="h5" mt={3} mb={2}>
+            <Typography variant="h6" mt={3} mb={1}>
               5. Downtimes
             </Typography>
             <Grid container spacing={2}>
