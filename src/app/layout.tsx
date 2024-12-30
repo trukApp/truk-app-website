@@ -4,7 +4,9 @@ import "./globals.css";
 import ReduxProvider from "@/store/redux-provider";
 import Header from "@/Components/Header";
 import Footer from "@/Components/Footer";
-
+import { ThemeProvider } from "@mui/material";
+import CssBaseline from "@mui/material/CssBaseline";
+import theme from "@/theme";
 
 // const geistSans = localFont({
 //   src: "./fonts/GeistVF.woff",
@@ -30,13 +32,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <ReduxProvider>
-          <Header />
-          <div style={{ marginTop: '50px', padding: '20px' }}>
-            {children}
-          </div>
-          <Footer />
-        </ReduxProvider>
+        <ThemeProvider theme={theme}>
+           <CssBaseline />
+          <ReduxProvider>
+            <Header />
+            <div style={{ marginTop: '50px', padding: '20px' }}>
+              {children}
+            </div>
+            <Footer />
+            </ReduxProvider>
+          </ThemeProvider>
       </body>
     </html>
   );

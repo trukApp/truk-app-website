@@ -6,14 +6,20 @@ import Lanes from "@/Components/Lanes";
 import Locations from "@/Components/Locations";
 import PackagingInfo from "@/Components/PackagingInfo";
 import UnitsOfMeasurement from "@/Components/UnitsOfMeasurement";
+import VehicleGroup from "@/Components/VehicleGroup";
+import DeviceMaster from "@/Components/DeviceMaster";
 
 const MasterData: React.FC = () => {
-  const [selectedOption, setSelectedOption] = useState<string>("Lanes");
+  const [selectedOption, setSelectedOption] = useState<string>("Device master");
 
   const renderComponent = () => {
     switch (selectedOption) {
       case "Vehicles":
         return <Vehicles />;
+      case "Vehicle group":
+        return <VehicleGroup />;
+      case "Device master":
+        return <DeviceMaster />;
       case "Lanes":
         return <Lanes />;
       case "Locations":
@@ -29,6 +35,8 @@ const MasterData: React.FC = () => {
 
   const tiles = [
     { label: "Vehicles", value: "Vehicles" },
+    { label: "Vehicle group", value: "Vehicle group" },
+    { label: "Device master", value: "Device master" },
     { label: "Lanes", value: "Lanes" },
     { label: "Locations", value: "Locations" },
     { label: "Packaging Info", value: "Packaging Info" },

@@ -175,8 +175,8 @@ const PackagingForm = () => {
           columns={columns}
           rows={rows}
           isLoading={false}
-          pageSizeOptions={[5, 10, 20]}
-          initialPageSize={5}
+          pageSizeOptions={[10, 20,30]}
+          initialPageSize={10}
         />
       </div>
     </>

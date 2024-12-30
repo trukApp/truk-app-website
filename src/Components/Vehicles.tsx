@@ -896,8 +896,8 @@ const VehicleForm: React.FC = () => {
           columns={columns}
           rows={rows}
           isLoading={false} // Set true to show loading state
-          pageSizeOptions={[5, 10, 20]} // Optional: customize page size options
-          initialPageSize={5} // Optional: default page size
+          pageSizeOptions={[10, 20,30]} // Optional: customize page size options
+          initialPageSize={10} // Optional: default page size
         />
       </div>
 
