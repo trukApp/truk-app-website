@@ -1,13 +1,13 @@
 'use client';
 import React, { useState } from "react";
 import { Box, Typography } from "@mui/material";
-import Vehicles from "@/Components/Vehicles";
-import Lanes from "@/Components/Lanes";
-import Locations from "@/Components/Locations";
-import PackagingInfo from "@/Components/PackagingInfo";
-import UnitsOfMeasurement from "@/Components/UnitsOfMeasurement";
-import VehicleGroup from "@/Components/VehicleGroup";
-import DeviceMaster from "@/Components/DeviceMaster";
+import Vehicles from "@/Components/MasterDataComponents/Vehicles";
+import Lanes from "@/Components/MasterDataComponents/Lanes";
+import Locations from "@/Components/MasterDataComponents/Locations";
+import PackagingInfo from "@/Components/MasterDataComponents/PackagingInfo";
+import UnitsOfMeasurement from "@/Components/MasterDataComponents/UnitsOfMeasurement";
+import VehicleGroup from "@/Components/MasterDataComponents/VehicleGroup";
+import DeviceMaster from "@/Components/MasterDataComponents/DeviceMaster";
 
 const MasterData: React.FC = () => {
   const [selectedOption, setSelectedOption] = useState<string>("Device master");

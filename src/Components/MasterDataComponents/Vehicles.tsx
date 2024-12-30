@@ -14,8 +14,11 @@ import {
   Button,
   Collapse,
 } from "@mui/material";
-import { DataGridComponent } from "./GridComponent";
+import { DataGridComponent } from "../GridComponent";
 import { GridColDef } from "@mui/x-data-grid";
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import styles from './MasterData.module.css'
 
 const units = ["g", "kg", "ton", "cm", "m", "inch"];
 interface FormValues {
@@ -161,15 +164,14 @@ const VehicleForm: React.FC = () => {
         <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
           <Button
             variant="contained"
-            color="primary"
             onClick={() => setShowForm((prev) => !prev)}
+            className={styles.createButton}
           >
-            {showForm ? 'Close Form' : 'Create Vechile'}
-          </Button>
-          <Button variant="outlined" color="secondary">
-            Mass Upload
+            Create Vechile
+            {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 8 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 8 }} />}
           </Button>
         </Box>
+
         <Typography variant="h5" align="center" gutterBottom>
           Vehicle Master data
         </Typography>
@@ -896,7 +898,7 @@ const VehicleForm: React.FC = () => {
           columns={columns}
           rows={rows}
           isLoading={false} // Set true to show loading state
-          pageSizeOptions={[10, 20,30]} // Optional: customize page size options
+          pageSizeOptions={[10, 20, 30]} // Optional: customize page size options
           initialPageSize={10} // Optional: default page size
         />
       </div>

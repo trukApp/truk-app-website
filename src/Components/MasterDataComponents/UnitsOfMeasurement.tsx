@@ -1,5 +1,5 @@
 import React from 'react'
-import { DataGridComponent } from './GridComponent';
+import { DataGridComponent } from '../GridComponent';
 import { GridColDef } from '@mui/x-data-grid';
 import { Grid } from '@mui/material';
 

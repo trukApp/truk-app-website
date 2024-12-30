@@ -17,9 +17,11 @@ import {
 } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { DataGridComponent } from './GridComponent';
+import { DataGridComponent } from '../GridComponent';
 import { GridColDef } from '@mui/x-data-grid';
-
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import styles from './MasterData.module.css'
 // Validation schema
 const validationSchema = Yup.object({
   locationDescription: Yup.string().required('Location description is required'),
@@ -122,16 +124,15 @@ const Locations: React.FC = () => {
         <Typography variant="h5" align="center" gutterBottom>
           Location Master Data
         </Typography>
+
         <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
           <Button
             variant="contained"
-            color="primary"
             onClick={() => setShowForm((prev) => !prev)}
+            className={styles.createButton}
           >
-            {showForm ? 'Close Form' : 'Create Location'}
-          </Button>
-          <Button variant="outlined" color="secondary">
-            Mass Upload
+            Create Location
+            {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 8 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 8 }} />}
           </Button>
         </Box>
 
@@ -448,7 +449,7 @@ const Locations: React.FC = () => {
           columns={columns}
           rows={rows}
           isLoading={false}
-          pageSizeOptions={[10, 20,30]}
+          pageSizeOptions={[10, 20, 30]}
           initialPageSize={10}
         />
       </div>
