@@ -116,13 +116,12 @@ const Locations: React.FC = () => {
         onSubmit={handleSubmit}
         sx={{
           width: '100%',
-          padding: '20px',
           boxSizing: 'border-box',
         }}
       >
 
-        <Typography variant="h5" align="center" gutterBottom>
-          Location Master Data
+        <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md:'24px' } }} align="center" gutterBottom>
+            Location master
         </Typography>
 
         <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
@@ -132,16 +131,16 @@ const Locations: React.FC = () => {
             className={styles.createButton}
           >
             Create Location
-            {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 8 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 8 }} />}
+            {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 4 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 4 }} />}
           </Button>
         </Box>
 
         <Collapse in={showForm}>
 
           <Box marginBottom={4} padding={2} border="1px solid #ccc" borderRadius={2}>
-            <Grid container spacing={2}>
+         
 
-              <Grid container spacing={2}>
+              <Grid container spacing={2} padding={2}>
                 <Typography variant="h6" align="center" gutterBottom>
                   1. General info
                 </Typography>
@@ -431,7 +430,7 @@ const Locations: React.FC = () => {
 
 
               </Grid>
-            </Grid>
+          
             <Box sx={{ marginTop: '24px', textAlign: 'center' }}>
               <Button variant="contained" color="primary" type="submit">
                 Submit

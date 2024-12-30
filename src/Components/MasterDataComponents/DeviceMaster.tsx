@@ -71,14 +71,17 @@ const DeviceMaster: React.FC = () => {
 
   return (
     <>
-      <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
+      <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md:'24px' } }} align="center" gutterBottom>
+          Device master
+      </Typography>
+      <Box display="flex" justifyContent="flex-end" >
         <Button
           variant="contained"
           onClick={() => setShowForm((prev) => !prev)}
           className={styles.createButton}
         >
           Create Device
-          {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 8 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 8 }} />}
+          {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 4 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 4}} />}
         </Button>
       </Box>
 
@@ -86,9 +89,6 @@ const DeviceMaster: React.FC = () => {
       <Collapse in={showForm}>
         <Box marginBottom={4} padding={2} border="1px solid #ccc" borderRadius={2}>
           <form onSubmit={formik.handleSubmit}>
-            <Typography variant="h5" align="center" gutterBottom>
-              Device Master
-            </Typography>
             <Grid container spacing={2}>
               {/* Device ID */}
               <Grid item xs={12} sm={6} md={2.4}  >
@@ -197,7 +197,7 @@ const DeviceMaster: React.FC = () => {
 
 
 
-      <div style={{ marginTop: "80px" }}>
+      <div style={{ marginTop: "40px" }}>
         <DataGridComponent
           columns={columns}
           rows={rows}

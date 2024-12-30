@@ -108,7 +108,10 @@ const TransportationLanes = () => {
 
   return (
     <>
-      <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
+      <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md:'24px' } }} align="center" gutterBottom>
+          Transportation lanes master
+      </Typography>
+      <Box display="flex" justifyContent="flex-end" >
         <Button
           variant="contained"
           onClick={() => setShowForm((prev) => !prev)}
@@ -123,9 +126,6 @@ const TransportationLanes = () => {
       <Collapse in={showForm}>
         <Box marginBottom={4} padding={2} border="1px solid #ccc" borderRadius={2}>
           <form onSubmit={formik.handleSubmit}>
-            <Typography variant="h5" align="center" gutterBottom>
-              Transportation Lanes Master data
-            </Typography>
             <Box  >
               {/* General Data */}
               <Box sx={{ marginBottom: 3 }}>

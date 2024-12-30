@@ -160,21 +160,22 @@ const VehicleForm: React.FC = () => {
 
   return (
     <>
-      <Box sx={{ p: 3 }}>
-        <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
+      <Box >
+        
+        <Typography align="center" sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md:'24px' } }} gutterBottom>
+          Vehicle master 
+        </Typography>
+        <Box display="flex" justifyContent="flex-end" >
           <Button
             variant="contained"
             onClick={() => setShowForm((prev) => !prev)}
             className={styles.createButton}
           >
-            Create Vechile
-            {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 8 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 8 }} />}
+            Create Vehicle
+            {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 4 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 4 }} />}
           </Button>
         </Box>
 
-        <Typography variant="h5" align="center" gutterBottom>
-          Vehicle Master data
-        </Typography>
         <Collapse in={showForm}>
           <Box marginBottom={4} padding={2} border="1px solid #ccc" borderRadius={2}>
             <Formik

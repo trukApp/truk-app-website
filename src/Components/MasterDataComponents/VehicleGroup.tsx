@@ -52,22 +52,23 @@ const VehicleGroup: React.FC = () => {
 
   return (
     <>
-      <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
+        <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md:'24px' } }} align="center" gutterBottom>
+              Vehicle group master
+            </Typography>
+      <Box display="flex" justifyContent="flex-end">
         <Button
           variant="contained"
           onClick={() => setShowForm((prev) => !prev)}
           className={styles.createButton}
         >
-          Create Vechile Group
-          {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 8 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 8 }} />}
+          Create vehicle group
+          {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 4 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 4 }} />}
         </Button>
       </Box>
       <Collapse in={showForm}>
         <Box marginBottom={4} padding={2} border="1px solid #ccc" borderRadius={2}>
           <form onSubmit={formik.handleSubmit}>
-            <Typography variant="h5" align="center" gutterBottom>
-              Vehicle group Master
-            </Typography>
+
             <Grid container spacing={2}>
 
               {/* Vehicle Group ID */}

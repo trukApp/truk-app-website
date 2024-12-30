@@ -8,7 +8,7 @@ const SettingsComponent = () => {
             <h2 className={styles.sectionMainHeading}>Settings</h2>
             <div className={styles.cardsMainContainer}>
                 <div className={styles.cardContainer}>
-                    <Image src="https://jai-mp.s3.eu-north-1.amazonaws.com/settings-3110.png" width={100} height={100} alt="Icon" className={styles.settingImage} />
+                    <Image src="https://jai-mp.s3.eu-north-1.amazonaws.com/settings-3110.png" width={100} height={100}  alt="Icon" className={styles.settingImage} />
                     <h3 className={styles.cardheading}>User settings</h3>
                 </div>
 
