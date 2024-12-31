@@ -75,8 +75,8 @@ const CustomerForm: React.FC = () => {
     };
 
     return (
-        <div className={styles.formsMainContainer}>
-            <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
+        <Grid >
+            <Box display="flex" justifyContent="flex-end"  gap={2}>
                 <Button
                     variant="contained"
                     onClick={() => setShowForm((prev) => !prev)}
@@ -98,9 +98,9 @@ const CustomerForm: React.FC = () => {
                             <Form>
                                 <h3 className={styles.mainHeading}>General Data</h3>
                                 <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Customer ID"
                                             name="customerId"
                                             value={values.customerId}
@@ -110,9 +110,9 @@ const CustomerForm: React.FC = () => {
                                             helperText={touched.customerId && errors.customerId}
                                         />
                                     </Grid>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Name"
                                             name="name"
                                             value={values.name}
@@ -122,9 +122,9 @@ const CustomerForm: React.FC = () => {
                                             helperText={touched.name && errors.name}
                                         />
                                     </Grid>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Location ID"
                                             name="locationId"
                                             value={values.locationId}
@@ -134,9 +134,9 @@ const CustomerForm: React.FC = () => {
                                             helperText={touched.locationId && errors.locationId}
                                         />
                                     </Grid>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Pincode"
                                             name="pincode"
                                             value={values.pincode}
@@ -146,9 +146,9 @@ const CustomerForm: React.FC = () => {
                                             helperText={touched.pincode && errors.pincode}
                                         />
                                     </Grid>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="City"
                                             name="city"
                                             value={values.city}
@@ -158,9 +158,9 @@ const CustomerForm: React.FC = () => {
                                             helperText={touched.city && errors.city}
                                         />
                                     </Grid>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="District"
                                             name="district"
                                             value={values.district}
@@ -170,9 +170,9 @@ const CustomerForm: React.FC = () => {
                                             helperText={touched.district && errors.district}
                                         />
                                     </Grid>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Country"
                                             name="country"
                                             value={values.country}
@@ -184,11 +184,11 @@ const CustomerForm: React.FC = () => {
                                     </Grid>
                                 </Grid>
 
-                                <h3 className={styles.mainHeding}>Correspondence</h3>
+                                <h3 className={styles.mainHeading}>Correspondence</h3>
                                 <Grid container spacing={2} style={{ marginBottom: '30px' }}>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Contact Person"
                                             name="contactPerson"
                                             value={values.contactPerson}
@@ -198,9 +198,9 @@ const CustomerForm: React.FC = () => {
                                             helperText={touched.contactPerson && errors.contactPerson}
                                         />
                                     </Grid>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Contact Number"
                                             name="contactNumber"
                                             value={values.contactNumber}
@@ -210,9 +210,9 @@ const CustomerForm: React.FC = () => {
                                             helperText={touched.contactNumber && errors.contactNumber}
                                         />
                                     </Grid>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Email ID"
                                             name="emailId"
                                             value={values.emailId}
@@ -224,11 +224,11 @@ const CustomerForm: React.FC = () => {
                                     </Grid>
                                 </Grid>
 
-                                <h3 className={styles.mainHeding}>Shipping</h3>
+                                <h3 className={styles.mainHeading}>Shipping</h3>
                                 <Grid container spacing={2} style={{ marginBottom: '30px' }}>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Location of Source"
                                             name="locationOfSource"
                                             value={values.locationOfSource.join(', ')}
@@ -251,11 +251,11 @@ const CustomerForm: React.FC = () => {
                                     </Grid>
                                 </Grid>
 
-                                <h3 className={styles.mainHeding}>Partner Functions</h3>
+                                <h3 className={styles.mainHeading}>Partner Functions</h3>
                                 <Grid container spacing={2} style={{ marginBottom: '30px' }}>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Ship To Party"
                                             name="shipToParty"
                                             value={values.shipToParty}
@@ -265,9 +265,9 @@ const CustomerForm: React.FC = () => {
                                             helperText={touched.shipToParty && errors.shipToParty}
                                         />
                                     </Grid>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Sold To Party"
                                             name="soldToParty"
                                             value={values.soldToParty}
@@ -277,9 +277,9 @@ const CustomerForm: React.FC = () => {
                                             helperText={touched.soldToParty && errors.soldToParty}
                                         />
                                     </Grid>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Bill To Party"
                                             name="billToParty"
                                             value={values.billToParty}
@@ -312,7 +312,7 @@ const CustomerForm: React.FC = () => {
                     initialPageSize={10}
                 />
             </Grid>
-        </div>
+        </Grid>
     );
 };
 

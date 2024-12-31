@@ -36,7 +36,7 @@ export default function RootLayout({
            <CssBaseline />
           <ReduxProvider>
             <Header />
-            <Grid sx={{ marginTop: {xs:'20px',md:'33px'},marginLeft:{xs:0,md:'35px'}, padding: '15px' }}>
+            <Grid sx={{ marginTop: {xs:'20px',md:'33px'},  padding: '15px' }}>
               {children}
             </Grid>
             <Footer />

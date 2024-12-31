@@ -81,14 +81,14 @@ const DriverForm: React.FC = () => {
 
   return (
     <div className={styles.formsMainContainer}>
-      <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
+      <Box display="flex" justifyContent="flex-end"  gap={2}>
         <Button
           variant="contained"
           onClick={() => setShowForm((prev) => !prev)}
           className={styles.createButton}
         >
           Create Driver
-          {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 8 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 8 }} />}
+          {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 4 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 4 }} />}
         </Button>
       </Box>
 
@@ -103,9 +103,9 @@ const DriverForm: React.FC = () => {
               <Form>
                 <h4 className={styles.mainHeading}>General Data</h4>
                 <Grid container spacing={2} style={{ marginBottom: '30px' }}>
-                  <Grid item xs={12} sm={6}>
+                  <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
-                      fullWidth
+                      fullWidth size='small'
                       label="Driver ID"
                       name="driverID"
                       value={values.driverID}
@@ -115,9 +115,9 @@ const DriverForm: React.FC = () => {
                       helperText={touched.driverID && errors.driverID}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
-                      fullWidth
+                      fullWidth size='small'
                       label="Driver Name"
                       name="driverName"
                       value={values.driverName}
@@ -127,9 +127,9 @@ const DriverForm: React.FC = () => {
                       helperText={touched.driverName && errors.driverName}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
-                      fullWidth
+                      fullWidth size='small'
                       label="Location ID"
                       name="locationID"
                       value={values.locationID}
@@ -139,9 +139,9 @@ const DriverForm: React.FC = () => {
                       helperText={touched.locationID && errors.locationID}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
-                      fullWidth
+                      fullWidth size='small'
                       label="Address"
                       name="address"
                       value={values.address}
@@ -155,9 +155,9 @@ const DriverForm: React.FC = () => {
 
                 <h4 className={styles.mainHeading}>Correspondence</h4>
                 <Grid container spacing={2} style={{ marginBottom: '30px' }}>
-                  <Grid item xs={12} sm={6}>
+                  <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
-                      fullWidth
+                      fullWidth size='small'
                       label="Driving License"
                       name="drivingLicense"
                       value={values.drivingLicense}
@@ -167,9 +167,9 @@ const DriverForm: React.FC = () => {
                       helperText={touched.drivingLicense && errors.drivingLicense}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
-                      fullWidth
+                      fullWidth size='small'
                       label="Expiry Date"
                       name="expiryDate"
                       type="date"
@@ -181,9 +181,9 @@ const DriverForm: React.FC = () => {
                       InputLabelProps={{ shrink: true }}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
-                      fullWidth
+                      fullWidth size='small'
                       label="Contact Number"
                       name="driverContactNumber"
                       value={values.driverContactNumber}
@@ -193,9 +193,9 @@ const DriverForm: React.FC = () => {
                       helperText={touched.driverContactNumber && errors.driverContactNumber}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
-                      fullWidth
+                      fullWidth size='small'
                       label="Email ID"
                       name="emailID"
                       type="email"
@@ -210,9 +210,9 @@ const DriverForm: React.FC = () => {
 
                 <h4 className={styles.mainHeading}>Vehicle & Status</h4>
                 <Grid container spacing={2} style={{ marginBottom: '30px' }}>
-                  <Grid item xs={12} sm={6}>
+                  <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
-                      fullWidth
+                      fullWidth size='small'
                       label="Vehicle Types"
                       name="vehicleTypes"
                       value={values.vehicleTypes.join(', ')}

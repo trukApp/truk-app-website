@@ -1,13 +1,8 @@
-.mainHeding {
-  font-size: 20px;
-  font-family: "Roboto";
+.mainHeading {
+  font-size: 18px;
+  font-family: "Poppins";
   font-weight: bold;
-  margin-bottom: 15px;
   margin-top: 15px;
-}
-
-.formsMainContainer {
-  width: 100%;
 }
 
 .createButton {

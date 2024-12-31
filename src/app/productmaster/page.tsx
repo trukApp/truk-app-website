@@ -94,14 +94,14 @@ const dummyData = [
 
 // Define columns for the Data Grid
 const columns: GridColDef[] = [
-    { field: 'productId', headerName: 'Product ID', flex: 1 },
-    { field: 'productDescription', headerName: 'Product Description', flex: 2 },
-    { field: 'basicUoM', headerName: 'Basic UoM', flex: 1 },
-    { field: 'salesUoM', headerName: 'Sales UoM', flex: 1 },
-    { field: 'shelfLife', headerName: 'Shelf Life', flex: 1 },
-    { field: 'expirationDate', headerName: 'Expiration Date', flex: 1 },
-    { field: 'skuNumber', headerName: 'SKU Number', flex: 1 },
-    { field: 'hsncode', headerName: 'HSN Code', flex: 1 },
+    { field: 'productId', headerName: 'Product ID', width:150 },
+    { field: 'productDescription', headerName: 'Product Description', width:150 },
+    { field: 'basicUoM', headerName: 'Basic UoM', width:150 },
+    { field: 'salesUoM', headerName: 'Sales UoM', width:150 },
+    { field: 'shelfLife', headerName: 'Shelf Life', width:150 },
+    { field: 'expirationDate', headerName: 'Expiration Date', width:150 },
+    { field: 'skuNumber', headerName: 'SKU Number', width:150 },
+    { field: 'hsncode', headerName: 'HSN Code', width:150 },
 ];
 
 const ProductMasterPage = () => {
@@ -144,20 +144,23 @@ const ProductMasterPage = () => {
     };
 
     return (
-        <div className={style.formsMainContainer}>
-            <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
+        <Grid sx={{ margin: { xs: "0px", md: "0px 30px" } }}>
+            <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md:'24px' } }} align="center" gutterBottom>
+                Product master
+            </Typography>
+            <Box display="flex" justifyContent="flex-end"  gap={2}>
                 <Button
                     variant="contained"
                     onClick={() => setShowForm((prev) => !prev)}
                     className={style.createButton}
                 >
                     Create Product
-                    {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 8 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 8 }} />}
+                    {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 4 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 4 }} />}
                 </Button>
             </Box>
 
             <Collapse in={showForm}>
-                <Box marginBottom={4} padding={2} border="1px solid #ccc" borderRadius={2}>
+                <Box marginBottom={2} padding={2} border="1px solid #ccc" borderRadius={2}>
                     <Formik
                         initialValues={initialValues}
                         validationSchema={validationSchema}
@@ -169,9 +172,9 @@ const ProductMasterPage = () => {
                                     Basic Data
                                 </Typography>
                                 {/* <Grid container spacing={2}>
-                                    <Grid item xs={6}>
+                                    <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Product ID*"
                                             name="productId"
                                             value={values.productId}
@@ -181,9 +184,9 @@ const ProductMasterPage = () => {
                                             helperText={touched.productId && errors.productId}
                                         />
                                     </Grid>
-                                    <Grid item xs={6}>
+                                    <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Product Description*"
                                             name="productDescription"
                                             value={values.productDescription}
@@ -196,9 +199,9 @@ const ProductMasterPage = () => {
                                             helperText={touched.productDescription && errors.productDescription}
                                         />
                                     </Grid>
-                                    <Grid item xs={6}>
+                                    <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Basic Unit of Measure*"
                                             name="basicUoM"
                                             value={values.basicUoM}
@@ -208,9 +211,9 @@ const ProductMasterPage = () => {
                                             helperText={touched.basicUoM && errors.basicUoM}
                                         />
                                     </Grid>
-                                    <Grid item xs={6}>
+                                    <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Sales Unit of Measure*"
                                             name="salesUoM"
                                             value={values.salesUoM}
@@ -220,9 +223,9 @@ const ProductMasterPage = () => {
                                             helperText={touched.salesUoM && errors.salesUoM}
                                         />
                                     </Grid>
-                                    <Grid item xs={6}>
+                                    <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Weight - UoM"
                                             name="weightUoM"
                                             value={values.weightUoM}
@@ -230,9 +233,9 @@ const ProductMasterPage = () => {
                                             onBlur={handleBlur}
                                         />
                                     </Grid>
-                                    <Grid item xs={6}>
+                                    <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Volume - UoM"
                                             name="volumeUoM"
                                             value={values.volumeUoM}
@@ -243,9 +246,9 @@ const ProductMasterPage = () => {
                                 </Grid> */}
 
                                 <Grid container spacing={2}>
-                                    <Grid item xs={6}>
+                                    <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Product ID*"
                                             name="productId"
                                             value={values.productId}
@@ -255,9 +258,9 @@ const ProductMasterPage = () => {
                                             helperText={touched.productId && errors.productId}
                                         />
                                     </Grid>
-                                    <Grid item xs={6}>
+                                    <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Product Description*"
                                             name="productDescription"
                                             value={values.productDescription}
@@ -267,9 +270,9 @@ const ProductMasterPage = () => {
                                             helperText={touched.productDescription && errors.productDescription}
                                         />
                                     </Grid>
-                                    <Grid item xs={6}>
+                                    <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Basic Unit of Measure*"
                                             name="basicUoM"
                                             value={values.basicUoM}
@@ -279,9 +282,9 @@ const ProductMasterPage = () => {
                                             helperText={touched.basicUoM && errors.basicUoM}
                                         />
                                     </Grid>
-                                    <Grid item xs={6}>
+                                    <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Sales Unit of Measure*"
                                             name="salesUoM"
                                             value={values.salesUoM}
@@ -291,9 +294,9 @@ const ProductMasterPage = () => {
                                             helperText={touched.salesUoM && errors.salesUoM}
                                         />
                                     </Grid>
-                                    <Grid item xs={6} md={4}>
+                                    <Grid item xs={12} sm={6} md={2.4}   >
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Weight - UoM"
                                             name="weightUoM"
                                             value={values.weightUoM}
@@ -301,9 +304,9 @@ const ProductMasterPage = () => {
                                             onBlur={handleBlur}
                                         />
                                     </Grid>
-                                    <Grid item xs={6} md={2}>
+                                    <Grid item xs={12} sm={6} md={2.4}   >
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             select
                                             label="Weight Unit"
                                             name="weightUnit"
@@ -316,9 +319,9 @@ const ProductMasterPage = () => {
                                             <MenuItem value="ton">Ton</MenuItem>
                                         </TextField>
                                     </Grid>
-                                    <Grid item xs={6} md={4}>
+                                    <Grid item xs={12} sm={6} md={2.4}  >
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Volume - UoM"
                                             name="volumeUoM"
                                             value={values.volumeUoM}
@@ -326,9 +329,9 @@ const ProductMasterPage = () => {
                                             onBlur={handleBlur}
                                         />
                                     </Grid>
-                                    <Grid item xs={6} md={2}>
+                                    <Grid item xs={12} sm={6} md={2.4}  >
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             select
                                             label="Volume Unit"
                                             name="volumeUnit"
@@ -348,9 +351,9 @@ const ProductMasterPage = () => {
                                 </Typography>
 
                                 <Grid container spacing={2}>
-                                    <Grid item xs={6}>
+                                    <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Expiration Date"
                                             name="expirationDate"
                                             type="date"
@@ -360,9 +363,9 @@ const ProductMasterPage = () => {
                                             InputLabelProps={{ shrink: true }}
                                         />
                                     </Grid>
-                                    <Grid item xs={6}>
+                                    <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Best Before Date"
                                             name="bestBeforeDate"
                                             type="date"
@@ -372,9 +375,9 @@ const ProductMasterPage = () => {
                                             InputLabelProps={{ shrink: true }}
                                         />
                                     </Grid>
-                                    <Grid item xs={6}>
+                                    <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Stacking Factor"
                                             name="stackingFactor"
                                             value={values.stackingFactor}
@@ -383,9 +386,9 @@ const ProductMasterPage = () => {
                                         />
                                     </Grid>
 
-                                    <Grid item xs={6}>
+                                    <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="SKU Number"
                                             name="skuNumber"
                                             value={values.skuNumber}
@@ -394,9 +397,9 @@ const ProductMasterPage = () => {
                                         />
                                     </Grid>
 
-                                    <Grid item xs={6}>
+                                    <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="HSN Code"
                                             name="hsncode"
                                             value={values.hsncode}
@@ -405,9 +408,9 @@ const ProductMasterPage = () => {
                                         />
                                     </Grid>
 
-                                    <Grid item xs={6}>
+                                    <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Documents"
                                             name="Documents"
                                             value={values.documents}
@@ -423,9 +426,9 @@ const ProductMasterPage = () => {
                                     Location Data
                                 </Typography>
                                 <Grid container spacing={2}>
-                                    <Grid item xs={6}>
+                                    <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Location IDs (Plants/Warehouses)"
                                             name="locationIds"
                                             value={values.locationIds}
@@ -433,9 +436,9 @@ const ProductMasterPage = () => {
                                             onBlur={handleBlur}
                                         />
                                     </Grid>
-                                    <Grid item xs={6}>
+                                    <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Packaging Type"
                                             name="packagingType"
                                             value={values.packagingType}
@@ -443,7 +446,7 @@ const ProductMasterPage = () => {
                                             onBlur={handleBlur}
                                         />
                                     </Grid>
-                                    <Grid item xs={6}>
+                                    <Grid item xs={12} sm={6} md={2.4} >
                                         <FormControlLabel
                                             control={
                                                 <Checkbox
@@ -455,9 +458,9 @@ const ProductMasterPage = () => {
                                             label="Generate Packaging Label"
                                         />
                                     </Grid>
-                                    <Grid item xs={6}>
+                                    <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Special Instructions"
                                             name="specialInstructions"
                                             value={values.specialInstructions}
@@ -473,7 +476,7 @@ const ProductMasterPage = () => {
                                     Storage Data
                                 </Typography>
                                 <Grid container spacing={2}>
-                                    <Grid item xs={4}>
+                                    <Grid item xs={12} md={4}>
                                         <FormControlLabel
                                             control={
                                                 <Checkbox
@@ -483,9 +486,10 @@ const ProductMasterPage = () => {
                                                 />
                                             }
                                             label="Fragile Goods"
+                                            
                                         />
                                     </Grid>
-                                    <Grid item xs={4}>
+                                    <Grid item xs={12} md={4}>
                                         <FormControlLabel
                                             control={
                                                 <Checkbox
@@ -497,7 +501,7 @@ const ProductMasterPage = () => {
                                             label="Dangerous Goods"
                                         />
                                     </Grid>
-                                    <Grid item xs={4}>
+                                    <Grid item xs={12} md={4}>
                                         <FormControlLabel
                                             control={
                                                 <Checkbox
@@ -507,6 +511,7 @@ const ProductMasterPage = () => {
                                                 />
                                             }
                                             label="Hazardous Substance Storage Rel."
+                                            
                                         />
                                     </Grid>
                                 </Grid>
@@ -522,14 +527,16 @@ const ProductMasterPage = () => {
                 </Box>
             </Collapse>
 
-            <DataGridComponent
+            <div style={{marginTop:'40px'}}>
+                <DataGridComponent
                 columns={columns}
                 rows={dummyData}
                 isLoading={false}
-                pageSizeOptions={[10, 20]}
+                pageSizeOptions={[10, 20,30]}
                 initialPageSize={10}
-            />
-        </div>
+                />
+                </div>
+            </Grid>
     );
 };
 
