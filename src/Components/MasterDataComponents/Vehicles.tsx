@@ -14,8 +14,11 @@ import {
   Button,
   Collapse,
 } from "@mui/material";
-import { DataGridComponent } from "./GridComponent";
+import { DataGridComponent } from "../GridComponent";
 import { GridColDef } from "@mui/x-data-grid";
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import styles from './MasterData.module.css'
 
 const units = ["g", "kg", "ton", "cm", "m", "inch"];
 interface FormValues {
@@ -157,22 +160,22 @@ const VehicleForm: React.FC = () => {
 
   return (
     <>
-      <Box sx={{ p: 3 }}>
-        <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
+      <Box >
+        
+        <Typography align="center" sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md:'24px' } }} gutterBottom>
+          Vehicle master 
+        </Typography>
+        <Box display="flex" justifyContent="flex-end" >
           <Button
             variant="contained"
-            color="primary"
             onClick={() => setShowForm((prev) => !prev)}
+            className={styles.createButton}
           >
-            {showForm ? 'Close Form' : 'Create Vechile'}
-          </Button>
-          <Button variant="outlined" color="secondary">
-            Mass Upload
+            Create Vehicle
+            {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 4 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 4 }} />}
           </Button>
         </Box>
-        <Typography variant="h5" align="center" gutterBottom>
-          Vehicle Master data
-        </Typography>
+
         <Collapse in={showForm}>
           <Box marginBottom={4} padding={2} border="1px solid #ccc" borderRadius={2}>
             <Formik
@@ -896,8 +899,8 @@ const VehicleForm: React.FC = () => {
           columns={columns}
           rows={rows}
           isLoading={false} // Set true to show loading state
-          pageSizeOptions={[5, 10, 20]} // Optional: customize page size options
-          initialPageSize={5} // Optional: default page size
+          pageSizeOptions={[10, 20, 30]} // Optional: customize page size options
+          initialPageSize={10} // Optional: default page size
         />
       </div>
 

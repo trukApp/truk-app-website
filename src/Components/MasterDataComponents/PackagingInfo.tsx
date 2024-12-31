@@ -4,7 +4,10 @@ import { Box, Button, MenuItem, TextField, Select, FormControl, InputLabel, Outl
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { GridColDef } from '@mui/x-data-grid';
-import { DataGridComponent } from './GridComponent';
+import { DataGridComponent } from '../GridComponent';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import styles from './MasterData.module.css'
 
 const PackagingForm = () => {
   const [showForm, setShowForm] = useState(false);
@@ -53,15 +56,14 @@ const PackagingForm = () => {
       <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
         <Button
           variant="contained"
-          color="primary"
           onClick={() => setShowForm((prev) => !prev)}
+          className={styles.createButton}
         >
-          {showForm ? 'Close Form' : 'Create Package'}
-        </Button>
-        <Button variant="outlined" color="secondary">
-          Mass Upload
+          Create Package
+          {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 8 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 8 }} />}
         </Button>
       </Box>
+
       <Collapse in={showForm}>
         <Box marginBottom={4} padding={2} border="1px solid #ccc" borderRadius={2}>
           <form onSubmit={formik.handleSubmit}>
@@ -175,8 +177,8 @@ const PackagingForm = () => {
           columns={columns}
           rows={rows}
           isLoading={false}
-          pageSizeOptions={[5, 10, 20]}
-          initialPageSize={5}
+          pageSizeOptions={[10, 20, 30]}
+          initialPageSize={10}
         />
       </div>
     </>

@@ -1,19 +1,26 @@
 'use client';
 import React, { useState } from "react";
 import { Box, Typography } from "@mui/material";
-import Vehicles from "@/Components/Vehicles";
-import Lanes from "@/Components/Lanes";
-import Locations from "@/Components/Locations";
-import PackagingInfo from "@/Components/PackagingInfo";
-import UnitsOfMeasurement from "@/Components/UnitsOfMeasurement";
+import Vehicles from "@/Components/MasterDataComponents/Vehicles";
+import UnitsOfMeasurement from "@/Components/MasterDataComponents/UnitsOfMeasurement";
+import Locations from "@/Components/MasterDataComponents/Locations";
+import PackagingInfo from "@/Components/MasterDataComponents/PackagingInfo";
+import Lanes from "@/Components/MasterDataComponents/Lanes";
+import VehicleGroup from "@/Components/MasterDataComponents/VehicleGroup";
+import DeviceMaster from "@/Components/MasterDataComponents/DeviceMaster";
+
 
 const MasterData: React.FC = () => {
-  const [selectedOption, setSelectedOption] = useState<string>("Lanes");
+  const [selectedOption, setSelectedOption] = useState<string>("Vehicles");
 
   const renderComponent = () => {
     switch (selectedOption) {
       case "Vehicles":
         return <Vehicles />;
+      case "Vehicle group":
+        return <VehicleGroup />;
+      case "Device master":
+        return <DeviceMaster />;
       case "Lanes":
         return <Lanes />;
       case "Locations":
@@ -29,6 +36,8 @@ const MasterData: React.FC = () => {
 
   const tiles = [
     { label: "Vehicles", value: "Vehicles" },
+    { label: "Vehicle group", value: "Vehicle group" },
+    { label: "Device master", value: "Device master" },
     { label: "Lanes", value: "Lanes" },
     { label: "Locations", value: "Locations" },
     { label: "Packaging Info", value: "Packaging Info" },
@@ -38,19 +47,25 @@ const MasterData: React.FC = () => {
   return (
     <Box
       sx={{
-        margin: "auto",
-        padding: "20px",
-        backgroundColor: "#f9f9f9",
-        borderRadius: "8px",
-        boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
+        margin: {xs:'0px',md:'0px 30px'},
       }}
     >
       {/* Tile Menu */}
       <Box
-        sx={{
+         sx={{
           display: "flex",
           gap: "10px",
-          marginBottom: "20px",
+          marginBottom: "10px",
+          overflowX: "auto",
+          whiteSpace: "nowrap",
+          paddingBottom: "10px",
+          "&::-webkit-scrollbar": {
+            height: "3px",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: "#ccc",
+            borderRadius: "4px",
+          },
         }}
       >
         {tiles.map((tile) => (
@@ -59,7 +74,7 @@ const MasterData: React.FC = () => {
             onClick={() => setSelectedOption(tile.value)}
             sx={{
               cursor: "pointer",
-              padding: "10px 20px",
+              padding: { xs: "6px 16px", sm: "6px 18px",md: "6px 20px",},
               backgroundColor: selectedOption === tile.value ? "#1976d2" : "#e0e0e0",
               color: selectedOption === tile.value ? "#fff" : "#000",
               borderRadius: "4px",
@@ -67,7 +82,7 @@ const MasterData: React.FC = () => {
               textAlign: "center",
             }}
           >
-            <Typography>{tile.label}</Typography>
+            <Typography sx={{fontSize:{xs:'14px',sm:'15px',md:'16px'}}}>{tile.label}</Typography>
           </Box>
         ))}
       </Box>

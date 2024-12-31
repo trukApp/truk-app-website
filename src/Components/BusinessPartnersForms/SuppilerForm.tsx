@@ -5,6 +5,8 @@ import * as Yup from 'yup';
 import { DataGridComponent } from '../GridComponent';
 import styles from './BusinessPartners.module.css'
 import { GridColDef } from '@mui/x-data-grid';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 
 const dummyVendors = [
@@ -165,11 +167,13 @@ const SupplierForm: React.FC = () => {
         <div className={styles.formsMainContainer}>
 
             <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
-                <Button variant="contained" color="primary" onClick={() => setShowForm((prev) => !prev)}>
-                    {showForm ? 'Close Form' : 'Create Vendor'}
-                </Button>
-                <Button variant="outlined" color="secondary">
-                    Mass Upload
+                <Button
+                    variant="contained"
+                    onClick={() => setShowForm((prev) => !prev)}
+                    className={styles.createButton}
+                >
+                    Create Vendor
+                    {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 8 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 8 }} />}
                 </Button>
             </Box>
 

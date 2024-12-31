@@ -17,9 +17,11 @@ import {
 } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { DataGridComponent } from './GridComponent';
+import { DataGridComponent } from '../GridComponent';
 import { GridColDef } from '@mui/x-data-grid';
-
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import styles from './MasterData.module.css'
 // Validation schema
 const validationSchema = Yup.object({
   locationDescription: Yup.string().required('Location description is required'),
@@ -114,33 +116,31 @@ const Locations: React.FC = () => {
         onSubmit={handleSubmit}
         sx={{
           width: '100%',
-          padding: '20px',
           boxSizing: 'border-box',
         }}
       >
 
-        <Typography variant="h5" align="center" gutterBottom>
-          Location Master Data
+        <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md:'24px' } }} align="center" gutterBottom>
+            Location master
         </Typography>
+
         <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
           <Button
             variant="contained"
-            color="primary"
             onClick={() => setShowForm((prev) => !prev)}
+            className={styles.createButton}
           >
-            {showForm ? 'Close Form' : 'Create Location'}
-          </Button>
-          <Button variant="outlined" color="secondary">
-            Mass Upload
+            Create Location
+            {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 4 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 4 }} />}
           </Button>
         </Box>
 
         <Collapse in={showForm}>
 
           <Box marginBottom={4} padding={2} border="1px solid #ccc" borderRadius={2}>
-            <Grid container spacing={2}>
+         
 
-              <Grid container spacing={2}>
+              <Grid container spacing={2} padding={2}>
                 <Typography variant="h6" align="center" gutterBottom>
                   1. General info
                 </Typography>
@@ -430,7 +430,7 @@ const Locations: React.FC = () => {
 
 
               </Grid>
-            </Grid>
+          
             <Box sx={{ marginTop: '24px', textAlign: 'center' }}>
               <Button variant="contained" color="primary" type="submit">
                 Submit
@@ -447,9 +447,9 @@ const Locations: React.FC = () => {
         <DataGridComponent
           columns={columns}
           rows={rows}
-          isLoading={false} // Set true to show loading state
-          pageSizeOptions={[5, 10, 20]} // Optional: customize page size options
-          initialPageSize={5} // Optional: default page size
+          isLoading={false}
+          pageSizeOptions={[10, 20, 30]}
+          initialPageSize={10}
         />
       </div>
 

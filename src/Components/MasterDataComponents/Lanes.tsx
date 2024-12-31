@@ -13,7 +13,10 @@ import {
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { GridColDef } from '@mui/x-data-grid';
-import { DataGridComponent } from './GridComponent';
+import { DataGridComponent } from '../GridComponent';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import styles from './MasterData.module.css'
 
 const TransportationLanes = () => {
   const [showForm, setShowForm] = useState(false);
@@ -105,24 +108,24 @@ const TransportationLanes = () => {
 
   return (
     <>
-      <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
+      <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md:'24px' } }} align="center" gutterBottom>
+          Transportation lanes master
+      </Typography>
+      <Box display="flex" justifyContent="flex-end" >
         <Button
           variant="contained"
-          color="primary"
           onClick={() => setShowForm((prev) => !prev)}
+          className={styles.createButton}
         >
-          {showForm ? 'Close Form' : 'Create Lane'}
-        </Button>
-        <Button variant="outlined" color="secondary">
-          Mass Upload
+          Create Lane
+          {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 8 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 8 }} />}
         </Button>
       </Box>
+
+
       <Collapse in={showForm}>
         <Box marginBottom={4} padding={2} border="1px solid #ccc" borderRadius={2}>
           <form onSubmit={formik.handleSubmit}>
-            <Typography variant="h5" align="center" gutterBottom>
-              Transportation Lanes Master data
-            </Typography>
             <Box  >
               {/* General Data */}
               <Box sx={{ marginBottom: 3 }}>
@@ -387,9 +390,9 @@ const TransportationLanes = () => {
         <DataGridComponent
           columns={columns}
           rows={rows}
-          isLoading={false} // Set true to show loading state
-          pageSizeOptions={[5, 10, 20]} // Optional: customize page size options
-          initialPageSize={5} // Optional: default page size
+          isLoading={false}
+          pageSizeOptions={[10, 20, 30]}
+          initialPageSize={10}
         />
       </div>
 

@@ -4,6 +4,8 @@ import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import styles from './BusinessPartners.module.css';
 import { DataGridComponent } from '../GridComponent';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 interface DriverFormValues {
   driverID: string;
@@ -80,11 +82,13 @@ const DriverForm: React.FC = () => {
   return (
     <div className={styles.formsMainContainer}>
       <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
-        <Button variant="contained" color="primary" onClick={() => setShowForm((prev) => !prev)}>
-          {showForm ? 'Close Form' : 'Create Driver'}
-        </Button>
-        <Button variant="outlined" color="secondary">
-          Mass Upload
+        <Button
+          variant="contained"
+          onClick={() => setShowForm((prev) => !prev)}
+          className={styles.createButton}
+        >
+          Create Driver
+          {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 8 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 8 }} />}
         </Button>
       </Box>
 

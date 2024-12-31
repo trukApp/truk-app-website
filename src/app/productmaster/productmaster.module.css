@@ -18,5 +18,14 @@
   font-weight: bolder;
   font-family: "Roboto";
   margin-left: 10px;
-  /* margin-bottom: 10px; */
+  margin-bottom: 10px;
+}
+
+.createButton {
+  text-transform: capitalize;
+  text-decoration: underline;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  color: inherit;
+  font-weight: bold;
 }
