@@ -59,14 +59,14 @@ const AgentForm: React.FC = () => {
 
     return (
         <div className={styles.formsMainContainer}>
-            <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
+            <Box display="flex" justifyContent="flex-end"  gap={2}>
                 <Button
                     variant="contained"
                     onClick={() => setShowForm((prev) => !prev)}
                     className={styles.createButton}
                 >
                     Create Agent
-                    {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 8 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 8 }} />}
+                    {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 4 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 4 }} />}
                 </Button>
             </Box>
 
@@ -79,11 +79,11 @@ const AgentForm: React.FC = () => {
                     >
                         {({ values, handleChange, handleBlur, errors, touched }) => (
                             <Form>
-                                <h3 className={styles.mainHeding}>Agent Details</h3>
+                                <h3 className={styles.mainHeading}>Agent Details</h3>
                                 <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Agency Name"
                                             name="agencyName"
                                             value={values.agencyName}
@@ -94,9 +94,9 @@ const AgentForm: React.FC = () => {
                                         />
                                     </Grid>
 
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Agency ID"
                                             name="agencyId"
                                             value={values.agencyId}
@@ -107,9 +107,9 @@ const AgentForm: React.FC = () => {
                                         />
                                     </Grid>
 
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Service Area"
                                             name="serviceArea"
                                             value={values.serviceArea}
@@ -120,9 +120,9 @@ const AgentForm: React.FC = () => {
                                         />
                                     </Grid>
 
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             select
                                             label="Mode of Transport"
                                             name="modeOfTransport"
@@ -140,9 +140,9 @@ const AgentForm: React.FC = () => {
                                         </TextField>
                                     </Grid>
 
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Contact Number"
                                             name="contactNumber"
                                             value={values.contactNumber}

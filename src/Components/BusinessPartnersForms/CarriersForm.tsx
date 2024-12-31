@@ -56,7 +56,7 @@ const carrierColumns: GridColDef[] = [
     { field: 'carrierVehicleType', headerName: 'Vehicle Type', width: 150 },
     { field: 'vehicleNumber', headerName: 'Vehicle Number', width: 150 },
     { field: 'carrierCapacity', headerName: 'Capacity', width: 150 },
-    { field: 'operatingRegions', headerName: 'Operating Regions', flex: 1 },
+    { field: 'operatingRegions', headerName: 'Operating Regions', width: 150 },
 ];
 
 const CarrierForm: React.FC = () => {
@@ -95,14 +95,14 @@ const CarrierForm: React.FC = () => {
     return (
         <div className={styles.formsMainContainer}>
 
-            <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
+            <Box display="flex" justifyContent="flex-end"  gap={2}>
                 <Button
                     variant="contained"
                     onClick={() => setShowForm((prev) => !prev)}
                     className={styles.createButton}
                 >
                     Create Carrier
-                    {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 8 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 8 }} />}
+                    {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 4 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 4 }} />}
                 </Button>
             </Box>
 
@@ -118,9 +118,9 @@ const CarrierForm: React.FC = () => {
                             <Form>
                                 <h3 className={styles.mainHeading}>Carrier Details</h3>
                                 <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Carrier ID"
                                             name="carrierId"
                                             value={values.carrierId}
@@ -130,9 +130,9 @@ const CarrierForm: React.FC = () => {
                                             helperText={touched.carrierId && errors.carrierId}
                                         />
                                     </Grid>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Name"
                                             name="name"
                                             value={values.name}
@@ -142,9 +142,9 @@ const CarrierForm: React.FC = () => {
                                             helperText={touched.name && errors.name}
                                         />
                                     </Grid>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Contact Person"
                                             name="contactPerson"
                                             value={values.contactPerson}
@@ -154,9 +154,9 @@ const CarrierForm: React.FC = () => {
                                             helperText={touched.contactPerson && errors.contactPerson}
                                         />
                                     </Grid>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Contact Number"
                                             name="contactNumber"
                                             value={values.contactNumber}
@@ -166,9 +166,9 @@ const CarrierForm: React.FC = () => {
                                             helperText={touched.contactNumber && errors.contactNumber}
                                         />
                                     </Grid>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Email ID"
                                             name="emailId"
                                             value={values.emailId}
@@ -182,9 +182,9 @@ const CarrierForm: React.FC = () => {
 
                                 <h3 className={styles.mainHeading}>Service Details</h3>
                                 <Grid container spacing={2} style={{ marginBottom: '30px' }}>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Location"
                                             name="location"
                                             value={values.location}
@@ -194,9 +194,9 @@ const CarrierForm: React.FC = () => {
                                             helperText={touched.location && errors.location}
                                         />
                                     </Grid>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Service Type"
                                             name="serviceType"
                                             value={values.serviceType}
@@ -210,9 +210,9 @@ const CarrierForm: React.FC = () => {
 
                                 <h3 className={styles.mainHeading}>Vehicle & Delivery Details</h3>
                                 <Grid container spacing={2} style={{ marginBottom: '30px' }}>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Vehicle Details"
                                             name="vehicleDetails"
                                             value={values.vehicleDetails}
@@ -222,9 +222,9 @@ const CarrierForm: React.FC = () => {
                                             helperText={touched.vehicleDetails && errors.vehicleDetails}
                                         />
                                     </Grid>
-                                    <Grid item xs={12} sm={6}>
+                                    <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                            fullWidth
+                                            fullWidth size='small'
                                             label="Delivery Area"
                                             name="deliveryArea"
                                             value={values.deliveryArea}
@@ -414,9 +414,9 @@ export default CarrierForm;
 //                                 <Form>
 //                                     <h3 className={styles.mainHeading}>Carrier Details</h3>
 //                                     <Grid container spacing={2}>
-//                                         <Grid item xs={12} sm={6}>
+//                                         <Grid item xs={12} sm={6} md={2.4}>
 //                                             <TextField
-//                                                 fullWidth
+//                                                 fullWidth size='small'
 //                                                 label="Carrier ID"
 //                                                 name="carrierId"
 //                                                 value={values.carrierId}
@@ -426,9 +426,9 @@ export default CarrierForm;
 //                                                 helperText={touched.carrierId && errors.carrierId}
 //                                             />
 //                                         </Grid>
-//                                         <Grid item xs={12} sm={6}>
+//                                         <Grid item xs={12} sm={6} md={2.4}>
 //                                             <TextField
-//                                                 fullWidth
+//                                                 fullWidth size='small'
 //                                                 label="Name"
 //                                                 name="name"
 //                                                 value={values.name}
@@ -438,9 +438,9 @@ export default CarrierForm;
 //                                                 helperText={touched.name && errors.name}
 //                                             />
 //                                         </Grid>
-//                                         <Grid item xs={12} sm={6}>
+//                                         <Grid item xs={12} sm={6} md={2.4}>
 //                                             <TextField
-//                                                 fullWidth
+//                                                 fullWidth size='small'
 //                                                 label="Contact Person"
 //                                                 name="contactPerson"
 //                                                 value={values.contactPerson}
@@ -450,9 +450,9 @@ export default CarrierForm;
 //                                                 helperText={touched.contactPerson && errors.contactPerson}
 //                                             />
 //                                         </Grid>
-//                                         <Grid item xs={12} sm={6}>
+//                                         <Grid item xs={12} sm={6} md={2.4}>
 //                                             <TextField
-//                                                 fullWidth
+//                                                 fullWidth size='small'
 //                                                 label="Contact Number"
 //                                                 name="contactNumber"
 //                                                 value={values.contactNumber}
@@ -462,9 +462,9 @@ export default CarrierForm;
 //                                                 helperText={touched.contactNumber && errors.contactNumber}
 //                                             />
 //                                         </Grid>
-//                                         <Grid item xs={12} sm={6}>
+//                                         <Grid item xs={12} sm={6} md={2.4}>
 //                                             <TextField
-//                                                 fullWidth
+//                                                 fullWidth size='small'
 //                                                 label="Email ID"
 //                                                 name="emailId"
 //                                                 value={values.emailId}
@@ -478,9 +478,9 @@ export default CarrierForm;
 
 //                                     <h3 className={styles.mainHeading}>Service Details</h3>
 //                                     <Grid container spacing={2} style={{ marginBottom: '30px' }}>
-//                                         <Grid item xs={12} sm={6}>
+//                                         <Grid item xs={12} sm={6} md={2.4}>
 //                                             <TextField
-//                                                 fullWidth
+//                                                 fullWidth size='small'
 //                                                 label="Location"
 //                                                 name="location"
 //                                                 value={values.location}
@@ -490,9 +490,9 @@ export default CarrierForm;
 //                                                 helperText={touched.location && errors.location}
 //                                             />
 //                                         </Grid>
-//                                         <Grid item xs={12} sm={6}>
+//                                         <Grid item xs={12} sm={6} md={2.4}>
 //                                             <TextField
-//                                                 fullWidth
+//                                                 fullWidth size='small'
 //                                                 label="Service Type"
 //                                                 name="serviceType"
 //                                                 value={values.serviceType}
@@ -506,9 +506,9 @@ export default CarrierForm;
 
 //                                     <h3 className={styles.mainHeading}>Vehicle & Delivery Details</h3>
 //                                     <Grid container spacing={2} style={{ marginBottom: '30px' }}>
-//                                         <Grid item xs={12} sm={6}>
+//                                         <Grid item xs={12} sm={6} md={2.4}>
 //                                             <TextField
-//                                                 fullWidth
+//                                                 fullWidth size='small'
 //                                                 label="Vehicle Details"
 //                                                 name="vehicleDetails"
 //                                                 value={values.vehicleDetails}
@@ -518,9 +518,9 @@ export default CarrierForm;
 //                                                 helperText={touched.vehicleDetails && errors.vehicleDetails}
 //                                             />
 //                                         </Grid>
-//                                         <Grid item xs={12} sm={6}>
+//                                         <Grid item xs={12} sm={6} md={2.4}>
 //                                             <TextField
-//                                                 fullWidth
+//                                                 fullWidth size='small'
 //                                                 label="Delivery Area"
 //                                                 name="deliveryArea"
 //                                                 value={values.deliveryArea}
