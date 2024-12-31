@@ -22,6 +22,7 @@ const LoginPage: React.FC = () => {
   }, []);
 
   const handleLogin = async () => {
+    console.log('werty')
     setError('');
     setLoading(true);
 

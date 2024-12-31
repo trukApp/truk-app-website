@@ -31,7 +31,8 @@ const refreshAccessToken = async (refreshToken: string) => {
   );
   try {
     const response = await fetch(
-      `https://jaimp-api.onelovepc.com/jaiMp/log/refresh-token`,
+      // `https://jaimp-api.onelovepc.com/jaiMp/log/refresh-token`,
+      `https://192.168.31.37:8088/truk/log/refresh-token`,
       {
         method: "POST",
         headers: {
@@ -84,8 +85,10 @@ export const options: NextAuthOptions = {
         }
 
         try {
+          console.log("qwerty");
           const response = await fetch(
-            `https://jaimp-api.onelovepc.com/jaiMp/log/login`,
+            // `https://jaimp-api.onelovepc.com/jaiMp/log/login`,
+            `http://192.168.31.37:8088/truk/log/login`,
             {
               method: "POST",
               headers: {
@@ -93,8 +96,7 @@ export const options: NextAuthOptions = {
               },
               body: JSON.stringify({
                 mobile: credentials.phone,
-                pin: parseInt(credentials.password),
-                unq_d_id: "uniqueid",
+                password: credentials.password,
               }),
             }
           );
@@ -133,13 +135,13 @@ export const options: NextAuthOptions = {
         token.name = user.name;
         token.phone = user.phone;
         token.accessToken = user?.accessToken;
-        token.refreshToken =user?.refreshToken;
+        token.refreshToken = user?.refreshToken;
         token.accessTokenExpires = Date.now() + 24 * 60 * 60 * 1000;
         console.log("User signed in:", user);
       }
 
       // Return previous token if the access token has not expired yet
-      if (token?.accessToken ) {
+      if (token?.accessToken) {
         console.log("Token still available");
         return token;
       }
@@ -189,7 +191,7 @@ export const options: NextAuthOptions = {
         phone: token.phone as string,
         accessToken: token.accessToken as string,
         refreshToken: token.refreshToken as string,
-      } ;
+      };
       return session;
     },
   },
