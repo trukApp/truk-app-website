@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from "react";
-import { Box, Typography } from "@mui/material";
+import { Box, Tabs, Tab } from "@mui/material";
 import Vehicles from "@/Components/MasterDataComponents/Vehicles";
 import UnitsOfMeasurement from "@/Components/MasterDataComponents/UnitsOfMeasurement";
 import Locations from "@/Components/MasterDataComponents/Locations";
@@ -9,12 +9,15 @@ import Lanes from "@/Components/MasterDataComponents/Lanes";
 import VehicleGroup from "@/Components/MasterDataComponents/VehicleGroup";
 import DeviceMaster from "@/Components/MasterDataComponents/DeviceMaster";
 
-
 const MasterData: React.FC = () => {
-  const [selectedOption, setSelectedOption] = useState<string>("Vehicles");
+  const [selectedTab, setSelectedTab] = useState<string>("Vehicles");
+
+  const handleChange = (event: React.SyntheticEvent, newValue: string) => {
+    setSelectedTab(newValue);
+  };
 
   const renderComponent = () => {
-    switch (selectedOption) {
+    switch (selectedTab) {
       case "Vehicles":
         return <Vehicles />;
       case "Vehicle group":
@@ -34,58 +37,29 @@ const MasterData: React.FC = () => {
     }
   };
 
-  const tiles = [
-    { label: "Vehicles", value: "Vehicles" },
-    { label: "Vehicle group", value: "Vehicle group" },
-    { label: "Device master", value: "Device master" },
-    { label: "Lanes", value: "Lanes" },
-    { label: "Locations", value: "Locations" },
-    { label: "Packaging Info", value: "Packaging Info" },
-    { label: "Uom", value: "Uom" },
-  ];
-
   return (
-    <Box
-      sx={{
-        margin: {xs:'0px',md:'0px 30px'},
-      }}
-    >
-      {/* Tile Menu */}
-      <Box
-         sx={{
-          display: "flex",
-          gap: "10px",
+    <Box sx={{ margin: { xs: "0px", md: "0px 30px" } }}>
+      {/* Tabs Menu */}
+      <Tabs
+        value={selectedTab}
+        onChange={handleChange}
+        variant="scrollable"
+        scrollButtons="auto"
+        sx={{
           marginBottom: "10px",
-          overflowX: "auto",
-          whiteSpace: "nowrap",
-          paddingBottom: "10px",
-          "&::-webkit-scrollbar": {
-            height: "3px",
-          },
-          "&::-webkit-scrollbar-thumb": {
-            backgroundColor: "#ccc",
-            borderRadius: "4px",
+          "& .MuiTabs-indicator": {
+            backgroundColor: "#1976d2",
           },
         }}
       >
-        {tiles.map((tile) => (
-          <Box
-            key={tile.value}
-            onClick={() => setSelectedOption(tile.value)}
-            sx={{
-              cursor: "pointer",
-              padding: { xs: "6px 16px", sm: "6px 18px",md: "6px 20px",},
-              backgroundColor: selectedOption === tile.value ? "#1976d2" : "#e0e0e0",
-              color: selectedOption === tile.value ? "#fff" : "#000",
-              borderRadius: "4px",
-              boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.1)",
-              textAlign: "center",
-            }}
-          >
-            <Typography sx={{fontSize:{xs:'14px',sm:'15px',md:'16px'}}}>{tile.label}</Typography>
-          </Box>
-        ))}
-      </Box>
+        <Tab value="Vehicles" sx={{textTransform:'capitalize',fontSize:'16px'}} label="Vehicles" />
+        <Tab value="Vehicle group" sx={{textTransform:'capitalize',fontSize:'16px'}} label="Vehicle Group" />
+        <Tab value="Device master"  sx={{textTransform:'capitalize',fontSize:'16px'}} label="Device Master" />
+        <Tab value="Lanes" sx={{textTransform:'capitalize',fontSize:'16px'}} label="Lanes" />
+        <Tab value="Locations" sx={{textTransform:'capitalize',fontSize:'16px'}} label="Locations" />
+        <Tab value="Packaging Info" sx={{textTransform:'capitalize',fontSize:'16px'}} label="Packaging Info" />
+        <Tab value="Uom" sx={{textTransform:'capitalize',fontSize:'16px'}} label="Units of Measurement" />
+      </Tabs>
 
       {/* Render Selected Component */}
       <Box>{renderComponent()}</Box>

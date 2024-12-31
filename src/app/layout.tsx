@@ -4,7 +4,7 @@ import "./globals.css";
 import ReduxProvider from "@/store/redux-provider";
 import Header from "@/Components/Header";
 import Footer from "@/Components/Footer";
-import { ThemeProvider } from "@mui/material";
+import { ThemeProvider, Grid } from '@mui/material';
 import CssBaseline from "@mui/material/CssBaseline";
 import theme from "@/theme";
 
@@ -36,9 +36,9 @@ export default function RootLayout({
            <CssBaseline />
           <ReduxProvider>
             <Header />
-            <div style={{ marginTop: '50px', padding: '20px' }}>
+            <Grid sx={{ marginTop: {xs:'20px',md:'33px'},marginLeft:{xs:0,md:'35px'}, padding: '15px' }}>
               {children}
-            </div>
+            </Grid>
             <Footer />
             </ReduxProvider>
           </ThemeProvider>
