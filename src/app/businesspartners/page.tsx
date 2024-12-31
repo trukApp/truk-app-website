@@ -11,7 +11,6 @@ import DriverForm from '@/Components/BusinessPartnersForms/DriverForm';
 import SuppilerForm from '@/Components/BusinessPartnersForms/SuppilerForm';
 import CarriersForm from '@/Components/BusinessPartnersForms/CarriersForm';
 import AgentForm from '@/Components/BusinessPartnersForms/AgentForm';
-import styles from './businessPartners.module.css';
 
 const BusinessPartnersPage: React.FC = () => {
     const [businessPartnerType, setBusinessPartnerType] = useState('customers');
@@ -21,33 +20,39 @@ const BusinessPartnersPage: React.FC = () => {
     };
 
     return (
-        <Box>
-            <Grid container spacing={2}>
-                <div className={styles.dropDownContainer}>
-                    <Grid item xs={12} md={3}>
-                        <TextField
-                            fullWidth
-                            select
-                            label="Business Partner Type"
-                            name="businessPartnerType"
-                            value={businessPartnerType}
-                            onChange={handleDropdownChange}
-                        >
-                            <MenuItem value="customers">Customers</MenuItem>
-                            <MenuItem value="suppliers">Vendors</MenuItem>
-                            <MenuItem value="carriers">Carriers</MenuItem>
-                            <MenuItem value="agents">Agents</MenuItem>
-                            <MenuItem value="drivers">Drivers</MenuItem>
-                        </TextField>
-                    </Grid>
-                </div>
+        <Box
+            // sx={{ marginTop: '30px', marginLeft: { xs: '15px', md: 0 } }}
+            sx={{ margin: { xs: "18px 3px", md: "10px 30px" } }}
+        >
+            <Grid container spacing={2} justifyContent="flex-end">
+                <Grid item xs={12} md={3} >
+                    <TextField
+                        size="small"
+                        fullWidth
+                        select
+                        label="Business Partner Type"
+                        name="businessPartnerType"
+                        value={businessPartnerType}
+                        onChange={handleDropdownChange}
+                    >
+                        <MenuItem value="customers">Customers</MenuItem>
+                        <MenuItem value="suppliers">Vendors</MenuItem>
+                        <MenuItem value="carriers">Carriers</MenuItem>
+                        <MenuItem value="agents">Agents</MenuItem>
+                        <MenuItem value="drivers">Drivers</MenuItem>
+                    </TextField>
+                </Grid>
             </Grid>
-            <Grid container className={styles.businessPartnerContainer}>
-                {businessPartnerType === 'customers' && <CustomerForm />}
-                {businessPartnerType === 'suppliers' && <SuppilerForm />}
-                {businessPartnerType === 'carriers' && <CarriersForm />}
-                {businessPartnerType === 'agents' && <AgentForm />}
-                {businessPartnerType === 'drivers' && <DriverForm />}
+
+            <Grid container  sx={{ marginTop: 2 }}>
+                {/* Responsive rendering of forms */}
+                <Grid item xs={12}  >
+                    {businessPartnerType === 'customers' && <CustomerForm />}
+                    {businessPartnerType === 'suppliers' && <SuppilerForm />}
+                    {businessPartnerType === 'carriers' && <CarriersForm />}
+                    {businessPartnerType === 'agents' && <AgentForm />}
+                    {businessPartnerType === 'drivers' && <DriverForm />}
+                </Grid>
             </Grid>
         </Box>
     );

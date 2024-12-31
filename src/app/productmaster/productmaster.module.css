@@ -14,11 +14,10 @@
 }
 
 .basicDetailsHeading {
-  font-size: 20px;
-  font-weight: bolder;
-  font-family: "Roboto";
-  margin-left: 10px;
-  margin-bottom: 10px;
+  font-size: 18px;
+  font-weight: bold;
+  font-family: "Poppins";
+  margin-top:10px
 }
 
 .createButton {
