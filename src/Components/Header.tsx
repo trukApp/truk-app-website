@@ -52,6 +52,10 @@ const Header = () => {
     const isConfirmed = window.confirm("Are you sure you want to log out?");
     if (isConfirmed) {
       await signOut({ redirect: false });
+      localStorage.clear()
+  
+      const local = localStorage.getItem("accessToken")
+      console.log("Logout successfully",local)
       router.push("/login");
     }
   };

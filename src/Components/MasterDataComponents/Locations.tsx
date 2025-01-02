@@ -21,7 +21,11 @@ import { DataGridComponent } from '../GridComponent';
 import { GridColDef } from '@mui/x-data-grid';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import styles from './MasterData.module.css'
+import styles from './MasterData.module.css';
+import { withAuthComponent } from '../WithAuthComponent';
+import { useGetLocationMasterQuery } from '@/api/apiSlice';
+
+
 // Validation schema
 const validationSchema = Yup.object({
   locationDescription: Yup.string().required('Location description is required'),
@@ -34,6 +38,8 @@ const validationSchema = Yup.object({
 
 const Locations: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
+  const { data, error,isLoading } = useGetLocationMasterQuery([])
+  console.log("locations data :", data,error, isLoading)
 
   // Static data for vehicle options
   const vehicleOptions = [
@@ -457,4 +463,4 @@ const Locations: React.FC = () => {
   );
 };
 
-export default Locations;
+export default withAuthComponent(Locations);
