@@ -25,11 +25,54 @@ import styles from './MasterData.module.css';
 import { withAuthComponent } from '../WithAuthComponent';
 import { useGetLocationMasterQuery } from '@/api/apiSlice';
 
+// Define the type for each location object returned by the backend
+interface Location {
+  location_id: number;
+  loc_ID: string;
+  loc_desc: string;
+  loc_type?: string;
+  gln_code?: string;
+  iata_code?: string;
+  longitude: string;
+  latitude: string;
+  timezone?: string;
+  city?: string;
+  district?: string;
+  state?: string;
+  country?: string;
+  pincode?: string;
+  contact_name?: string;
+  contact_number?: string;
+}
+
+// Define the type for each row in the DataGrid
+interface DataGridRow {
+  locationId: string;
+  locationDescription: string;
+  locationType: string;
+  glnCode: string;
+  iataCode: string;
+  longitude: string;
+  latitude: string;
+  timeZone: string;
+  city: string;
+  district: string;
+  state: string;
+  country: string;
+  pincode: string;
+  vehiclesNearBy : [],
+  locationContactName: string;
+  locationContactNumber: string;
+}
+
 
 // Validation schema
 const validationSchema = Yup.object({
   locationDescription: Yup.string().required('Location description is required'),
   locationType: Yup.string().required('Location type is required'),
+  latitude: Yup.string().required('Latitude  is required'),
+  longitude: Yup.string().required('Longitude  is required'),
+  timeZone:Yup.string().required('Time zone is required'),
   // vehiclesNearBy: Yup.array()
   // .min(1, 'Select at least one vehicle')
   // .required('Required'),
@@ -38,9 +81,18 @@ const validationSchema = Yup.object({
 
 const Locations: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
-  const { data, error,isLoading } = useGetLocationMasterQuery([])
-  console.log("locations data :", data,error, isLoading)
+  const { data, error, isLoading } = useGetLocationMasterQuery([])
+  console.log("all locations :", data?.locations)
+  if (isLoading) {
+  console.log("Loading locations...");
+}
 
+if (error) {
+  console.error("Error fetching locations:", error);
+  // Handle the error case
+}
+  
+  const locationsMaster = data?.locations
   // Static data for vehicle options
   const vehicleOptions = [
     { id: '1', name: 'Truck - 001' },
@@ -50,6 +102,9 @@ const Locations: React.FC = () => {
     { id: '5', name: 'Trailer - 005' },
   ];
 
+  const handleFormSubmit = (values:DataGridRow) => {
+    console.log("form submitted locations :", values)
+  }
 
   const formik = useFormik({
     initialValues: {
@@ -71,31 +126,30 @@ const Locations: React.FC = () => {
       locationContactNumber: ''
     },
     validationSchema,
-    onSubmit: (values) => {
-      console.log('Form Submitted:', values);
-    },
+    onSubmit: handleFormSubmit
   });
 
   const { values, errors, touched, handleChange, handleBlur, handleSubmit } = formik;
 
-  const rows = Array.from({ length: 10 }, (_, id) => ({
-    id,
-    locationId: `LOC-${id + 1}`,
-    locationDescription: `Location Description ${id + 1}`,
-    locationType: id % 2 === 0 ? "Warehouse" : "Depot",
-    glnCode: `GLN-${1000 + id}`,
-    iataCode: `IATA-${200 + id}`,
-    longitude: (78.4 + id * 0.1).toFixed(2),
-    latitude: (17.3 + id * 0.1).toFixed(2),
-    timeZone: "UTC+05:30",
-    city: `City-${id + 1}`,
-    district: `District-${id + 1}`,
-    state: `State-${id + 1}`,
-    country: "India",
-    pincode: `5000${id}`,
-    locationContactName: `Contact Name ${id + 1}`,
-    locationContactNumber: `98765432${id}`,
-  }));
+
+const rows: DataGridRow[] = locationsMaster?.map((location: Location, index: number) => ({
+  id: location.location_id,
+  locationId: location.loc_ID,
+  locationDescription: location.loc_desc,
+  locationType: location.loc_type || null,
+  glnCode: location.gln_code || `GLN-${1000 + index}`,
+  iataCode: location.iata_code || `IATA-${200 + index}`,
+  longitude: location.longitude,
+  latitude: location.latitude,
+  timeZone: location.timezone || "UTC+05:30",
+  city: location.city || `City-${index + 1}`,
+  district: location.district || `District-${index + 1}`,
+  state: location.state || `State-${index + 1}`,
+  country: location.country || "India",
+  pincode: location.pincode || `5000${index}`,
+  locationContactName: location.contact_name || 'null',
+  locationContactNumber: location.contact_number || 'null',
+})) || [];
 
   const columns: GridColDef[] = [
     { field: "locationId", headerName: "Location ID", width: 150 },
@@ -151,7 +205,7 @@ const Locations: React.FC = () => {
                   1. General info
                 </Typography>
                 <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6} md={2.4}>
+                  {/* <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth disabled
                       size="small"
@@ -164,7 +218,7 @@ const Locations: React.FC = () => {
                         readOnly: true,
                       }}
                     />
-                  </Grid>
+                  </Grid> */}
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth
@@ -256,7 +310,9 @@ const Locations: React.FC = () => {
                         name="longitude"
                         value={values.longitude}
                         onChange={handleChange}
-                        onBlur={handleBlur}
+                      onBlur={handleBlur}
+                      error={touched.longitude && Boolean(errors.longitude)}
+                      helperText={touched.longitude && errors.longitude}
                       />
                     </Grid>
                     <Grid item xs={12} sm={6} md={2.4}>
@@ -267,7 +323,9 @@ const Locations: React.FC = () => {
                         name="latitude"
                         value={values.latitude}
                         onChange={handleChange}
-                        onBlur={handleBlur}
+                      onBlur={handleBlur}
+                      error={touched.latitude && Boolean(errors.latitude)}
+                      helperText={touched.latitude && errors.latitude}
                       />
                     </Grid>
                     <Grid item xs={12} sm={6} md={2.4}>

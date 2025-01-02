@@ -1,5 +1,10 @@
-import React, { useState } from "react";
-import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
+import React
+// { useState }
+  from "react";
+import {
+  DataGrid, GridColDef
+  // , GridRowSelectionModel
+} from "@mui/x-data-grid";
 
 interface DataGridComponentProps {
   columns: GridColDef[];
@@ -18,11 +23,11 @@ export const DataGridComponent: React.FC<DataGridComponentProps> = ({
   initialPageSize = 10,
 }) => {
   const safeRows = rows ?? [];
-  const [selectionModel, setSelectionModel] = useState<GridRowSelectionModel>([]);
+  // const [selectionModel, setSelectionModel] = useState<GridRowSelectionModel>([]);
 
-  const handleSelectionChange = (newSelectionModel: GridRowSelectionModel) => {
-    setSelectionModel(newSelectionModel);
-  };
+  // const handleSelectionChange = (newSelectionModel: GridRowSelectionModel) => {
+  //   setSelectionModel(newSelectionModel);
+  // };
 
   return (
     <div
@@ -42,9 +47,9 @@ export const DataGridComponent: React.FC<DataGridComponentProps> = ({
         }}
 
         pageSizeOptions={pageSizeOptions}
-        checkboxSelection
-        onRowSelectionModelChange={handleSelectionChange}
-        rowSelectionModel={selectionModel}
+        // checkboxSelection
+        // onRowSelectionModelChange={handleSelectionChange}
+        // rowSelectionModel={selectionModel}
         sx={{
           "& .MuiDataGrid-footerContainer": {
             fontFamily: "Poppins",
