@@ -7,7 +7,7 @@ import styles from './BusinessPartners.module.css'
 import { GridColDef } from '@mui/x-data-grid';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-
+import { useCustomerRegistrationMutation } from '@/api/apiSlice';
 
 const dummyVendors = [
     {
@@ -123,9 +123,10 @@ const columns: GridColDef[] = [
 
 const SupplierForm: React.FC = () => {
     const [showForm, setShowForm] = useState(false);
+    const [customerRegistration] = useCustomerRegistrationMutation();
 
     const initialSupplierValues = {
-        supplierId: '',
+        // supplierId: '',
         name: '',
         locationId: '',
         pincode: '',
@@ -143,7 +144,7 @@ const SupplierForm: React.FC = () => {
     };
 
     const supplierValidationSchema = Yup.object({
-        supplierId: Yup.string().required('Supplier ID is required'),
+        // supplierId: Yup.string().required('Supplier ID is required'),
         name: Yup.string().required('Name is required'),
         locationId: Yup.string().required('Location ID is required'),
         pincode: Yup.string().required('Pincode is required'),
@@ -159,14 +160,45 @@ const SupplierForm: React.FC = () => {
         forwardingAgent: Yup.string().required('Bill To Party is required')
     });
 
-    const handleSupplierSubmit = (values: typeof initialSupplierValues) => {
-        console.log('Supplier Form Submitted:', values);
+    const handleSupplierSubmit = async (values: typeof initialSupplierValues) => {
+        try {
+            console.log('Vendor Form Submitted:', values);
+            const body = {
+                partners: [
+                    {
+                        name: values?.name,
+                        partner_type: "vendor",
+                        location_id: values?.locationId,
+                        correspondence: {
+                            contact_person: values?.contactPerson,
+                            contact_number: values?.contactNumber,
+                            email: values?.emailId
+                        },
+                        loc_of_source: values?.locationOfSource,
+                        pod_relevant: values?.podRelevant,
+                        partner_functions: {
+                            ordering_address: values?.orderingAddress,
+                            goods_supplier: values?.goodsSupplier,
+                            forwarding_agent: values?.forwardingAgent
+                        }
+                    }
+                ]
+            }
+            console.log("body: ", body)
+
+
+            console.log('i am in...')
+            const response = await customerRegistration(body).unwrap();
+            console.log('API Response:', response);
+        } catch (error) {
+            console.error('API Error:', error);
+        }
     };
 
     return (
         <div className={styles.formsMainContainer}>
 
-            <Box display="flex" justifyContent="flex-end"   gap={2}>
+            <Box display="flex" justifyContent="flex-end" gap={2}>
                 <Button
                     variant="contained"
                     onClick={() => setShowForm((prev) => !prev)}
@@ -188,7 +220,7 @@ const SupplierForm: React.FC = () => {
                             <Form>
                                 <h3 className={styles.mainHeading}>General Data</h3>
                                 <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6} md={2.4}>
+                                    {/* <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
                                             label="Supplier ID"
@@ -199,7 +231,7 @@ const SupplierForm: React.FC = () => {
                                             error={touched.supplierId && Boolean(errors.supplierId)}
                                             helperText={touched.supplierId && errors.supplierId}
                                         />
-                                    </Grid>
+                                    </Grid> */}
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'

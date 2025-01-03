@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { Box, Button, Collapse, Grid, TextField, FormControlLabel, Checkbox } from '@mui/material';
+import { Box, Button, Collapse, Grid, TextField, FormControlLabel, Checkbox, MenuItem } from '@mui/material';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import styles from './BusinessPartners.module.css';
 import { DataGridComponent } from '../GridComponent';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import { useDriverRegistrationMutation } from '@/api/apiSlice';
 
 interface DriverFormValues {
-  driverID: string;
   driverName: string;
   locationID: string;
   address: string;
@@ -49,10 +49,10 @@ const driverColumns = [
 ];
 
 const DriverForm: React.FC = () => {
+  const [driverRegistration] = useDriverRegistrationMutation();
   const [showForm, setShowForm] = useState(false);
 
   const initialDriverValues: DriverFormValues = {
-    driverID: '',
     driverName: '',
     locationID: '',
     address: '',
@@ -65,7 +65,6 @@ const DriverForm: React.FC = () => {
   };
 
   const driverValidationSchema = Yup.object({
-    driverID: Yup.string().required('Driver ID is required'),
     driverName: Yup.string().required('Driver Name is required'),
     locationID: Yup.string().required('Location ID is required'),
     address: Yup.string().required('Address is required'),
@@ -75,13 +74,37 @@ const DriverForm: React.FC = () => {
     emailID: Yup.string().email('Invalid email format').required('Email ID is required'),
   });
 
-  const handleDriverSubmit = (values: DriverFormValues) => {
+  const handleDriverSubmit = async (values: DriverFormValues) => {
     console.log('Driver Form Submitted:', values);
+    try {
+      const body = {
+        drivers: [{
+          location_id: values?.locationID,
+          driver_name: values?.driverName,
+          address: values?.address,
+          driver_correspondence: {
+            driving_license: values?.drivingLicense,
+            expiry_date: values?.expiryDate,
+            phone: values?.driverContactNumber,
+            email: values?.emailID
+          },
+          vehicle_types: values?.vehicleTypes,
+          logged_in: values?.loggedIntoApp
+        }
+        ]
+      }
+      console.log("body: ", body)
+
+      const response = await driverRegistration(body).unwrap();
+      console.log('API Response:', response);
+    } catch (error) {
+      console.error('API Error:', error);
+    }
   };
 
   return (
     <div className={styles.formsMainContainer}>
-      <Box display="flex" justifyContent="flex-end"  gap={2}>
+      <Box display="flex" justifyContent="flex-end" gap={2}>
         <Button
           variant="contained"
           onClick={() => setShowForm((prev) => !prev)}
@@ -103,18 +126,6 @@ const DriverForm: React.FC = () => {
               <Form>
                 <h4 className={styles.mainHeading}>General Data</h4>
                 <Grid container spacing={2} style={{ marginBottom: '30px' }}>
-                  <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth size='small'
-                      label="Driver ID"
-                      name="driverID"
-                      value={values.driverID}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      error={touched.driverID && Boolean(errors.driverID)}
-                      helperText={touched.driverID && errors.driverID}
-                    />
-                  </Grid>
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth size='small'
@@ -212,15 +223,26 @@ const DriverForm: React.FC = () => {
                 <Grid container spacing={2} style={{ marginBottom: '30px' }}>
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
-                      fullWidth size='small'
+                      select
+                      fullWidth
+                      size="small"
                       label="Vehicle Types"
                       name="vehicleTypes"
-                      value={values.vehicleTypes.join(', ')}
-                      onChange={handleChange}
+                      value={values.vehicleTypes}
+                      onChange={(e) => setFieldValue('vehicleTypes', e.target.value)}
                       onBlur={handleBlur}
                       error={touched.vehicleTypes && Boolean(errors.vehicleTypes)}
                       helperText={touched.vehicleTypes && errors.vehicleTypes}
-                    />
+                      SelectProps={{
+                        multiple: true,
+                      }}
+                    >
+                      {['Truck', 'Mini Auto', 'Lorry'].map((type) => (
+                        <MenuItem key={type} value={type}>
+                          {type}
+                        </MenuItem>
+                      ))}
+                    </TextField>
                   </Grid>
                   <Grid item xs={12}>
                     <FormControlLabel
