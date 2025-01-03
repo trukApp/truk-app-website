@@ -23,7 +23,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import styles from './MasterData.module.css';
 import { withAuthComponent } from '../WithAuthComponent';
-import { useGetLocationMasterQuery } from '@/api/apiSlice';
+import { useGetLocationMasterQuery,usePostLocationMasterMutation } from '@/api/apiSlice';
 
 // Define the type for each location object returned by the backend
 interface Location {
@@ -82,6 +82,7 @@ const validationSchema = Yup.object({
 const Locations: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const { data, error, isLoading } = useGetLocationMasterQuery([])
+  const [postLocation] = usePostLocationMasterMutation();
   console.log("all locations :", data?.locations)
   if (isLoading) {
   console.log("Loading locations...");
@@ -102,8 +103,34 @@ if (error) {
   //   { id: '5', name: 'Trailer - 005' },
   // ];
 
-  const handleFormSubmit = (values:DataGridRow) => {
+  const handleFormSubmit = async (values:DataGridRow) => {
     console.log("form submitted locations :", values)
+            try {
+            const body = {
+                locations: [
+                    {
+                      loc_desc: values.locationDescription ,
+                      longitude: values.longitude,
+                      latitude: values.latitude,
+                      time_zone: values.timeZone,
+                      city: values.city,
+                      state: values.state,
+                      country: values.country,
+                      pincode: values.pincode,
+                      loc_type: values.locationType,
+                      gln_code: values.glnCode,
+                      iata_code: values.iataCode
+                    }
+                ]
+            }
+            console.log("location body: ", body)
+            const response = await postLocation(body).unwrap();
+              console.log('response in post location:', response);
+              resetForm();
+        } catch (error) {
+            console.error('API Error:', error);
+        }
+
   }
 
   const formik = useFormik({
@@ -360,7 +387,7 @@ const rows: DataGridRow[] = locationsMaster?.map((location: Location, index: num
                         onBlur={handleBlur}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={2.4}>
+                    {/* <Grid item xs={12} sm={6} md={2.4}>
                       <TextField
                         fullWidth
                         size="small"
@@ -370,7 +397,7 @@ const rows: DataGridRow[] = locationsMaster?.map((location: Location, index: num
                         onChange={handleChange}
                         onBlur={handleBlur}
                       />
-                    </Grid>
+                    </Grid> */}
                     <Grid item xs={12} sm={6} md={2.4}>
                       <TextField
                         fullWidth
@@ -522,3 +549,7 @@ const rows: DataGridRow[] = locationsMaster?.map((location: Location, index: num
 };
 
 export default withAuthComponent(Locations);
+function resetForm() {
+  throw new Error('Function not implemented.');
+}
+

@@ -10,7 +10,7 @@ const baseQuery = fetchBaseQuery({
   prepareHeaders: (headers) => {
     try {
       const token = localStorage.getItem("accessToken");
-      console.log("token from apislice :", token)
+      console.log("token from apislice :", token);
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
       }
@@ -29,7 +29,6 @@ interface User {
   email: string;
 }
 
-
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery,
@@ -46,6 +45,14 @@ export const apiSlice = createApi({
     customerRegistration: builder.mutation({
       query: (body) => ({
         url: "business/create-partners",
+        method: "POST",
+        body,
+      }),
+    }),
+
+    driverRegistration: builder.mutation({
+      query: (body) => ({
+        url: "driver/add-drivers",
         method: "POST",
         body,
       }),
@@ -74,10 +81,9 @@ postLocationMaster: builder.mutation({
 });
 
 export const {
-  // useGetUsersQuery,
   useUserLoginMutation,
-  // useGetAllLatestNewsQuery,
   useCustomerRegistrationMutation,
   useGetLocationMasterQuery,
+  useDriverRegistrationMutation,
   usePostLocationMasterMutation,
 } = apiSlice;
