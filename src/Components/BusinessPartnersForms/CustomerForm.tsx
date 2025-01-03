@@ -7,8 +7,8 @@ import { DataGridComponent } from '../GridComponent';
 import { GridColDef } from '@mui/x-data-grid';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { useCustomerRegistrationMutation } from '@/api/apiSlice';
-
+import { useCustomerRegistrationMutation, useGetAllCustomersDataQuery } from '@/api/apiSlice';
+import { withAuthComponent } from '../WithAuthComponent';
 
 // Validation schema for CustomerForm
 const customerValidationSchema = Yup.object().shape({
@@ -41,34 +41,57 @@ const initialCustomerValues = {
 };
 
 
-const columns: GridColDef[] = [
-    { field: 'customerId', headerName: 'Customer ID', width: 150 },
-    { field: 'name', headerName: 'Name', width: 200 },
-    { field: 'locationId', headerName: 'Location ID', width: 150 },
-    { field: 'pincode', headerName: 'Pincode', width: 100 },
-    { field: 'state', headerName: 'State', width: 150 },
-    { field: 'city', headerName: 'City', width: 150 },
-    { field: 'district', headerName: 'District', width: 150 },
-    { field: 'country', headerName: 'Country', width: 150 },
-];
+interface Customer {
+    partner_id: number;
+    supplier_id: number | null;
+    customer_id: string;
+    name: string;
+    partner_type: string;
+    loc_of_source: string;
+    loc_of_source_pincode: string;
+    loc_of_source_state: string;
+    loc_of_source_city: string;
+    loc_of_source_country: string;
+}
 
-const dummyCustomersData = [
-    {
-        id: 1,
-        customerId: 'CUST001',
-        name: 'John Doe',
-        locationId: 'LOC123',
-        pincode: '123456',
-        state: 'California',
-        city: 'Los Angeles',
-        district: 'Downtown',
-        country: 'USA',
-    },
+
+const columns: GridColDef[] = [
+    { field: 'customer_id', headerName: 'Customer ID', width: 150 },
+    { field: 'name', headerName: 'Name', width: 200 },
+    { field: 'loc_of_source', headerName: 'Location ID', width: 150 },
+    { field: 'loc_of_source_pincode', headerName: 'Pincode', width: 100 },
+    { field: 'loc_of_source_state', headerName: 'State', width: 150 },
+    { field: 'loc_of_source_city', headerName: 'City', width: 150 },
+    { field: 'loc_of_source_country', headerName: 'Country', width: 150 },
 ];
 
 const CustomerForm: React.FC = () => {
     const [showForm, setShowForm] = useState(false);
     const [customerRegistration] = useCustomerRegistrationMutation();
+    const { data, error, isLoading } = useGetAllCustomersDataQuery({
+        partner_type: "customer",
+    })
+    console.log("all customers data :", data?.partners)
+    const customersData = data?.partners.length > 0 ? data?.partners : []
+
+    if (isLoading) {
+        console.log("Loading All customers Data...");
+    }
+
+    if (error) {
+        console.error("getting error while fetching the customers data:", error);
+    }
+    console.log("customersData", customersData)
+    const mappedData = customersData.map((item: Customer) => ({
+        id: item.partner_id,
+        customer_id: item.customer_id,
+        name: item.name,
+        loc_of_source: item.loc_of_source,
+        loc_of_source_pincode: item.loc_of_source_pincode,
+        loc_of_source_state: item.loc_of_source_state,
+        loc_of_source_city: item.loc_of_source_city,
+        loc_of_source_country: item.loc_of_source_country,
+    }));
 
     const handleCustomerSubmit = async (values: typeof initialCustomerValues) => {
         try {
@@ -349,7 +372,7 @@ const CustomerForm: React.FC = () => {
             <Grid item xs={12} style={{ marginTop: '50px' }}>
                 <DataGridComponent
                     columns={columns}
-                    rows={dummyCustomersData}
+                    rows={mappedData}
                     isLoading={false}
                     pageSizeOptions={[10, 20]}
                     initialPageSize={10}
@@ -359,4 +382,4 @@ const CustomerForm: React.FC = () => {
     );
 };
 
-export default CustomerForm;
+export default withAuthComponent(CustomerForm);

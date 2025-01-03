@@ -77,6 +77,30 @@ export const apiSlice = createApi({
         method: "GET",
       }),
     }),
+
+    getAllCustomersData: builder.query({
+      query: (params) => ({
+        url: "business/get-partners",
+        method: "GET",
+        params,
+      }),
+    }),
+
+    getAllVendorsData: builder.query({
+      query: (params) => ({
+        url: "business/get-partners",
+        method: "GET",
+        params,
+      }),
+    }),
+
+    getAllDriversData: builder.query({
+      query: (params) => ({
+        url: "driver/get-drivers",
+        method: "GET",
+        params,
+      }),
+    }),
   }),
 });
 
@@ -87,4 +111,7 @@ export const {
   useCustomerRegistrationMutation,
   useGetLocationMasterQuery,
   useDriverRegistrationMutation,
+  useGetAllCustomersDataQuery,
+  useGetAllVendorsDataQuery,
+  useGetAllDriversDataQuery,
 } = apiSlice;

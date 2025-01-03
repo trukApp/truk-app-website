@@ -7,123 +7,151 @@ import styles from './BusinessPartners.module.css'
 import { GridColDef } from '@mui/x-data-grid';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { useCustomerRegistrationMutation } from '@/api/apiSlice';
+import { useCustomerRegistrationMutation, useGetAllVendorsDataQuery } from '@/api/apiSlice';
 
-const dummyVendors = [
-    {
-        id: 1,
-        supplierId: 'SUP001',
-        name: 'ABC Supplies Co.',
-        locationId: 'LOC123',
-        pincode: '110001',
-        city: 'New Delhi',
-        district: 'Central Delhi',
-        country: 'India',
-        contactPerson: 'Rajesh Sharma',
-        contactNumber: '9876543210',
-        emailId: 'rajesh@abcsupplies.com',
-        locationOfSource: ['Delhi', 'Mumbai'],
-        podRelevant: true,
-        orderingAddress: '123, Connaught Place, New Delhi',
-        goodsSupplier: 'Electronics',
-        forwardingAgent: 'Fast Logistics'
-    },
-    {
-        id: 2,
-        supplierId: 'SUP002',
-        name: 'Global Trade Ltd.',
-        locationId: 'LOC456',
-        pincode: '400001',
-        city: 'Mumbai',
-        district: 'South Mumbai',
-        country: 'India',
-        contactPerson: 'Priya Mehta',
-        contactNumber: '9988776655',
-        emailId: 'priya@globaltrade.com',
-        locationOfSource: ['Mumbai', 'Chennai'],
-        podRelevant: false,
-        orderingAddress: '45, Nariman Point, Mumbai',
-        goodsSupplier: 'Textiles',
-        forwardingAgent: 'Swift Transport'
-    },
-    {
-        id: 3,
-        supplierId: 'SUP003',
-        name: 'TechMart Solutions',
-        locationId: 'LOC789',
-        pincode: '560001',
-        city: 'Bangalore',
-        district: 'Bangalore Urban',
-        country: 'India',
-        contactPerson: 'Ankit Verma',
-        contactNumber: '9123456789',
-        emailId: 'ankit@techmart.com',
-        locationOfSource: ['Bangalore', 'Hyderabad'],
-        podRelevant: true,
-        orderingAddress: '12, MG Road, Bangalore',
-        goodsSupplier: 'IT Hardware',
-        forwardingAgent: 'Reliable Logistics'
-    },
-    {
-        id: 4,
-        supplierId: 'SUP004',
-        name: 'EcoGoods Traders',
-        locationId: 'LOC321',
-        pincode: '700001',
-        city: 'Kolkata',
-        district: 'Kolkata',
-        country: 'India',
-        contactPerson: 'Suman Banerjee',
-        contactNumber: '9876543100',
-        emailId: 'suman@ecogoods.com',
-        locationOfSource: ['Kolkata', 'Guwahati'],
-        podRelevant: false,
-        orderingAddress: '76, Park Street, Kolkata',
-        goodsSupplier: 'Organic Products',
-        forwardingAgent: 'Green Transport'
-    },
-    {
-        id: 5,
-        supplierId: 'SUP005',
-        name: 'Mega Builders Pvt. Ltd.',
-        locationId: 'LOC654',
-        pincode: '122001',
-        city: 'Gurgaon',
-        district: 'Gurgaon',
-        country: 'India',
-        contactPerson: 'Arjun Singh',
-        contactNumber: '9012345678',
-        emailId: 'arjun@megabuilders.com',
-        locationOfSource: ['Delhi NCR', 'Lucknow'],
-        podRelevant: true,
-        orderingAddress: '45, Cyber City, Gurgaon',
-        goodsSupplier: 'Construction Materials',
-        forwardingAgent: 'BuildFast Couriers'
-    }
-];
+// const dummyVendors = [
+//     {
+//         id: 1,
+//         supplierId: 'SUP001',
+//         name: 'ABC Supplies Co.',
+//         locationId: 'LOC123',
+//         pincode: '110001',
+//         city: 'New Delhi',
+//         district: 'Central Delhi',
+//         country: 'India',
+//         contactPerson: 'Rajesh Sharma',
+//         contactNumber: '9876543210',
+//         emailId: 'rajesh@abcsupplies.com',
+//         locationOfSource: ['Delhi', 'Mumbai'],
+//         podRelevant: true,
+//         orderingAddress: '123, Connaught Place, New Delhi',
+//         goodsSupplier: 'Electronics',
+//         forwardingAgent: 'Fast Logistics'
+//     },
+//     {
+//         id: 2,
+//         supplierId: 'SUP002',
+//         name: 'Global Trade Ltd.',
+//         locationId: 'LOC456',
+//         pincode: '400001',
+//         city: 'Mumbai',
+//         district: 'South Mumbai',
+//         country: 'India',
+//         contactPerson: 'Priya Mehta',
+//         contactNumber: '9988776655',
+//         emailId: 'priya@globaltrade.com',
+//         locationOfSource: ['Mumbai', 'Chennai'],
+//         podRelevant: false,
+//         orderingAddress: '45, Nariman Point, Mumbai',
+//         goodsSupplier: 'Textiles',
+//         forwardingAgent: 'Swift Transport'
+//     },
+//     {
+//         id: 3,
+//         supplierId: 'SUP003',
+//         name: 'TechMart Solutions',
+//         locationId: 'LOC789',
+//         pincode: '560001',
+//         city: 'Bangalore',
+//         district: 'Bangalore Urban',
+//         country: 'India',
+//         contactPerson: 'Ankit Verma',
+//         contactNumber: '9123456789',
+//         emailId: 'ankit@techmart.com',
+//         locationOfSource: ['Bangalore', 'Hyderabad'],
+//         podRelevant: true,
+//         orderingAddress: '12, MG Road, Bangalore',
+//         goodsSupplier: 'IT Hardware',
+//         forwardingAgent: 'Reliable Logistics'
+//     },
+//     {
+//         id: 4,
+//         supplierId: 'SUP004',
+//         name: 'EcoGoods Traders',
+//         locationId: 'LOC321',
+//         pincode: '700001',
+//         city: 'Kolkata',
+//         district: 'Kolkata',
+//         country: 'India',
+//         contactPerson: 'Suman Banerjee',
+//         contactNumber: '9876543100',
+//         emailId: 'suman@ecogoods.com',
+//         locationOfSource: ['Kolkata', 'Guwahati'],
+//         podRelevant: false,
+//         orderingAddress: '76, Park Street, Kolkata',
+//         goodsSupplier: 'Organic Products',
+//         forwardingAgent: 'Green Transport'
+//     },
+//     {
+//         id: 5,
+//         supplierId: 'SUP005',
+//         name: 'Mega Builders Pvt. Ltd.',
+//         locationId: 'LOC654',
+//         pincode: '122001',
+//         city: 'Gurgaon',
+//         district: 'Gurgaon',
+//         country: 'India',
+//         contactPerson: 'Arjun Singh',
+//         contactNumber: '9012345678',
+//         emailId: 'arjun@megabuilders.com',
+//         locationOfSource: ['Delhi NCR', 'Lucknow'],
+//         podRelevant: true,
+//         orderingAddress: '45, Cyber City, Gurgaon',
+//         goodsSupplier: 'Construction Materials',
+//         forwardingAgent: 'BuildFast Couriers'
+//     }
+// ];
+
+interface Customer {
+    partner_id: number;
+    supplier_id: number | null;
+    customer_id: string;
+    name: string;
+    partner_type: string;
+    loc_of_source: string;
+    loc_of_source_pincode: string;
+    loc_of_source_state: string;
+    loc_of_source_city: string;
+    loc_of_source_country: string;
+}
 
 const columns: GridColDef[] = [
-    { field: 'supplierId', headerName: 'Supplier ID', width: 150 },
+    { field: 'supplier_id', headerName: 'Customer ID', width: 150 },
     { field: 'name', headerName: 'Name', width: 200 },
-    { field: 'locationId', headerName: 'Location ID', width: 150 },
-    { field: 'pincode', headerName: 'Pincode', width: 100 },
-    { field: 'city', headerName: 'City', width: 150 },
-    { field: 'district', headerName: 'District', width: 150 },
-    { field: 'country', headerName: 'Country', width: 150 },
-    { field: 'contactPerson', headerName: 'Contact Person', width: 200 },
-    { field: 'contactNumber', headerName: 'Contact Number', width: 150 },
-    { field: 'emailId', headerName: 'Email ID', width: 200 },
-    { field: 'locationOfSource', headerName: 'Location of Source', width: 250 },
-    { field: 'podRelevant', headerName: 'POD Relevant', width: 150 },
-    { field: 'orderingAddress', headerName: 'Ordering Address', width: 250 },
-    { field: 'goodsSupplier', headerName: 'Goods Supplier', width: 200 },
-    { field: 'forwardingAgent', headerName: 'Forwarding Agent', width: 200 }
+    { field: 'loc_of_source', headerName: 'Location ID', width: 150 },
+    { field: 'loc_of_source_pincode', headerName: 'Pincode', width: 100 },
+    { field: 'loc_of_source_state', headerName: 'State', width: 150 },
+    { field: 'loc_of_source_city', headerName: 'City', width: 150 },
+    { field: 'loc_of_source_country', headerName: 'Country', width: 150 },
 ];
-
 
 const SupplierForm: React.FC = () => {
     const [showForm, setShowForm] = useState(false);
     const [customerRegistration] = useCustomerRegistrationMutation();
+    const { data, error, isLoading } = useGetAllVendorsDataQuery({
+        partner_type: "vendor",
+    })
+    console.log("all Vendors data :", data?.partners)
+    const vendorsData = data?.partners.length > 0 ? data?.partners : []
+
+    if (isLoading) {
+        console.log("Loading All customers Data...");
+    }
+
+    if (error) {
+        console.error("getting error while fetching the customers data:", error);
+    }
+
+    const mappedData = vendorsData.map((item: Customer) => ({
+        id: item.partner_id,
+        supplier_id: item.supplier_id,
+        name: item.name,
+        loc_of_source: item.loc_of_source,
+        loc_of_source_pincode: item.loc_of_source_pincode,
+        loc_of_source_state: item.loc_of_source_state,
+        loc_of_source_city: item.loc_of_source_city,
+        loc_of_source_country: item.loc_of_source_country,
+    }));
 
     const initialSupplierValues = {
         // supplierId: '',
@@ -428,7 +456,7 @@ const SupplierForm: React.FC = () => {
             <Grid item xs={12} style={{ marginTop: '50px' }}>
                 <DataGridComponent
                     columns={columns}
-                    rows={dummyVendors}
+                    rows={mappedData}
                     isLoading={false}
                     pageSizeOptions={[10, 20]}
                     initialPageSize={10}
