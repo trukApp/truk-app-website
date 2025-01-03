@@ -6,7 +6,6 @@ import TrucksTable from '@/Components/CreateOrderTables/TrucksTable';
 import { useAppSelector } from '@/store';
 import styles from './createorder.module.css'
 import { MapComponent } from '@/Components/MapComponent';
-import { withAuthComponent } from '@/Components/WithAuthComponent';
 import Header from '@/Components/Header';
 
 const CreateOrder: React.FC = () => {
@@ -424,5 +423,5 @@ const CreateOrder: React.FC = () => {
     );
 };
 
-export default withAuthComponent(CreateOrder)
+export default (CreateOrder)
 

@@ -6,6 +6,7 @@ import {
   Button,
   Collapse,
   Grid,
+  IconButton,
   // FormControl,
   // Chip,
   // InputLabel,
@@ -23,7 +24,9 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import styles from './MasterData.module.css';
 import { withAuthComponent } from '../WithAuthComponent';
-import { useGetLocationMasterQuery,usePostLocationMasterMutation } from '@/api/apiSlice';
+import { useGetLocationMasterQuery, usePostLocationMasterMutation } from '@/api/apiSlice';
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 // Define the type for each location object returned by the backend
 interface Location {
@@ -178,7 +181,7 @@ const rows: DataGridRow[] = locationsMaster?.map((location: Location, index: num
   locationContactNumber: location.contact_number || 'null',
 })) || [];
 
-  const columns: GridColDef[] = [
+   const columns: GridColDef[] = [
     { field: "locationId", headerName: "Location ID", width: 150 },
     { field: "locationDescription", headerName: "Description", width: 200 },
     { field: "locationType", headerName: "Type", width: 150 },
@@ -194,7 +197,39 @@ const rows: DataGridRow[] = locationsMaster?.map((location: Location, index: num
     { field: "pincode", headerName: "Pincode", width: 150 },
     // { field: "locationContactName", headerName: "Contact Name", width: 200 },
     // { field: "locationContactNumber", headerName: "Contact Number", width: 150 },
+      {
+    field: "actions",
+    headerName: "Actions",
+    width: 200,
+    renderCell: (params) => (
+      <div>
+        <IconButton
+          color="primary"
+          onClick={() => handleEdit(params.row)}
+        >
+          <EditIcon />
+        </IconButton>
+        <IconButton
+          color="error"
+          onClick={() => handleDelete(params.row)}
+        >
+          <DeleteIcon />
+        </IconButton>
+      </div>
+    ),
+    },
   ];
+
+  const handleEdit = (row: []) => {
+  console.log("Edit row:", row);
+  // Add your edit logic here
+};
+
+const handleDelete = (row: []) => {
+  console.log("Delete row:", row);
+  // Add your delete logic here
+};
+
 
   return (
     <>
