@@ -10,7 +10,7 @@ const baseQuery = fetchBaseQuery({
   prepareHeaders: (headers) => {
     try {
       const token = localStorage.getItem("accessToken");
-      console.log("token from apislice :", token)
+      console.log("token from apislice :", token);
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
       }
@@ -28,7 +28,6 @@ interface User {
   name: string;
   email: string;
 }
-
 
 export const apiSlice = createApi({
   reducerPath: "api",
@@ -64,13 +63,20 @@ export const apiSlice = createApi({
       }),
     }),
 
-    getLocationMaster: builder.query({
-      query: () => ({
-        url: 'masLoc/all-locations',
-        method: 'GET',
+    driverRegistration: builder.mutation({
+      query: (body) => ({
+        url: "driver/add-drivers",
+        method: "POST",
+        body,
       }),
     }),
 
+    getLocationMaster: builder.query({
+      query: () => ({
+        url: "masLoc/all-locations",
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -80,4 +86,5 @@ export const {
   // useGetAllLatestNewsQuery,
   useCustomerRegistrationMutation,
   useGetLocationMasterQuery,
+  useDriverRegistrationMutation,
 } = apiSlice;
