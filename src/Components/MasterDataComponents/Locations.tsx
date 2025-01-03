@@ -4,14 +4,14 @@ import React, { useState } from 'react';
 import {
   Box,
   Button,
-  Chip,
   Collapse,
-  FormControl,
   Grid,
-  InputLabel,
-  MenuItem,
-  OutlinedInput,
-  Select,
+  // FormControl,
+  // Chip,
+  // InputLabel,
+  // MenuItem,
+  // OutlinedInput,
+  // Select,
   TextField,
   Typography,
 } from '@mui/material';
@@ -94,13 +94,13 @@ if (error) {
   
   const locationsMaster = data?.locations
   // Static data for vehicle options
-  const vehicleOptions = [
-    { id: '1', name: 'Truck - 001' },
-    { id: '2', name: 'Trailer - 002' },
-    { id: '3', name: 'Container - 003' },
-    { id: '4', name: 'Truck - 004' },
-    { id: '5', name: 'Trailer - 005' },
-  ];
+  // const vehicleOptions = [
+  //   { id: '1', name: 'Truck - 001' },
+  //   { id: '2', name: 'Trailer - 002' },
+  //   { id: '3', name: 'Container - 003' },
+  //   { id: '4', name: 'Truck - 004' },
+  //   { id: '5', name: 'Trailer - 005' },
+  // ];
 
   const handleFormSubmit = (values:DataGridRow) => {
     console.log("form submitted locations :", values)
@@ -165,8 +165,8 @@ const rows: DataGridRow[] = locationsMaster?.map((location: Location, index: num
     { field: "state", headerName: "State", width: 150 },
     { field: "country", headerName: "Country", width: 150 },
     { field: "pincode", headerName: "Pincode", width: 150 },
-    { field: "locationContactName", headerName: "Contact Name", width: 200 },
-    { field: "locationContactNumber", headerName: "Contact Number", width: 150 },
+    // { field: "locationContactName", headerName: "Contact Name", width: 200 },
+    // { field: "locationContactNumber", headerName: "Contact Number", width: 150 },
   ];
 
   return (
@@ -407,7 +407,7 @@ const rows: DataGridRow[] = locationsMaster?.map((location: Location, index: num
                   </Grid>
                 </Grid>
 
-                <Grid spacing={4} mt={2} ml={1}>
+                {/* <Grid spacing={4} mt={2} ml={1}>
                   <Typography variant="h6" mb={1}  >
                     3. Vehicles
                   </Typography>
@@ -489,7 +489,7 @@ const rows: DataGridRow[] = locationsMaster?.map((location: Location, index: num
                     </Grid>
 
                   </Grid>
-                </Grid>
+                </Grid> */}
 
 
 
