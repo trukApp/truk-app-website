@@ -6,8 +6,9 @@ import styles from './BusinessPartners.module.css';
 import { DataGridComponent } from '../GridComponent';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { useDriverRegistrationMutation } from '@/api/apiSlice';
-
+import { useDriverRegistrationMutation, useGetAllDriversDataQuery } from '@/api/apiSlice';
+import { withAuthComponent } from '../WithAuthComponent';
+import { GridColDef } from '@mui/x-data-grid';
 interface DriverFormValues {
   driverName: string;
   locationID: string;
@@ -20,23 +21,41 @@ interface DriverFormValues {
   loggedIntoApp: boolean;
 }
 
-const dummyDriverData = [
-  {
-    id: 1,
-    driverID: 'DR001',
-    driverName: 'John Doe',
-    locationID: 'LOC123',
-    address: '123 Main St',
-    drivingLicense: 'DL123456789',
-    expiryDate: '2025-12-31',
-    driverContactNumber: '1234567890',
-    emailID: 'john.doe@example.com',
-    vehicleTypes: ['Truck', 'Van'],
-    loggedIntoApp: true,
-  },
-];
+interface Driver {
+  dri_ID: string;
+  driver_name: string;
+  location_loc_ID: string;
+  driver_correspondence: {
+    email: string;
+    phone: string;
+    expiry_date: string;
+    driving_license: string;
+  };
+  location_city: string;
+  location_country: string;
+  location_state: string;
+  vehicle_types: string[];
+  logged_in: number;
+  driver_id: number;
+}
 
-const driverColumns = [
+// const dummyDriverData = [
+//   {
+//     id: 1,
+//     driverID: 'DR001',
+//     driverName: 'John Doe',
+//     locationID: 'LOC123',
+//     address: '123 Main St',
+//     drivingLicense: 'DL123456789',
+//     expiryDate: '2025-12-31',
+//     driverContactNumber: '1234567890',
+//     emailID: 'john.doe@example.com',
+//     vehicleTypes: ['Truck', 'Van'],
+//     loggedIntoApp: true,
+//   },
+// ];
+
+const driverColumns: GridColDef[] = [
   { field: 'driverID', headerName: 'Driver ID', width: 150 },
   { field: 'driverName', headerName: 'Name', width: 200 },
   { field: 'locationID', headerName: 'Location ID', width: 150 },
@@ -51,6 +70,19 @@ const driverColumns = [
 const DriverForm: React.FC = () => {
   const [driverRegistration] = useDriverRegistrationMutation();
   const [showForm, setShowForm] = useState(false);
+
+  const { data, error, isLoading } = useGetAllDriversDataQuery({})
+  console.log("all drivers data :", data?.drivers)
+  const driversData = data?.drivers.length > 0 ? data?.drivers : []
+
+  if (isLoading) {
+    console.log("Loading All drivers Data...");
+  }
+
+  if (error) {
+    console.error("getting error while fetching the drivers data:", error);
+  }
+  console.log("drivers", driversData)
 
   const initialDriverValues: DriverFormValues = {
     driverName: '',
@@ -73,6 +105,21 @@ const DriverForm: React.FC = () => {
     driverContactNumber: Yup.string().required('Contact Number is required'),
     emailID: Yup.string().email('Invalid email format').required('Email ID is required'),
   });
+
+  const driversDataRows = driversData.map((driver: Driver) => ({
+    id: driver.driver_id, // Unique row identifier
+    driverID: driver.dri_ID,
+    driverName: driver.driver_name,
+    locationID: driver.location_loc_ID,
+    drivingLicense: driver.driver_correspondence?.driving_license,
+    expiryDate: driver.driver_correspondence?.expiry_date,
+    driverContactNumber: driver.driver_correspondence?.phone,
+    emailID: driver.driver_correspondence?.email,
+    vehicleTypes: driver.vehicle_types?.join(', '), // Combine array into a string
+    loggedIntoApp: driver.logged_in ? 'Yes' : 'No',
+  })) || [];
+
+
 
   const handleDriverSubmit = async (values: DriverFormValues) => {
     console.log('Driver Form Submitted:', values);
@@ -271,7 +318,7 @@ const DriverForm: React.FC = () => {
       <Grid item xs={12} style={{ marginTop: '50px' }}>
         <DataGridComponent
           columns={driverColumns}
-          rows={dummyDriverData}
+          rows={driversDataRows}
           isLoading={false}
           pageSizeOptions={[10, 20]}
           initialPageSize={10}
@@ -282,4 +329,4 @@ const DriverForm: React.FC = () => {
   );
 };
 
-export default DriverForm;
+export default withAuthComponent(DriverForm);

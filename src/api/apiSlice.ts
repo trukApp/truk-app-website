@@ -76,7 +76,7 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: 'LocationMaster', id: 'LIST' }],
+      invalidatesTags: [{ type: "LocationMaster", id: "LIST" }],
     }),
 
     getVehicleMaster: builder.query({
@@ -95,8 +95,29 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: [{ type: 'VehicleMaster', id: 'LIST' }],
     }),
-      
+       getAllCustomersData: builder.query({
+      query: (params) => ({
+        url: "business/get-partners",
+        method: "GET",
+        params,
+      }),
+    }),
 
+    getAllVendorsData: builder.query({
+      query: (params) => ({
+        url: "business/get-partners",
+        method: "GET",
+        params,
+      }),
+    }),
+
+    getAllDriversData: builder.query({
+      query: (params) => ({
+        url: "driver/get-drivers",
+        method: "GET",
+        params,
+      }),
+    }),
   }),
 });
 
@@ -105,6 +126,9 @@ export const {
   useCustomerRegistrationMutation,
   useGetLocationMasterQuery,
   useDriverRegistrationMutation,
+  useGetAllCustomersDataQuery,
+  useGetAllVendorsDataQuery,
+  useGetAllDriversDataQuery,
   usePostLocationMasterMutation,
   useGetVehicleMasterQuery,
   usePostVehicleMasterMutation

@@ -53,12 +53,16 @@ const Header = () => {
     if (isConfirmed) {
       await signOut({ redirect: false });
       localStorage.clear()
-  
+
       const local = localStorage.getItem("accessToken")
-      console.log("Logout successfully",local)
+      console.log("Logout successfully", local)
       router.push("/login");
     }
   };
+
+  const handleNavigationToHomePage = () => {
+    router.push("/");
+  }
 
   return (
     <AppBar position="fixed"
@@ -66,7 +70,7 @@ const Header = () => {
     >
       <Toolbar>
         {/* Logo */}
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }} onClick={handleNavigationToHomePage}>
           Truk App 🚚
         </Typography>
 
