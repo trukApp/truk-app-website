@@ -9,6 +9,9 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useDriverRegistrationMutation, useGetAllDriversDataQuery } from '@/api/apiSlice';
 import { withAuthComponent } from '../WithAuthComponent';
 import { GridColDef } from '@mui/x-data-grid';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import IconButton from '@mui/material/IconButton';
 interface DriverFormValues {
   driverName: string;
   locationID: string;
@@ -55,17 +58,7 @@ interface Driver {
 //   },
 // ];
 
-const driverColumns: GridColDef[] = [
-  { field: 'driverID', headerName: 'Driver ID', width: 150 },
-  { field: 'driverName', headerName: 'Name', width: 200 },
-  { field: 'locationID', headerName: 'Location ID', width: 150 },
-  { field: 'drivingLicense', headerName: 'Driving License', width: 200 },
-  { field: 'expiryDate', headerName: 'Expiry Date', width: 150 },
-  { field: 'driverContactNumber', headerName: 'Contact Number', width: 150 },
-  { field: 'emailID', headerName: 'Email ID', width: 200 },
-  { field: 'vehicleTypes', headerName: 'Vehicle Types', width: 200 },
-  { field: 'loggedIntoApp', headerName: 'Logged In', width: 100 },
-];
+
 
 const DriverForm: React.FC = () => {
   const [driverRegistration] = useDriverRegistrationMutation();
@@ -106,17 +99,60 @@ const DriverForm: React.FC = () => {
     emailID: Yup.string().email('Invalid email format').required('Email ID is required'),
   });
 
+  const handleEdit = (rowData: Driver) => {
+    console.log('Edit clicked for:', rowData);
+    // Add your edit logic here
+  };
+
+  const handleDelete = (rowData: Driver) => {
+    console.log('Delete clicked for:', rowData);
+    // Add your delete logic here
+  };
+
+  const driverColumns: GridColDef[] = [
+    { field: 'driverID', headerName: 'Driver ID', width: 150 },
+    { field: 'driverName', headerName: 'Name', width: 200 },
+    { field: 'locationID', headerName: 'Location ID', width: 150 },
+    { field: 'drivingLicense', headerName: 'Driving License', width: 200 },
+    { field: 'expiryDate', headerName: 'Expiry Date', width: 150 },
+    { field: 'driverContactNumber', headerName: 'Contact Number', width: 150 },
+    { field: 'emailID', headerName: 'Email ID', width: 200 },
+    { field: 'vehicleTypes', headerName: 'Vehicle Types', width: 200 },
+    { field: 'loggedIntoApp', headerName: 'Logged In', width: 100 },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 150,
+      renderCell: (params) => (
+        <>
+          <IconButton
+            color="primary"
+            onClick={() => handleEdit(params.row)}
+          >
+            <EditIcon />
+          </IconButton>
+          <IconButton
+            color="secondary"
+            onClick={() => handleDelete(params.row)}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </>
+      ),
+    },
+  ];
+
   const driversDataRows = driversData.map((driver: Driver) => ({
-    id: driver.driver_id, // Unique row identifier
-    driverID: driver.dri_ID,
-    driverName: driver.driver_name,
-    locationID: driver.location_loc_ID,
-    drivingLicense: driver.driver_correspondence?.driving_license,
-    expiryDate: driver.driver_correspondence?.expiry_date,
-    driverContactNumber: driver.driver_correspondence?.phone,
-    emailID: driver.driver_correspondence?.email,
-    vehicleTypes: driver.vehicle_types?.join(', '), // Combine array into a string
-    loggedIntoApp: driver.logged_in ? 'Yes' : 'No',
+    id: driver?.driver_id,
+    driverID: driver?.dri_ID,
+    driverName: driver?.driver_name,
+    locationID: driver?.location_loc_ID,
+    drivingLicense: driver?.driver_correspondence?.driving_license,
+    expiryDate: driver?.driver_correspondence?.expiry_date,
+    driverContactNumber: driver?.driver_correspondence?.phone,
+    emailID: driver?.driver_correspondence?.email,
+    vehicleTypes: driver?.vehicle_types.join(', '),
+    loggedIntoApp: driver?.logged_in ? 'Yes' : 'No',
   })) || [];
 
 

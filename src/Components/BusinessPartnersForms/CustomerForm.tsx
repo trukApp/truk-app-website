@@ -9,6 +9,10 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useCustomerRegistrationMutation, useGetAllCustomersDataQuery } from '@/api/apiSlice';
 import { withAuthComponent } from '../WithAuthComponent';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import IconButton from '@mui/material/IconButton';
+
 
 // Validation schema for CustomerForm
 const customerValidationSchema = Yup.object().shape({
@@ -22,25 +26,18 @@ const customerValidationSchema = Yup.object().shape({
     country: Yup.string().required('Country is required'),
 });
 
-const initialCustomerValues = {
-    name: '',
-    locationId: '',
-    pincode: '',
-    state: '',
-    city: '',
-    district: '',
-    country: '',
-    contactPerson: '',
-    contactNumber: '',
-    emailId: '',
-    locationOfSource: [],
-    podRelevant: false,
-    shipToParty: '',
-    soldToParty: '',
-    billToParty: '',
-};
 
+interface PartnerFunctions {
+    ship_to_party: string;
+    sold_to_party: string;
+    bill_to_party: string;
+}
 
+interface Correspondence {
+    contact_person: string;
+    contact_number: string;
+    email: string;
+}
 interface Customer {
     partner_id: number;
     supplier_id: number | null;
@@ -52,21 +49,33 @@ interface Customer {
     loc_of_source_state: string;
     loc_of_source_city: string;
     loc_of_source_country: string;
+    partner_functions: PartnerFunctions;
+    correspondence: Correspondence;
 }
 
+const initialCustomerValues = {
+    name: '',
+    locationId: '',
+    pincode: '',
+    state: '',
+    city: '',
+    district: '',
+    country: '',
+    contactPerson: '',
+    contactNumber: '',
+    emailId: '',
+    locationOfSource: [] as string[],
+    podRelevant: false,
+    shipToParty: '',
+    soldToParty: '',
+    billToParty: '',
+};
 
-const columns: GridColDef[] = [
-    { field: 'customer_id', headerName: 'Customer ID', width: 150 },
-    { field: 'name', headerName: 'Name', width: 200 },
-    { field: 'loc_of_source', headerName: 'Location ID', width: 150 },
-    { field: 'loc_of_source_pincode', headerName: 'Pincode', width: 100 },
-    { field: 'loc_of_source_state', headerName: 'State', width: 150 },
-    { field: 'loc_of_source_city', headerName: 'City', width: 150 },
-    { field: 'loc_of_source_country', headerName: 'Country', width: 150 },
-];
 
 const CustomerForm: React.FC = () => {
     const [showForm, setShowForm] = useState(false);
+    const [updateRecord, setUpdateRecord] = useState(false);
+    const [formInitialValues, setFormInitialValues] = useState(initialCustomerValues);
     const [customerRegistration] = useCustomerRegistrationMutation();
     const { data, error, isLoading } = useGetAllCustomersDataQuery({
         partner_type: "customer",
@@ -82,16 +91,80 @@ const CustomerForm: React.FC = () => {
         console.error("getting error while fetching the customers data:", error);
     }
     console.log("customersData", customersData)
+
+    console.log("formInitialValues: ", formInitialValues)
+
+    const mapRowToInitialValues = (rowData: Customer) => ({
+        name: rowData.name || '',
+        locationId: rowData.loc_of_source || '',
+        pincode: rowData.loc_of_source_pincode || '',
+        state: rowData.loc_of_source_state || '',
+        city: rowData.loc_of_source_city || '',
+        district: '',
+        country: rowData.loc_of_source_country || '',
+        contactPerson: rowData?.correspondence?.contact_person || '',
+        contactNumber: rowData?.correspondence?.contact_number || '',
+        emailId: rowData?.correspondence?.email || '',
+        locationOfSource: [rowData.loc_of_source],
+        podRelevant: false,
+        shipToParty: rowData?.partner_functions?.ship_to_party || '',
+        soldToParty: rowData?.partner_functions?.sold_to_party || '',
+        billToParty: rowData?.partner_functions?.bill_to_party || '',
+    });
+
+
     const mappedData = customersData.map((item: Customer) => ({
         id: item.partner_id,
-        customer_id: item.customer_id,
-        name: item.name,
-        loc_of_source: item.loc_of_source,
-        loc_of_source_pincode: item.loc_of_source_pincode,
-        loc_of_source_state: item.loc_of_source_state,
-        loc_of_source_city: item.loc_of_source_city,
-        loc_of_source_country: item.loc_of_source_country,
+        ...item,
     }));
+
+
+    const columns: GridColDef[] = [
+        { field: 'customer_id', headerName: 'Customer ID', width: 150 },
+        { field: 'name', headerName: 'Name', width: 200 },
+        { field: 'loc_of_source', headerName: 'Location ID', width: 150 },
+        { field: 'loc_of_source_pincode', headerName: 'Pincode', width: 100 },
+        { field: 'loc_of_source_state', headerName: 'State', width: 150 },
+        { field: 'loc_of_source_city', headerName: 'City', width: 150 },
+        { field: 'loc_of_source_country', headerName: 'Country', width: 150 },
+        {
+            field: 'actions',
+            headerName: 'Actions',
+            width: 150,
+            renderCell: (params) => (
+                <>
+                    <IconButton
+                        color="primary"
+                        onClick={() => handleEdit(params.row)}
+                    >
+                        <EditIcon />
+                    </IconButton>
+                    <IconButton
+                        color="secondary"
+                        onClick={() => handleDelete(params.row)}
+                    >
+                        <DeleteIcon />
+                    </IconButton>
+                </>
+            ),
+        },
+    ];
+
+    const handleEdit = async (rowData: Customer) => {
+        console.log('Edit clicked for:', rowData);
+        setShowForm(true)
+        setUpdateRecord(true)
+
+        const updatedInitialValues = await mapRowToInitialValues(rowData);
+        console.log('Updated Initial Values:', updatedInitialValues);
+
+        setFormInitialValues(updatedInitialValues);
+    };
+
+    const handleDelete = (rowData: Customer) => {
+        console.log('Delete clicked for:', rowData);
+        // Add your delete logic here
+    };
 
     const handleCustomerSubmit = async (values: typeof initialCustomerValues) => {
         try {
@@ -144,26 +217,15 @@ const CustomerForm: React.FC = () => {
             <Collapse in={showForm}>
                 <Box marginBottom={4} padding={2} border="1px solid #ccc" borderRadius={2}>
                     <Formik
-                        initialValues={initialCustomerValues}
+                        initialValues={formInitialValues}
                         validationSchema={customerValidationSchema}
                         onSubmit={handleCustomerSubmit}
+                        enableReinitialize={true}
                     >
                         {({ values, handleChange, handleBlur, errors, touched, setFieldValue }) => (
                             <Form>
                                 <h3 className={styles.mainHeading}>General Data</h3>
                                 <Grid container spacing={2}>
-                                    {/* <Grid item xs={12} sm={6} md={2.4}>
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="Customer ID"
-                                            name="customerId"
-                                            value={values.customerId}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.customerId && Boolean(errors.customerId)}
-                                            helperText={touched.customerId && errors.customerId}
-                                        />
-                                    </Grid> */}
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
@@ -356,12 +418,20 @@ const CustomerForm: React.FC = () => {
                                         />
                                     </Grid>
                                 </Grid>
+                                {updateRecord ? (
+                                    <Box marginTop={3} textAlign="center">
+                                        <Button type="submit" variant="contained" color="primary">
+                                            Update
+                                        </Button>
+                                    </Box>
+                                ) : (
+                                    <Box marginTop={3} textAlign="center">
+                                        <Button type="submit" variant="contained" color="primary">
+                                            Create
+                                        </Button>
+                                    </Box>
+                                )}
 
-                                <Box marginTop={3} textAlign="center">
-                                    <Button type="submit" variant="contained" color="primary">
-                                        Submit
-                                    </Button>
-                                </Box>
                             </Form>
                         )}
                     </Formik>

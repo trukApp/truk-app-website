@@ -8,7 +8,6 @@ declare module "next-auth" {
     // phone: string;
     accessToken: string;
     refreshToken: string;
-    
   }
 
   interface Session {
@@ -35,7 +34,9 @@ const refreshAccessToken = async (refreshToken: string) => {
     const response = await fetch(
       // `https://jaimp-api.onelovepc.com/jaiMp/log/refresh-token`,
       // `http://192.168.225.172:8088/truk/log/refresh-token`,  // teja local
-       `http://192.168.43.78:8088/truk/log/refresh-token`,
+      //  `http://192.168.43.78:8088/truk/log/refresh-token`,
+      `http://192.168.31.37:8088/truk/log/refresh-token`, //Vamsi local
+
       {
         method: "POST",
         headers: {
@@ -93,7 +94,8 @@ export const options: NextAuthOptions = {
             // `https://jaimp-api.onelovepc.com/jaiMp/log/login`,
             // `http://192.168.31.37:8088/truk/log/login`,
             // 'http://192.168.225.172:8088/truk/log/login',    //teja local
-             'http://192.168.43.78:8088/truk/log/login',
+            // "http://192.168.43.78:8088/truk/log/login",
+            `http://192.168.31.37:8088/truk/log/login`, //Vamsi local
             {
               method: "POST",
               headers: {
@@ -135,51 +137,57 @@ export const options: NextAuthOptions = {
 
   callbacks: {
     async jwt({ token, user }) {
-      console.log("token :", token)
-    // Initial sign-in
-    if (user) {
-      return {
-        id: user.id,
-        // name: user.name,
-        // phone: user.phone,
-        accessToken: user.accessToken,
-        refreshToken: user.refreshToken,
-        accessTokenExpires: Date.now() + 23 * 60 * 60 * 1000,
-      };
-    }
+      console.log("token :", token);
+      // Initial sign-in
+      if (user) {
+        return {
+          id: user.id,
+          // name: user.name,
+          // phone: user.phone,
+          accessToken: user.accessToken,
+          refreshToken: user.refreshToken,
+          accessTokenExpires: Date.now() + 23 * 60 * 60 * 1000,
+        };
+      }
 
       // Return token if access token is still valid
-      const expiryToken = token.accessTokenExpires as number
-    if (Date.now() < expiryToken) {
-      return token;
-    }
+      const expiryToken = token.accessTokenExpires as number;
+      if (Date.now() < expiryToken) {
+        return token;
+      }
 
-    // Access token has expired, refresh it
-    try {
-      const refreshedToken = await refreshAccessToken(token.refreshToken as string);
-      return { ...token, accessToken: refreshedToken.accessToken, accessTokenExpires: refreshedToken.accessTokenExpires };
-    } catch (error) {
-      console.error("Failed to refresh token:", error);
-      return { ...token, error: "RefreshAccessTokenError" };
-    }
+      // Access token has expired, refresh it
+      try {
+        const refreshedToken = await refreshAccessToken(
+          token.refreshToken as string
+        );
+        return {
+          ...token,
+          accessToken: refreshedToken.accessToken,
+          accessTokenExpires: refreshedToken.accessTokenExpires,
+        };
+      } catch (error) {
+        console.error("Failed to refresh token:", error);
+        return { ...token, error: "RefreshAccessTokenError" };
+      }
+    },
+
+    async session({ session, token }) {
+      session.user = {
+        id: token.id as string,
+        // name: token.name as string,
+        // phone: token.phone as string,
+        accessToken: token.accessToken as string,
+        refreshToken: token.refreshToken as string,
+      };
+
+      if (token.error === "RefreshAccessTokenError") {
+        session.error = "RefreshAccessTokenError";
+      }
+
+      return session;
+    },
   },
-
-  async session({ session, token }) {
-    session.user = {
-      id: token.id as string,
-      // name: token.name as string,
-      // phone: token.phone as string,
-      accessToken: token.accessToken as string,
-      refreshToken: token.refreshToken as string,
-    };
-
-    if (token.error === "RefreshAccessTokenError") {
-      session.error = "RefreshAccessTokenError";
-    }
-
-    return session;
-  },
-},
 
   pages: {
     signIn: "/login",
