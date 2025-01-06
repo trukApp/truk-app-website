@@ -1,5 +1,5 @@
 import React
-// { useState }
+  // { useState }
   from "react";
 import {
   DataGrid, GridColDef
@@ -8,8 +8,7 @@ import {
 
 interface DataGridComponentProps {
   columns: GridColDef[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  rows?: any[];
+  rows: [];
   isLoading: boolean;
   pageSizeOptions?: number[];
   initialPageSize?: number;
@@ -23,11 +22,6 @@ export const DataGridComponent: React.FC<DataGridComponentProps> = ({
   initialPageSize = 10,
 }) => {
   const safeRows = rows ?? [];
-  // const [selectionModel, setSelectionModel] = useState<GridRowSelectionModel>([]);
-
-  // const handleSelectionChange = (newSelectionModel: GridRowSelectionModel) => {
-  //   setSelectionModel(newSelectionModel);
-  // };
 
   return (
     <div
