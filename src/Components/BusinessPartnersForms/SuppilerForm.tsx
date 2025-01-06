@@ -8,99 +8,9 @@ import { GridColDef } from '@mui/x-data-grid';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useCustomerRegistrationMutation, useGetAllVendorsDataQuery } from '@/api/apiSlice';
-
-// const dummyVendors = [
-//     {
-//         id: 1,
-//         supplierId: 'SUP001',
-//         name: 'ABC Supplies Co.',
-//         locationId: 'LOC123',
-//         pincode: '110001',
-//         city: 'New Delhi',
-//         district: 'Central Delhi',
-//         country: 'India',
-//         contactPerson: 'Rajesh Sharma',
-//         contactNumber: '9876543210',
-//         emailId: 'rajesh@abcsupplies.com',
-//         locationOfSource: ['Delhi', 'Mumbai'],
-//         podRelevant: true,
-//         orderingAddress: '123, Connaught Place, New Delhi',
-//         goodsSupplier: 'Electronics',
-//         forwardingAgent: 'Fast Logistics'
-//     },
-//     {
-//         id: 2,
-//         supplierId: 'SUP002',
-//         name: 'Global Trade Ltd.',
-//         locationId: 'LOC456',
-//         pincode: '400001',
-//         city: 'Mumbai',
-//         district: 'South Mumbai',
-//         country: 'India',
-//         contactPerson: 'Priya Mehta',
-//         contactNumber: '9988776655',
-//         emailId: 'priya@globaltrade.com',
-//         locationOfSource: ['Mumbai', 'Chennai'],
-//         podRelevant: false,
-//         orderingAddress: '45, Nariman Point, Mumbai',
-//         goodsSupplier: 'Textiles',
-//         forwardingAgent: 'Swift Transport'
-//     },
-//     {
-//         id: 3,
-//         supplierId: 'SUP003',
-//         name: 'TechMart Solutions',
-//         locationId: 'LOC789',
-//         pincode: '560001',
-//         city: 'Bangalore',
-//         district: 'Bangalore Urban',
-//         country: 'India',
-//         contactPerson: 'Ankit Verma',
-//         contactNumber: '9123456789',
-//         emailId: 'ankit@techmart.com',
-//         locationOfSource: ['Bangalore', 'Hyderabad'],
-//         podRelevant: true,
-//         orderingAddress: '12, MG Road, Bangalore',
-//         goodsSupplier: 'IT Hardware',
-//         forwardingAgent: 'Reliable Logistics'
-//     },
-//     {
-//         id: 4,
-//         supplierId: 'SUP004',
-//         name: 'EcoGoods Traders',
-//         locationId: 'LOC321',
-//         pincode: '700001',
-//         city: 'Kolkata',
-//         district: 'Kolkata',
-//         country: 'India',
-//         contactPerson: 'Suman Banerjee',
-//         contactNumber: '9876543100',
-//         emailId: 'suman@ecogoods.com',
-//         locationOfSource: ['Kolkata', 'Guwahati'],
-//         podRelevant: false,
-//         orderingAddress: '76, Park Street, Kolkata',
-//         goodsSupplier: 'Organic Products',
-//         forwardingAgent: 'Green Transport'
-//     },
-//     {
-//         id: 5,
-//         supplierId: 'SUP005',
-//         name: 'Mega Builders Pvt. Ltd.',
-//         locationId: 'LOC654',
-//         pincode: '122001',
-//         city: 'Gurgaon',
-//         district: 'Gurgaon',
-//         country: 'India',
-//         contactPerson: 'Arjun Singh',
-//         contactNumber: '9012345678',
-//         emailId: 'arjun@megabuilders.com',
-//         locationOfSource: ['Delhi NCR', 'Lucknow'],
-//         podRelevant: true,
-//         orderingAddress: '45, Cyber City, Gurgaon',
-//         goodsSupplier: 'Construction Materials',
-//         forwardingAgent: 'BuildFast Couriers'
-//     }
-// ];
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import IconButton from '@mui/material/IconButton';
 
 interface Customer {
     partner_id: number;
@@ -115,15 +25,7 @@ interface Customer {
     loc_of_source_country: string;
 }
 
-const columns: GridColDef[] = [
-    { field: 'supplier_id', headerName: 'Customer ID', width: 150 },
-    { field: 'name', headerName: 'Name', width: 200 },
-    { field: 'loc_of_source', headerName: 'Location ID', width: 150 },
-    { field: 'loc_of_source_pincode', headerName: 'Pincode', width: 100 },
-    { field: 'loc_of_source_state', headerName: 'State', width: 150 },
-    { field: 'loc_of_source_city', headerName: 'City', width: 150 },
-    { field: 'loc_of_source_country', headerName: 'Country', width: 150 },
-];
+
 
 const SupplierForm: React.FC = () => {
     const [showForm, setShowForm] = useState(false);
@@ -141,6 +43,47 @@ const SupplierForm: React.FC = () => {
     if (error) {
         console.error("getting error while fetching the customers data:", error);
     }
+
+    const handleEdit = (rowData: Customer) => {
+        console.log('Edit clicked for:', rowData);
+        // Add your edit logic here
+    };
+
+    const handleDelete = (rowData: Customer) => {
+        console.log('Delete clicked for:', rowData);
+        // Add your delete logic here
+    };
+
+    const columns: GridColDef[] = [
+        { field: 'supplier_id', headerName: 'Customer ID', width: 150 },
+        { field: 'name', headerName: 'Name', width: 200 },
+        { field: 'loc_of_source', headerName: 'Location ID', width: 150 },
+        { field: 'loc_of_source_pincode', headerName: 'Pincode', width: 100 },
+        { field: 'loc_of_source_state', headerName: 'State', width: 150 },
+        { field: 'loc_of_source_city', headerName: 'City', width: 150 },
+        { field: 'loc_of_source_country', headerName: 'Country', width: 150 },
+        {
+            field: 'actions',
+            headerName: 'Actions',
+            width: 150,
+            renderCell: (params) => (
+                <>
+                    <IconButton
+                        color="primary"
+                        onClick={() => handleEdit(params.row)}
+                    >
+                        <EditIcon />
+                    </IconButton>
+                    <IconButton
+                        color="secondary"
+                        onClick={() => handleDelete(params.row)}
+                    >
+                        <DeleteIcon />
+                    </IconButton>
+                </>
+            ),
+        },
+    ];
 
     const mappedData = vendorsData.map((item: Customer) => ({
         id: item.partner_id,
