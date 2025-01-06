@@ -90,8 +90,8 @@ export const options: NextAuthOptions = {
         try {
           console.log("qwerty");
           const response = await fetch(
-            'http://192.168.225.172:8088/truk/log/login',    //teja local
-            // `http://192.168.31.37:8088/truk/log/login`, //Vamsi local
+            // 'http://192.168.225.172:8088/truk/log/login',    //teja local
+            `http://192.168.31.37:8088/truk/log/login`, //Vamsi local
             {
               method: "POST",
               headers: {
