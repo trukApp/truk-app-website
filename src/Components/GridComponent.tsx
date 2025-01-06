@@ -8,7 +8,8 @@ import {
 
 interface DataGridComponentProps {
   columns: GridColDef[];
-  rows: [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  rows?: any[];
   isLoading: boolean;
   pageSizeOptions?: number[];
   initialPageSize?: number;
