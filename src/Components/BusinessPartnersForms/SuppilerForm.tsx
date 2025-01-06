@@ -12,6 +12,17 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 
+interface PartnerFunctions {
+    forwarding_agent: string;
+    goods_supplier: string;
+    ordering_address: string;
+}
+
+interface Correspondence {
+    contact_person: string;
+    contact_number: string;
+    email: string;
+}
 interface Customer {
     partner_id: number;
     supplier_id: number | null;
@@ -23,12 +34,33 @@ interface Customer {
     loc_of_source_state: string;
     loc_of_source_city: string;
     loc_of_source_country: string;
+    partner_functions: PartnerFunctions;
+    correspondence: Correspondence;
 }
 
+const initialSupplierValues = {
+    // supplierId: '',
+    name: '',
+    locationId: '',
+    pincode: '',
+    city: '',
+    district: '',
+    country: '',
+    contactPerson: '',
+    contactNumber: '',
+    emailId: '',
+    locationOfSource: [] as string[],
+    podRelevant: false,
+    orderingAddress: '',
+    goodsSupplier: '',
+    forwardingAgent: ''
+};
 
 
 const SupplierForm: React.FC = () => {
     const [showForm, setShowForm] = useState(false);
+    const [updateRecord, setUpdateRecord] = useState(false);
+    const [formInitialValues, setFormInitialValues] = useState(initialSupplierValues);
     const [customerRegistration] = useCustomerRegistrationMutation();
     const { data, error, isLoading } = useGetAllVendorsDataQuery({
         partner_type: "vendor",
@@ -44,15 +76,40 @@ const SupplierForm: React.FC = () => {
         console.error("getting error while fetching the customers data:", error);
     }
 
-    const handleEdit = (rowData: Customer) => {
-        console.log('Edit clicked for:', rowData);
-        // Add your edit logic here
-    };
+    const mapRowToInitialValues = (rowData: Customer) => ({
+        name: rowData.name || '',
+        locationId: rowData.loc_of_source || '',
+        pincode: rowData.loc_of_source_pincode || '',
+        state: rowData.loc_of_source_state || '',
+        city: rowData.loc_of_source_city || '',
+        district: '',
+        country: rowData.loc_of_source_country || '',
+        contactPerson: rowData?.correspondence?.contact_person || '',
+        contactNumber: rowData?.correspondence?.contact_number || '',
+        emailId: rowData?.correspondence?.email || '',
+        locationOfSource: [rowData.loc_of_source],
+        podRelevant: false,
+        forwardingAgent: rowData?.partner_functions?.forwarding_agent || '',
+        goodsSupplier: rowData?.partner_functions?.goods_supplier || '',
+        orderingAddress: rowData?.partner_functions?.ordering_address || '',
+    });
 
     const handleDelete = (rowData: Customer) => {
         console.log('Delete clicked for:', rowData);
         // Add your delete logic here
     };
+
+    const handleEdit = async (rowData: Customer) => {
+        console.log('Edit clicked for:', rowData);
+        setShowForm(true)
+        setUpdateRecord(true)
+
+        const updatedInitialValues = await mapRowToInitialValues(rowData);
+        console.log('Updated Initial Values:', updatedInitialValues);
+
+        setFormInitialValues(updatedInitialValues);
+    };
+
 
     const columns: GridColDef[] = [
         { field: 'supplier_id', headerName: 'Customer ID', width: 150 },
@@ -87,32 +144,17 @@ const SupplierForm: React.FC = () => {
 
     const mappedData = vendorsData.map((item: Customer) => ({
         id: item.partner_id,
-        supplier_id: item.supplier_id,
-        name: item.name,
-        loc_of_source: item.loc_of_source,
-        loc_of_source_pincode: item.loc_of_source_pincode,
-        loc_of_source_state: item.loc_of_source_state,
-        loc_of_source_city: item.loc_of_source_city,
-        loc_of_source_country: item.loc_of_source_country,
+        // supplier_id: item.supplier_id,
+        // name: item.name,
+        // loc_of_source: item.loc_of_source,
+        // loc_of_source_pincode: item.loc_of_source_pincode,
+        // loc_of_source_state: item.loc_of_source_state,
+        // loc_of_source_city: item.loc_of_source_city,
+        // loc_of_source_country: item.loc_of_source_country,
+        ...item,
     }));
 
-    const initialSupplierValues = {
-        // supplierId: '',
-        name: '',
-        locationId: '',
-        pincode: '',
-        city: '',
-        district: '',
-        country: '',
-        contactPerson: '',
-        contactNumber: '',
-        emailId: '',
-        locationOfSource: [],
-        podRelevant: false,
-        orderingAddress: '',
-        goodsSupplier: '',
-        forwardingAgent: ''
-    };
+
 
     const supplierValidationSchema = Yup.object({
         // supplierId: Yup.string().required('Supplier ID is required'),
@@ -183,9 +225,10 @@ const SupplierForm: React.FC = () => {
             <Collapse in={showForm}>
                 <Box marginBottom={4} padding={2} border="1px solid #ccc" borderRadius={2}>
                     <Formik
-                        initialValues={initialSupplierValues}
+                        initialValues={formInitialValues}
                         validationSchema={supplierValidationSchema}
                         onSubmit={handleSupplierSubmit}
+                        enableReinitialize={true}
                     >
                         {({ values, handleChange, handleBlur, errors, touched, setFieldValue }) => (
                             <Form>
@@ -384,12 +427,20 @@ const SupplierForm: React.FC = () => {
                                         />
                                     </Grid>
                                 </Grid>
+                                {updateRecord ? (
 
-                                <Box marginTop={3} textAlign="center">
-                                    <Button type="submit" variant="contained" color="primary">
-                                        Submit
-                                    </Button>
-                                </Box>
+                                    <Box marginTop={3} textAlign="center">
+                                        <Button type="submit" variant="contained" color="primary">
+                                            Update
+                                        </Button>
+                                    </Box>
+                                ) : (
+                                    <Box marginTop={3} textAlign="center">
+                                        <Button type="submit" variant="contained" color="primary">
+                                            Create
+                                        </Button>
+                                    </Box>
+                                )}
                             </Form>
                         )}
                     </Formik>
