@@ -34,8 +34,9 @@ const refreshAccessToken = async (refreshToken: string) => {
   try {
     const response = await fetch(
       // `https://jaimp-api.onelovepc.com/jaiMp/log/refresh-token`,
-      // `http://192.168.225.172:8088/truk/log/refresh-token`,  // teja local
-       `http://192.168.43.78:8088/truk/log/refresh-token`,
+      //  `http://192.168.31.37:8088/truk/log/login`,       //vamsi local
+      `http://192.168.225.172:8088/truk/log/refresh-token`,  // teja local
+
       {
         method: "POST",
         headers: {
@@ -56,7 +57,8 @@ const refreshAccessToken = async (refreshToken: string) => {
     return {
       accessToken: data.accessToken,
       // refreshToken: data.refreshToken || refreshToken,
-      accessTokenExpires: Date.now() + 23 * 60 * 60 * 1000,
+      accessTokenExpires: Date.now() + 24 * 60 * 60 * 1000,       // in milli seconds
+
     };
   } catch (error) {
     console.error("Refresh token error:", error);
@@ -91,9 +93,8 @@ export const options: NextAuthOptions = {
           console.log("qwerty");
           const response = await fetch(
             // `https://jaimp-api.onelovepc.com/jaiMp/log/login`,
-            // `http://192.168.31.37:8088/truk/log/login`,
-            // 'http://192.168.225.172:8088/truk/log/login',    //teja local
-             'http://192.168.43.78:8088/truk/log/login',
+            // `http://192.168.31.37:8088/truk/log/login`,       //vamsi local
+            'http://192.168.225.172:8088/truk/log/login',    //teja local
             {
               method: "POST",
               headers: {
@@ -144,7 +145,8 @@ export const options: NextAuthOptions = {
         // phone: user.phone,
         accessToken: user.accessToken,
         refreshToken: user.refreshToken,
-        accessTokenExpires: Date.now() + 23 * 60 * 60 * 1000,
+        accessTokenExpires: Date.now() + 24 * 60 * 60 * 1000   //in milli seconds
+,
       };
     }
 
@@ -190,7 +192,7 @@ export const options: NextAuthOptions = {
 
   session: {
     strategy: "jwt",
-    maxAge: 23 * 60 * 60 * 1000,
+   maxAge: 24 * 60 * 60, //must return here in seconds
   },
 
   jwt: {

@@ -6,7 +6,7 @@ import UnitsOfMeasurement from "@/Components/MasterDataComponents/UnitsOfMeasure
 import Locations from "@/Components/MasterDataComponents/Locations";
 import PackagingInfo from "@/Components/MasterDataComponents/PackagingInfo";
 import Lanes from "@/Components/MasterDataComponents/Lanes";
-import VehicleGroup from "@/Components/MasterDataComponents/VehicleGroup";
+// import VehicleGroup from "@/Components/MasterDataComponents/VehicleGroup";
 import DeviceMaster from "@/Components/MasterDataComponents/DeviceMaster";
 
 const MasterData: React.FC = () => {
@@ -20,8 +20,8 @@ const MasterData: React.FC = () => {
     switch (selectedTab) {
       case "Vehicles":
         return <Vehicles />;
-      case "Vehicle group":
-        return <VehicleGroup />;
+      // case "Vehicle group":
+      //   return <VehicleGroup />;
       case "Device master":
         return <DeviceMaster />;
       case "Lanes":
@@ -53,7 +53,7 @@ const MasterData: React.FC = () => {
         }}
       >
         <Tab value="Vehicles" sx={{textTransform:'capitalize',fontSize:'16px'}} label="Vehicles" />
-        <Tab value="Vehicle group" sx={{textTransform:'capitalize',fontSize:'16px'}} label="Vehicle Group" />
+        {/* <Tab value="Vehicle group" sx={{textTransform:'capitalize',fontSize:'16px'}} label="Vehicle Group" /> */}
         <Tab value="Device master"  sx={{textTransform:'capitalize',fontSize:'16px'}} label="Device Master" />
         <Tab value="Lanes" sx={{textTransform:'capitalize',fontSize:'16px'}} label="Lanes" />
         <Tab value="Locations" sx={{textTransform:'capitalize',fontSize:'16px'}} label="Locations" />

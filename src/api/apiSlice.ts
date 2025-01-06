@@ -32,7 +32,7 @@ interface User {
   name: string;
   email: string;
 }
-
+  
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery,
@@ -79,6 +79,24 @@ export const apiSlice = createApi({
       invalidatesTags: [{ type: "LocationMaster", id: "LIST" }],
     }),
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    editLocationMaster: builder.mutation<any, { locationId: string, body: any }>({
+        query: ({body, locationId }) => ({
+            url: `masLoc/edit-location?id=${locationId}`,
+            method: 'PUT',
+            body,
+        }),
+        invalidatesTags:  [{ type: 'LocationMaster', id: 'LIST' }],
+    }),
+
+    deleteLocationMaster: builder.mutation({
+        query: (locationId) => ({
+            url: `masLoc/delete-location?id=${locationId}`,
+            method: 'DELETE',
+        }),
+    invalidatesTags: [{ type: 'LocationMaster', id: "LIST" }],
+    }),
+
     getVehicleMaster: builder.query({
       query: () => ({
         url: 'vehicle/vehicles',
@@ -95,7 +113,7 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: [{ type: 'VehicleMaster', id: 'LIST' }],
     }),
-       getAllCustomersData: builder.query({
+      getAllCustomersData: builder.query({
       query: (params) => ({
         url: "business/get-partners",
         method: "GET",
@@ -130,6 +148,8 @@ export const {
   useGetAllVendorsDataQuery,
   useGetAllDriversDataQuery,
   usePostLocationMasterMutation,
+  useEditLocationMasterMutation,
+  useDeleteLocationMasterMutation,
   useGetVehicleMasterQuery,
   usePostVehicleMasterMutation
 } = apiSlice;

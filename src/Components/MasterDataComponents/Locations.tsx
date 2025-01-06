@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Button,
@@ -24,7 +24,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import styles from './MasterData.module.css';
 import { withAuthComponent } from '../WithAuthComponent';
-import { useGetLocationMasterQuery, usePostLocationMasterMutation } from '@/api/apiSlice';
+import { useGetLocationMasterQuery, usePostLocationMasterMutation,useEditLocationMasterMutation ,useDeleteLocationMasterMutation } from '@/api/apiSlice';
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
@@ -50,6 +50,7 @@ interface Location {
 
 // Define the type for each row in the DataGrid
 interface DataGridRow {
+  id: string;
   locationId: string;
   locationDescription: string;
   locationType: string;
@@ -58,6 +59,8 @@ interface DataGridRow {
   longitude: string;
   latitude: string;
   timeZone: string;
+  addressLine1: string,
+  addressLine2: string,
   city: string;
   district: string;
   state: string;
@@ -84,8 +87,12 @@ const validationSchema = Yup.object({
 
 const Locations: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editRow,setEditRow] = useState<DataGridRow | null>(null); ;
   const { data, error, isLoading } = useGetLocationMasterQuery([])
   const [postLocation] = usePostLocationMasterMutation();
+  const [editLocation] = useEditLocationMasterMutation();
+  const [deleteLocation] = useDeleteLocationMasterMutation()
   console.log("all locations :", data?.locations)
   if (isLoading) {
   console.log("Loading locations...");
@@ -108,6 +115,7 @@ if (error) {
 
   const handleFormSubmit = async (values:DataGridRow) => {
     console.log("form submitted locations :", values)
+
             try {
             const body = {
                 locations: [
@@ -125,27 +133,69 @@ if (error) {
                       iata_code: values.iataCode
                     }
                 ]
-            }
-            console.log("location body: ", body)
-            const response = await postLocation(body).unwrap();
-              console.log('response in post location:', response);
-              resetForm();
+              }
+              const editBody =    {
+                      loc_desc: values.locationDescription ,
+                      longitude: values.longitude,
+                      latitude: values.latitude,
+                      time_zone: values.timeZone,
+                      city: values.city,
+                      state: values.state,
+                      country: values.country,
+                      pincode: values.pincode,
+                      loc_type: values.locationType,
+                      gln_code: values.glnCode,
+                      iata_code: values.iataCode
+                    }
+              console.log("location body: ", body)
+              if (isEditing && editRow) {
+                console.log('edit body is :', editBody)
+                const locationId = editRow.id
+                const response = await editLocation({body:editBody, locationId}).unwrap()
+                console.log("edit response is ",response)
+              }
+              else {
+                console.log("post create location ",body)
+                  const response = await postLocation(body).unwrap();
+                  console.log('response in post location:', response);
+                  resetForm();
+              }
+          
         } catch (error) {
             console.error('API Error:', error);
         }
 
   }
 
+    const handleEdit = (row: DataGridRow) => {
+    console.log("Edit row:", row);
+    setShowForm(true)
+    setIsEditing(true)
+    setEditRow(row)
+    };
+
+    const handleDelete = async (row: DataGridRow) => {
+      console.log("Delete row:", row);
+      const deleteId = row?.id
+      const response = await deleteLocation(deleteId)
+      console.log("delete response :", response)
+      // Add your delete logic here
+    };
+
+  console.log("edit :",isEditing, editRow)
   const formik = useFormik({
     initialValues: {
+      id :'',
       locationId: '',
-      locationDescription: '',
+      locationDescription: editRow ? editRow?.locationDescription : '',
       locationType: '',
       glnCode: '',
       iataCode: '',
       longitude: '',
       latitude: '',
       timeZone: '',
+      addressLine1: '',
+      addressLine2 :'',
       city: '',
       district: '',
       state: '',
@@ -159,6 +209,31 @@ if (error) {
     onSubmit: handleFormSubmit
   });
 
+  useEffect(() => {
+    if (editRow) {
+      formik.setValues({
+        id:editRow.id,
+        locationId: editRow.locationId,
+        locationDescription: editRow.locationDescription,
+        locationType: editRow.locationType,
+        glnCode: editRow.glnCode,
+        iataCode: editRow.iataCode,
+        longitude: editRow.longitude,
+        latitude: editRow.latitude,
+        timeZone: editRow.timeZone,
+        city: editRow.city,
+        addressLine1: editRow?.addressLine1,
+        addressLine2 : editRow?.addressLine2,
+        district: editRow.district,
+        state: editRow.state,
+        country: editRow.country,
+        pincode: editRow.pincode,
+        vehiclesNearBy: editRow.vehiclesNearBy,
+        locationContactName: editRow.locationContactName,
+        locationContactNumber: editRow.locationContactNumber
+      });
+    }
+  }, [editRow]);
   const { values, errors, touched, handleChange, handleBlur, handleSubmit } = formik;
 
 
@@ -220,15 +295,6 @@ const rows: DataGridRow[] = locationsMaster?.map((location: Location, index: num
     },
   ];
 
-  const handleEdit = (row: []) => {
-  console.log("Edit row:", row);
-  // Add your edit logic here
-};
-
-const handleDelete = (row: []) => {
-  console.log("Delete row:", row);
-  // Add your delete logic here
-};
 
 
   return (
@@ -297,8 +363,11 @@ const handleDelete = (row: []) => {
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth
-                      size="small"
-                      select
+                    size="small"
+                    InputProps={{
+                        style: { textTransform: 'capitalize' }
+                      }}
+                      select sx={{textTransform:'capitalize'}}
                       name="locationType"
                       value={values.locationType}
                       onChange={handleChange}
@@ -410,7 +479,29 @@ const handleDelete = (row: []) => {
                   <Typography variant="h6" align="center" gutterBottom >
                     2. Address
                   </Typography>
-                  <Grid container spacing={2}>
+                <Grid container spacing={2}>
+                   <Grid item xs={12} sm={6} md={2.4}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        label="Address line 1"
+                        name="address line 1"
+                        value={values.addressLine1}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                      />
+                  </Grid>
+                   <Grid item xs={12} sm={6} md={2.4}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        label="Address line 2"
+                        name="address line 2"
+                        value={values.addressLine2}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                      />
+                    </Grid>
                     <Grid item xs={12} sm={6} md={2.4}>
                       <TextField
                         fullWidth
@@ -422,7 +513,7 @@ const handleDelete = (row: []) => {
                         onBlur={handleBlur}
                       />
                     </Grid>
-                    {/* <Grid item xs={12} sm={6} md={2.4}>
+                    <Grid item xs={12} sm={6} md={2.4}>
                       <TextField
                         fullWidth
                         size="small"
@@ -432,7 +523,7 @@ const handleDelete = (row: []) => {
                         onChange={handleChange}
                         onBlur={handleBlur}
                       />
-                    </Grid> */}
+                    </Grid>
                     <Grid item xs={12} sm={6} md={2.4}>
                       <TextField
                         fullWidth
@@ -559,7 +650,7 @@ const handleDelete = (row: []) => {
           
             <Box sx={{ marginTop: '24px', textAlign: 'center' }}>
               <Button variant="contained" color="primary" type="submit">
-                Submit
+                {isEditing ? "Update location" : "Create location"}
               </Button>
             </Box>
           </Box>
