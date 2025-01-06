@@ -4,8 +4,8 @@ import CredentialsProvider from "next-auth/providers/credentials";
 declare module "next-auth" {
   interface User {
     id: string;
-    name: string;
-    phone: string;
+    // name: string;
+    // phone: string;
     accessToken: string;
     refreshToken: string;
     
@@ -18,8 +18,8 @@ declare module "next-auth" {
 
   interface JWT {
     id: string;
-    name: string;
-    phone: string;
+    // name: string;
+    // phone: string;
     accessToken: string;
     refreshToken: string;
     accessTokenExpires: number;
@@ -34,7 +34,8 @@ const refreshAccessToken = async (refreshToken: string) => {
   try {
     const response = await fetch(
       // `https://jaimp-api.onelovepc.com/jaiMp/log/refresh-token`,
-      `http://192.168.225.172:8088/truk/log/refresh-token`,  // teja local
+      // `http://192.168.225.172:8088/truk/log/refresh-token`,  // teja local
+       `http://192.168.43.78:8088/truk/log/refresh-token`,
       {
         method: "POST",
         headers: {
@@ -91,7 +92,8 @@ export const options: NextAuthOptions = {
           const response = await fetch(
             // `https://jaimp-api.onelovepc.com/jaiMp/log/login`,
             // `http://192.168.31.37:8088/truk/log/login`,
-            'http://192.168.225.172:8088/truk/log/login',    //teja local
+            // 'http://192.168.225.172:8088/truk/log/login',    //teja local
+             'http://192.168.43.78:8088/truk/log/login',
             {
               method: "POST",
               headers: {
@@ -114,9 +116,9 @@ export const options: NextAuthOptions = {
           console.log("User details received from login API:", user);
           if (user && user.accessToken) {
             return {
-              id: user.user.profile_id,
-              name: user.user.first_name,
-              phone: user.user.mobile,
+              id: user.profile_id,
+              // name: user.user.first_name,
+              // phone: user.user.mobile,
               accessToken: user.accessToken,
               refreshToken: user.refreshToken,
             };
@@ -138,8 +140,8 @@ export const options: NextAuthOptions = {
     if (user) {
       return {
         id: user.id,
-        name: user.name,
-        phone: user.phone,
+        // name: user.name,
+        // phone: user.phone,
         accessToken: user.accessToken,
         refreshToken: user.refreshToken,
         accessTokenExpires: Date.now() + 23 * 60 * 60 * 1000,
@@ -165,8 +167,8 @@ export const options: NextAuthOptions = {
   async session({ session, token }) {
     session.user = {
       id: token.id as string,
-      name: token.name as string,
-      phone: token.phone as string,
+      // name: token.name as string,
+      // phone: token.phone as string,
       accessToken: token.accessToken as string,
       refreshToken: token.refreshToken as string,
     };
