@@ -42,24 +42,6 @@ interface Driver {
   driver_id: number;
 }
 
-// const dummyDriverData = [
-//   {
-//     id: 1,
-//     driverID: 'DR001',
-//     driverName: 'John Doe',
-//     locationID: 'LOC123',
-//     address: '123 Main St',
-//     drivingLicense: 'DL123456789',
-//     expiryDate: '2025-12-31',
-//     driverContactNumber: '1234567890',
-//     emailID: 'john.doe@example.com',
-//     vehicleTypes: ['Truck', 'Van'],
-//     loggedIntoApp: true,
-//   },
-// ];
-
-
-
 const DriverForm: React.FC = () => {
   const [driverRegistration] = useDriverRegistrationMutation();
   const [showForm, setShowForm] = useState(false);

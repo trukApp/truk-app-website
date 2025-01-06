@@ -7,7 +7,7 @@ import styles from './BusinessPartners.module.css'
 import { GridColDef } from '@mui/x-data-grid';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { useCustomerRegistrationMutation, useGetAllVendorsDataQuery } from '@/api/apiSlice';
+import { useCustomerRegistrationMutation, useDeleteBusinessPartnerMutation, useEditBusinessPartnerMutation, useGetAllVendorsDataQuery } from '@/api/apiSlice';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
@@ -61,7 +61,11 @@ const SupplierForm: React.FC = () => {
     const [showForm, setShowForm] = useState(false);
     const [updateRecord, setUpdateRecord] = useState(false);
     const [formInitialValues, setFormInitialValues] = useState(initialSupplierValues);
+    const [updateRecordData, setUpdateRecordData] = useState({});
+    const [updateRecordId, setUpdateRecordId] = useState(0)
+    const [updatePartnerDetails] = useEditBusinessPartnerMutation();
     const [customerRegistration] = useCustomerRegistrationMutation();
+    const [deleteBusinessPartner] = useDeleteBusinessPartnerMutation()
     const { data, error, isLoading } = useGetAllVendorsDataQuery({
         partner_type: "vendor",
     })
@@ -94,16 +98,19 @@ const SupplierForm: React.FC = () => {
         orderingAddress: rowData?.partner_functions?.ordering_address || '',
     });
 
-    const handleDelete = (rowData: Customer) => {
+    const handleDelete = async (rowData: Customer) => {
         console.log('Delete clicked for:', rowData);
-        // Add your delete logic here
-    };
+        const deleteId = rowData?.partner_id
+        const response = await deleteBusinessPartner(deleteId)
+        console.log("delete response :", response)
+    };;
 
     const handleEdit = async (rowData: Customer) => {
         console.log('Edit clicked for:', rowData);
         setShowForm(true)
         setUpdateRecord(true)
-
+        setUpdateRecordData(rowData)
+        setUpdateRecordId(rowData?.partner_id)
         const updatedInitialValues = await mapRowToInitialValues(rowData);
         console.log('Updated Initial Values:', updatedInitialValues);
 
@@ -144,13 +151,6 @@ const SupplierForm: React.FC = () => {
 
     const mappedData = vendorsData.map((item: Customer) => ({
         id: item.partner_id,
-        // supplier_id: item.supplier_id,
-        // name: item.name,
-        // loc_of_source: item.loc_of_source,
-        // loc_of_source_pincode: item.loc_of_source_pincode,
-        // loc_of_source_state: item.loc_of_source_state,
-        // loc_of_source_city: item.loc_of_source_city,
-        // loc_of_source_country: item.loc_of_source_country,
         ...item,
     }));
 
@@ -198,11 +198,47 @@ const SupplierForm: React.FC = () => {
                 ]
             }
             console.log("body: ", body)
-
-
-            console.log('i am in...')
-            const response = await customerRegistration(body).unwrap();
-            console.log('API Response:', response);
+            const editBody = {
+                ...updateRecordData,
+                name: values?.name,
+                partner_type: "vendor",
+                location_id: values?.locationId,
+                correspondence: {
+                    contact_person: values?.contactPerson,
+                    contact_number: values?.contactNumber,
+                    email: values?.emailId
+                },
+                loc_of_source: values?.locationOfSource,
+                pod_relevant: values?.podRelevant,
+                partner_functions: {
+                    ordering_address: values?.orderingAddress,
+                    goods_supplier: values?.goodsSupplier,
+                    forwarding_agent: values?.forwardingAgent
+                }
+            }
+            if (updateRecord) {
+                console.log("I am going update the record")
+                const response = await updatePartnerDetails({ body: editBody, partnerId: updateRecordId }).unwrap();
+                console.log('API Response:', response);
+                if (response) {
+                    setFormInitialValues(initialSupplierValues)
+                    setShowForm(false)
+                    setUpdateRecord(false)
+                    setUpdateRecordId(0)
+                    setUpdateRecordData({})
+                }
+            } else {
+                console.log("I am going create the record")
+                const response = await customerRegistration(body).unwrap();
+                console.log('API Response:', response);
+                if (response) {
+                    setFormInitialValues(initialSupplierValues)
+                    setShowForm(false)
+                    setUpdateRecord(false)
+                    setUpdateRecordId(0)
+                    setUpdateRecordData({})
+                }
+            }
         } catch (error) {
             console.error('API Error:', error);
         }
@@ -461,3 +497,4 @@ const SupplierForm: React.FC = () => {
 };
 
 export default SupplierForm;
+

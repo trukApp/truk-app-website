@@ -7,7 +7,7 @@ import { DataGridComponent } from '../GridComponent';
 import { GridColDef } from '@mui/x-data-grid';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { useCustomerRegistrationMutation, useGetAllCustomersDataQuery } from '@/api/apiSlice';
+import { useCustomerRegistrationMutation, useDeleteBusinessPartnerMutation, useEditBusinessPartnerMutation, useGetAllCustomersDataQuery } from '@/api/apiSlice';
 import { withAuthComponent } from '../WithAuthComponent';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -76,7 +76,12 @@ const CustomerForm: React.FC = () => {
     const [showForm, setShowForm] = useState(false);
     const [updateRecord, setUpdateRecord] = useState(false);
     const [formInitialValues, setFormInitialValues] = useState(initialCustomerValues);
+    const [updateRecordData, setUpdateRecordData] = useState({});
+    const [updateRecordId, setUpdateRecordId] = useState(0)
+    const [updatePartnerDetails] = useEditBusinessPartnerMutation();
     const [customerRegistration] = useCustomerRegistrationMutation();
+    const [deleteBusinessPartner] = useDeleteBusinessPartnerMutation()
+    console.log("updateRecordId: ", updateRecordId)
     const { data, error, isLoading } = useGetAllCustomersDataQuery({
         partner_type: "customer",
     })
@@ -154,16 +159,19 @@ const CustomerForm: React.FC = () => {
         console.log('Edit clicked for:', rowData);
         setShowForm(true)
         setUpdateRecord(true)
-
+        setUpdateRecordData(rowData)
         const updatedInitialValues = await mapRowToInitialValues(rowData);
         console.log('Updated Initial Values:', updatedInitialValues);
+        setUpdateRecordId(rowData?.partner_id)
 
         setFormInitialValues(updatedInitialValues);
     };
 
-    const handleDelete = (rowData: Customer) => {
+    const handleDelete = async (rowData: Customer) => {
         console.log('Delete clicked for:', rowData);
-        // Add your delete logic here
+        const deleteId = rowData?.partner_id
+        const response = await deleteBusinessPartner(deleteId)
+        console.log("delete response :", response)
     };
 
     const handleCustomerSubmit = async (values: typeof initialCustomerValues) => {
@@ -190,12 +198,51 @@ const CustomerForm: React.FC = () => {
                     }
                 ]
             }
-            console.log("body: ", body)
 
+            const editBody = {
+                ...updateRecordData,
+                name: values?.name,
+                partner_type: "customer",
+                location_id: values?.locationId,
+                correspondence: {
+                    contact_person: values?.contactPerson,
+                    contact_number: values?.contactNumber,
+                    email: values?.emailId
+                },
+                loc_of_source: values?.locationOfSource,
+                pod_relevant: values?.podRelevant,
+                partner_functions: {
+                    ship_to_party: values?.shipToParty,
+                    sold_to_party: values?.soldToParty,
+                    bill_to_party: values?.billToParty
+                }
+            }
 
-            console.log('i am in...')
-            const response = await customerRegistration(body).unwrap();
-            console.log('API Response:', response);
+            console.log("editBody: ", editBody)
+            if (updateRecord) {
+                console.log("I am going update the record")
+                const response = await updatePartnerDetails({ body: editBody, partnerId: updateRecordId }).unwrap();
+                console.log('API Response:', response);
+                if (response) {
+                    setFormInitialValues(initialCustomerValues)
+                    setShowForm(false)
+                    setUpdateRecord(false)
+                    setUpdateRecordId(0)
+                    setUpdateRecordData({})
+                }
+            } else {
+                console.log("I am going create the record")
+                const response = await customerRegistration(body).unwrap();
+                console.log('API Response:', response);
+                if (response) {
+                    setFormInitialValues(initialCustomerValues)
+                    setShowForm(false)
+                    setUpdateRecord(false)
+                    setUpdateRecordId(0)
+                    setUpdateRecordData({})
+                }
+            }
+
         } catch (error) {
             console.error('API Error:', error);
         }
