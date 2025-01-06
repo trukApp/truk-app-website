@@ -81,7 +81,7 @@ interface PhysicalProperties {
   max_height: string;
   max_length: string;
   max_width: string;
-  tare_volume: string;
+  tare_volumn: string;
   tare_weight: string;
 }
 
@@ -89,7 +89,7 @@ interface TransportationDetails {
   ownership: string;
   validity_from: string;
   validity_to: string;
-  vehicle_group: string;
+  vehcile_group: string;
   vehicle_type: string;
 }
 
@@ -111,11 +111,17 @@ interface VehicleDetails {
   physical_properties: PhysicalProperties;
   pincode: string;
   state: string;
-  time_zone: string;
+  timeZone: string;
   transportation_details: TransportationDetails;
   unlimited_usage: number;
   veh_id: number;
   vehicle_ID: string;
+  platformHeight: string;
+  topDeckHeight: string;
+  doorWidth: string;
+  doorHeight: string;
+  doorLength: string;
+  avgCost: string;
 }
 
 
@@ -212,126 +218,127 @@ const VehicleForm: React.FC = () => {
     downtimeLocation: "",
     downtimeDescription: "",
     downtimeReason: "",
+
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rows = vehiclesMaster?.map((vehicle: VehicleDetails, index: number) => ({
-    // id: index, // Unique id for each row
-    // locationId: vehicle.location_id,
-    // timeZone: vehicle.timeZone,
-    // unlimitedUsage: vehicle.unlimited_usage,
-    // individualResources: vehicle.individual_resource,
-    // validityFrom: vehicle.transportation_details.validity_from,
-    // validityTo: vehicle.transportation_details.validity_to,
-    // vehicleType: vehicle.transportation_details.vehicle_type,
-    // vehicleGroup: vehicle.transportation_details.vehcile_group,
-    // ownership: vehicle.transportation_details.ownership,
+    id: index, // Unique id for each row
+    locationId: vehicle.location_id,
+    timeZone: vehicle.timeZone,
+    unlimitedUsage: vehicle.unlimited_usage,
+    individualResources: vehicle.individual_resource,
+    validityFrom: vehicle.transportation_details.validity_from,
+    validityTo: vehicle.transportation_details.validity_to,
+    vehicleType: vehicle.transportation_details.vehicle_type,
+    vehicleGroup: vehicle.transportation_details.vehcile_group,
+    ownership: vehicle.transportation_details.ownership,
 
-    // payloadWeight: vehicle?.capacity?.payload_weight,
-    // cubicCapacity: vehicle?.capacity?.cubic_capacity,
-    // interiorLength: vehicle?.capacity?.interior_length,
-    // interiorWidth: vehicle?.capacity?.interior_width,
-    // interiorHeight: vehicle?.capacity?.interior_height,
+    payloadWeight: vehicle?.capacity?.payload_weight,
+    cubicCapacity: vehicle?.capacity?.cubic_capacity,
+    interiorLength: vehicle?.capacity?.interior_length,
+    interiorWidth: vehicle?.capacity?.interior_width,
+    interiorHeight: vehicle?.capacity?.interior_height,
 
-    // tareWeight: vehicle?.physical_properties?.tare_weight,
-    // maxGrossWeight: vehicle?.physical_properties?.max_gross_weight,
-    // tareVolume: vehicle?.physical_properties?.tare_volumn,
-    // maxLength: vehicle?.physical_properties?.max_length,
-    // maxWidth: vehicle?.physical_properties?.max_width,
-    // maxHeight: vehicle?.physical_properties?.max_height,
+    tareWeight: vehicle?.physical_properties?.tare_weight,
+    maxGrossWeight: vehicle?.physical_properties?.max_gross_weight,
+    tareVolume: vehicle?.physical_properties?.tare_volumn,
+    maxLength: vehicle?.physical_properties?.max_length,
+    maxWidth: vehicle?.physical_properties?.max_width,
+    maxHeight: vehicle?.physical_properties?.max_height,
 
-    // platformHeight: vehicle.platformHeight,
-    // topDeckHeight: vehicle.topDeckHeight,
-    // doorWidth: vehicle.doorWidth,
-    // doorHeight: vehicle.doorHeight,
-    // doorLength: vehicle.doorLength,
-    // avgCost: vehicle.avgCost,
+    platformHeight: vehicle.platformHeight,
+    topDeckHeight: vehicle.topDeckHeight,
+    doorWidth: vehicle.doorWidth,
+    doorHeight: vehicle.doorHeight,
+    doorLength: vehicle.doorLength,
+    avgCost: vehicle.avgCost,
 
-    // downtimeStart: vehicle?.downtimes?.downtime_starts_from,
-    // downtimeEnd: vehicle?.downtimes?.downtime_ends_from,
-    // downtimeLocation: vehicle?.downtimes?.downtime_location,
-    // downtimeDescription: vehicle?.downtimes?.downtime_desc,
-    // downtimeReason: vehicle?.downtimes?.reason,
-    id: index,
-    ...vehicle
+    downtimeStart: vehicle?.downtimes?.downtime_starts_from,
+    downtimeEnd: vehicle?.downtimes?.downtime_ends_from,
+    downtimeLocation: vehicle?.downtimes?.downtime_location,
+    downtimeDescription: vehicle?.downtimes?.downtime_desc,
+    downtimeReason: vehicle?.downtimes?.reason,
+
+    // id: index,
+    // ...vehicle
   }));
 
-  // const columns: GridColDef[] = [
-  //   { field: "locationId", headerName: "Location ID", width: 150 },
-  //   { field: "timeZone", headerName: "Time Zone", width: 150 },
-  //   { field: "unlimitedUsage", headerName: "Unlimited Usage", width: 150, type: "boolean" },
-  //   { field: "individualResources", headerName: "Individual Resources", width: 200 },
-  //   { field: "validityFrom", headerName: "Validity From", width: 150 },
-  //   { field: "validityTo", headerName: "Validity To", width: 150 },
-  //   { field: "vehicleType", headerName: "Vehicle Type", width: 150 },
-  //   { field: "vehicleGroup", headerName: "Vehicle Group", width: 150 },
-  //   { field: "ownership", headerName: "Ownership", width: 150 },
-  //   { field: "payloadWeight", headerName: "Payload Weight", width: 150 },
-  //   { field: "cubicCapacity", headerName: "Cubic Capacity", width: 150 },
-  //   { field: "interiorLength", headerName: "Interior Length", width: 150 },
-  //   { field: "interiorWidth", headerName: "Interior Width", width: 150 },
-  //   { field: "interiorHeight", headerName: "Interior Height", width: 150 },
-  //   { field: "tareWeight", headerName: "Tare Weight", width: 150 },
-  //   { field: "maxGrossWeight", headerName: "Max Gross Weight", width: 150 },
-  //   { field: "tareVolume", headerName: "Tare Volume", width: 150 },
-  //   { field: "maxLength", headerName: "Max Length", width: 150 },
-  //   { field: "maxWidth", headerName: "Max Width", width: 150 },
-  //   { field: "maxHeight", headerName: "Max Height", width: 150 },
-  //   { field: "platformHeight", headerName: "Platform Height", width: 150 },
-  //   { field: "topDeckHeight", headerName: "Top Deck Height", width: 150 },
-  //   { field: "doorWidth", headerName: "Door Width", width: 150 },
-  //   { field: "doorHeight", headerName: "Door Height", width: 150 },
-  //   { field: "doorLength", headerName: "Door Length", width: 150 },
-  //   { field: "avgCost", headerName: "Average Cost", width: 150 },
-  //   { field: "downtimeStart", headerName: "Downtime Start", width: 150 },
-  //   { field: "downtimeEnd", headerName: "Downtime End", width: 150 },
-  //   { field: "downtimeLocation", headerName: "Downtime Location", width: 200 },
-  //   { field: "downtimeDescription", headerName: "Downtime Description", width: 250 },
-  //   { field: "downtimeReason", headerName: "Downtime Reason", width: 200 },
-  // ];
-
   const columns: GridColDef[] = [
-    { field: "loc_ID", headerName: "Location ID", width: 150 },
-    { field: "time_zone", headerName: "Time Zone", width: 150 },
-    { field: "unlimited_usage", headerName: "Unlimited Usage", width: 150, type: "boolean" },
-    { field: "individual_resource", headerName: "Individual Resources", width: 200 },
-    { field: "validity_from", headerName: "Validity From", width: 150 },
-    { field: "validity_to", headerName: "Validity To", width: 150 },
-    { field: "vehicle_type", headerName: "Vehicle Type", width: 150 },
-    { field: "vehicle_group", headerName: "Vehicle Group", width: 150 },
+    { field: "locationId", headerName: "Location ID", width: 150 },
+    { field: "timeZone", headerName: "Time Zone", width: 150 },
+    { field: "unlimitedUsage", headerName: "Unlimited Usage", width: 150, type: "boolean" },
+    { field: "individualResources", headerName: "Individual Resources", width: 200 },
+    { field: "validityFrom", headerName: "Validity From", width: 150 },
+    { field: "validityTo", headerName: "Validity To", width: 150 },
+    { field: "vehicleType", headerName: "Vehicle Type", width: 150 },
+    { field: "vehicleGroup", headerName: "Vehicle Group", width: 150 },
     { field: "ownership", headerName: "Ownership", width: 150 },
-    { field: "payload_weight", headerName: "Payload Weight", width: 150 },
-    { field: "cubic_capacity", headerName: "Cubic Capacity", width: 150 },
-    { field: "interior_length", headerName: "Interior Length", width: 150 },
-    { field: "interior_width", headerName: "Interior Width", width: 150 },
-    { field: "interior_height", headerName: "Interior Height", width: 150 },
-    { field: "tare_weight", headerName: "Tare Weight", width: 150 },
-    { field: "max_gross_weight", headerName: "Max Gross Weight", width: 150 },
-    { field: "tare_volume", headerName: "Tare Volume", width: 150 },
-    { field: "max_length", headerName: "Max Length", width: 150 },
-    { field: "max_width", headerName: "Max Width", width: 150 },
-    { field: "max_height", headerName: "Max Height", width: 150 },
-    { field: "latitude", headerName: "Latitude", width: 150 },
-    { field: "longitude", headerName: "Longitude", width: 150 },
-    { field: "platform_height", headerName: "Platform Height", width: 150 },
-    { field: "top_deck_height", headerName: "Top Deck Height", width: 150 },
-    { field: "door_width", headerName: "Door Width", width: 150 },
-    { field: "door_height", headerName: "Door Height", width: 150 },
-    { field: "downtime_starts_from", headerName: "Downtime Start", width: 150 },
-    { field: "downtime_ends_from", headerName: "Downtime End", width: 150 },
-    { field: "downtime_location", headerName: "Downtime Location", width: 200 },
-    { field: "downtime_desc", headerName: "Downtime Description", width: 250 },
-    { field: "reason", headerName: "Downtime Reason", width: 200 },
-    { field: "avg_cost", headerName: "Average Cost", width: 150 },
-    { field: "state", headerName: "State", width: 150 },
-    { field: "city", headerName: "City", width: 150 },
-    { field: "country", headerName: "Country", width: 150 },
-    { field: "pincode", headerName: "Pincode", width: 150 },
-    { field: "loc_desc", headerName: "Location Description", width: 200 },
-    { field: "loc_type", headerName: "Location Type", width: 150 },
-    { field: "gln_code", headerName: "GLN Code", width: 150 },
-    { field: "iata_code", headerName: "IATA Code", width: 150 },
+    { field: "payloadWeight", headerName: "Payload Weight", width: 150 },
+    { field: "cubicCapacity", headerName: "Cubic Capacity", width: 150 },
+    { field: "interiorLength", headerName: "Interior Length", width: 150 },
+    { field: "interiorWidth", headerName: "Interior Width", width: 150 },
+    { field: "interiorHeight", headerName: "Interior Height", width: 150 },
+    { field: "tareWeight", headerName: "Tare Weight", width: 150 },
+    { field: "maxGrossWeight", headerName: "Max Gross Weight", width: 150 },
+    { field: "tareVolume", headerName: "Tare Volume", width: 150 },
+    { field: "maxLength", headerName: "Max Length", width: 150 },
+    { field: "maxWidth", headerName: "Max Width", width: 150 },
+    { field: "maxHeight", headerName: "Max Height", width: 150 },
+    { field: "platformHeight", headerName: "Platform Height", width: 150 },
+    { field: "topDeckHeight", headerName: "Top Deck Height", width: 150 },
+    { field: "doorWidth", headerName: "Door Width", width: 150 },
+    { field: "doorHeight", headerName: "Door Height", width: 150 },
+    { field: "doorLength", headerName: "Door Length", width: 150 },
+    { field: "avgCost", headerName: "Average Cost", width: 150 },
+    { field: "downtimeStart", headerName: "Downtime Start", width: 150 },
+    { field: "downtimeEnd", headerName: "Downtime End", width: 150 },
+    { field: "downtimeLocation", headerName: "Downtime Location", width: 200 },
+    { field: "downtimeDescription", headerName: "Downtime Description", width: 250 },
+    { field: "downtimeReason", headerName: "Downtime Reason", width: 200 },
   ];
+
+  // const columns: GridColDef[] = [
+  //   { field: "loc_ID", headerName: "Location ID", width: 150 },
+  //   { field: "time_zone", headerName: "Time Zone", width: 150 },
+  //   { field: "unlimited_usage", headerName: "Unlimited Usage", width: 150, type: "boolean" },
+  //   { field: "individual_resource", headerName: "Individual Resources", width: 200 },
+  //   { field: "validity_from", headerName: "Validity From", width: 150 },
+  //   { field: "validity_to", headerName: "Validity To", width: 150 },
+  //   { field: "vehicle_type", headerName: "Vehicle Type", width: 150 },
+  //   { field: "vehicle_group", headerName: "Vehicle Group", width: 150 },
+  //   { field: "ownership", headerName: "Ownership", width: 150 },
+  //   { field: "payload_weight", headerName: "Payload Weight", width: 150 },
+  //   { field: "cubic_capacity", headerName: "Cubic Capacity", width: 150 },
+  //   { field: "interior_length", headerName: "Interior Length", width: 150 },
+  //   { field: "interior_width", headerName: "Interior Width", width: 150 },
+  //   { field: "interior_height", headerName: "Interior Height", width: 150 },
+  //   { field: "tare_weight", headerName: "Tare Weight", width: 150 },
+  //   { field: "max_gross_weight", headerName: "Max Gross Weight", width: 150 },
+  //   { field: "tare_volume", headerName: "Tare Volume", width: 150 },
+  //   { field: "max_length", headerName: "Max Length", width: 150 },
+  //   { field: "max_width", headerName: "Max Width", width: 150 },
+  //   { field: "max_height", headerName: "Max Height", width: 150 },
+  //   { field: "latitude", headerName: "Latitude", width: 150 },
+  //   { field: "longitude", headerName: "Longitude", width: 150 },
+  //   { field: "platform_height", headerName: "Platform Height", width: 150 },
+  //   { field: "top_deck_height", headerName: "Top Deck Height", width: 150 },
+  //   { field: "door_width", headerName: "Door Width", width: 150 },
+  //   { field: "door_height", headerName: "Door Height", width: 150 },
+  //   { field: "downtime_starts_from", headerName: "Downtime Start", width: 150 },
+  //   { field: "downtime_ends_from", headerName: "Downtime End", width: 150 },
+  //   { field: "downtime_location", headerName: "Downtime Location", width: 200 },
+  //   { field: "downtime_desc", headerName: "Downtime Description", width: 250 },
+  //   { field: "reason", headerName: "Downtime Reason", width: 200 },
+  //   { field: "avg_cost", headerName: "Average Cost", width: 150 },
+  //   { field: "state", headerName: "State", width: 150 },
+  //   { field: "city", headerName: "City", width: 150 },
+  //   { field: "country", headerName: "Country", width: 150 },
+  //   { field: "pincode", headerName: "Pincode", width: 150 },
+  //   { field: "loc_desc", headerName: "Location Description", width: 200 },
+  //   { field: "loc_type", headerName: "Location Type", width: 150 },
+  //   { field: "gln_code", headerName: "GLN Code", width: 150 },
+  //   { field: "iata_code", headerName: "IATA Code", width: 150 },
+  // ];
 
 
   const handleSubmit = (values: FormValues) => {
