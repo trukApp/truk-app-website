@@ -109,11 +109,11 @@ const validationSchema = Yup.object({
 
 
 const VehicleForm: React.FC = () => {
-  const { data,  error } = useGetVehicleMasterQuery([])
+  const { data, error } = useGetVehicleMasterQuery([])
   if (error) {
     console.log("err in loading vehicles data :", error)
   }
-  
+
   const vehiclesMaster = data?.vehicles
   console.log("all vehicles :", vehiclesMaster)
   const [showForm, setShowForm] = useState(false);
@@ -151,38 +151,39 @@ const VehicleForm: React.FC = () => {
     downtimeReason: "",
   };
 
-   const rows: GridRowsProp = vehiclesMaster?.map((vehicle:any, index:number) => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rows: GridRowsProp = vehiclesMaster?.map((vehicle: any, index: number) => ({
     id: index, // Unique id for each row
     locationId: vehicle.location_id,
     timeZone: vehicle.timeZone,
     unlimitedUsage: vehicle.unlimited_usage,
     individualResources: vehicle.individual_resource,
-    validityFrom: vehicle.transportation_details.validity_from  ,
+    validityFrom: vehicle.transportation_details.validity_from,
     validityTo: vehicle.transportation_details.validity_to,
     vehicleType: vehicle.transportation_details.vehicle_type,
     vehicleGroup: vehicle.transportation_details.vehcile_group,
-     ownership: vehicle.transportation_details.ownership,
-    
+    ownership: vehicle.transportation_details.ownership,
+
     payloadWeight: vehicle?.capacity?.payload_weight,
     cubicCapacity: vehicle?.capacity?.cubic_capacity,
     interiorLength: vehicle?.capacity?.interior_length,
     interiorWidth: vehicle?.capacity?.interior_width,
-     interiorHeight: vehicle?.capacity?.interior_height,
-    
+    interiorHeight: vehicle?.capacity?.interior_height,
+
     tareWeight: vehicle?.physical_properties?.tare_weight,
     maxGrossWeight: vehicle?.physical_properties?.max_gross_weight,
     tareVolume: vehicle?.physical_properties?.tare_volumn,
     maxLength: vehicle?.physical_properties?.max_length,
     maxWidth: vehicle?.physical_properties?.max_width,
-     maxHeight: vehicle?.physical_properties?.max_height,
-    
+    maxHeight: vehicle?.physical_properties?.max_height,
+
     platformHeight: vehicle.platformHeight,
     topDeckHeight: vehicle.topDeckHeight,
     doorWidth: vehicle.doorWidth,
     doorHeight: vehicle.doorHeight,
     doorLength: vehicle.doorLength,
-     avgCost: vehicle.avgCost,
-    
+    avgCost: vehicle.avgCost,
+
     downtimeStart: vehicle?.downtimes?.downtime_starts_from,
     downtimeEnd: vehicle?.downtimes?.downtime_ends_from,
     downtimeLocation: vehicle?.downtimes?.downtime_location,
@@ -191,38 +192,38 @@ const VehicleForm: React.FC = () => {
   }));
 
   const columns: GridColDef[] = [
-  { field: "locationId", headerName: "Location ID", width: 150 },
-  { field: "timeZone", headerName: "Time Zone", width: 150 },
-  { field: "unlimitedUsage", headerName: "Unlimited Usage", width: 150, type: "boolean" },
-  { field: "individualResources", headerName: "Individual Resources", width: 200 },
-  { field: "validityFrom", headerName: "Validity From", width: 150 },
-  { field: "validityTo", headerName: "Validity To", width: 150 },
-  { field: "vehicleType", headerName: "Vehicle Type", width: 150 },
-  { field: "vehicleGroup", headerName: "Vehicle Group", width: 150 },
-  { field: "ownership", headerName: "Ownership", width: 150 },
-  { field: "payloadWeight", headerName: "Payload Weight", width: 150 },
-  { field: "cubicCapacity", headerName: "Cubic Capacity", width: 150 },
-  { field: "interiorLength", headerName: "Interior Length", width: 150 },
-  { field: "interiorWidth", headerName: "Interior Width", width: 150 },
-  { field: "interiorHeight", headerName: "Interior Height", width: 150 },
-  { field: "tareWeight", headerName: "Tare Weight", width: 150 },
-  { field: "maxGrossWeight", headerName: "Max Gross Weight", width: 150 },
-  { field: "tareVolume", headerName: "Tare Volume", width: 150 },
-  { field: "maxLength", headerName: "Max Length", width: 150 },
-  { field: "maxWidth", headerName: "Max Width", width: 150 },
-  { field: "maxHeight", headerName: "Max Height", width: 150 },
-  { field: "platformHeight", headerName: "Platform Height", width: 150 },
-  { field: "topDeckHeight", headerName: "Top Deck Height", width: 150 },
-  { field: "doorWidth", headerName: "Door Width", width: 150 },
-  { field: "doorHeight", headerName: "Door Height", width: 150 },
-  { field: "doorLength", headerName: "Door Length", width: 150 },
-  { field: "avgCost", headerName: "Average Cost", width: 150 },
-  { field: "downtimeStart", headerName: "Downtime Start", width: 150 },
-  { field: "downtimeEnd", headerName: "Downtime End", width: 150 },
-  { field: "downtimeLocation", headerName: "Downtime Location", width: 200 },
-  { field: "downtimeDescription", headerName: "Downtime Description", width: 250 },
-  { field: "downtimeReason", headerName: "Downtime Reason", width: 200 },
-];
+    { field: "locationId", headerName: "Location ID", width: 150 },
+    { field: "timeZone", headerName: "Time Zone", width: 150 },
+    { field: "unlimitedUsage", headerName: "Unlimited Usage", width: 150, type: "boolean" },
+    { field: "individualResources", headerName: "Individual Resources", width: 200 },
+    { field: "validityFrom", headerName: "Validity From", width: 150 },
+    { field: "validityTo", headerName: "Validity To", width: 150 },
+    { field: "vehicleType", headerName: "Vehicle Type", width: 150 },
+    { field: "vehicleGroup", headerName: "Vehicle Group", width: 150 },
+    { field: "ownership", headerName: "Ownership", width: 150 },
+    { field: "payloadWeight", headerName: "Payload Weight", width: 150 },
+    { field: "cubicCapacity", headerName: "Cubic Capacity", width: 150 },
+    { field: "interiorLength", headerName: "Interior Length", width: 150 },
+    { field: "interiorWidth", headerName: "Interior Width", width: 150 },
+    { field: "interiorHeight", headerName: "Interior Height", width: 150 },
+    { field: "tareWeight", headerName: "Tare Weight", width: 150 },
+    { field: "maxGrossWeight", headerName: "Max Gross Weight", width: 150 },
+    { field: "tareVolume", headerName: "Tare Volume", width: 150 },
+    { field: "maxLength", headerName: "Max Length", width: 150 },
+    { field: "maxWidth", headerName: "Max Width", width: 150 },
+    { field: "maxHeight", headerName: "Max Height", width: 150 },
+    { field: "platformHeight", headerName: "Platform Height", width: 150 },
+    { field: "topDeckHeight", headerName: "Top Deck Height", width: 150 },
+    { field: "doorWidth", headerName: "Door Width", width: 150 },
+    { field: "doorHeight", headerName: "Door Height", width: 150 },
+    { field: "doorLength", headerName: "Door Length", width: 150 },
+    { field: "avgCost", headerName: "Average Cost", width: 150 },
+    { field: "downtimeStart", headerName: "Downtime Start", width: 150 },
+    { field: "downtimeEnd", headerName: "Downtime End", width: 150 },
+    { field: "downtimeLocation", headerName: "Downtime Location", width: 200 },
+    { field: "downtimeDescription", headerName: "Downtime Description", width: 250 },
+    { field: "downtimeReason", headerName: "Downtime Reason", width: 200 },
+  ];
   const handleSubmit = (values: FormValues) => {
     console.log("Form submitted with values:", values);
   };
@@ -230,9 +231,9 @@ const VehicleForm: React.FC = () => {
   return (
     <>
       <Box >
-        
-        <Typography align="center" sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md:'24px' } }} gutterBottom>
-          Vehicle master 
+
+        <Typography align="center" sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md: '24px' } }} gutterBottom>
+          Vehicle master
         </Typography>
         <Box display="flex" justifyContent="flex-end" >
           <Button
