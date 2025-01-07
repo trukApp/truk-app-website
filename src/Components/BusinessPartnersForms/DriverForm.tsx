@@ -25,7 +25,7 @@ interface DriverFormValues {
 }
 
 interface Driver {
-  vehicleTypes: any;
+  // vehicleTypes: any;
   id: number;
   dri_ID: string;
   driver_name: string;
@@ -53,7 +53,7 @@ interface Driver {
   drivingLicense: string;
   driverContactNumber: string;
   expiryDate: string;
-  // vehicleTypes: Array;
+  vehicleTypes: string;
   emailID: string;
   loggedIntoApp: boolean
 }
@@ -114,7 +114,7 @@ const DriverForm: React.FC = () => {
     driverContactNumber: rowData.driverContactNumber || '',
     expiryDate: rowData.expiryDate || '',
     emailID: rowData.emailID || '',
-    vehicleTypes: rowData.vehicleTypes ? rowData.vehicleTypes.split(', ') : [],
+    vehicleTypes: [rowData.vehicleTypes],
     loggedIntoApp: rowData.loggedIntoApp === true,
   });
 
