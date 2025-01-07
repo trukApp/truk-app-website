@@ -25,6 +25,7 @@ interface DriverFormValues {
 }
 
 interface Driver {
+  vehicleTypes: any;
   id: number;
   dri_ID: string;
   driver_name: string;
@@ -47,6 +48,14 @@ interface Driver {
   location_loc_desc: string;
   location_loc_type: string;
   address: string;
+  driverName: string;
+  locationID: string;
+  drivingLicense: string;
+  driverContactNumber: string;
+  expiryDate: string;
+  // vehicleTypes: Array;
+  emailID: string;
+  loggedIntoApp: boolean
 }
 
 const initialDriverValues = {
@@ -97,7 +106,7 @@ const DriverForm: React.FC = () => {
     emailID: Yup.string().email('Invalid email format').required('Email ID is required'),
   });
 
-  const mapRowToInitialValues = (rowData: any) => ({
+  const mapRowToInitialValues = (rowData: Driver) => ({
     driverName: rowData.driverName || '',
     locationID: rowData.locationID || '',
     address: rowData.address || '',
@@ -106,7 +115,7 @@ const DriverForm: React.FC = () => {
     expiryDate: rowData.expiryDate || '',
     emailID: rowData.emailID || '',
     vehicleTypes: rowData.vehicleTypes ? rowData.vehicleTypes.split(', ') : [],
-    loggedIntoApp: rowData.loggedIntoApp === 'Yes',
+    loggedIntoApp: rowData.loggedIntoApp === true,
   });
 
 
