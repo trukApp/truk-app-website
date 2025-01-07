@@ -33,7 +33,7 @@ const refreshAccessToken = async (refreshToken: string) => {
   try {
     const response = await fetch(
       // `http://192.168.225.172:8088/truk/log/refresh-token`,  // teja local
-      `http://192.168.31.37:8088/truk/log/refresh-token`, //Vamsi local
+      `https://dev-api.trukapp.com/truk/log/refresh-token`, //Vamsi local
 
       {
         method: "POST",
@@ -91,7 +91,7 @@ export const options: NextAuthOptions = {
           console.log("qwerty");
           const response = await fetch(
             // 'http://192.168.225.172:8088/truk/log/login',    //teja local
-            `http://192.168.31.37:8088/truk/log/login`, //Vamsi local
+            `https://dev-api.trukapp.com/truk/log/login`, //Vamsi local
             {
               method: "POST",
               headers: {
