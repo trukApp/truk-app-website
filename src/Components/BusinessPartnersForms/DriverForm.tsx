@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
-import { Box, Button, Collapse, Grid, TextField, FormControlLabel, Checkbox } from '@mui/material';
+import { Box, Button, Collapse, Grid, TextField, FormControlLabel, Checkbox, MenuItem } from '@mui/material';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import styles from './BusinessPartners.module.css';
 import { DataGridComponent } from '../GridComponent';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-
+import { useDriverRegistrationMutation, useGetAllDriversDataQuery, useEditDriverMutation, useDeleteDriverMutation } from '@/api/apiSlice';
+import { withAuthComponent } from '../WithAuthComponent';
+import { GridColDef } from '@mui/x-data-grid';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import IconButton from '@mui/material/IconButton';
 interface DriverFormValues {
-  driverID: string;
   driverName: string;
   locationID: string;
   address: string;
@@ -20,52 +24,70 @@ interface DriverFormValues {
   loggedIntoApp: boolean;
 }
 
-const dummyDriverData = [
-  {
-    id: 1,
-    driverID: 'DR001',
-    driverName: 'John Doe',
-    locationID: 'LOC123',
-    address: '123 Main St',
-    drivingLicense: 'DL123456789',
-    expiryDate: '2025-12-31',
-    driverContactNumber: '1234567890',
-    emailID: 'john.doe@example.com',
-    vehicleTypes: ['Truck', 'Van'],
-    loggedIntoApp: true,
-  },
-];
+interface Driver {
+  id: number;
+  dri_ID: string;
+  driver_name: string;
+  location_loc_ID: string;
+  driver_correspondence: {
+    email: string;
+    phone: string;
+    expiry_date: string;
+    driving_license: string;
+  };
+  location_city: string;
+  location_country: string;
+  location_state: string;
+  vehicle_types: string[];
+  logged_in: number;
+  driver_id: number;
+  location_pincode: string;
+  location_longitude: string;
+  location_latitude: string;
+  location_loc_desc: string;
+  location_loc_type: string;
+  address: string;
+}
 
-const driverColumns = [
-  { field: 'driverID', headerName: 'Driver ID', width: 150 },
-  { field: 'driverName', headerName: 'Name', width: 200 },
-  { field: 'locationID', headerName: 'Location ID', width: 150 },
-  { field: 'drivingLicense', headerName: 'Driving License', width: 200 },
-  { field: 'expiryDate', headerName: 'Expiry Date', width: 150 },
-  { field: 'driverContactNumber', headerName: 'Contact Number', width: 150 },
-  { field: 'emailID', headerName: 'Email ID', width: 200 },
-  { field: 'vehicleTypes', headerName: 'Vehicle Types', width: 200 },
-  { field: 'loggedIntoApp', headerName: 'Logged In', width: 100 },
-];
+const initialDriverValues = {
+  driverName: '',
+  locationID: '',
+  address: '',
+  drivingLicense: '',
+  expiryDate: '',
+  driverContactNumber: '',
+  emailID: '',
+  vehicleTypes: [] as string[],
+  loggedIntoApp: false,
+};
 
 const DriverForm: React.FC = () => {
+  const [driverRegistration] = useDriverRegistrationMutation();
+  const [editDriverDetails] = useEditDriverMutation()
+  const [deleteDriver] = useDeleteDriverMutation()
   const [showForm, setShowForm] = useState(false);
+  const [updateRecord, setUpdateRecord] = useState(false);
+  const [formInitialValues, setFormInitialValues] = useState(initialDriverValues);
+  const [updateRecordData, setUpdateRecordData] = useState({});
+  const [updateRecordId, setUpdateRecordId] = useState(0)
+  console.log("formInitialValues: ", formInitialValues)
+  console.log("updateRecordId: ", updateRecordId)
+  const { data, error, isLoading } = useGetAllDriversDataQuery({})
+  console.log("all drivers data :", data?.drivers)
+  const driversData = data?.drivers.length > 0 ? data?.drivers : []
 
-  const initialDriverValues: DriverFormValues = {
-    driverID: '',
-    driverName: '',
-    locationID: '',
-    address: '',
-    drivingLicense: '',
-    expiryDate: '',
-    driverContactNumber: '',
-    emailID: '',
-    vehicleTypes: [],
-    loggedIntoApp: false,
-  };
+  if (isLoading) {
+    console.log("Loading All drivers Data...");
+  }
+
+  if (error) {
+    console.error("getting error while fetching the drivers data:", error);
+  }
+  console.log("drivers", driversData)
+
+
 
   const driverValidationSchema = Yup.object({
-    driverID: Yup.string().required('Driver ID is required'),
     driverName: Yup.string().required('Driver Name is required'),
     locationID: Yup.string().required('Location ID is required'),
     address: Yup.string().required('Address is required'),
@@ -75,13 +97,155 @@ const DriverForm: React.FC = () => {
     emailID: Yup.string().email('Invalid email format').required('Email ID is required'),
   });
 
-  const handleDriverSubmit = (values: DriverFormValues) => {
+  const mapRowToInitialValues = (rowData: any) => ({
+    driverName: rowData.driverName || '',
+    locationID: rowData.locationID || '',
+    address: rowData.address || '',
+    drivingLicense: rowData.drivingLicense || '',
+    driverContactNumber: rowData.driverContactNumber || '',
+    expiryDate: rowData.expiryDate || '',
+    emailID: rowData.emailID || '',
+    vehicleTypes: rowData.vehicleTypes ? rowData.vehicleTypes.split(', ') : [],
+    loggedIntoApp: rowData.loggedIntoApp === 'Yes',
+  });
+
+
+  const handleEdit = async (rowData: Driver) => {
+    console.log('Edit clicked for:', rowData);
+    setShowForm(true)
+    setUpdateRecord(true)
+    setUpdateRecordData(rowData)
+    const updatedInitialValues = await mapRowToInitialValues(rowData);
+    console.log('Updated Initial Values:', updatedInitialValues);
+    setUpdateRecordId(rowData?.id)
+
+    setFormInitialValues(updatedInitialValues);
+  };
+
+  const handleDelete = async (rowData: Driver) => {
+    console.log('Delete clicked for:', rowData);
+    const deleteId = rowData?.id
+    const response = await deleteDriver(deleteId)
+    console.log("delete response :", response)
+  };
+
+  const driverColumns: GridColDef[] = [
+    { field: 'driverID', headerName: 'Driver ID', width: 150 },
+    { field: 'driverName', headerName: 'Name', width: 200 },
+    { field: 'locationID', headerName: 'Location ID', width: 150 },
+    { field: 'drivingLicense', headerName: 'Driving License', width: 200 },
+    { field: 'expiryDate', headerName: 'Expiry Date', width: 150 },
+    { field: 'driverContactNumber', headerName: 'Contact Number', width: 150 },
+    { field: 'emailID', headerName: 'Email ID', width: 200 },
+    { field: 'vehicleTypes', headerName: 'Vehicle Types', width: 200 },
+    { field: 'loggedIntoApp', headerName: 'Logged In', width: 100 },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 150,
+      renderCell: (params) => (
+        <>
+          <IconButton
+            color="primary"
+            onClick={() => handleEdit(params.row)}
+          >
+            <EditIcon />
+          </IconButton>
+          <IconButton
+            color="secondary"
+            onClick={() => handleDelete(params.row)}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </>
+      ),
+    },
+  ];
+
+  const driversDataRows = driversData.map((driver: Driver) => ({
+    id: driver?.driver_id,
+    driverID: driver?.dri_ID,
+    driverName: driver?.driver_name,
+    locationID: driver?.location_loc_ID,
+    locationCity: driver?.location_city,
+    locationCountry: driver?.location_country,
+    locationState: driver?.location_state,
+    locationPincode: driver?.location_pincode,
+    locationLongitude: driver?.location_longitude,
+    locationLatitude: driver?.location_latitude,
+    locationDescription: driver?.location_loc_desc,
+    locationType: driver?.location_loc_type,
+    drivingLicense: driver?.driver_correspondence?.driving_license,
+    expiryDate: driver?.driver_correspondence?.expiry_date,
+    driverContactNumber: driver?.driver_correspondence?.phone,
+    emailID: driver?.driver_correspondence?.email,
+    vehicleTypes: driver?.vehicle_types.join(', '),
+    loggedIntoApp: driver?.logged_in ? 'Yes' : 'No',
+    address: driver?.address,
+  })) || [];
+
+  const handleDriverSubmit = async (values: DriverFormValues) => {
     console.log('Driver Form Submitted:', values);
+    try {
+      const body = {
+        drivers: [
+          {
+            location_id: values?.locationID,
+            driver_name: values?.driverName,
+            address: values?.address,
+            driver_correspondence: {
+              driving_license: values?.drivingLicense,
+              expiry_date: values?.expiryDate,
+              phone: values?.driverContactNumber,
+              email: values?.emailID
+            },
+            vehicle_types: values?.vehicleTypes,
+            logged_in: values?.loggedIntoApp
+          }
+        ]
+      }
+
+      const editBody = {
+        ...updateRecordData,
+        location_id: values?.locationID,
+        driver_name: values?.driverName,
+        address: values?.address,
+        driver_correspondence: {
+          driving_license: values?.drivingLicense,
+          expiry_date: values?.expiryDate,
+          phone: values?.driverContactNumber,
+          email: values?.emailID
+        },
+        vehicle_types: values?.vehicleTypes,
+        logged_in: values?.loggedIntoApp
+      }
+      console.log("body: ", body)
+      if (updateRecord) {
+        const response = await editDriverDetails({ body: editBody, driverId: updateRecordId }).unwrap();
+        console.log('API Response:', response);
+        setFormInitialValues(initialDriverValues)
+        setShowForm(false)
+        setUpdateRecord(false)
+        setUpdateRecordId(0)
+        setUpdateRecordData({})
+      } else {
+        const response = await driverRegistration(body).unwrap();
+        console.log('API Response:', response);
+        setFormInitialValues(initialDriverValues)
+        setShowForm(false)
+        setUpdateRecord(false)
+        setUpdateRecordId(0)
+        setUpdateRecordData({})
+      }
+
+    } catch (error) {
+      console.error('API Error:', error);
+    }
   };
 
   return (
     <div className={styles.formsMainContainer}>
-      <Box display="flex" justifyContent="flex-end"  gap={2}>
+      <Box display="flex" justifyContent="flex-end" gap={2}>
         <Button
           variant="contained"
           onClick={() => setShowForm((prev) => !prev)}
@@ -95,7 +259,8 @@ const DriverForm: React.FC = () => {
       <Collapse in={showForm}>
         <Box marginBottom={4} padding={2} border="1px solid #ccc" borderRadius={2}>
           <Formik
-            initialValues={initialDriverValues}
+            initialValues={formInitialValues}
+            enableReinitialize={true}
             validationSchema={driverValidationSchema}
             onSubmit={handleDriverSubmit}
           >
@@ -103,18 +268,6 @@ const DriverForm: React.FC = () => {
               <Form>
                 <h4 className={styles.mainHeading}>General Data</h4>
                 <Grid container spacing={2} style={{ marginBottom: '30px' }}>
-                  <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth size='small'
-                      label="Driver ID"
-                      name="driverID"
-                      value={values.driverID}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      error={touched.driverID && Boolean(errors.driverID)}
-                      helperText={touched.driverID && errors.driverID}
-                    />
-                  </Grid>
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth size='small'
@@ -212,15 +365,26 @@ const DriverForm: React.FC = () => {
                 <Grid container spacing={2} style={{ marginBottom: '30px' }}>
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
-                      fullWidth size='small'
+                      select
+                      fullWidth
+                      size="small"
                       label="Vehicle Types"
                       name="vehicleTypes"
-                      value={values.vehicleTypes.join(', ')}
-                      onChange={handleChange}
+                      value={values.vehicleTypes}
+                      onChange={(e) => setFieldValue('vehicleTypes', e.target.value)}
                       onBlur={handleBlur}
                       error={touched.vehicleTypes && Boolean(errors.vehicleTypes)}
                       helperText={touched.vehicleTypes && errors.vehicleTypes}
-                    />
+                      SelectProps={{
+                        multiple: true,
+                      }}
+                    >
+                      {['Truck', 'Mini Auto', 'Lorry'].map((type) => (
+                        <MenuItem key={type} value={type}>
+                          {type}
+                        </MenuItem>
+                      ))}
+                    </TextField>
                   </Grid>
                   <Grid item xs={12}>
                     <FormControlLabel
@@ -235,11 +399,19 @@ const DriverForm: React.FC = () => {
                   </Grid>
                 </Grid>
 
-                <Box marginTop={3} textAlign="center">
-                  <Button type="submit" variant="contained" color="primary">
-                    Submit
-                  </Button>
-                </Box>
+                {updateRecord ? (
+                  <Box marginTop={3} textAlign="center">
+                    <Button type="submit" variant="contained" color="primary">
+                      Update
+                    </Button>
+                  </Box>
+                ) : (
+                  <Box marginTop={3} textAlign="center">
+                    <Button type="submit" variant="contained" color="primary">
+                      Create
+                    </Button>
+                  </Box>
+                )}
               </Form>
             )}
           </Formik>
@@ -249,7 +421,7 @@ const DriverForm: React.FC = () => {
       <Grid item xs={12} style={{ marginTop: '50px' }}>
         <DataGridComponent
           columns={driverColumns}
-          rows={dummyDriverData}
+          rows={driversDataRows}
           isLoading={false}
           pageSizeOptions={[10, 20]}
           initialPageSize={10}
@@ -260,4 +432,4 @@ const DriverForm: React.FC = () => {
   );
 };
 
-export default DriverForm;
+export default withAuthComponent(DriverForm);

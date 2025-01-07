@@ -18,17 +18,7 @@ export const withAuthComponent = (WrappedComponent: React.FC): React.FC => {
   const AuthCheck: React.FC = (props) => {
     const { data: session, status } = useSession();
       const router = useRouter();
-      console.log("session is :", session)
-
-    useEffect(() => {
-      if (session?.user?.accessToken) {
-        localStorage.setItem('accessToken', session.user.accessToken);
-      }
-      if (session?.user?.refreshToken) {
-        localStorage.setItem('refreshToken', session.user.refreshToken);
-      }
-    }, [session]);
-
+      console.log("session from withAuth :", session)
     useEffect(() => {
       if (status === 'unauthenticated') {
         router.push(`/login?callbackUrl=${encodeURIComponent(location.pathname)}`);

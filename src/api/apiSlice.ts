@@ -1,5 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import apiConfig from "../Config/Config";
+// import { getAccessToken } from "./getAccessToken";
+import { getSession } from "next-auth/react";
 
 // Define the base URL
 const baseUrl = apiConfig.develpoment.apiBaseUrl;
@@ -7,26 +9,16 @@ const baseUrl = apiConfig.develpoment.apiBaseUrl;
 // Base query with headers
 const baseQuery = fetchBaseQuery({
   baseUrl,
-  prepareHeaders: (headers) => {
+  prepareHeaders: async (headers) => {
     try {
-      const token = localStorage.getItem("accessToken");
-      const uniqueDeviceId = "uniqueid";
-      const loginId = "21";
-      console.log("token: ", token);
-
+      const session = await getSession();
+      const token = session?.user?.accessToken;
+      console.log("token from apislice :", token);
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
       }
-
-      if (loginId) {
-        headers.set("login_id", loginId);
-      }
-
-      if (uniqueDeviceId) {
-        headers.set("unq_d_id", uniqueDeviceId);
-      }
     } catch (error) {
-      console.error("Error fetching headers from AsyncStorage:", error);
+      console.error("Error fetching headers", error);
     }
 
     return headers;
@@ -40,30 +32,11 @@ interface User {
   email: string;
 }
 
-interface News {
-  id: string;
-  title: string;
-  content: string;
-}
-
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery,
-  tagTypes: ["User", "Post", "Users", "News"],
+  tagTypes: ["LocationMaster", "VehicleMaster", "PARTNERS", "DRIVERS"],
   endpoints: (builder) => ({
-    getUsers: builder.query<User[], void>({
-      query: () => ({
-        url: "news-routes/news",
-        method: "GET",
-      }),
-      providesTags: ["Users"], // Tag without using result
-    }),
-
-    getAllLatestNews: builder.query<News[], void>({
-      query: () => "news-routes/news",
-      providesTags: ["News"], // Tag without using result
-    }),
-
     userLogin: builder.mutation<User, { phone: string; password: string }>({
       query: (body) => ({
         url: "log/login",
@@ -72,19 +45,157 @@ export const apiSlice = createApi({
       }),
     }),
 
+    getLocationMaster: builder.query({
+      query: () => ({
+        url: "masLoc/all-locations",
+        method: "GET",
+      }),
+      providesTags: [{ type: "LocationMaster", id: "LIST" }],
+    }),
+
+    postLocationMaster: builder.mutation({
+      query: (body) => ({
+        url: "masLoc/create-location",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "LocationMaster", id: "LIST" }],
+    }),
+
+    editLocationMaster: builder.mutation({
+      query: ({ body, locationId }) => ({
+        url: `masLoc/edit-location?id=${locationId}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: [{ type: "LocationMaster", id: "LIST" }],
+    }),
+
+    deleteLocationMaster: builder.mutation({
+      query: (locationId) => ({
+        url: `masLoc/delete-location?id=${locationId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [{ type: "LocationMaster", id: "LIST" }],
+    }),
+
+    getVehicleMaster: builder.query({
+      query: () => ({
+        url: "vehicle/vehicles",
+        method: "GET",
+      }),
+      providesTags: [{ type: "VehicleMaster", id: "LIST" }],
+    }),
+
+    postVehicleMaster: builder.mutation({
+      query: (body) => ({
+        url: "vehicle/add-vehicle",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "VehicleMaster", id: "LIST" }],
+    }),
+
+    //Business Partners API'S
     customerRegistration: builder.mutation({
       query: (body) => ({
         url: "business/create-partners",
         method: "POST",
         body,
       }),
+      invalidatesTags: [{ type: "PARTNERS", id: "LIST" }],
     }),
+
+    editBusinessPartner: builder.mutation({
+      query: ({ body, partnerId }) => ({
+        url: `business/edit-partner?partner_id=${partnerId}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: [{ type: "PARTNERS", id: "LIST" }],
+    }),
+
+    deleteBusinessPartner: builder.mutation({
+      query: (partnerId) => ({
+        url: `business/delete-partner?partner_id=${partnerId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [{ type: "PARTNERS", id: "LIST" }],
+    }),
+
+    getAllCustomersData: builder.query({
+      query: (params) => ({
+        url: "business/get-partners",
+        method: "GET",
+        params,
+      }),
+      providesTags: [{ type: "PARTNERS", id: "LIST" }],
+    }),
+
+    getAllVendorsData: builder.query({
+      query: (params) => ({
+        url: "business/get-partners",
+        method: "GET",
+        params,
+      }),
+      providesTags: [{ type: "PARTNERS", id: "LIST" }],
+    }),
+
+    //Drivers API'S
+    driverRegistration: builder.mutation({
+      query: (body) => ({
+        url: "driver/add-drivers",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "DRIVERS", id: "LIST" }],
+    }),
+
+    deleteDriver: builder.mutation({
+      query: (driverId) => ({
+        url: `driver/delete-driver?driver_id=${driverId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [{ type: "DRIVERS", id: "LIST" }],
+    }),
+
+
+    editDriver: builder.mutation({
+      query: ({ body, driverId }) => ({
+        url: `driver/edit-driver?driver_id=${driverId}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: [{ type: "DRIVERS", id: "LIST" }],
+    }),
+
+    getAllDriversData: builder.query({
+      query: (params) => ({
+        url: "driver/get-drivers",
+        method: "GET",
+        params,
+      }),
+      providesTags: [{ type: "DRIVERS", id: "LIST" }],
+    }),
+
   }),
 });
 
 export const {
-  useGetUsersQuery,
   useUserLoginMutation,
-  useGetAllLatestNewsQuery,
   useCustomerRegistrationMutation,
+  useGetLocationMasterQuery,
+  useDriverRegistrationMutation,
+  useGetAllCustomersDataQuery,
+  useGetAllVendorsDataQuery,
+  useGetAllDriversDataQuery,
+  usePostLocationMasterMutation,
+  useEditLocationMasterMutation,
+  useDeleteLocationMasterMutation,
+  useGetVehicleMasterQuery,
+  usePostVehicleMasterMutation,
+  useEditBusinessPartnerMutation,
+  useDeleteBusinessPartnerMutation,
+  useEditDriverMutation,
+  useDeleteDriverMutation
 } = apiSlice;

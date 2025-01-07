@@ -7,143 +7,157 @@ import styles from './BusinessPartners.module.css'
 import { GridColDef } from '@mui/x-data-grid';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import { useCustomerRegistrationMutation, useDeleteBusinessPartnerMutation, useEditBusinessPartnerMutation, useGetAllVendorsDataQuery } from '@/api/apiSlice';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import IconButton from '@mui/material/IconButton';
 
+interface PartnerFunctions {
+    forwarding_agent: string;
+    goods_supplier: string;
+    ordering_address: string;
+}
 
-const dummyVendors = [
-    {
-        id: 1,
-        supplierId: 'SUP001',
-        name: 'ABC Supplies Co.',
-        locationId: 'LOC123',
-        pincode: '110001',
-        city: 'New Delhi',
-        district: 'Central Delhi',
-        country: 'India',
-        contactPerson: 'Rajesh Sharma',
-        contactNumber: '9876543210',
-        emailId: 'rajesh@abcsupplies.com',
-        locationOfSource: ['Delhi', 'Mumbai'],
-        podRelevant: true,
-        orderingAddress: '123, Connaught Place, New Delhi',
-        goodsSupplier: 'Electronics',
-        forwardingAgent: 'Fast Logistics'
-    },
-    {
-        id: 2,
-        supplierId: 'SUP002',
-        name: 'Global Trade Ltd.',
-        locationId: 'LOC456',
-        pincode: '400001',
-        city: 'Mumbai',
-        district: 'South Mumbai',
-        country: 'India',
-        contactPerson: 'Priya Mehta',
-        contactNumber: '9988776655',
-        emailId: 'priya@globaltrade.com',
-        locationOfSource: ['Mumbai', 'Chennai'],
-        podRelevant: false,
-        orderingAddress: '45, Nariman Point, Mumbai',
-        goodsSupplier: 'Textiles',
-        forwardingAgent: 'Swift Transport'
-    },
-    {
-        id: 3,
-        supplierId: 'SUP003',
-        name: 'TechMart Solutions',
-        locationId: 'LOC789',
-        pincode: '560001',
-        city: 'Bangalore',
-        district: 'Bangalore Urban',
-        country: 'India',
-        contactPerson: 'Ankit Verma',
-        contactNumber: '9123456789',
-        emailId: 'ankit@techmart.com',
-        locationOfSource: ['Bangalore', 'Hyderabad'],
-        podRelevant: true,
-        orderingAddress: '12, MG Road, Bangalore',
-        goodsSupplier: 'IT Hardware',
-        forwardingAgent: 'Reliable Logistics'
-    },
-    {
-        id: 4,
-        supplierId: 'SUP004',
-        name: 'EcoGoods Traders',
-        locationId: 'LOC321',
-        pincode: '700001',
-        city: 'Kolkata',
-        district: 'Kolkata',
-        country: 'India',
-        contactPerson: 'Suman Banerjee',
-        contactNumber: '9876543100',
-        emailId: 'suman@ecogoods.com',
-        locationOfSource: ['Kolkata', 'Guwahati'],
-        podRelevant: false,
-        orderingAddress: '76, Park Street, Kolkata',
-        goodsSupplier: 'Organic Products',
-        forwardingAgent: 'Green Transport'
-    },
-    {
-        id: 5,
-        supplierId: 'SUP005',
-        name: 'Mega Builders Pvt. Ltd.',
-        locationId: 'LOC654',
-        pincode: '122001',
-        city: 'Gurgaon',
-        district: 'Gurgaon',
-        country: 'India',
-        contactPerson: 'Arjun Singh',
-        contactNumber: '9012345678',
-        emailId: 'arjun@megabuilders.com',
-        locationOfSource: ['Delhi NCR', 'Lucknow'],
-        podRelevant: true,
-        orderingAddress: '45, Cyber City, Gurgaon',
-        goodsSupplier: 'Construction Materials',
-        forwardingAgent: 'BuildFast Couriers'
-    }
-];
+interface Correspondence {
+    contact_person: string;
+    contact_number: string;
+    email: string;
+}
+interface Customer {
+    partner_id: number;
+    supplier_id: number | null;
+    customer_id: string;
+    name: string;
+    partner_type: string;
+    loc_of_source: string;
+    loc_of_source_pincode: string;
+    loc_of_source_state: string;
+    loc_of_source_city: string;
+    loc_of_source_country: string;
+    partner_functions: PartnerFunctions;
+    correspondence: Correspondence;
+}
 
-const columns: GridColDef[] = [
-    { field: 'supplierId', headerName: 'Supplier ID', width: 150 },
-    { field: 'name', headerName: 'Name', width: 200 },
-    { field: 'locationId', headerName: 'Location ID', width: 150 },
-    { field: 'pincode', headerName: 'Pincode', width: 100 },
-    { field: 'city', headerName: 'City', width: 150 },
-    { field: 'district', headerName: 'District', width: 150 },
-    { field: 'country', headerName: 'Country', width: 150 },
-    { field: 'contactPerson', headerName: 'Contact Person', width: 200 },
-    { field: 'contactNumber', headerName: 'Contact Number', width: 150 },
-    { field: 'emailId', headerName: 'Email ID', width: 200 },
-    { field: 'locationOfSource', headerName: 'Location of Source', width: 250 },
-    { field: 'podRelevant', headerName: 'POD Relevant', width: 150 },
-    { field: 'orderingAddress', headerName: 'Ordering Address', width: 250 },
-    { field: 'goodsSupplier', headerName: 'Goods Supplier', width: 200 },
-    { field: 'forwardingAgent', headerName: 'Forwarding Agent', width: 200 }
-];
+const initialSupplierValues = {
+    // supplierId: '',
+    name: '',
+    locationId: '',
+    pincode: '',
+    city: '',
+    district: '',
+    country: '',
+    contactPerson: '',
+    contactNumber: '',
+    emailId: '',
+    locationOfSource: [] as string[],
+    podRelevant: false,
+    orderingAddress: '',
+    goodsSupplier: '',
+    forwardingAgent: ''
+};
 
 
 const SupplierForm: React.FC = () => {
     const [showForm, setShowForm] = useState(false);
+    const [updateRecord, setUpdateRecord] = useState(false);
+    const [formInitialValues, setFormInitialValues] = useState(initialSupplierValues);
+    const [updateRecordData, setUpdateRecordData] = useState({});
+    const [updateRecordId, setUpdateRecordId] = useState(0)
+    const [updatePartnerDetails] = useEditBusinessPartnerMutation();
+    const [customerRegistration] = useCustomerRegistrationMutation();
+    const [deleteBusinessPartner] = useDeleteBusinessPartnerMutation()
+    const { data, error, isLoading } = useGetAllVendorsDataQuery({
+        partner_type: "vendor",
+    })
+    console.log("all Vendors data :", data?.partners)
+    const vendorsData = data?.partners.length > 0 ? data?.partners : []
 
-    const initialSupplierValues = {
-        supplierId: '',
-        name: '',
-        locationId: '',
-        pincode: '',
-        city: '',
+    if (isLoading) {
+        console.log("Loading All customers Data...");
+    }
+
+    if (error) {
+        console.error("getting error while fetching the customers data:", error);
+    }
+
+    const mapRowToInitialValues = (rowData: Customer) => ({
+        name: rowData.name || '',
+        locationId: rowData.loc_of_source || '',
+        pincode: rowData.loc_of_source_pincode || '',
+        state: rowData.loc_of_source_state || '',
+        city: rowData.loc_of_source_city || '',
         district: '',
-        country: '',
-        contactPerson: '',
-        contactNumber: '',
-        emailId: '',
-        locationOfSource: [],
+        country: rowData.loc_of_source_country || '',
+        contactPerson: rowData?.correspondence?.contact_person || '',
+        contactNumber: rowData?.correspondence?.contact_number || '',
+        emailId: rowData?.correspondence?.email || '',
+        locationOfSource: [rowData.loc_of_source],
         podRelevant: false,
-        orderingAddress: '',
-        goodsSupplier: '',
-        forwardingAgent: ''
+        forwardingAgent: rowData?.partner_functions?.forwarding_agent || '',
+        goodsSupplier: rowData?.partner_functions?.goods_supplier || '',
+        orderingAddress: rowData?.partner_functions?.ordering_address || '',
+    });
+
+    const handleDelete = async (rowData: Customer) => {
+        console.log('Delete clicked for:', rowData);
+        const deleteId = rowData?.partner_id
+        const response = await deleteBusinessPartner(deleteId)
+        console.log("delete response :", response)
+    };;
+
+    const handleEdit = async (rowData: Customer) => {
+        console.log('Edit clicked for:', rowData);
+        setShowForm(true)
+        setUpdateRecord(true)
+        setUpdateRecordData(rowData)
+        setUpdateRecordId(rowData?.partner_id)
+        const updatedInitialValues = await mapRowToInitialValues(rowData);
+        console.log('Updated Initial Values:', updatedInitialValues);
+
+        setFormInitialValues(updatedInitialValues);
     };
 
+
+    const columns: GridColDef[] = [
+        { field: 'supplier_id', headerName: 'Customer ID', width: 150 },
+        { field: 'name', headerName: 'Name', width: 200 },
+        { field: 'loc_of_source', headerName: 'Location ID', width: 150 },
+        { field: 'loc_of_source_pincode', headerName: 'Pincode', width: 100 },
+        { field: 'loc_of_source_state', headerName: 'State', width: 150 },
+        { field: 'loc_of_source_city', headerName: 'City', width: 150 },
+        { field: 'loc_of_source_country', headerName: 'Country', width: 150 },
+        {
+            field: 'actions',
+            headerName: 'Actions',
+            width: 150,
+            renderCell: (params) => (
+                <>
+                    <IconButton
+                        color="primary"
+                        onClick={() => handleEdit(params.row)}
+                    >
+                        <EditIcon />
+                    </IconButton>
+                    <IconButton
+                        color="secondary"
+                        onClick={() => handleDelete(params.row)}
+                    >
+                        <DeleteIcon />
+                    </IconButton>
+                </>
+            ),
+        },
+    ];
+
+    const mappedData = vendorsData.map((item: Customer) => ({
+        id: item.partner_id,
+        ...item,
+    }));
+
+
+
     const supplierValidationSchema = Yup.object({
-        supplierId: Yup.string().required('Supplier ID is required'),
+        // supplierId: Yup.string().required('Supplier ID is required'),
         name: Yup.string().required('Name is required'),
         locationId: Yup.string().required('Location ID is required'),
         pincode: Yup.string().required('Pincode is required'),
@@ -159,14 +173,81 @@ const SupplierForm: React.FC = () => {
         forwardingAgent: Yup.string().required('Bill To Party is required')
     });
 
-    const handleSupplierSubmit = (values: typeof initialSupplierValues) => {
-        console.log('Supplier Form Submitted:', values);
+    const handleSupplierSubmit = async (values: typeof initialSupplierValues) => {
+        try {
+            console.log('Vendor Form Submitted:', values);
+            const body = {
+                partners: [
+                    {
+                        name: values?.name,
+                        partner_type: "vendor",
+                        location_id: values?.locationId,
+                        correspondence: {
+                            contact_person: values?.contactPerson,
+                            contact_number: values?.contactNumber,
+                            email: values?.emailId
+                        },
+                        loc_of_source: values?.locationOfSource,
+                        pod_relevant: values?.podRelevant,
+                        partner_functions: {
+                            ordering_address: values?.orderingAddress,
+                            goods_supplier: values?.goodsSupplier,
+                            forwarding_agent: values?.forwardingAgent
+                        }
+                    }
+                ]
+            }
+            console.log("body: ", body)
+            const editBody = {
+                ...updateRecordData,
+                name: values?.name,
+                partner_type: "vendor",
+                location_id: values?.locationId,
+                correspondence: {
+                    contact_person: values?.contactPerson,
+                    contact_number: values?.contactNumber,
+                    email: values?.emailId
+                },
+                loc_of_source: values?.locationOfSource,
+                pod_relevant: values?.podRelevant,
+                partner_functions: {
+                    ordering_address: values?.orderingAddress,
+                    goods_supplier: values?.goodsSupplier,
+                    forwarding_agent: values?.forwardingAgent
+                }
+            }
+            if (updateRecord) {
+                console.log("I am going update the record")
+                const response = await updatePartnerDetails({ body: editBody, partnerId: updateRecordId }).unwrap();
+                console.log('API Response:', response);
+                if (response) {
+                    setFormInitialValues(initialSupplierValues)
+                    setShowForm(false)
+                    setUpdateRecord(false)
+                    setUpdateRecordId(0)
+                    setUpdateRecordData({})
+                }
+            } else {
+                console.log("I am going create the record")
+                const response = await customerRegistration(body).unwrap();
+                console.log('API Response:', response);
+                if (response) {
+                    setFormInitialValues(initialSupplierValues)
+                    setShowForm(false)
+                    setUpdateRecord(false)
+                    setUpdateRecordId(0)
+                    setUpdateRecordData({})
+                }
+            }
+        } catch (error) {
+            console.error('API Error:', error);
+        }
     };
 
     return (
         <div className={styles.formsMainContainer}>
 
-            <Box display="flex" justifyContent="flex-end"   gap={2}>
+            <Box display="flex" justifyContent="flex-end" gap={2}>
                 <Button
                     variant="contained"
                     onClick={() => setShowForm((prev) => !prev)}
@@ -180,15 +261,16 @@ const SupplierForm: React.FC = () => {
             <Collapse in={showForm}>
                 <Box marginBottom={4} padding={2} border="1px solid #ccc" borderRadius={2}>
                     <Formik
-                        initialValues={initialSupplierValues}
+                        initialValues={formInitialValues}
                         validationSchema={supplierValidationSchema}
                         onSubmit={handleSupplierSubmit}
+                        enableReinitialize={true}
                     >
                         {({ values, handleChange, handleBlur, errors, touched, setFieldValue }) => (
                             <Form>
                                 <h3 className={styles.mainHeading}>General Data</h3>
                                 <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6} md={2.4}>
+                                    {/* <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
                                             label="Supplier ID"
@@ -199,7 +281,7 @@ const SupplierForm: React.FC = () => {
                                             error={touched.supplierId && Boolean(errors.supplierId)}
                                             helperText={touched.supplierId && errors.supplierId}
                                         />
-                                    </Grid>
+                                    </Grid> */}
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
@@ -381,12 +463,20 @@ const SupplierForm: React.FC = () => {
                                         />
                                     </Grid>
                                 </Grid>
+                                {updateRecord ? (
 
-                                <Box marginTop={3} textAlign="center">
-                                    <Button type="submit" variant="contained" color="primary">
-                                        Submit
-                                    </Button>
-                                </Box>
+                                    <Box marginTop={3} textAlign="center">
+                                        <Button type="submit" variant="contained" color="primary">
+                                            Update
+                                        </Button>
+                                    </Box>
+                                ) : (
+                                    <Box marginTop={3} textAlign="center">
+                                        <Button type="submit" variant="contained" color="primary">
+                                            Create
+                                        </Button>
+                                    </Box>
+                                )}
                             </Form>
                         )}
                     </Formik>
@@ -396,7 +486,7 @@ const SupplierForm: React.FC = () => {
             <Grid item xs={12} style={{ marginTop: '50px' }}>
                 <DataGridComponent
                     columns={columns}
-                    rows={dummyVendors}
+                    rows={mappedData}
                     isLoading={false}
                     pageSizeOptions={[10, 20]}
                     initialPageSize={10}
@@ -407,3 +497,4 @@ const SupplierForm: React.FC = () => {
 };
 
 export default SupplierForm;
+

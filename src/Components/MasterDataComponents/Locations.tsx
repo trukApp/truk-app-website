@@ -1,17 +1,18 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Button,
-  Chip,
   Collapse,
-  FormControl,
   Grid,
-  InputLabel,
-  MenuItem,
-  OutlinedInput,
-  Select,
+  IconButton,
+  // FormControl,
+  // Chip,
+  // InputLabel,
+  // MenuItem,
+  // OutlinedInput,
+  // Select,
   TextField,
   Typography,
 } from '@mui/material';
@@ -21,11 +22,63 @@ import { DataGridComponent } from '../GridComponent';
 import { GridColDef } from '@mui/x-data-grid';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import styles from './MasterData.module.css'
+import styles from './MasterData.module.css';
+import { withAuthComponent } from '../WithAuthComponent';
+import { useGetLocationMasterQuery, usePostLocationMasterMutation,useEditLocationMasterMutation ,useDeleteLocationMasterMutation } from '@/api/apiSlice';
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+
+// Define the type for each location object returned by the backend
+interface Location {
+  location_id: number;
+  loc_ID: string;
+  loc_desc: string;
+  loc_type?: string;
+  gln_code?: string;
+  iata_code?: string;
+  longitude: string;
+  latitude: string;
+  timezone?: string;
+  city?: string;
+  district?: string;
+  state?: string;
+  country?: string;
+  pincode?: string;
+  contact_name?: string;
+  contact_number?: string;
+}
+
+// Define the type for each row in the DataGrid
+interface DataGridRow {
+  id: string;
+  locationId: string;
+  locationDescription: string;
+  locationType: string;
+  glnCode: string;
+  iataCode: string;
+  longitude: string;
+  latitude: string;
+  timeZone: string;
+  addressLine1: string,
+  addressLine2: string,
+  city: string;
+  district: string;
+  state: string;
+  country: string;
+  pincode: string;
+  vehiclesNearBy: [],
+  locationContactName: string;
+  locationContactNumber: string;
+}
+
+
 // Validation schema
 const validationSchema = Yup.object({
   locationDescription: Yup.string().required('Location description is required'),
   locationType: Yup.string().required('Location type is required'),
+  latitude: Yup.string().required('Latitude  is required'),
+  longitude: Yup.string().required('Longitude  is required'),
+  timeZone: Yup.string().required('Time zone is required'),
   // vehiclesNearBy: Yup.array()
   // .min(1, 'Select at least one vehicle')
   // .required('Required'),
@@ -34,27 +87,116 @@ const validationSchema = Yup.object({
 
 const Locations: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editRow,setEditRow] = useState<DataGridRow | null>(null); ;
+  const { data, error, isLoading } = useGetLocationMasterQuery([])
+  const [postLocation] = usePostLocationMasterMutation();
+  const [editLocation] = useEditLocationMasterMutation();
+  const [deleteLocation] = useDeleteLocationMasterMutation()
+  console.log("all locations :", data?.locations)
+  if (isLoading) {
+    console.log("Loading locations...");
+  }
 
+  if (error) {
+    console.error("Error fetching locations:", error);
+    // Handle the error case
+  }
+
+  const locationsMaster = data?.locations
   // Static data for vehicle options
-  const vehicleOptions = [
-    { id: '1', name: 'Truck - 001' },
-    { id: '2', name: 'Trailer - 002' },
-    { id: '3', name: 'Container - 003' },
-    { id: '4', name: 'Truck - 004' },
-    { id: '5', name: 'Trailer - 005' },
-  ];
+  // const vehicleOptions = [
+  //   { id: '1', name: 'Truck - 001' },
+  //   { id: '2', name: 'Trailer - 002' },
+  //   { id: '3', name: 'Container - 003' },
+  //   { id: '4', name: 'Truck - 004' },
+  //   { id: '5', name: 'Trailer - 005' },
+  // ];
+
+  const handleFormSubmit = async (values: DataGridRow) => {
+    console.log("form submitted locations :", values)
+
+            try {
+            const body = {
+                locations: [
+                    {
+                      loc_desc: values.locationDescription ,
+                      longitude: values.longitude,
+                      latitude: values.latitude,
+                      time_zone: values.timeZone,
+                      city: values.city,
+                      state: values.state,
+                      country: values.country,
+                      pincode: values.pincode,
+                      loc_type: values.locationType,
+                      gln_code: values.glnCode,
+                      iata_code: values.iataCode
+                    }
+                ]
+              }
+              const editBody =    {
+                      loc_desc: values.locationDescription ,
+                      longitude: values.longitude,
+                      latitude: values.latitude,
+                      time_zone: values.timeZone,
+                      city: values.city,
+                      state: values.state,
+                      country: values.country,
+                      pincode: values.pincode,
+                      loc_type: values.locationType,
+                      gln_code: values.glnCode,
+                      iata_code: values.iataCode
+                    }
+              console.log("location body: ", body)
+              if (isEditing && editRow) {
+                console.log('edit body is :', editBody)
+                const locationId = editRow.id
+                const response = await editLocation({body:editBody, locationId}).unwrap()
+                console.log("edit response is ",response)
+              }
+              else {
+                console.log("post create location ",body)
+                  const response = await postLocation(body).unwrap();
+                  console.log('response in post location:', response);
+                  resetForm();
+              }
+          
+        } catch (error) {
+            console.error('API Error:', error);
+        }
+
+  }
 
 
+    const handleEdit = (row: DataGridRow) => {
+    console.log("Edit row:", row);
+    setShowForm(true)
+    setIsEditing(true)
+    setEditRow(row)
+    };
+
+    const handleDelete = async (row: DataGridRow) => {
+      console.log("Delete row:", row);
+      const deleteId = row?.id
+      const response = await deleteLocation(deleteId)
+      console.log("delete response :", response)
+      // Add your delete logic here
+    };
+
+  console.log("edit :",isEditing, editRow)
   const formik = useFormik({
     initialValues: {
+      id :'',
       locationId: '',
-      locationDescription: '',
+      locationDescription: editRow ? editRow?.locationDescription : '',
       locationType: '',
       glnCode: '',
       iataCode: '',
       longitude: '',
       latitude: '',
       timeZone: '',
+      addressLine1: '',
+      addressLine2 :'',
       city: '',
       district: '',
       state: '',
@@ -65,31 +207,55 @@ const Locations: React.FC = () => {
       locationContactNumber: ''
     },
     validationSchema,
-    onSubmit: (values) => {
-      console.log('Form Submitted:', values);
-    },
+    onSubmit: handleFormSubmit
   });
 
+  useEffect(() => {
+    if (editRow) {
+      formik.setValues({
+        id:editRow.id,
+        locationId: editRow.locationId,
+        locationDescription: editRow.locationDescription,
+        locationType: editRow.locationType,
+        glnCode: editRow.glnCode,
+        iataCode: editRow.iataCode,
+        longitude: editRow.longitude,
+        latitude: editRow.latitude,
+        timeZone: editRow.timeZone,
+        city: editRow.city,
+        addressLine1: editRow?.addressLine1,
+        addressLine2 : editRow?.addressLine2,
+        district: editRow.district,
+        state: editRow.state,
+        country: editRow.country,
+        pincode: editRow.pincode,
+        vehiclesNearBy: editRow.vehiclesNearBy,
+        locationContactName: editRow.locationContactName,
+        locationContactNumber: editRow.locationContactNumber
+      });
+    }
+  }, [editRow]);
   const { values, errors, touched, handleChange, handleBlur, handleSubmit } = formik;
 
-  const rows = Array.from({ length: 10 }, (_, id) => ({
-    id,
-    locationId: `LOC-${id + 1}`,
-    locationDescription: `Location Description ${id + 1}`,
-    locationType: id % 2 === 0 ? "Warehouse" : "Depot",
-    glnCode: `GLN-${1000 + id}`,
-    iataCode: `IATA-${200 + id}`,
-    longitude: (78.4 + id * 0.1).toFixed(2),
-    latitude: (17.3 + id * 0.1).toFixed(2),
-    timeZone: "UTC+05:30",
-    city: `City-${id + 1}`,
-    district: `District-${id + 1}`,
-    state: `State-${id + 1}`,
-    country: "India",
-    pincode: `5000${id}`,
-    locationContactName: `Contact Name ${id + 1}`,
-    locationContactNumber: `98765432${id}`,
-  }));
+
+  const rows: DataGridRow[] = locationsMaster?.map((location: Location, index: number) => ({
+    id: location.location_id,
+    locationId: location.loc_ID,
+    locationDescription: location.loc_desc,
+    locationType: location.loc_type || null,
+    glnCode: location.gln_code || `GLN-${1000 + index}`,
+    iataCode: location.iata_code || `IATA-${200 + index}`,
+    longitude: location.longitude,
+    latitude: location.latitude,
+    timeZone: location.timezone || "UTC+05:30",
+    city: location.city || `City-${index + 1}`,
+    district: location.district || `District-${index + 1}`,
+    state: location.state || `State-${index + 1}`,
+    country: location.country || "India",
+    pincode: location.pincode || `5000${index}`,
+    locationContactName: location.contact_name || 'null',
+    locationContactNumber: location.contact_number || 'null',
+  })) || [];
 
   const columns: GridColDef[] = [
     { field: "locationId", headerName: "Location ID", width: 150 },
@@ -105,9 +271,32 @@ const Locations: React.FC = () => {
     { field: "state", headerName: "State", width: 150 },
     { field: "country", headerName: "Country", width: 150 },
     { field: "pincode", headerName: "Pincode", width: 150 },
-    { field: "locationContactName", headerName: "Contact Name", width: 200 },
-    { field: "locationContactNumber", headerName: "Contact Number", width: 150 },
+    // { field: "locationContactName", headerName: "Contact Name", width: 200 },
+    // { field: "locationContactNumber", headerName: "Contact Number", width: 150 },
+    {
+      field: "actions",
+      headerName: "Actions",
+      width: 200,
+      renderCell: (params) => (
+        <div>
+          <IconButton
+            color="primary"
+            onClick={() => handleEdit(params.row)}
+          >
+            <EditIcon />
+          </IconButton>
+          <IconButton
+            color="error"
+            onClick={() => handleDelete(params.row)}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </div>
+      ),
+    },
   ];
+
+
 
   return (
     <>
@@ -120,8 +309,8 @@ const Locations: React.FC = () => {
         }}
       >
 
-        <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md:'24px' } }} align="center" gutterBottom>
-            Location master
+        <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md: '24px' } }} align="center" gutterBottom>
+          Location master
         </Typography>
 
         <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
@@ -138,14 +327,14 @@ const Locations: React.FC = () => {
         <Collapse in={showForm}>
 
           <Box marginBottom={4} padding={2} border="1px solid #ccc" borderRadius={2}>
-         
 
-              <Grid container spacing={2} padding={2}>
-                <Typography variant="h6" align="center" gutterBottom>
-                  1. General info
-                </Typography>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6} md={2.4}>
+
+            <Grid container spacing={2} padding={2}>
+              <Typography variant="h6" align="center" gutterBottom>
+                1. General info
+              </Typography>
+              <Grid container spacing={2}>
+                {/* <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth disabled
                       size="small"
@@ -158,7 +347,7 @@ const Locations: React.FC = () => {
                         readOnly: true,
                       }}
                     />
-                  </Grid>
+                  </Grid> */}
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth
@@ -175,8 +364,11 @@ const Locations: React.FC = () => {
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth
-                      size="small"
-                      select
+                    size="small"
+                    InputProps={{
+                        style: { textTransform: 'capitalize' }
+                      }}
+                      select sx={{textTransform:'capitalize'}}
                       name="locationType"
                       value={values.locationType}
                       onChange={handleChange}
@@ -211,80 +403,106 @@ const Locations: React.FC = () => {
                   </Grid>
 
 
-                  <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth
-                      size="small"
-                      label="GLN Code (13 Characters Length)"
-                      name="glnCode"
-                      value={values.glnCode}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      inputProps={{ maxLength: 13 }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth
-                      size="small"
-                      label="IATA Code (3 Characters Length)"
-                      name="iataCode"
-                      value={values.iataCode}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      inputProps={{ maxLength: 3 }}
-                    />
-                  </Grid>
+                <Grid item xs={12} sm={6} md={2.4}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="GLN Code (13 Characters Length)"
+                    name="glnCode"
+                    value={values.glnCode}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    inputProps={{ maxLength: 13 }}
+                  />
                 </Grid>
+                <Grid item xs={12} sm={6} md={2.4}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="IATA Code (3 Characters Length)"
+                    name="iataCode"
+                    value={values.iataCode}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    inputProps={{ maxLength: 3 }}
+                  />
+                </Grid>
+              </Grid>
 
-                <Grid container spacing={2} mt={1} sx={{ marginLeft: '3px' }}>
-                  <Typography gutterBottom>
-                    Geographical data
-                  </Typography>
-                  <Grid container spacing={2} >
-                    <Grid item xs={12} sm={6} md={2.4}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        label="Longitude*"
-                        name="longitude"
-                        value={values.longitude}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={2.4}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        label="Latitude*"
-                        name="latitude"
-                        value={values.latitude}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={2.4}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        label="Time Zone*"
-                        name="timeZone"
-                        value={values.timeZone}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={touched.timeZone && Boolean(errors.timeZone)}
-                        helperText={touched.timeZone && errors.timeZone}
-                      />
-                    </Grid>
+              <Grid container spacing={2} mt={1} sx={{ marginLeft: '3px' }}>
+                <Typography gutterBottom>
+                  Geographical data
+                </Typography>
+                <Grid container spacing={2} >
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      label="Longitude*"
+                      name="longitude"
+                      value={values.longitude}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.longitude && Boolean(errors.longitude)}
+                      helperText={touched.longitude && errors.longitude}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      label="Latitude*"
+                      name="latitude"
+                      value={values.latitude}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.latitude && Boolean(errors.latitude)}
+                      helperText={touched.latitude && errors.latitude}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      label="Time Zone*"
+                      name="timeZone"
+                      value={values.timeZone}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.timeZone && Boolean(errors.timeZone)}
+                      helperText={touched.timeZone && errors.timeZone}
+                    />
                   </Grid>
                 </Grid>
+              </Grid>
 
                 <Grid container spacing={2} ml={1} mt={2}>
                   <Typography variant="h6" align="center" gutterBottom >
                     2. Address
                   </Typography>
-                  <Grid container spacing={2}>
+                <Grid container spacing={2}>
+                   <Grid item xs={12} sm={6} md={2.4}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        label="Address line 1"
+                        name="address line 1"
+                        value={values.addressLine1}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                      />
+                  </Grid>
+                   <Grid item xs={12} sm={6} md={2.4}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        label="Address line 2"
+                        name="address line 2"
+                        value={values.addressLine2}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                      />
+                    </Grid>
                     <Grid item xs={12} sm={6} md={2.4}>
                       <TextField
                         fullWidth
@@ -343,7 +561,7 @@ const Locations: React.FC = () => {
                   </Grid>
                 </Grid>
 
-                <Grid spacing={4} mt={2} ml={1}>
+              {/* <Grid spacing={4} mt={2} ml={1}>
                   <Typography variant="h6" mb={1}  >
                     3. Vehicles
                   </Typography>
@@ -425,15 +643,15 @@ const Locations: React.FC = () => {
                     </Grid>
 
                   </Grid>
-                </Grid>
+                </Grid> */}
 
 
 
-              </Grid>
-          
+            </Grid>
+
             <Box sx={{ marginTop: '24px', textAlign: 'center' }}>
               <Button variant="contained" color="primary" type="submit">
-                Submit
+                {isEditing ? "Update location" : "Create location"}
               </Button>
             </Box>
           </Box>
@@ -457,4 +675,8 @@ const Locations: React.FC = () => {
   );
 };
 
-export default Locations;
+export default withAuthComponent(Locations);
+function resetForm() {
+  throw new Error('Function not implemented.');
+}
+
