@@ -178,6 +178,24 @@ deleteLocationMaster: builder.mutation({
       invalidatesTags: [{ type: "DRIVERS", id: "LIST" }],
     }),
 
+    deleteDriver: builder.mutation({
+      query: (driverId) => ({
+        url: `driver/delete-driver?driver_id=${driverId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [{ type: "DRIVERS", id: "LIST" }],
+    }),
+
+
+    editDriver: builder.mutation({
+      query: ({ body, driverId }) => ({
+        url: `driver/edit-driver?driver_id=${driverId}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: [{ type: "DRIVERS", id: "LIST" }],
+    }),
+
     getAllDriversData: builder.query({
       query: (params) => ({
         url: "driver/get-drivers",
@@ -186,6 +204,7 @@ deleteLocationMaster: builder.mutation({
       }),
       providesTags: [{ type: "DRIVERS", id: "LIST" }],
     }),
+
   }),
 });
 
@@ -206,4 +225,6 @@ export const {
   useDeleteVehicleMasterMutation,
   useEditBusinessPartnerMutation,
   useDeleteBusinessPartnerMutation,
+  useEditDriverMutation,
+  useDeleteDriverMutation
 } = apiSlice;
