@@ -35,7 +35,7 @@ interface User {
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery,
-  tagTypes: ["LocationMaster", "VehicleMaster", "PARTNERS", "DRIVERS"],
+  tagTypes: ["LocationMaster", "VehicleMaster", "PARTNERS", "DRIVERS","PackageMaster"],
   endpoints: (builder) => ({
     userLogin: builder.mutation<User, { phone: string; password: string }>({
       query: (body) => ({
@@ -43,84 +43,6 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-    }),
-    //  location master
-    getLocationMaster: builder.query({
-      query: () => ({
-        url: "masLoc/all-locations",
-        method: "GET",
-      }),
-      providesTags: [{ type: "LocationMaster", id: "LIST" }],
-    }),
-
-    postLocationMaster: builder.mutation({
-      query: (body) => ({
-        url: "masLoc/create-location",
-        method: "POST",
-        body,
-      }),
-      invalidatesTags: [{ type: "LocationMaster", id: "LIST" }],
-    }),
-
-    editLocationMaster: builder.mutation({
-      query: ({ body, locationId }) => ({
-        url: `masLoc/edit-location?id=${locationId}`,
-        method: "PUT",
-        body,
-      }),
-      invalidatesTags: [{ type: "LocationMaster", id: "LIST" }],
-    }),
-
-deleteLocationMaster: builder.mutation({
-    query: (locationId) => {
-    if (!locationId) {
-          console.log('locationid :', locationId)
-          throw new Error('Location ID is required.');
-          
-    }
-    console.log('locationid to delete :', locationId)
-        return {
-            url: `masLoc/delete-location?id=${locationId}`,
-            method: "DELETE",
-        };
-    },
-    invalidatesTags: [{ type: "LocationMaster", id: "LIST" }],
-}),
-
-
-    // vehciles master
-    getVehicleMaster: builder.query({
-      query: () => ({
-        url: "vehicle/vehicles",
-        method: "GET",
-      }),
-      providesTags: [{ type: "VehicleMaster", id: "LIST" }],
-    }),
-
-    postVehicleMaster: builder.mutation({
-      query: (body) => ({
-        url: "vehicle/add-vehicle",
-        method: "POST",
-        body,
-      }),
-      invalidatesTags: [{ type: "VehicleMaster", id: "LIST" }],
-    }),
-
-    editVehicleMaster: builder.mutation({
-      query: ({ body, vehicleId }) => ({
-        url: `vehicle/edit-vehicle?veh_id=${vehicleId}`,
-        method: "PUT",
-        body,
-      }),
-      invalidatesTags: [{ type: "VehicleMaster", id: "LIST" }],
-    }),
-
-    deleteVehicleMaster: builder.mutation({
-      query: (vehicleId) => ({
-        url: `vehicle/delete-vehicle?veh_id=${vehicleId}`,
-        method: "DELETE",
-      }),
-      invalidatesTags: [{ type: "VehicleMaster", id: "LIST" }],
     }),
 
     //Business Partners API'S
@@ -186,7 +108,6 @@ deleteLocationMaster: builder.mutation({
       invalidatesTags: [{ type: "DRIVERS", id: "LIST" }],
     }),
 
-
     editDriver: builder.mutation({
       query: ({ body, driverId }) => ({
         url: `driver/edit-driver?driver_id=${driverId}`,
@@ -205,17 +126,129 @@ deleteLocationMaster: builder.mutation({
       providesTags: [{ type: "DRIVERS", id: "LIST" }],
     }),
 
+        //  location master
+    getLocationMaster: builder.query({
+      query: () => ({
+        url: "masLoc/all-locations",
+        method: "GET",
+      }),
+      providesTags: [{ type: "LocationMaster", id: "LIST" }],
+    }),
+
+    postLocationMaster: builder.mutation({
+      query: (body) => ({
+        url: "masLoc/create-location",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "LocationMaster", id: "LIST" }],
+    }),
+
+    editLocationMaster: builder.mutation({
+      query: ({ body, locationId }) => ({
+        url: `masLoc/edit-location?id=${locationId}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: [{ type: "LocationMaster", id: "LIST" }],
+    }),
+
+      deleteLocationMaster: builder.mutation({
+        query: (locationId) => ({
+            url: `masLoc/delete-location?id=${locationId}`,
+            method: "DELETE",
+        }),
+        invalidatesTags: [{ type: "LocationMaster", id: "LIST" }],
+    }),
+
+    // vehciles master
+    getVehicleMaster: builder.query({
+      query: () => ({
+        url: "vehicle/vehicles",
+        method: "GET",
+      }),
+      providesTags: [{ type: "VehicleMaster", id: "LIST" }],
+    }),
+
+    postVehicleMaster: builder.mutation({
+      query: (body) => ({
+        url: "vehicle/add-vehicle",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "VehicleMaster", id: "LIST" }],
+    }),
+
+    editVehicleMaster: builder.mutation({
+      query: ({ body, vehicleId }) => ({
+        url: `vehicle/edit-vehicle?veh_id=${vehicleId}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: [{ type: "VehicleMaster", id: "LIST" }],
+    }),
+
+    deleteVehicleMaster: builder.mutation({
+      query: (vehicleId) => ({
+        url: `vehicle/delete-vehicle?veh_id=${vehicleId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [{ type: "VehicleMaster", id: "LIST" }],
+    }),
+
+     // Package master
+    getPackageMaster: builder.query({
+      query: () => ({
+        url: "package/get-all-packages",
+        method: "GET",
+      }),
+      providesTags: [{ type: "PackageMaster", id: "LIST" }],
+    }),
+
+    postPackageMaster: builder.mutation({
+      query: (body) => ({
+        url: "package/create-package",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "PackageMaster", id: "LIST" }],
+    }),
+
+    editPackageMaster: builder.mutation({
+      query: ({ body, packageId }) => ({
+        url: `package/edit-package?package_id=${packageId}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: [{ type: "PackageMaster", id: "LIST" }],
+    }),
+
+    deletePackageMaster: builder.mutation({
+      query: (packageId) => ({
+        url: `package/delete-package?package_id=${packageId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [{ type: "PackageMaster", id: "LIST" }],
+    }),
+
+
+
   }),
 });
 
 export const {
   useUserLoginMutation,
   useCustomerRegistrationMutation,
-  useGetLocationMasterQuery,
   useDriverRegistrationMutation,
   useGetAllCustomersDataQuery,
   useGetAllVendorsDataQuery,
   useGetAllDriversDataQuery,
+  useEditBusinessPartnerMutation,
+  useDeleteBusinessPartnerMutation,
+  useEditDriverMutation,
+  useDeleteDriverMutation,
+  
+  useGetLocationMasterQuery,
   usePostLocationMasterMutation,
   useEditLocationMasterMutation,
   useDeleteLocationMasterMutation,
@@ -223,8 +256,10 @@ export const {
   usePostVehicleMasterMutation,
   useEditVehicleMasterMutation,
   useDeleteVehicleMasterMutation,
-  useEditBusinessPartnerMutation,
-  useDeleteBusinessPartnerMutation,
-  useEditDriverMutation,
-  useDeleteDriverMutation
+  useGetPackageMasterQuery,
+  usePostPackageMasterMutation,
+  useEditPackageMasterMutation,
+  useDeletePackageMasterMutation,
+  
+
 } = apiSlice;

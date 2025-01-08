@@ -1282,9 +1282,9 @@ const handleDelete = async (row: VehicleDetails) => {
         <DataGridComponent
           columns={columns}
           rows={rows}
-          isLoading={false} // Set true to show loading state
-          pageSizeOptions={[10, 20, 30]} // Optional: customize page size options
-          initialPageSize={10} // Optional: default page size
+          isLoading={false}
+          pageSizeOptions={[10, 20, 30]}
+          initialPageSize={10}
         />
       </div>
 

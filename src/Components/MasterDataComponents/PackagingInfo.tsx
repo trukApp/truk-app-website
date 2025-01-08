@@ -1,21 +1,99 @@
 'use client';
-import React, { useState } from 'react';
-import { Box, Button, MenuItem, TextField, Select, FormControl, InputLabel, OutlinedInput, Grid, Typography, Collapse } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Box, Button, MenuItem, TextField, Select, FormControl, InputLabel, OutlinedInput, Grid, Typography, Collapse, IconButton } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { GridColDef } from '@mui/x-data-grid';
 import { DataGridComponent } from '../GridComponent';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import styles from './MasterData.module.css'
+import styles from './MasterData.module.css';
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { useGetPackageMasterQuery,usePostPackageMasterMutation,useEditPackageMasterMutation,useDeletePackageMasterMutation } from '@/api/apiSlice';
+
+interface Package {
+  handling_unit_type: string;
+  dimensions: string;
+  packageItem: string;
+  dimensions_uom: string;
+  packaging_type_name: string;
+  pac_ID: string;
+  package_id: string;
+  
+}
+interface PackageInfo {
+  id: string;
+  handlingUnitType: string;
+  packagingDimensions: string;
+  packagingDimensionsUoM: string;
+  packagingTypeName: string;
+  packagingTypeId: string;
+  
+}
 
 const PackagingForm = () => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editRow,setEditRow] = useState<PackageInfo | null>(null); ;
   const [showForm, setShowForm] = useState(false);
+  const { data, error } = useGetPackageMasterQuery([])
+  const [postPackage] = usePostPackageMasterMutation()
+  const [editPackage] = useEditPackageMasterMutation()
+  const [deletePackage] = useDeletePackageMasterMutation()
+  const lengthUnits = ['meter', 'centi meter', 'milli meter','inch' ]
+  console.log('package data :', data?.packages)
+  if (error) {
+    console.log("err while getting package info :", error)
+  }
+  const handleFormSubmit = async (values: PackageInfo) => {
+    console.log("form submitted locations :", values)
+
+        try {
+            const body = {
+                packages: [
+                    {
+                    packaging_type_name:values.packagingTypeName,
+                    dimensions_uom: values.packagingDimensionsUoM,
+                    dimensions: values.packagingDimensions,
+                    handling_unit_type: values.handlingUnitType
+                }
+                ]
+              }
+              const editBody = {
+                    packaging_type_name:values.packagingTypeName,
+                    dimensions_uom: values.packagingDimensionsUoM,
+                    dimensions: values.packagingDimensions,
+                    handling_unit_type: values.handlingUnitType
+                }
+              console.log("location body: ", body)
+              if (isEditing && editRow) {
+                console.log('edit body is :', editBody)
+                const packageId = editRow.id
+                const response = await editPackage({body:editBody, packageId}).unwrap()
+                console.log("edit response is ", response)
+                setShowForm(false)
+                formik.resetForm()
+              }
+              else {
+                console.log("post create location ",body)
+                const response = await postPackage(body).unwrap();
+                setShowForm(false)
+                formik.resetForm()
+                console.log('response in post location:', response);
+                 
+              }
+          
+        } catch (error) {
+            console.error('API Error:', error);
+        }
+
+  }
   const formik = useFormik({
     initialValues: {
+      id:'',
       packagingTypeId: '', // Auto-generated, read-only
       packagingTypeName: '',
-      packagingDimensionsUoM: '',
+      packagingDimensionsUoM: lengthUnits[0],
       packagingDimensions: '',
       handlingUnitType: '',
     },
@@ -27,28 +105,90 @@ const PackagingForm = () => {
         .required('Packaging Dimensions are required'),
       handlingUnitType: Yup.string().required('Handling Unit Type is required'),
     }),
-    onSubmit: (values) => {
-      console.log('Form Submitted:', values);
-    },
+    onSubmit: handleFormSubmit
   });
 
+    useEffect(() => {
+      if (editRow) {
+        formik.setValues({
+          id : editRow?.id,
+          packagingTypeId: editRow?.packagingTypeId,
+          packagingTypeName: editRow?.packagingTypeName,
+          packagingDimensionsUoM: editRow?.packagingDimensionsUoM,
+          packagingDimensions: editRow?.packagingDimensions,
+          handlingUnitType: editRow?.handlingUnitType,
+          
+       
+        });
+      }
+    }, [editRow]);
   const handlingUnitOptions = ['Pallet', 'Container', 'Crate', 'Box', 'Drum', 'Bag', 'Sack'];
 
-  const rows = Array.from({ length: 10 }, (_, id) => ({
-    id,
-    packagingTypeId: `PKG-${id + 1}`,
-    packagingTypeName: `Type ${id + 1}`,
-    packagingDimensionsUoM: id % 2 === 0 ? "cm" : "inches",
-    packagingDimensions: `${50 + id * 5} x ${30 + id * 3} x ${20 + id * 2}`,
-    handlingUnitType: id % 2 === 0 ? "Pallet" : "Crate",
-  }));
+  const handleEdit = (row: PackageInfo) => {
+    console.log("Edit row:", row);
+    setShowForm(true)
+    setIsEditing(true)
+    setEditRow(row)
+    };
+
+const handleDelete = async (row: PackageInfo) => {
+  const packageId = row?.id;
+  if (!packageId) {
+    console.error("Row ID is missing");
+    return;
+  }
+  const confirmed = window.confirm("Are you sure you want to delete this vehicle?");
+  
+  if (!confirmed) {
+    console.log("Delete canceled by user.");
+    return;
+  }
+
+  try {
+    const response = await deletePackage(packageId);
+    console.log("Delete response:", response);
+  } catch (error) {
+    console.error("Error deleting vehicle:", error);
+  }
+};
+
+const rows = data?.packages.map((packageItem :Package) => ({
+  id: packageItem?.package_id,
+  packagingTypeId: packageItem.pac_ID ,
+  packagingTypeName: packageItem?.packaging_type_name,
+  packagingDimensionsUoM: packageItem.dimensions_uom  ,
+  packagingDimensions: packageItem.dimensions ,
+  handlingUnitType: packageItem.handling_unit_type,
+}));
+
 
   const columns: GridColDef[] = [
     { field: "packagingTypeId", headerName: "Packaging Type ID", width: 200, editable: false },
     { field: "packagingTypeName", headerName: "Packaging Name", width: 200 },
-    { field: "packagingDimensionsUoM", headerName: "Dimensions UoM", width: 180 },
-    { field: "packagingDimensions", headerName: "Dimensions", width: 250 },
+    { field: "packagingDimensionsUoM", headerName: "Dimensions UoM", width: 200 },
+    { field: "packagingDimensions", headerName: "Dimensions", width: 300 },
     { field: "handlingUnitType", headerName: "Handling Unit Type", width: 200 },
+          {
+      field: "actions",
+      headerName: "Actions",
+      width: 100,
+      renderCell: (params) => (
+        <div>
+          <IconButton
+            color="primary"
+            onClick={() => handleEdit(params.row)}
+          >
+            <EditIcon />
+          </IconButton>
+          <IconButton
+            color="error"
+            onClick={() => handleDelete(params.row)}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </div>
+      ),
+    },
   ];
 
   return (
@@ -101,20 +241,6 @@ const PackagingForm = () => {
                 />
               </Grid>
 
-              {/* Packaging Dimensions UoM */}
-              <Grid item xs={2.4}>
-                <TextField
-                  fullWidth
-                  id="packagingDimensionsUoM"
-                  name="packagingDimensionsUoM"
-                  label="Dimensions UoM"
-                  value={formik.values.packagingDimensionsUoM}
-                  onChange={formik.handleChange}
-                  error={formik.touched.packagingDimensionsUoM && Boolean(formik.errors.packagingDimensionsUoM)}
-                  helperText={formik.touched.packagingDimensionsUoM && formik.errors.packagingDimensionsUoM}
-                  size="small"
-                />
-              </Grid>
 
               {/* Packaging Dimensions */}
               <Grid item xs={2.4}>
@@ -130,6 +256,40 @@ const PackagingForm = () => {
                   helperText={formik.touched.packagingDimensions && formik.errors.packagingDimensions}
                   size="small"
                 />
+              </Grid>
+
+              
+              {/* Packaging Dimensions UoM */}
+              <Grid item xs={2.4}>
+                {/* <TextField
+                  fullWidth
+                  id="packagingDimensionsUoM"
+                  name="packagingDimensionsUoM"
+                  label="Dimensions UoM"
+                  value={formik.values.packagingDimensionsUoM}
+                  onChange={formik.handleChange}
+                  error={formik.touched.packagingDimensionsUoM && Boolean(formik.errors.packagingDimensionsUoM)}
+                  helperText={formik.touched.packagingDimensionsUoM && formik.errors.packagingDimensionsUoM}
+                  size="small"
+                /> */}
+
+                  <TextField
+                        fullWidth
+                        select
+                        onBlur={formik.handleBlur}
+                        name="packagingDimensionsUoM" 
+                        value={formik.values.packagingDimensionsUoM || ""}
+                        onChange={formik.handleChange}
+                        error={formik.touched.packagingDimensionsUoM && Boolean(formik.errors.packagingDimensionsUoM)}
+                        helperText={formik.touched.packagingDimensionsUoM && formik.errors.packagingDimensionsUoM}
+                        size="small"
+                  >
+                      {lengthUnits.map((unit) => (
+                          <MenuItem key={unit} value={unit}>
+                              {unit}
+                          </MenuItem>
+                      ))}
+                    </TextField>
               </Grid>
 
               {/* Handling Unit Type Dropdown */}
@@ -163,7 +323,7 @@ const PackagingForm = () => {
             {/* Submit Button */}
             <Box sx={{ marginTop: 3, textAlign: 'center' }}>
               <Button color="primary" variant="contained" type="submit">
-                Submit
+                {isEditing ? "Update package" : "Create pacakage"}
               </Button>
             </Box>
           </form>
