@@ -44,7 +44,7 @@ export const apiSlice = createApi({
         body,
       }),
     }),
-
+    //  location master
     getLocationMaster: builder.query({
       query: () => ({
         url: "masLoc/all-locations",
@@ -71,14 +71,24 @@ export const apiSlice = createApi({
       invalidatesTags: [{ type: "LocationMaster", id: "LIST" }],
     }),
 
-    deleteLocationMaster: builder.mutation({
-      query: (locationId) => ({
-        url: `masLoc/delete-location?id=${locationId}`,
-        method: "DELETE",
-      }),
-      invalidatesTags: [{ type: "LocationMaster", id: "LIST" }],
-    }),
+deleteLocationMaster: builder.mutation({
+    query: (locationId) => {
+    if (!locationId) {
+          console.log('locationid :', locationId)
+          throw new Error('Location ID is required.');
+          
+    }
+    console.log('locationid to delete :', locationId)
+        return {
+            url: `masLoc/delete-location?id=${locationId}`,
+            method: "DELETE",
+        };
+    },
+    invalidatesTags: [{ type: "LocationMaster", id: "LIST" }],
+}),
 
+
+    // vehciles master
     getVehicleMaster: builder.query({
       query: () => ({
         url: "vehicle/vehicles",
@@ -92,6 +102,23 @@ export const apiSlice = createApi({
         url: "vehicle/add-vehicle",
         method: "POST",
         body,
+      }),
+      invalidatesTags: [{ type: "VehicleMaster", id: "LIST" }],
+    }),
+
+    editVehicleMaster: builder.mutation({
+      query: ({ body, vehicleId }) => ({
+        url: `vehicle/edit-vehicle?veh_id=${vehicleId}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: [{ type: "VehicleMaster", id: "LIST" }],
+    }),
+
+    deleteVehicleMaster: builder.mutation({
+      query: (vehicleId) => ({
+        url: `vehicle/delete-vehicle?veh_id=${vehicleId}`,
+        method: "DELETE",
       }),
       invalidatesTags: [{ type: "VehicleMaster", id: "LIST" }],
     }),
@@ -175,6 +202,8 @@ export const {
   useDeleteLocationMasterMutation,
   useGetVehicleMasterQuery,
   usePostVehicleMasterMutation,
+  useEditVehicleMasterMutation,
+  useDeleteVehicleMasterMutation,
   useEditBusinessPartnerMutation,
   useDeleteBusinessPartnerMutation,
 } = apiSlice;

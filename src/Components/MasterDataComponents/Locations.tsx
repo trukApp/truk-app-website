@@ -116,7 +116,7 @@ const Locations: React.FC = () => {
   const handleFormSubmit = async (values: DataGridRow) => {
     console.log("form submitted locations :", values)
 
-            try {
+        try {
             const body = {
                 locations: [
                     {
@@ -175,13 +175,26 @@ const Locations: React.FC = () => {
     setEditRow(row)
     };
 
-    const handleDelete = async (row: DataGridRow) => {
-      console.log("Delete row:", row);
-      const deleteId = row?.id
-      const response = await deleteLocation(deleteId)
-      console.log("delete response :", response)
-      // Add your delete logic here
-    };
+const handleDelete = async (row: DataGridRow) => {
+    const locationId = row?.id;
+    if (!locationId) {
+        console.error("Row ID is missing");
+        return;
+    }
+    const confirmed = window.confirm("Are you sure you want to delete this item?");
+    if (!confirmed) {
+        console.log("Delete canceled by user.");
+        return;
+    }
+
+    try {
+        const response = await deleteLocation(locationId);
+        console.log("Delete response:", response);
+    } catch (error) {
+        console.error("Error deleting location:", error);
+    }
+};
+
 
   console.log("edit :",isEditing, editRow)
   const formik = useFormik({

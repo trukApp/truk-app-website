@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Formik, Form, } from "formik";
 import * as Yup from "yup";
 import {
@@ -13,41 +13,80 @@ import {
   MenuItem,
   Button,
   Collapse,
+  IconButton,
 } from "@mui/material";
 import { DataGridComponent } from "../GridComponent";
 import { GridColDef } from "@mui/x-data-grid";
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import styles from './MasterData.module.css'
-import { useGetVehicleMasterQuery } from '@/api/apiSlice';
+import { useDeleteVehicleMasterMutation, useEditVehicleMasterMutation, useGetVehicleMasterQuery, usePostVehicleMasterMutation } from '@/api/apiSlice';
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 
-const units = ["g", "kg", "ton", "cm", "m", "inch"];
+const weightUnits = ["tonn","kg", "g"] 
+const lengthUnits = ['m', 'cm', 'mm', ]
+const volumnUnits = ['m^3', 'cm^3' , 'mm^3' ]
+
 interface FormValues {
+  id: string;
   locationId: string;
   timeZone: string;
   unlimitedUsage: boolean;
-  individualResources: string | null;
+  individualResources: string ;
   validityFrom: string;
   validityTo: string;
   vehicleType: string;
   vehicleGroup: string;
   ownership: string;
   payloadWeight: string;
+  payloadWeightUnits: string;
+
   cubicCapacity: string;
+  cubicCapacityUnits: string;
+
   interiorLength: string;
+  interiorLengthUnits: string;
+
   interiorWidth: string;
+  interiorWidthUnits: string;
+
   interiorHeight: string;
+  interiorHeightUnits: string;
+
   tareWeight: string;
+  tareWeightUnits: string;
+
   maxGrossWeight: string;
+  maxGrossWeightUnits: string;
+
   tareVolume: string;
+  tareVolumeUnits: string;
+
   maxLength: string;
+  maxLengthUnits: string;
+
   maxWidth: string;
+  maxWidthUnits: string;
+
   maxHeight: string;
+  maxHeightUnits: string;
+
   platformHeight: string;
+  platformHeightUnits: string;
+
   topDeckHeight: string;
+  topDeckHeightUnits: string;
+
   doorWidth: string;
+  doorWidthUnits: string;
+
   doorHeight: string;
+  doorHeightUnits: string;
+
   doorLength: string;
+  doorLengthUnits: string;
+
   avgCost: string;
   downtimeStart: string;
   downtimeEnd: string;
@@ -81,7 +120,7 @@ interface PhysicalProperties {
   max_height: string;
   max_length: string;
   max_width: string;
-  tare_volumn: string;
+  tare_volume: string;
   tare_weight: string;
 }
 
@@ -89,11 +128,13 @@ interface TransportationDetails {
   ownership: string;
   validity_from: string;
   validity_to: string;
-  vehcile_group: string;
+  vehicle_group: string;
   vehicle_type: string;
 }
 
 interface VehicleDetails {
+  time_zone: string;
+  id: string;
   additional_details: AdditionalDetails;
   capacity: Capacity;
   city: string;
@@ -123,7 +164,6 @@ interface VehicleDetails {
   doorLength: string;
   avgCost: string;
 }
-
 
 const downtimeReasons = ['Maintenance', 'Breakdown', 'Inspection', 'Other'];
 
@@ -162,23 +202,13 @@ const validationSchema = Yup.object({
   downtimeReason: Yup.string().required("Reason is required"),
 });
 
-// Generate dummy data
-// const rows = Array.from({ length: 10 }, (_, id) => ({
-//   id,
-//   locationId: `LOC-${id + 1}`,
-//   timeZone: "UTC+05:30",
-//   unlimitedUsage: id % 2 === 0,
-//   individualResources: `Resource-${id + 1}`,
-//   validityFrom: "2024-01-01",
-//   validityTo: "2024-12-31",
-//   vehicleType: id % 2 === 0 ? "Truck" : "Van",
-//   vehicleGroup: `Group-${id + 1}`,
-//   ownership: id % 2 === 0 ? "Owned" : "Leased",
-// }));
-
-
 const VehicleForm: React.FC = () => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [editRow,setEditRow] = useState<FormValues | null>(null); ;
   const { data, error } = useGetVehicleMasterQuery([])
+  const [postVehicle] = usePostVehicleMasterMutation()
+  const [editVehicle] = useEditVehicleMasterMutation()
+  const [deleteVehicle]= useDeleteVehicleMasterMutation()
   if (error) {
     console.log("err in loading vehicles data :", error)
   }
@@ -186,51 +216,138 @@ const VehicleForm: React.FC = () => {
   const vehiclesMaster = data?.vehicles
   console.log("all vehicles :", vehiclesMaster)
   const [showForm, setShowForm] = useState(false);
-  const initialValues = {
+  const initialFormValues = {
+    id: '',
     locationId: "",
     timeZone: "",
     unlimitedUsage: false,
-    individualResources: '',
+    individualResources: "",
     validityFrom: "",
     validityTo: "",
     vehicleType: "",
     vehicleGroup: "",
     ownership: "",
     payloadWeight: "",
+    payloadWeightUnits: weightUnits[0],
     cubicCapacity: "",
+    cubicCapacityUnits: weightUnits[0],
     interiorLength: "",
+    interiorLengthUnits: lengthUnits[0],
     interiorWidth: "",
+    interiorWidthUnits: lengthUnits[0],
     interiorHeight: "",
+    interiorHeightUnits: lengthUnits[0],
     tareWeight: "",
+    tareWeightUnits:weightUnits[0],
     maxGrossWeight: "",
+    maxGrossWeightUnits: weightUnits[0],
     tareVolume: "",
+    tareVolumeUnits: "",
     maxLength: "",
+    maxLengthUnits: lengthUnits[0],
     maxWidth: "",
+    maxWidthUnits: lengthUnits[0],
     maxHeight: "",
+    maxHeightUnits: lengthUnits[0],
     platformHeight: "",
+    platformHeightUnits: lengthUnits[0],
     topDeckHeight: "",
+    topDeckHeightUnits: lengthUnits[0],
     doorWidth: "",
+    doorWidthUnits: lengthUnits[0],
     doorHeight: "",
+    doorHeightUnits: lengthUnits[0],
     doorLength: "",
+    doorLengthUnits: lengthUnits[0],
     avgCost: "",
     downtimeStart: "",
     downtimeEnd: "",
     downtimeLocation: "",
     downtimeDescription: "",
     downtimeReason: "",
+};
 
-  };
 
-  const rows = vehiclesMaster?.map((vehicle: VehicleDetails, index: number) => ({
-    id: index, // Unique id for each row
-    locationId: vehicle.location_id,
-    timeZone: vehicle.timeZone,
+  const [initialValues , setInitialValues] = useState(initialFormValues)
+ useEffect(() => {
+   if (editRow) {
+      const editPayloadWeight = editRow.payloadWeight.split(" ")
+      const editCubicCapacity = editRow?.cubicCapacity.split(" ")
+      const editInteriorLength = editRow.interiorLength.split(" ");
+      const editInteriorWidth = editRow.interiorWidth.split(" ");
+      const editInteriorHeight = editRow.interiorHeight.split(" ");
+      const editTareWeight = editRow.tareWeight.split(" ");
+      const editMaxGrossWeight = editRow.maxGrossWeight.split(" ");
+      const editTareVolume = editRow.tareVolume.split(" ");
+      const editMaxLength = editRow.maxLength.split(" ");
+      const editMaxWidth = editRow.maxWidth.split(" ");
+      const editMaxHeight = editRow.maxHeight.split(" ");
+     
+    setInitialValues(() => ({
+      id: '',
+      locationId: editRow?.locationId,
+      timeZone: editRow?.timeZone,
+      unlimitedUsage: editRow.unlimitedUsage,
+      individualResources: editRow.individualResources,
+      validityFrom: editRow.validityFrom,
+      validityTo: editRow.validityTo,
+      vehicleType: editRow.vehicleType,
+      vehicleGroup: editRow.vehicleGroup,
+      ownership: editRow.ownership,
+      payloadWeight: editPayloadWeight[0] ,
+      payloadWeightUnits: editPayloadWeight[1],
+      cubicCapacity: editCubicCapacity[0],
+      cubicCapacityUnits: editCubicCapacity[1],
+      interiorLength: editInteriorLength[0],
+      interiorLengthUnits: editInteriorLength[1],
+      interiorWidth: editInteriorWidth[0],
+      interiorWidthUnits: editInteriorWidth[1],
+      interiorHeight: editInteriorHeight[0],
+      interiorHeightUnits: editInteriorHeight[1],
+      tareWeight: editTareWeight[0],
+      tareWeightUnits: editTareWeight[1],
+      maxGrossWeight: editMaxGrossWeight[0],
+      maxGrossWeightUnits: editMaxGrossWeight[1],
+      tareVolume: editTareVolume[0],
+      tareVolumeUnits: editTareVolume[1],
+      maxLength: editMaxLength[0],
+      maxLengthUnits: editMaxLength[1],
+      maxWidth: editMaxWidth[0],
+      maxWidthUnits: editMaxWidth[1],
+      maxHeight: editMaxHeight[0],
+      maxHeightUnits: editMaxHeight[1],
+      platformHeight: editRow.platformHeight,
+      platformHeightUnits: editRow.platformHeightUnits,
+      topDeckHeight: editRow.topDeckHeight,
+      topDeckHeightUnits: editRow.topDeckHeightUnits,
+      doorWidth: editRow.doorWidth,
+      doorWidthUnits: editRow.doorWidthUnits,
+      doorHeight: editRow.doorHeight,
+      doorHeightUnits: editRow.doorHeightUnits,
+      doorLength: editRow.doorLength,
+      doorLengthUnits: editRow.doorLengthUnits,
+      avgCost: editRow.avgCost,
+      downtimeStart: editRow.downtimeStart,
+      downtimeEnd: editRow.downtimeEnd,
+      downtimeLocation: editRow.downtimeLocation,
+      downtimeDescription: editRow.downtimeDescription,
+      downtimeReason: editRow.downtimeReason,
+    }));
+  }
+}, [editRow]);
+
+  const rows = vehiclesMaster?.map((vehicle: VehicleDetails) => ({
+    id: vehicle?.veh_id,
+    vehicleId : vehicle.vehicle_ID,
+    // locationId: vehicle.loc_ID,
+     locationId: vehicle.location_id,
+    timeZone: vehicle.time_zone,
     unlimitedUsage: vehicle.unlimited_usage,
     individualResources: vehicle.individual_resource,
     validityFrom: vehicle.transportation_details.validity_from,
     validityTo: vehicle.transportation_details.validity_to,
     vehicleType: vehicle.transportation_details.vehicle_type,
-    vehicleGroup: vehicle.transportation_details.vehcile_group,
+    vehicleGroup: vehicle.transportation_details.vehicle_group,
     ownership: vehicle.transportation_details.ownership,
 
     payloadWeight: vehicle?.capacity?.payload_weight,
@@ -241,7 +358,7 @@ const VehicleForm: React.FC = () => {
 
     tareWeight: vehicle?.physical_properties?.tare_weight,
     maxGrossWeight: vehicle?.physical_properties?.max_gross_weight,
-    tareVolume: vehicle?.physical_properties?.tare_volumn,
+    tareVolume: vehicle?.physical_properties?.tare_volume,
     maxLength: vehicle?.physical_properties?.max_length,
     maxWidth: vehicle?.physical_properties?.max_width,
     maxHeight: vehicle?.physical_properties?.max_height,
@@ -251,7 +368,8 @@ const VehicleForm: React.FC = () => {
     doorWidth: vehicle.doorWidth,
     doorHeight: vehicle.doorHeight,
     doorLength: vehicle.doorLength,
-    avgCost: vehicle.avgCost,
+
+    avgCost: vehicle.additional_details.cost_per_ton,
 
     downtimeStart: vehicle?.downtimes?.downtime_starts_from,
     downtimeEnd: vehicle?.downtimes?.downtime_ends_from,
@@ -259,11 +377,10 @@ const VehicleForm: React.FC = () => {
     downtimeDescription: vehicle?.downtimes?.downtime_desc,
     downtimeReason: vehicle?.downtimes?.reason,
 
-    // id: index,
-    // ...vehicle
   }));
 
   const columns: GridColDef[] = [
+    { field: "vehicleId", headerName: "Vehicle ID", width: 150 },
     { field: "locationId", headerName: "Location ID", width: 150 },
     { field: "timeZone", headerName: "Time Zone", width: 150 },
     { field: "unlimitedUsage", headerName: "Unlimited Usage", width: 150, type: "boolean" },
@@ -284,66 +401,182 @@ const VehicleForm: React.FC = () => {
     { field: "maxLength", headerName: "Max Length", width: 150 },
     { field: "maxWidth", headerName: "Max Width", width: 150 },
     { field: "maxHeight", headerName: "Max Height", width: 150 },
-    { field: "platformHeight", headerName: "Platform Height", width: 150 },
-    { field: "topDeckHeight", headerName: "Top Deck Height", width: 150 },
-    { field: "doorWidth", headerName: "Door Width", width: 150 },
-    { field: "doorHeight", headerName: "Door Height", width: 150 },
-    { field: "doorLength", headerName: "Door Length", width: 150 },
-    { field: "avgCost", headerName: "Average Cost", width: 150 },
+    // { field: "platformHeight", headerName: "Platform Height", width: 150 },
+    // { field: "topDeckHeight", headerName: "Top Deck Height", width: 150 },
+    // { field: "doorWidth", headerName: "Door Width", width: 150 },
+    // { field: "doorHeight", headerName: "Door Height", width: 150 },
+    // { field: "doorLength", headerName: "Door Length", width: 150 },
     { field: "downtimeStart", headerName: "Downtime Start", width: 150 },
     { field: "downtimeEnd", headerName: "Downtime End", width: 150 },
     { field: "downtimeLocation", headerName: "Downtime Location", width: 200 },
     { field: "downtimeDescription", headerName: "Downtime Description", width: 250 },
     { field: "downtimeReason", headerName: "Downtime Reason", width: 200 },
+    { field: "avgCost", headerName: "Average Cost", width: 150 },
+      {
+      field: "actions",
+      headerName: "Actions",
+      width: 200,
+      renderCell: (params) => (
+        <div>
+          <IconButton
+            color="primary"
+            onClick={() => handleEdit(params.row)}
+          >
+            <EditIcon />
+          </IconButton>
+          <IconButton
+            color="error"
+            onClick={() => handleDelete(params.row)}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </div>
+      ),
+    },
   ];
 
-  // const columns: GridColDef[] = [
-  //   { field: "loc_ID", headerName: "Location ID", width: 150 },
-  //   { field: "time_zone", headerName: "Time Zone", width: 150 },
-  //   { field: "unlimited_usage", headerName: "Unlimited Usage", width: 150, type: "boolean" },
-  //   { field: "individual_resource", headerName: "Individual Resources", width: 200 },
-  //   { field: "validity_from", headerName: "Validity From", width: 150 },
-  //   { field: "validity_to", headerName: "Validity To", width: 150 },
-  //   { field: "vehicle_type", headerName: "Vehicle Type", width: 150 },
-  //   { field: "vehicle_group", headerName: "Vehicle Group", width: 150 },
-  //   { field: "ownership", headerName: "Ownership", width: 150 },
-  //   { field: "payload_weight", headerName: "Payload Weight", width: 150 },
-  //   { field: "cubic_capacity", headerName: "Cubic Capacity", width: 150 },
-  //   { field: "interior_length", headerName: "Interior Length", width: 150 },
-  //   { field: "interior_width", headerName: "Interior Width", width: 150 },
-  //   { field: "interior_height", headerName: "Interior Height", width: 150 },
-  //   { field: "tare_weight", headerName: "Tare Weight", width: 150 },
-  //   { field: "max_gross_weight", headerName: "Max Gross Weight", width: 150 },
-  //   { field: "tare_volume", headerName: "Tare Volume", width: 150 },
-  //   { field: "max_length", headerName: "Max Length", width: 150 },
-  //   { field: "max_width", headerName: "Max Width", width: 150 },
-  //   { field: "max_height", headerName: "Max Height", width: 150 },
-  //   { field: "latitude", headerName: "Latitude", width: 150 },
-  //   { field: "longitude", headerName: "Longitude", width: 150 },
-  //   { field: "platform_height", headerName: "Platform Height", width: 150 },
-  //   { field: "top_deck_height", headerName: "Top Deck Height", width: 150 },
-  //   { field: "door_width", headerName: "Door Width", width: 150 },
-  //   { field: "door_height", headerName: "Door Height", width: 150 },
-  //   { field: "downtime_starts_from", headerName: "Downtime Start", width: 150 },
-  //   { field: "downtime_ends_from", headerName: "Downtime End", width: 150 },
-  //   { field: "downtime_location", headerName: "Downtime Location", width: 200 },
-  //   { field: "downtime_desc", headerName: "Downtime Description", width: 250 },
-  //   { field: "reason", headerName: "Downtime Reason", width: 200 },
-  //   { field: "avg_cost", headerName: "Average Cost", width: 150 },
-  //   { field: "state", headerName: "State", width: 150 },
-  //   { field: "city", headerName: "City", width: 150 },
-  //   { field: "country", headerName: "Country", width: 150 },
-  //   { field: "pincode", headerName: "Pincode", width: 150 },
-  //   { field: "loc_desc", headerName: "Location Description", width: 200 },
-  //   { field: "loc_type", headerName: "Location Type", width: 150 },
-  //   { field: "gln_code", headerName: "GLN Code", width: 150 },
-  //   { field: "iata_code", headerName: "IATA Code", width: 150 },
-  // ];
+  
 
-
-  const handleSubmit = (values: FormValues) => {
+  const handleSubmit = async (values: FormValues) => {
     console.log("Form submitted with values:", values);
+
+            try {
+            const body = {
+                vehicles: [
+                    {
+                      location_id:  values.locationId,
+                      unlimited_usage: values.unlimitedUsage,
+                      individual_resource: values.individualResources  ,
+                      transportation_details: {
+                          validity_from:values.validityFrom,
+                          validity_to:values.validityTo,
+                          vehicle_type:values.vehicleType,
+                          vehicle_group:values.vehicleGroup,
+                          ownership: values.ownership
+                      },
+                      capacity: {
+                          payload_weight: `${values.payloadWeight} ${values.payloadWeightUnits}` ,
+                          cubic_capacity: `${values.cubicCapacity} ${values.cubicCapacityUnits}`,
+                          interior_length:`${values.interiorLength} ${values.interiorLengthUnits}`,
+                          interior_width:`${values.interiorWidth} ${values.interiorWidthUnits}`,
+                          interior_height:`${values.interiorHeight} ${values.interiorHeightUnits}`
+                      },
+                      physical_properties: {
+                          tare_weight: `${values.tareWeight} ${values.tareWeightUnits}`,
+                          max_gross_weight: `${values.maxGrossWeight} ${values.maxGrossWeightUnits}`,
+                          tare_volume: `${values.tareVolume} ${values.tareVolumeUnits}`,
+                          max_length:`${values.maxLength} ${values.maxLengthUnits}`,
+                          max_width:`${values.maxWidth} ${values.maxWidthUnits}`,
+                          max_height:`${values.maxHeight} ${values.maxHeightUnits}`
+                      },
+                      downtimes: {
+                          downtime_starts_from: values.downtimeStart,
+                          downtime_ends_from: values.downtimeEnd,
+                          downtime_location: values.downtimeLocation,
+                          downtime_desc:values.downtimeDescription,
+                          reason:values.downtimeReason
+                      },
+                      vehicle_group:{
+                          vehicle_group_desc: values.vehicleGroup,
+                          vehicle_type:values.vehicleType
+                      },
+                      additional_details: {
+                          cost_per_ton: values.avgCost
+                      }
+                    }
+                ]
+              }
+              const editBody =                     {
+                      location_id:  values.locationId,
+                      unlimited_usage: values.unlimitedUsage,
+                      individual_resource: values.individualResources  ,
+                      transportation_details: {
+                          validity_from:values.validityFrom,
+                          validity_to:values.validityTo,
+                          vehicle_type:values.vehicleType,
+                          vehicle_group:values.vehicleGroup,
+                          ownership: values.ownership
+                      },
+                      capacity: {
+                          payload_weight: `${values.payloadWeight} ${values.payloadWeightUnits}` ,
+                          cubic_capacity: `${values.cubicCapacity} ${values.cubicCapacityUnits}`,
+                          interior_length:`${values.interiorLength} ${values.interiorLengthUnits}`,
+                          interior_width:`${values.interiorWidth} ${values.interiorWidthUnits}`,
+                          interior_height:`${values.interiorHeight} ${values.interiorHeightUnits}`
+                      },
+                      physical_properties: {
+                          tare_weight: `${values.tareWeight} ${values.tareWeightUnits}`,
+                          max_gross_weight: `${values.maxGrossWeight} ${values.maxGrossWeightUnits}`,
+                          tare_volume: `${values.tareVolume} ${values.tareVolumeUnits}`,
+                          max_length:`${values.maxLength} ${values.maxLengthUnits}`,
+                          max_width:`${values.maxWidth} ${values.maxWidthUnits}`,
+                          max_height:`${values.maxHeight} ${values.maxHeightUnits}`
+                      },
+                      downtimes: {
+                          downtime_starts_from: values.downtimeStart,
+                          downtime_ends_from: values.downtimeEnd,
+                          downtime_location: values.downtimeLocation,
+                          downtime_desc:values.downtimeDescription,
+                          reason:values.downtimeReason
+                      },
+                      vehicle_group:{
+                          vehicle_group_desc: values.vehicleGroup,
+                          vehicle_type:values.vehicleType
+                      },
+                      additional_details: {
+                          cost_per_ton: values.avgCost
+                      }
+                    }
+              if (isEditing && editRow) {
+                console.log('edit body is :', editBody)
+                const vehicleId = editRow.id
+                console.log("vehicle id :", vehicleId)
+                const response = await editVehicle({body:editBody, vehicleId}).unwrap()
+                console.log("edit response is ", response)
+                setShowForm(false)
+              }
+              else {
+                  console.log("post create location ",body)
+                  const response = await postVehicle(body).unwrap();
+                console.log('response in post location:', response);
+                setShowForm(false)
+
+              }
+
+        } catch (error) {
+              console.error('API Error:', error);
+              alert('try after some time')
+        }
   };
+
+      const handleEdit = (row: FormValues) => {
+    console.log("Edit row:", row);
+    setShowForm(true)
+    setIsEditing(true)
+    setEditRow(row)
+    };
+
+const handleDelete = async (row: VehicleDetails) => {
+  const vehicleId = row?.id;
+  if (!vehicleId) {
+    console.error("Row ID is missing");
+    return;
+  }
+  const confirmed = window.confirm("Are you sure you want to delete this vehicle?");
+  
+  if (!confirmed) {
+    console.log("Delete canceled by user.");
+    return;
+  }
+
+  try {
+    const response = await deleteVehicle(vehicleId);
+    console.log("Delete response:", response);
+  } catch (error) {
+    console.error("Error deleting vehicle:", error);
+  }
+};
+
 
   return (
     <>
@@ -368,6 +601,7 @@ const VehicleForm: React.FC = () => {
             <Formik
               initialValues={initialValues}
               validationSchema={validationSchema}
+              enableReinitialize={true}
               onSubmit={handleSubmit}
             >
               {({ values, errors, touched, handleChange, handleBlur }) => (
@@ -376,19 +610,11 @@ const VehicleForm: React.FC = () => {
                     {/* General Data */}
                     <Typography variant="h6" mt={1} mb={1}>1. General Data</Typography>
                     <Grid container spacing={2}>
+                 
                       <Grid item xs={12} sm={6} md={2.4}>
                         <TextField
                           fullWidth
-                          // label="Vehicle ID (Auto Generated)"
-                          value="Vehicle ID (Auto-Generated)"
-                          disabled
-                          size="small"
-                        />
-                      </Grid>
-                      <Grid item xs={12} sm={6} md={2.4}>
-                        <TextField
-                          fullWidth
-                          label="Location ID"
+                          label="Location ID (1, 2, ..)"
                           name="locationId"
                           value={values.locationId}
                           onChange={handleChange}
@@ -559,13 +785,13 @@ const VehicleForm: React.FC = () => {
                       </Grid>
                       <Grid item xs={12} sm={6} md={0.8}>
                         <TextField
-                          fullWidth
-                          select
-                          defaultValue={units[0]}
-
+                          fullWidth name="payloadWeightUnits"
+                          select onChange={handleChange}
+                          onBlur={handleBlur}
+                          value={values.payloadWeightUnits}
                           size="small"
                         >
-                          {units.map((unit) => (
+                          {weightUnits.map((unit) => (
                             <MenuItem key={unit} value={unit}>
                               {unit}
                             </MenuItem>
@@ -593,11 +819,15 @@ const VehicleForm: React.FC = () => {
                       <Grid item xs={12} sm={6} md={0.8}>
                         <TextField
                           fullWidth
-                          select defaultValue={units[0]}
+                          select 
+                          name="cubicCapacityUnits"
+                          value={values.cubicCapacityUnits}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
 
                           size="small"
                         >
-                          {units.map((unit) => (
+                          {weightUnits.map((unit) => (
                             <MenuItem key={unit} value={unit}>
                               {unit}
                             </MenuItem>
@@ -626,13 +856,13 @@ const VehicleForm: React.FC = () => {
                         <TextField
                           fullWidth
                           select
-
-                          name="interiorLengthUoM" defaultValue={units[0]}
-                          // value={values.interiorLengthUoM || ""}
+                          onBlur={handleBlur}
+                          name="interiorLengthUnits" 
+                          value={values.interiorLengthUnits || ""}
                           onChange={handleChange}
                           size="small"
                         >
-                          {units.map((unit) => (
+                          {lengthUnits.map((unit) => (
                             <MenuItem key={unit} value={unit}>
                               {unit}
                             </MenuItem>
@@ -661,13 +891,13 @@ const VehicleForm: React.FC = () => {
                         <TextField
                           fullWidth
                           select
-
-                          name="interiorWidthUoM" defaultValue={units[0]}
-                          // value={values.interiorWidthUoM || ""}
+                          onBlur={handleBlur}
+                          name="interiorWidthUnits" 
+                          value={values.interiorWidthUnits || ""}
                           onChange={handleChange}
                           size="small"
                         >
-                          {units.map((unit) => (
+                          {lengthUnits.map((unit) => (
                             <MenuItem key={unit} value={unit}>
                               {unit}
                             </MenuItem>
@@ -696,13 +926,13 @@ const VehicleForm: React.FC = () => {
                         <TextField
                           fullWidth
                           select
-
-                          name="interiorHeightUoM" defaultValue={units[0]}
-                          // value={values.interiorHeightUoM || ""}
+                          onBlur={handleBlur}
+                          name="interiorHeightUnits"
+                          value={values.interiorHeightUnits || ""}
                           onChange={handleChange}
                           size="small"
                         >
-                          {units.map((unit) => (
+                          {lengthUnits.map((unit) => (
                             <MenuItem key={unit} value={unit}>
                               {unit}
                             </MenuItem>
@@ -716,40 +946,7 @@ const VehicleForm: React.FC = () => {
                       4. Physical Properties
                     </Typography>
                     <Grid container spacing={2}>
-                      {/* Tare Weight */}
-                      <Grid item xs={12} sm={6} md={1.6}>
-                        <TextField
-                          fullWidth
-                          label="Tare Weight"
-                          name="tareWeight"
-                          type="number"
-                          value={values.tareWeight}
-                          onChange={handleChange}
-                          onBlur={handleBlur}
-                          error={touched.tareWeight && Boolean(errors.tareWeight)}
-                          helperText={touched.tareWeight && errors.tareWeight}
-                          size="small"
-                        />
-                      </Grid>
-                      <Grid item xs={12} sm={6} md={0.8}>
-                        <TextField
-                          fullWidth
-                          select
-
-                          name="tareWeightUoM" defaultValue={units[0]}
-                          // value={values.tareWeightUoM || ""}
-                          onChange={handleChange}
-                          size="small"
-                        >
-                          {units.map((unit) => (
-                            <MenuItem key={unit} value={unit}>
-                              {unit}
-                            </MenuItem>
-                          ))}
-                        </TextField>
-                      </Grid>
-
-                      {/* Max. Gross Weight */}
+                                            {/* Max. Gross Weight */}
                       <Grid item xs={12} sm={6} md={1.6}>
                         <TextField
                           fullWidth
@@ -772,13 +969,46 @@ const VehicleForm: React.FC = () => {
                         <TextField
                           fullWidth
                           select
-
-                          name="maxGrossWeightUoM" defaultValue={units[0]}
-                          // value={values.maxGrossWeightUoM || ""}
+                          onBlur={handleBlur}
+                          name="maxGrossWeightUnits" 
+                          value={values.maxGrossWeightUnits || ""}
                           onChange={handleChange}
                           size="small"
                         >
-                          {units.map((unit) => (
+                          {weightUnits.map((unit) => (
+                            <MenuItem key={unit} value={unit}>
+                              {unit}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+                      </Grid>
+
+                      {/* Tare Weight */}
+                      <Grid item xs={12} sm={6} md={1.6}>
+                        <TextField
+                          fullWidth
+                          label="Tare Weight"
+                          name="tareWeight"
+                          type="number"
+                          value={values.tareWeight}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.tareWeight && Boolean(errors.tareWeight)}
+                          helperText={touched.tareWeight && errors.tareWeight}
+                          size="small"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={0.8}>
+                        <TextField
+                          fullWidth
+                          select
+                          onBlur={handleBlur}
+                          name="tareWeightUnits"
+                          value={values.tareWeightUnits || ""}
+                          onChange={handleChange}
+                          size="small"
+                        >
+                          {weightUnits.map((unit) => (
                             <MenuItem key={unit} value={unit}>
                               {unit}
                             </MenuItem>
@@ -805,13 +1035,13 @@ const VehicleForm: React.FC = () => {
                         <TextField
                           fullWidth
                           select
-
-                          name="tareVolumeUoM" defaultValue={units[0]}
-                          // value={values.tareVolumeUoM || ""}
+                          onBlur={handleBlur}
+                          name="tareVolumeUnits" 
+                          value={values.tareVolumeUnits || ""}
                           onChange={handleChange}
                           size="small"
                         >
-                          {units.map((unit) => (
+                          {volumnUnits.map((unit) => (
                             <MenuItem key={unit} value={unit}>
                               {unit}
                             </MenuItem>
@@ -838,13 +1068,13 @@ const VehicleForm: React.FC = () => {
                         <TextField
                           fullWidth
                           select
-
-                          name="maxLengthUoM" defaultValue={units[0]}
-                          // value={values.maxLengthUoM || ""}
+                          onBlur={handleBlur}
+                          name="maxLengthUnits" 
+                          value={values.maxLengthUnits || ""}
                           onChange={handleChange}
                           size="small"
                         >
-                          {units.map((unit) => (
+                          {lengthUnits.map((unit) => (
                             <MenuItem key={unit} value={unit}>
                               {unit}
                             </MenuItem>
@@ -871,13 +1101,13 @@ const VehicleForm: React.FC = () => {
                         <TextField
                           fullWidth
                           select
-
-                          name="maxWidthUoM" defaultValue={units[0]}
-                          // value={values.maxWidthUoM || ""}
+                          onBlur={handleBlur}
+                          name="maxWidthUnits" 
+                          value={values.maxWidthUnits || ""}
                           onChange={handleChange}
                           size="small"
                         >
-                          {units.map((unit) => (
+                          {lengthUnits.map((unit) => (
                             <MenuItem key={unit} value={unit}>
                               {unit}
                             </MenuItem>
@@ -891,7 +1121,7 @@ const VehicleForm: React.FC = () => {
                           fullWidth
                           label="Max. Height"
                           name="maxHeight"
-                          type="number"
+                           type="number"
                           value={values.maxHeight}
                           onChange={handleChange}
                           onBlur={handleBlur}
@@ -904,46 +1134,13 @@ const VehicleForm: React.FC = () => {
                         <TextField
                           fullWidth
                           select
-
-                          name="maxHeightUoM" defaultValue={units[0]}
-                          // value={values.maxHeightUoM || ""}
-                          onChange={handleChange}
-                          size="small"
-                        >
-                          {units.map((unit) => (
-                            <MenuItem key={unit} value={unit}>
-                              {unit}
-                            </MenuItem>
-                          ))}
-                        </TextField>
-                      </Grid>
-                      <Grid item xs={12} sm={6} md={1.6}>
-                        <TextField
-                          fullWidth
-                          label="Tare Weight"
-                          name="tareWeight"
-                          type="number"
-                          value={values.tareWeight}
-                          onChange={handleChange}
                           onBlur={handleBlur}
-                          error={touched.tareWeight && Boolean(errors.tareWeight)}
-                          helperText={touched.tareWeight && errors.tareWeight}
-                          size="small"
-                        />
-                      </Grid>
-
-                      {/* UoM Dropdown */}
-                      <Grid item xs={12} sm={6} md={0.8}>
-                        <TextField
-                          fullWidth
-                          select
-
-                          name="tareWeightUoM" defaultValue={units[0]}
-                          // value={values.tareWeightUoM || ''}
+                          name="maxHeightUnits" 
+                          value={values.maxHeightUnits || ""}
                           onChange={handleChange}
                           size="small"
                         >
-                          {units.map((unit) => (
+                          {lengthUnits.map((unit) => (
                             <MenuItem key={unit} value={unit}>
                               {unit}
                             </MenuItem>
@@ -1068,7 +1265,7 @@ const VehicleForm: React.FC = () => {
 
                     <Box mt={3} textAlign='center'>
                       <Button variant="contained" color="primary" type="submit">
-                        Submit
+                        {isEditing ? "Update vehicle": "Create vehicle"}
                       </Button>
                     </Box>
                   </Grid>
@@ -1096,3 +1293,5 @@ const VehicleForm: React.FC = () => {
 };
 
 export default VehicleForm;
+
+
