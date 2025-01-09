@@ -227,7 +227,66 @@ const DriverForm: React.FC = () => {
     address: driver?.address,
   })) || [];
 
-  const handleDriverSubmit = async (values: DriverFormValues) => {
+  // const handleDriverSubmit = async (values: DriverFormValues) => {
+  //   console.log('Driver Form Submitted:', values);
+  //   try {
+  //     const body = {
+  //       drivers: [
+  //         {
+  //           location_id: values?.locationID,
+  //           driver_name: values?.driverName,
+  //           address: values?.address,
+  //           driver_correspondence: {
+  //             driving_license: values?.drivingLicense,
+  //             expiry_date: values?.expiryDate,
+  //             phone: values?.driverContactNumber,
+  //             email: values?.emailID
+  //           },
+  //           vehicle_types: values?.vehicleTypes,
+  //           logged_in: values?.loggedIntoApp
+  //         }
+  //       ]
+  //     }
+
+  //     const editBody = {
+  //       ...updateRecordData,
+  //       location_id: values?.locationID,
+  //       driver_name: values?.driverName,
+  //       address: values?.address,
+  //       driver_correspondence: {
+  //         driving_license: values?.drivingLicense,
+  //         expiry_date: values?.expiryDate,
+  //         phone: values?.driverContactNumber,
+  //         email: values?.emailID
+  //       },
+  //       vehicle_types: values?.vehicleTypes,
+  //       logged_in: values?.loggedIntoApp
+  //     }
+  //     console.log("body: ", body)
+  //     if (updateRecord) {
+  //       const response = await editDriverDetails({ body: editBody, driverId: updateRecordId }).unwrap();
+  //       console.log('API Response:', response);
+  //       setFormInitialValues(initialDriverValues)
+  //       setShowForm(false)
+  //       setUpdateRecord(false)
+  //       setUpdateRecordId(0)
+  //       setUpdateRecordData({})
+  //     } else {
+  //       const response = await driverRegistration(body).unwrap();
+  //       console.log('API Response:', response);
+  //       setFormInitialValues(initialDriverValues)
+  //       setShowForm(false)
+  //       setUpdateRecord(false)
+  //       setUpdateRecordId(0)
+  //       setUpdateRecordData({})
+  //     }
+
+  //   } catch (error) {
+  //     console.error('API Error:', error);
+  //   }
+  // };
+
+  const handleDriverSubmit: (values: DriverFormValues) => Promise<void> = async (values) => {
     console.log('Driver Form Submitted:', values);
     try {
       const body = {
@@ -240,13 +299,13 @@ const DriverForm: React.FC = () => {
               driving_license: values?.drivingLicense,
               expiry_date: values?.expiryDate,
               phone: values?.driverContactNumber,
-              email: values?.emailID
+              email: values?.emailID,
             },
             vehicle_types: values?.vehicleTypes,
-            logged_in: values?.loggedIntoApp
-          }
-        ]
-      }
+            logged_in: values?.loggedIntoApp,
+          },
+        ],
+      };
 
       const editBody = {
         ...updateRecordData,
@@ -257,30 +316,30 @@ const DriverForm: React.FC = () => {
           driving_license: values?.drivingLicense,
           expiry_date: values?.expiryDate,
           phone: values?.driverContactNumber,
-          email: values?.emailID
+          email: values?.emailID,
         },
         vehicle_types: values?.vehicleTypes,
-        logged_in: values?.loggedIntoApp
-      }
-      console.log("body: ", body)
+        logged_in: values?.loggedIntoApp,
+      };
+
+      console.log('body: ', body);
       if (updateRecord) {
         const response = await editDriverDetails({ body: editBody, driverId: updateRecordId }).unwrap();
         console.log('API Response:', response);
-        setFormInitialValues(initialDriverValues)
-        setShowForm(false)
-        setUpdateRecord(false)
-        setUpdateRecordId(0)
-        setUpdateRecordData({})
+        setFormInitialValues(initialDriverValues);
+        setShowForm(false);
+        setUpdateRecord(false);
+        setUpdateRecordId(0);
+        setUpdateRecordData({});
       } else {
         const response = await driverRegistration(body).unwrap();
         console.log('API Response:', response);
-        setFormInitialValues(initialDriverValues)
-        setShowForm(false)
-        setUpdateRecord(false)
-        setUpdateRecordId(0)
-        setUpdateRecordData({})
+        setFormInitialValues(initialDriverValues);
+        setShowForm(false);
+        setUpdateRecord(false);
+        setUpdateRecordId(0);
+        setUpdateRecordData({});
       }
-
     } catch (error) {
       console.error('API Error:', error);
     }
@@ -288,7 +347,7 @@ const DriverForm: React.FC = () => {
 
   const handleLocationChange = (
     event: SelectChangeEvent<string>,
-    setFieldValue: FormikProps<Driver>['setFieldValue']
+    setFieldValue: FormikProps<DriverFormValues>['setFieldValue']
   ) => {
     const selectedLocationId = event.target.value;
     setFieldValue('locationID', selectedLocationId);
