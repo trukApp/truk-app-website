@@ -126,7 +126,7 @@ export const apiSlice = createApi({
       providesTags: [{ type: "DRIVERS", id: "LIST" }],
     }),
 
-        //  location master
+    //  location master
     getLocationMaster: builder.query({
       query: () => ({
         url: "masLoc/all-locations",
@@ -230,8 +230,6 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: [{ type: "PackageMaster", id: "LIST" }],
     }),
-
-
 
   }),
 });
