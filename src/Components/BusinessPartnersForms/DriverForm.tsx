@@ -12,6 +12,7 @@ import { GridColDef } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
+
 interface DriverFormValues {
   driverName: string;
   locationID: string;
@@ -39,7 +40,7 @@ interface Driver {
   location_city: string;
   location_country: string;
   location_state: string;
-  vehicle_types: string[];
+  vehicle_types: [];
   logged_in: number;
   driver_id: number;
   location_pincode: string;
@@ -349,19 +350,6 @@ const DriverForm: React.FC = () => {
                       helperText={touched.driverName && errors.driverName}
                     />
                   </Grid>
-                  {/* <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth size='small'
-                      label="Location ID"
-                      name="locationID"
-                      value={values.locationID}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      error={touched.locationID && Boolean(errors.locationID)}
-                      helperText={touched.locationID && errors.locationID}
-                    />
-                  </Grid> */}
-
                   <Grid item xs={12} sm={6} md={2.4}>
                     <FormControl fullWidth size="small" error={touched.locationID && Boolean(errors.locationID)}>
                       <InputLabel>Location ID</InputLabel>
@@ -385,18 +373,6 @@ const DriverForm: React.FC = () => {
                       )}
                     </FormControl>
                   </Grid>
-                  {/* <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth size='small'
-                      label="Address"
-                      name="address"
-                      value={values.address}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      error={touched.address && Boolean(errors.address)}
-                      helperText={touched.address && errors.address}
-                    />
-                  </Grid> */}
 
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
