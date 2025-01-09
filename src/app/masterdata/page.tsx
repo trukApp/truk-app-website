@@ -10,7 +10,7 @@ import Lanes from "@/Components/MasterDataComponents/Lanes";
 import DeviceMaster from "@/Components/MasterDataComponents/DeviceMaster";
 
 const MasterData: React.FC = () => {
-  const [selectedTab, setSelectedTab] = useState<string>("Vehicles");
+  const [selectedTab, setSelectedTab] = useState<string>("Locations");
 
   const handleChange = (event: React.SyntheticEvent, newValue: string) => {
     setSelectedTab(newValue);

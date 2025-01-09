@@ -23,12 +23,13 @@ import styles from './MasterData.module.css'
 import { useDeleteVehicleMasterMutation, useEditVehicleMasterMutation, useGetVehicleMasterQuery, usePostVehicleMasterMutation } from '@/api/apiSlice';
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import MassUpload from '../MassUpload';
 
 const weightUnits = ["tonn","kg", "g"] 
 const lengthUnits = ['m', 'cm', 'mm', ]
 const volumnUnits = ['m^3', 'cm^3' , 'mm^3' ]
 
-interface FormValues {
+export interface VehicleFormValues {
   id: string;
   locationId: string;
   timeZone: string;
@@ -204,7 +205,7 @@ const validationSchema = Yup.object({
 
 const VehicleForm: React.FC = () => {
     const [isEditing, setIsEditing] = useState(false);
-    const [editRow,setEditRow] = useState<FormValues | null>(null); ;
+    const [editRow,setEditRow] = useState<VehicleFormValues | null>(null); ;
   const { data, error } = useGetVehicleMasterQuery([])
   const [postVehicle] = usePostVehicleMasterMutation()
   const [editVehicle] = useEditVehicleMasterMutation()
@@ -342,7 +343,7 @@ const VehicleForm: React.FC = () => {
     // locationId: vehicle.loc_ID,
      locationId: vehicle.location_id,
     timeZone: vehicle.time_zone,
-    unlimitedUsage: vehicle.unlimited_usage,
+    unlimitedUsage: vehicle?.unlimited_usage  ,
     individualResources: vehicle.individual_resource,
     validityFrom: vehicle.transportation_details.validity_from,
     validityTo: vehicle.transportation_details.validity_to,
@@ -437,7 +438,7 @@ const VehicleForm: React.FC = () => {
 
   
 
-  const handleSubmit = async (values: FormValues) => {
+  const handleSubmit = async (values: VehicleFormValues) => {
     console.log("Form submitted with values:", values);
 
             try {
@@ -549,7 +550,7 @@ const VehicleForm: React.FC = () => {
         }
   };
 
-      const handleEdit = (row: FormValues) => {
+      const handleEdit = (row: VehicleFormValues) => {
     console.log("Edit row:", row);
     setShowForm(true)
     setIsEditing(true)
@@ -585,17 +586,19 @@ const handleDelete = async (row: VehicleDetails) => {
         <Typography align="center" sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md: '24px' } }} gutterBottom>
           Vehicle master
         </Typography>
-        <Box display="flex" justifyContent="flex-end" >
-          <Button
-            variant="contained"
-            onClick={() => setShowForm((prev) => !prev)}
-            className={styles.createButton}
-          >
-            Create Vehicle
-            {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 4 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 4 }} />}
-          </Button>
+        <Box display="flex" justifyContent="flex-end">
+            <Box  >
+            <Button
+              variant="contained"
+              onClick={() => setShowForm((prev) => !prev)}
+              className={styles.createButton}
+            >
+              Create Vehicle
+              {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 4 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 4 }} />}
+            </Button>
+          </Box>
+          <MassUpload arrayKey="vehicles"/>
         </Box>
-
         <Collapse in={showForm}>
           <Box marginBottom={4} padding={2} border="1px solid #ccc" borderRadius={2}>
             <Formik

@@ -27,9 +27,10 @@ import { withAuthComponent } from '../WithAuthComponent';
 import { useGetLocationMasterQuery, usePostLocationMasterMutation,useEditLocationMasterMutation ,useDeleteLocationMasterMutation } from '@/api/apiSlice';
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import MassUpload from '../MassUpload';
 
 // Define the type for each location object returned by the backend
-interface Location {
+export interface Location {
   location_id: number;
   loc_ID: string;
   loc_desc: string;
@@ -89,10 +90,12 @@ const Locations: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editRow,setEditRow] = useState<DataGridRow | null>(null); ;
-  const { data, error, isLoading } = useGetLocationMasterQuery([])
+  const { data, error, isLoading } = useGetLocationMasterQuery([]);
   const [postLocation] = usePostLocationMasterMutation();
   const [editLocation] = useEditLocationMasterMutation();
   const [deleteLocation] = useDeleteLocationMasterMutation()
+
+
   console.log("all locations :", data?.locations)
   if (isLoading) {
     console.log("Loading locations...");
@@ -325,8 +328,8 @@ const handleDelete = async (row: DataGridRow) => {
         <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md: '24px' } }} align="center" gutterBottom>
           Location master
         </Typography>
-
-        <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
+        <Box display="flex" justifyContent="flex-end">
+          <Box  gap={2}>
           <Button
             variant="contained"
             onClick={() => setShowForm((prev) => !prev)}
@@ -336,6 +339,9 @@ const handleDelete = async (row: DataGridRow) => {
             {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 4 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 4 }} />}
           </Button>
         </Box>
+          <MassUpload arrayKey="locations"/>
+        </Box>
+
 
         <Collapse in={showForm}>
 
