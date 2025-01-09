@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TextField, Grid, Button, Collapse, Box, FormControlLabel, Checkbox, Select, MenuItem, FormHelperText, FormControl, InputLabel, SelectChangeEvent } from '@mui/material';
+import { TextField, Grid, Button, Collapse, Box, FormControlLabel, Checkbox, Select, MenuItem, FormHelperText, FormControl, InputLabel, SelectChangeEvent, Autocomplete } from '@mui/material';
 import { Formik, Form, FormikProps } from 'formik';
 import * as Yup from 'yup';
 import styles from './BusinessPartners.module.css';
@@ -533,7 +533,7 @@ const CustomerForm: React.FC = () => {
                                 </Grid>
 
                                 <h3 className={styles.mainHeading}>Partner Functions</h3>
-                                <Grid container spacing={2} style={{ marginBottom: '30px' }}>
+                                {/* <Grid container spacing={2} style={{ marginBottom: '30px' }}>
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
@@ -570,6 +570,32 @@ const CustomerForm: React.FC = () => {
                                             helperText={touched.billToParty && errors.billToParty}
                                         />
                                     </Grid>
+                                </Grid> */}
+
+
+
+                                <Grid container spacing={2} style={{ marginBottom: '30px' }}>
+                                    {['shipToParty', 'soldToParty', 'billToParty'].map((field) => (
+                                        <Grid item xs={12} sm={6} md={2.4} key={field}>
+                                            <Autocomplete
+                                                options={customersData}
+                                                getOptionLabel={(option) => `${option.customer_id}`}
+                                                renderInput={(params) => (
+                                                    <TextField
+                                                        {...params}
+                                                        label={field.replace(/([A-Z])/g, ' $1')}
+                                                        size="small"
+                                                        onBlur={handleBlur}
+                                                    />
+                                                )}
+                                                value={customersData.find((item: Customer) => item.customer_id === values[field as keyof typeof values]) || null}
+                                                onChange={(event, newValue) => {
+                                                    setFieldValue(field, newValue ? newValue.customer_id : '');
+                                                }}
+                                                isOptionEqualToValue={(option, value) => option.customer_id === value}
+                                            />
+                                        </Grid>
+                                    ))}
                                 </Grid>
                                 {updateRecord ? (
                                     <Box marginTop={3} textAlign="center">
