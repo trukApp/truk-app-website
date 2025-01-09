@@ -275,7 +275,7 @@ const CustomerForm: React.FC = () => {
 
     const handleLocationChange = (
         event: SelectChangeEvent<string>,
-        setFieldValue: FormikProps<any>['setFieldValue']
+        setFieldValue: FormikProps<Customer>['setFieldValue']
     ) => {
         const selectedLocationId = event.target.value;
         setFieldValue('locationId', selectedLocationId);

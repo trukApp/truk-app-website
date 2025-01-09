@@ -67,18 +67,6 @@ const carrierColumns: GridColDef[] = [
     { field: 'locationIds', headerName: 'Locations', flex: 1.5 },
     { field: 'laneIds', headerName: 'Lane IDs', flex: 1.5 },
     { field: 'deviceDetails', headerName: 'Device Details', flex: 2 },
-    {
-        field: 'enrollSpotAuction',
-        headerName: 'Spot Auction',
-        flex: 1,
-        renderCell: (params: any) => params.value ? 'Yes' : 'No'
-    },
-    {
-        field: 'preferredCarrier',
-        headerName: 'Preferred Carrier',
-        flex: 1,
-        renderCell: (params: any) => params.value ? 'Yes' : 'No'
-    },
 ];
 
 const CarrierForm: React.FC = () => {

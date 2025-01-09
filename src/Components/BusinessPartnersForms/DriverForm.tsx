@@ -287,7 +287,7 @@ const DriverForm: React.FC = () => {
 
   const handleLocationChange = (
     event: SelectChangeEvent<string>,
-    setFieldValue: FormikProps<any>['setFieldValue']
+    setFieldValue: FormikProps<Driver>['setFieldValue']
   ) => {
     const selectedLocationId = event.target.value;
     setFieldValue('locationID', selectedLocationId);
