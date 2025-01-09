@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { TextField, Grid, Button, Collapse, Box, FormControlLabel, Checkbox } from '@mui/material';
-import { Formik, Form } from 'formik';
+import { TextField, Grid, Button, Collapse, Box, FormControlLabel, Checkbox, Select, MenuItem, FormHelperText, FormControl, InputLabel, SelectChangeEvent } from '@mui/material';
+import { Formik, Form, FormikProps } from 'formik';
 import * as Yup from 'yup';
 import styles from './BusinessPartners.module.css';
 import { DataGridComponent } from '../GridComponent';
 import { GridColDef } from '@mui/x-data-grid';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { useCustomerRegistrationMutation, useDeleteBusinessPartnerMutation, useEditBusinessPartnerMutation, useGetAllCustomersDataQuery } from '@/api/apiSlice';
+import { useCustomerRegistrationMutation, useDeleteBusinessPartnerMutation, useEditBusinessPartnerMutation, useGetAllCustomersDataQuery, useGetLocationMasterQuery } from '@/api/apiSlice';
 import { withAuthComponent } from '../WithAuthComponent';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -22,8 +22,14 @@ const customerValidationSchema = Yup.object().shape({
         .matches(/^\d{6}$/, 'Pincode must be 6 digits')
         .required('Pincode is required'),
     city: Yup.string().required('City is required'),
-    district: Yup.string().required('District is required'),
+    // district: Yup.string().required('District is required'),
     country: Yup.string().required('Country is required'),
+    contactNumber: Yup.string()
+        .matches(/^\d{10}$/, 'Contact number must be 10 digits')
+        .required('Contact number is required'),
+    emailId: Yup.string()
+        .email('Invalid email address')
+        .required('Email is required'),
 });
 
 
@@ -53,6 +59,23 @@ interface Customer {
     correspondence: Correspondence;
 }
 
+interface Location {
+    city: string;
+    country: string;
+    gln_code: string;
+    iata_code: string;
+    latitude: string;
+    loc_ID: string;
+    loc_desc: string;
+    loc_type: string;
+    location_id: number;
+    longitude: string;
+    pincode: string;
+    state: string;
+    time_zone: string;
+}
+
+
 const initialCustomerValues = {
     name: '',
     locationId: '',
@@ -81,11 +104,16 @@ const CustomerForm: React.FC = () => {
     const [updatePartnerDetails] = useEditBusinessPartnerMutation();
     const [customerRegistration] = useCustomerRegistrationMutation();
     const [deleteBusinessPartner] = useDeleteBusinessPartnerMutation()
-    console.log("updateRecordId: ", updateRecordId)
+    const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery([])
+
     const { data, error, isLoading } = useGetAllCustomersDataQuery({
         partner_type: "customer",
     })
+
+    const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
     console.log("all customers data :", data?.partners)
+    console.log("all locations :", locationsData?.locations)
+    console.log("getLocationsError: ", getLocationsError)
     const customersData = data?.partners.length > 0 ? data?.partners : []
 
     if (isLoading) {
@@ -95,9 +123,6 @@ const CustomerForm: React.FC = () => {
     if (error) {
         console.error("getting error while fetching the customers data:", error);
     }
-    console.log("customersData", customersData)
-
-    console.log("formInitialValues: ", formInitialValues)
 
     const mapRowToInitialValues = (rowData: Customer) => ({
         name: rowData.name || '',
@@ -248,6 +273,35 @@ const CustomerForm: React.FC = () => {
         }
     };
 
+    const handleLocationChange = (
+        event: SelectChangeEvent<string>,
+        setFieldValue: FormikProps<any>['setFieldValue']
+    ) => {
+        const selectedLocationId = event.target.value;
+        setFieldValue('locationId', selectedLocationId);
+        const selectedLocation = getAllLocations.find((loc: Location) => loc.location_id === Number(selectedLocationId));
+        console.log(selectedLocationId)
+        // Check if the selectedLocation exists before calling setFieldValue
+
+        if (selectedLocation) {
+
+            setFieldValue('city', selectedLocation?.city || '');
+            setFieldValue('district', selectedLocation?.district || '');
+            setFieldValue('state', selectedLocation?.state || '');
+            setFieldValue('country', selectedLocation?.country || '');
+            setFieldValue('pincode', selectedLocation?.pincode || '');
+        } else {
+            // Clear fields if no matching location found
+            setFieldValue('locationId', '');
+            setFieldValue('city', '');
+            setFieldValue('district', '');
+            setFieldValue('state', '');
+            setFieldValue('country', '');
+            setFieldValue('pincode', '');
+        }
+    };
+
+
     return (
         <Grid >
             <Box display="flex" justifyContent="flex-end" gap={2}>
@@ -285,7 +339,7 @@ const CustomerForm: React.FC = () => {
                                             helperText={touched.name && errors.name}
                                         />
                                     </Grid>
-                                    <Grid item xs={12} sm={6} md={2.4}>
+                                    {/* <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
                                             label="Location ID"
@@ -296,7 +350,35 @@ const CustomerForm: React.FC = () => {
                                             error={touched.locationId && Boolean(errors.locationId)}
                                             helperText={touched.locationId && errors.locationId}
                                         />
+                                    </Grid> */}
+
+
+                                    <Grid item xs={12} sm={6} md={2.4}>
+                                        <FormControl fullWidth size="small" error={touched.locationId && Boolean(errors.locationId)}>
+                                            <InputLabel>Location ID</InputLabel>
+                                            <Select
+                                                label="Location ID"
+                                                name="locationId"
+                                                value={values.locationId}
+                                                onChange={(event) => handleLocationChange(event, setFieldValue)}
+                                                onBlur={handleBlur}
+                                            >
+                                                {getAllLocations.map((location: Location) => {
+                                                    return (
+                                                        <MenuItem key={location?.location_id} value={location?.location_id}>
+                                                            {location.location_id}
+                                                        </MenuItem>
+                                                    );
+                                                })}
+                                            </Select>
+                                            {touched.locationId && errors.locationId && (
+                                                <FormHelperText>{errors.locationId}</FormHelperText>
+                                            )}
+                                        </FormControl>
                                     </Grid>
+
+
+
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
@@ -321,7 +403,7 @@ const CustomerForm: React.FC = () => {
                                             helperText={touched.city && errors.city}
                                         />
                                     </Grid>
-                                    <Grid item xs={12} sm={6} md={2.4}>
+                                    {/* <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
                                             label="District"
@@ -332,7 +414,7 @@ const CustomerForm: React.FC = () => {
                                             error={touched.district && Boolean(errors.district)}
                                             helperText={touched.district && errors.district}
                                         />
-                                    </Grid>
+                                    </Grid> */}
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
@@ -401,7 +483,7 @@ const CustomerForm: React.FC = () => {
 
                                 <h3 className={styles.mainHeading}>Shipping</h3>
                                 <Grid container spacing={2} style={{ marginBottom: '30px' }}>
-                                    <Grid item xs={12} sm={6} md={2.4}>
+                                    {/* <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
                                             label="Location of Source"
@@ -412,7 +494,31 @@ const CustomerForm: React.FC = () => {
                                             error={touched.locationOfSource && Boolean(errors.locationOfSource)}
                                             helperText={touched.locationOfSource && errors.locationOfSource}
                                         />
+                                    </Grid> */}
+
+
+                                    <Grid item xs={12} sm={6} md={2.4}>
+                                        <FormControl fullWidth size="small" error={touched.locationOfSource && Boolean(errors.locationOfSource)}>
+                                            <InputLabel>Location of Source</InputLabel>
+                                            <Select
+                                                label="Location of Source"
+                                                name="locationOfSource"
+                                                value={values.locationOfSource}
+                                                onChange={(e) => setFieldValue('locationOfSource', e.target.value)}
+                                                onBlur={handleBlur}
+                                            >
+                                                {getAllLocations.map((location: Location) => (
+                                                    <MenuItem key={location.location_id} value={location.location_id}>
+                                                        {location.location_id}
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                            {touched.locationOfSource && errors.locationOfSource && (
+                                                <FormHelperText>{errors.locationOfSource}</FormHelperText>
+                                            )}
+                                        </FormControl>
                                     </Grid>
+
                                     <Grid item xs={12}>
                                         <FormControlLabel
                                             control={
@@ -500,3 +606,4 @@ const CustomerForm: React.FC = () => {
 };
 
 export default withAuthComponent(CustomerForm);
+

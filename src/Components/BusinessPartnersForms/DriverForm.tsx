@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Box, Button, Collapse, Grid, TextField, FormControlLabel, Checkbox, MenuItem } from '@mui/material';
-import { Formik, Form } from 'formik';
+import { Box, Button, Collapse, Grid, TextField, FormControlLabel, Checkbox, MenuItem, SelectChangeEvent, FormControl, InputLabel, Select, FormHelperText } from '@mui/material';
+import { Formik, Form, FormikProps } from 'formik';
 import * as Yup from 'yup';
 import styles from './BusinessPartners.module.css';
 import { DataGridComponent } from '../GridComponent';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { useDriverRegistrationMutation, useGetAllDriversDataQuery, useEditDriverMutation, useDeleteDriverMutation } from '@/api/apiSlice';
+import { useDriverRegistrationMutation, useGetAllDriversDataQuery, useEditDriverMutation, useDeleteDriverMutation, useGetLocationMasterQuery } from '@/api/apiSlice';
 import { withAuthComponent } from '../WithAuthComponent';
 import { GridColDef } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
@@ -55,7 +55,27 @@ interface Driver {
   expiryDate: string;
   vehicleTypes: string;
   emailID: string;
-  loggedIntoApp: boolean
+  loggedIntoApp: boolean;
+  locationPincode: string;
+  locationState: string;
+  locationCity: string;
+  locationCountry: string;
+}
+
+interface Location {
+  city: string;
+  country: string;
+  gln_code: string;
+  iata_code: string;
+  latitude: string;
+  loc_ID: string;
+  loc_desc: string;
+  loc_type: string;
+  location_id: number;
+  longitude: string;
+  pincode: string;
+  state: string;
+  time_zone: string;
 }
 
 const initialDriverValues = {
@@ -68,6 +88,10 @@ const initialDriverValues = {
   emailID: '',
   vehicleTypes: [] as string[],
   loggedIntoApp: false,
+  pincode: '',
+  state: '',
+  city: '',
+  country: '',
 };
 
 const DriverForm: React.FC = () => {
@@ -84,6 +108,11 @@ const DriverForm: React.FC = () => {
   const { data, error, isLoading } = useGetAllDriversDataQuery({})
   console.log("all drivers data :", data?.drivers)
   const driversData = data?.drivers.length > 0 ? data?.drivers : []
+
+  const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery([])
+  const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
+  console.log("all locations :", locationsData?.locations)
+  console.log("getLocationsError: ", getLocationsError)
 
   if (isLoading) {
     console.log("Loading All drivers Data...");
@@ -115,6 +144,10 @@ const DriverForm: React.FC = () => {
     expiryDate: rowData.expiryDate || '',
     emailID: rowData.emailID || '',
     vehicleTypes: [rowData.vehicleTypes],
+    pincode: rowData.locationPincode || '',
+    state: rowData.locationState || '',
+    city: rowData.locationCity || '',
+    country: rowData.locationCountry || '',
     loggedIntoApp: rowData.loggedIntoApp === true,
   });
 
@@ -252,6 +285,33 @@ const DriverForm: React.FC = () => {
     }
   };
 
+  const handleLocationChange = (
+    event: SelectChangeEvent<string>,
+    setFieldValue: FormikProps<any>['setFieldValue']
+  ) => {
+    const selectedLocationId = event.target.value;
+    setFieldValue('locationID', selectedLocationId);
+    const selectedLocation = getAllLocations.find((loc: Location) => loc.location_id === Number(selectedLocationId));
+    console.log(selectedLocationId)
+    // Check if the selectedLocation exists before calling setFieldValue
+
+    if (selectedLocation) {
+
+      setFieldValue('city', selectedLocation?.city || '');
+      setFieldValue('district', selectedLocation?.district || '');
+      setFieldValue('state', selectedLocation?.state || '');
+      setFieldValue('country', selectedLocation?.country || '');
+      setFieldValue('pincode', selectedLocation?.pincode || '');
+    } else {
+      // Clear fields if no matching location found
+      setFieldValue('locationId', '');
+      setFieldValue('city', '');
+      setFieldValue('district', '');
+      setFieldValue('state', '');
+      setFieldValue('country', '');
+      setFieldValue('pincode', '');
+    }
+  };
   return (
     <div className={styles.formsMainContainer}>
       <Box display="flex" justifyContent="flex-end" gap={2}>
@@ -289,7 +349,7 @@ const DriverForm: React.FC = () => {
                       helperText={touched.driverName && errors.driverName}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6} md={2.4}>
+                  {/* <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth size='small'
                       label="Location ID"
@@ -300,8 +360,32 @@ const DriverForm: React.FC = () => {
                       error={touched.locationID && Boolean(errors.locationID)}
                       helperText={touched.locationID && errors.locationID}
                     />
-                  </Grid>
+                  </Grid> */}
+
                   <Grid item xs={12} sm={6} md={2.4}>
+                    <FormControl fullWidth size="small" error={touched.locationID && Boolean(errors.locationID)}>
+                      <InputLabel>Location ID</InputLabel>
+                      <Select
+                        label="Location ID"
+                        name="locationID"
+                        value={values.locationID}
+                        onChange={(event) => handleLocationChange(event, setFieldValue)}
+                        onBlur={handleBlur}
+                      >
+                        {getAllLocations.map((location: Location) => {
+                          return (
+                            <MenuItem key={location?.location_id} value={location?.location_id}>
+                              {location.location_id}
+                            </MenuItem>
+                          );
+                        })}
+                      </Select>
+                      {touched.locationID && errors.locationID && (
+                        <FormHelperText>{errors.locationID}</FormHelperText>
+                      )}
+                    </FormControl>
+                  </Grid>
+                  {/* <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth size='small'
                       label="Address"
@@ -311,6 +395,44 @@ const DriverForm: React.FC = () => {
                       onBlur={handleBlur}
                       error={touched.address && Boolean(errors.address)}
                       helperText={touched.address && errors.address}
+                    />
+                  </Grid> */}
+
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth size='small'
+                      label="Pincode"
+                      name="pincode"
+                      value={values.pincode}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.pincode && Boolean(errors.pincode)}
+                      helperText={touched.pincode && errors.pincode}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth size='small'
+                      label="City"
+                      name="city"
+                      value={values.city}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.city && Boolean(errors.city)}
+                      helperText={touched.city && errors.city}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth size='small'
+                      label="Country"
+                      name="country"
+                      value={values.country}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.country && Boolean(errors.country)}
+                      helperText={touched.country && errors.country}
                     />
                   </Grid>
                 </Grid>
