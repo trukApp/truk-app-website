@@ -1,10 +1,11 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Button,
   Collapse,
   Grid,
+  IconButton,
   MenuItem,
   TextField,
   Typography,
@@ -17,12 +18,163 @@ import { DataGridComponent } from '../GridComponent';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import styles from './MasterData.module.css'
+import { useGetLanesMasterQuery,usePostLaneMasterMutation,useEditLaneMasterMutation,useDeleteLaneMasterMutation } from '@/api/apiSlice';
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { withAuthComponent } from '../WithAuthComponent';
+import MassUpload from '../MassUpload/MassUpload';
 
+interface LaneDetails {
+  // General Data
+  id: string;
+  laneId: string; // Auto-generated
+  sourceLocationId: string;
+  destinationLocationId: string;
+
+  // Transport Data
+  vehicleType: string;
+  transportStartDate: string;
+  transportEndDate: string;
+  transportDistance: string;
+  transportDistanceUnits: string;
+  transportDuration: string;
+  transportDurationUnits: string;
+  transportCost: string;
+  transportCostUnits: string;
+
+  // Carrier Data
+  carrierId: string;
+  carrierName: string;
+  carrierVehicleType: string;
+  carrierStartDate: string;
+  carrierEndDate: string;
+  carrierCost: string;
+}
+
+export interface Lane {
+  des_loc_id: string;
+  src_loc_id: string;
+  des_loc_ID: string;
+  lane_ID: string;
+  src_loc_ID: string;
+  ln_id: string;
+  lane_transport_data: {
+    transport_duration: string;
+    transport_distance: string;
+    transport_cost: string;
+    end_time: string;
+    start_time: string;
+    vehcle_type: string;
+    
+  }
+  
+}
 const TransportationLanes = () => {
-  const [showForm, setShowForm] = useState(false);
+    const [showForm, setShowForm] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editRow,setEditRow] = useState<LaneDetails | null>(null); ;
+  const distanceUnits = ['km', 'm']
+  const durationUnits = ['hour', 'minute', 'seconds']
+  const costUnits = ['INR', 'USD']
+    const { data, error, isLoading } = useGetLanesMasterQuery([]);
+    const [postLane] = usePostLaneMasterMutation();
+    const [editLane] = useEditLaneMasterMutation();
+    const [deleteLane] = useDeleteLaneMasterMutation()
+  
+  console.log("all lanes :", data?.lanes)
+  if (isLoading) {
+    console.log("Loading lanes...");
+  }
+
+  if (error) {
+    console.error("Error fetching lanes:", error);
+    // Handle the error case
+  }
+
+  const handleFormSubmit = async (values: LaneDetails) => {
+    // console.log("form submitted lanes :", values)
+
+        try {
+          const body ={
+            lanes: [
+                      {
+                          src_loc_ID: values.sourceLocationId,
+                          des_loc_ID: values.destinationLocationId,
+                          lane_transport_data: {
+                              vehcle_type: values.vehicleType,
+                              start_time: values.transportStartDate,
+                              end_time: values.transportEndDate,
+                              transport_distance: `${values.transportDistance} ${values.transportDistanceUnits}` ,
+                              transport_duration: `${values.transportDuration} ${values.transportDurationUnits}`  ,
+                              transport_cost: `${values.transportCost} ${values.transportCostUnits}`
+                          }
+                      },
+                  ]
+              }
+              const editBody =   {
+                          src_loc_ID: values.sourceLocationId,
+                          des_loc_ID: values.destinationLocationId,
+                          lane_transport_data: {
+                              vehcle_type: values.vehicleType,
+                              start_time: values.transportStartDate,
+                              end_time: values.transportEndDate,
+                              transport_distance: `${values.transportDistance} ${values.transportDistanceUnits}` ,
+                              transport_duration: `${values.transportDuration} ${values.transportDurationUnits}`  ,
+                              transport_cost: `${values.transportCost} ${values.transportCostUnits}`
+                          }
+                      }
+              console.log("lanes body: ", body)
+              if (isEditing && editRow) {
+                console.log('edit lane body is :', editBody)
+                const laneId = editRow.id
+                const response = await editLane({ body: editBody, laneId }).unwrap()
+                console.log("edit response is ", response)
+                formik.resetForm();
+              }
+              else {
+                console.log("post create lane ",body)
+                  const response = await postLane(body).unwrap();
+                  console.log('response in post lane:', response);
+                  formik.resetForm();
+              }
+          
+        } catch (error) {
+            console.error('API Error:', error);
+        }
+
+  }
+
+  const handleEdit = (row: LaneDetails) => {
+    console.log("Edit row:", row);
+    setShowForm(true)
+    setIsEditing(true)
+    setEditRow(row)
+    };
+
+const handleDelete = async (row: LaneDetails) => {
+    const laneId = row?.id;
+    if (!laneId) {
+        console.error("Row ID is missing");
+        return;
+    }
+    const confirmed = window.confirm("Are you sure you want to delete this item?");
+    if (!confirmed) {
+        console.log("Delete canceled by user.");
+        return;
+    }
+
+    try {
+        const response = await deleteLane(laneId);
+        console.log("Delete response:", response);
+    } catch (error) {
+        console.error("Error deleting lane:", error);
+    }
+};
+
   const formik = useFormik({
     initialValues: {
       // General Data
+      id:'',
       laneId: '', // Auto-generated
       sourceLocationId: '',
       destinationLocationId: '',
@@ -32,8 +184,11 @@ const TransportationLanes = () => {
       transportStartDate: '',
       transportEndDate: '',
       transportDistance: '',
+      transportDistanceUnits:distanceUnits[0],
       transportDuration: '',
+      transportDurationUnits : durationUnits[0],
       transportCost: '',
+      transportCostUnits : costUnits[0],
 
       // Carrier Data
       carrierId: '',
@@ -57,36 +212,74 @@ const TransportationLanes = () => {
       transportCost: Yup.string().required('Transport Cost is required'),
 
       // Carrier Data
-      carrierId: Yup.string().required('Carrier ID is required'),
-      carrierName: Yup.string().required('Carrier Name is required'),
-      carrierVehicleType: Yup.string().required('Vehicle Type is required'),
-      carrierStartDate: Yup.date().required('Start Date is required'),
-      carrierEndDate: Yup.date().required('End Date is required'),
-      carrierCost: Yup.string().required('Carrier Cost is required'),
+      // carrierId: Yup.string().required('Carrier ID is required'),
+      // carrierName: Yup.string().required('Carrier Name is required'),
+      // carrierVehicleType: Yup.string().required('Vehicle Type is required'),
+      // carrierStartDate: Yup.date().required('Start Date is required'),
+      // carrierEndDate: Yup.date().required('End Date is required'),
+      // carrierCost: Yup.string().required('Carrier Cost is required'),
     }),
-    onSubmit: (values) => {
-      console.log('Form Submitted:', values);
-    },
+    onSubmit: handleFormSubmit
   });
 
-  const rows = Array.from({ length: 10 }, (_, id) => ({
-    id,
-    laneId: `LANE-${id + 1}`,
-    sourceLocationId: `SRC-${100 + id}`,
-    destinationLocationId: `DST-${200 + id}`,
-    vehicleType: id % 2 === 0 ? "Truck" : "Van",
-    transportStartDate: "2024-01-10",
-    transportEndDate: "2024-01-15",
-    transportDistance: `${100 + id * 10} km`,
-    transportDuration: `${8 + id} hours`,
-    transportCost: `$${1000 + id * 50}`,
-    carrierId: `CARRIER-${id + 1}`,
-    carrierName: `Carrier ${id + 1}`,
-    carrierVehicleType: id % 2 === 0 ? "Heavy Duty" : "Light Duty",
-    carrierStartDate: "2024-01-11",
-    carrierEndDate: "2024-01-14",
-    carrierCost: `$${800 + id * 40}`,
-  }));
+useEffect(() => {
+  if (editRow) {
+          const editDistance = editRow.transportDistance.split(" ")
+      const editDuration = editRow?.transportDuration.split(" ")
+      const editCost = editRow.transportCost.split(" ");
+    formik.setValues({
+      id: editRow.id || '',
+      laneId: editRow.laneId || '',
+      sourceLocationId: editRow.sourceLocationId || '',
+      destinationLocationId: editRow.destinationLocationId || '',
+
+      // Transport Data
+      vehicleType: editRow.vehicleType || '',
+      transportStartDate: editRow.transportStartDate || '',
+      transportEndDate: editRow.transportEndDate || '',
+      transportDistance: editDistance[0] ,
+      transportDistanceUnits: editDistance[1],
+      transportDuration: editDuration[0] || '',
+      transportDurationUnits: editDuration[1] ,
+      transportCost: editCost[0] || '',
+      transportCostUnits: editCost[1],
+
+      // Carrier Data
+      carrierId: editRow.carrierId || '',
+      carrierName: editRow.carrierName || '',
+      carrierVehicleType: editRow.carrierVehicleType || '',
+      carrierStartDate: editRow.carrierStartDate || '',
+      carrierEndDate: editRow.carrierEndDate || '',
+      carrierCost: editRow.carrierCost || '',
+    });
+  }
+}, [editRow]);
+
+const rows = data?.lanes.map((lane:Lane) => ({
+  id: lane?.ln_id,
+  laneId: lane?.lane_ID,
+  // sourceLocationId: lane?.src_loc_ID,
+  // destinationLocationId: lane?.des_loc_ID,
+  sourceLocationId: lane?.src_loc_ID,
+  destinationLocationId: lane?.des_loc_ID,
+  vehicleType: lane.lane_transport_data?.vehcle_type || "Unknown",
+  transportStartDate: lane?.lane_transport_data?.start_time || "N/A",
+  transportEndDate: lane?.lane_transport_data?.end_time || "N/A",
+  transportDistance: lane?.lane_transport_data?.transport_distance
+    ? `${lane.lane_transport_data.transport_distance}`
+    : "N/A",
+  transportDuration: lane?.lane_transport_data?.transport_duration || "N/A",
+  transportCost: lane?.lane_transport_data?.transport_cost
+    ? `${lane?.lane_transport_data?.transport_cost}`
+    : "N/A",
+  // carrierId: `CARRIER-${id + 1}`,
+  // carrierName: `Carrier ${id + 1}`,
+  // carrierVehicleType: lane.lane_transport_data?.vehcle_type || "N/A",
+  // carrierStartDate: lane.lane_transport_data?.start_time || "N/A",
+  // carrierEndDate: lane.lane_transport_data?.end_time || "N/A",
+  // carrierCost: `$${800 + id * 40}`,
+}));
+
 
   const columns: GridColDef[] = [
     { field: "laneId", headerName: "Lane ID", width: 150 },
@@ -98,12 +291,33 @@ const TransportationLanes = () => {
     { field: "transportDistance", headerName: "Transport Distance", width: 160 },
     { field: "transportDuration", headerName: "Transport Duration", width: 160 },
     { field: "transportCost", headerName: "Transport Cost", width: 150 },
-    { field: "carrierId", headerName: "Carrier ID", width: 150 },
-    { field: "carrierName", headerName: "Carrier Name", width: 180 },
-    { field: "carrierVehicleType", headerName: "Carrier Vehicle Type", width: 180 },
-    { field: "carrierStartDate", headerName: "Carrier Start Date", width: 180 },
-    { field: "carrierEndDate", headerName: "Carrier End Date", width: 180 },
-    { field: "carrierCost", headerName: "Carrier Cost", width: 150 },
+    // { field: "carrierId", headerName: "Carrier ID", width: 150 },
+    // { field: "carrierName", headerName: "Carrier Name", width: 180 },
+    // { field: "carrierVehicleType", headerName: "Carrier Vehicle Type", width: 180 },
+    // { field: "carrierStartDate", headerName: "Carrier Start Date", width: 180 },
+    // { field: "carrierEndDate", headerName: "Carrier End Date", width: 180 },
+    // { field: "carrierCost", headerName: "Carrier Cost", width: 150 },
+        {
+      field: "actions",
+      headerName: "Actions",
+      width: 200,
+      renderCell: (params) => (
+        <div>
+          <IconButton
+            color="primary"
+            onClick={() => handleEdit(params.row)}
+          >
+            <EditIcon />
+          </IconButton>
+          <IconButton
+            color="error"
+            onClick={() => handleDelete(params.row)}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </div>
+      ),
+    },
   ];
 
   return (
@@ -121,12 +335,12 @@ const TransportationLanes = () => {
           {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 8 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 8 }} />}
         </Button>
       </Box>
+      <MassUpload arrayKey="lanes"/>
 
 
       <Collapse in={showForm}>
         <Box marginBottom={4} padding={2} border="1px solid #ccc" borderRadius={2}>
           <form onSubmit={formik.handleSubmit}>
-            <Box  >
               {/* General Data */}
               <Box sx={{ marginBottom: 3 }}>
                 <h3>1. General Data</h3>
@@ -240,7 +454,7 @@ const TransportationLanes = () => {
                       InputLabelProps={{ shrink: true }}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6} md={2.4}>
+                  {/* <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth
                       id="transportDistance"
@@ -252,21 +466,71 @@ const TransportationLanes = () => {
                       helperText={formik.touched.transportDistance && formik.errors.transportDistance}
                       size="small"
                     />
+                  </Grid> */}
+                  <Grid item xs={12} sm={6} md={1.6}>
+                                          <TextField
+                                            fullWidth
+                                            id="transportDistance"
+                                            name="transportDistance"
+                                            label="Transport Distance* "
+                                            type="number"
+                                            value={formik.values.transportDistance}
+                                            onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                            error={formik.touched.transportDistance && Boolean(formik.errors.transportDistance)}
+                                            helperText={formik.touched.transportDistance && formik.errors.transportDistance}
+                                            size="small"
+                                          />
                   </Grid>
-                  <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth
-                      id="transportDuration"
-                      name="transportDuration"
-                      label="Transport Duration* (UoM)"
-                      value={formik.values.transportDuration}
-                      onChange={formik.handleChange}
-                      error={formik.touched.transportDuration && Boolean(formik.errors.transportDuration)}
-                      helperText={formik.touched.transportDuration && formik.errors.transportDuration}
-                      size="small"
-                    />
+                  <Grid item xs={12} sm={6} md={0.8}>
+                                          <TextField
+                                            fullWidth name="transportDistanceUnits"
+                                            select onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                            value={formik.values.transportDistanceUnits}
+                                            size="small"
+                                          >
+                                            {distanceUnits.map((unit) => (
+                                              <MenuItem key={unit} value={unit}>
+                                                {unit}
+                                              </MenuItem>
+                                            ))}
+                                          </TextField>
                   </Grid>
-                  <Grid item xs={12} sm={6} md={2.4}>
+
+
+                    <Grid item xs={12} sm={6} md={1.6}>
+                                          <TextField
+                                            fullWidth
+                                            id="transportDuration"
+                                            name="transportDuration"
+                                            label="Transport Duration* "
+                                            type="number"
+                                            value={formik.values.transportDuration}
+                                            onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                            error={formik.touched.transportDuration && Boolean(formik.errors.transportDuration)}
+                                            helperText={formik.touched.transportDuration && formik.errors.transportDuration}
+                                            size="small"
+                                          />
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={0.8}>
+                                          <TextField
+                                            fullWidth name="transportDurationUnits"
+                                            select onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                            value={formik.values.transportDurationUnits}
+                                            size="small"
+                                          >
+                                            {durationUnits.map((unit) => (
+                                              <MenuItem key={unit} value={unit}>
+                                                {unit}
+                                              </MenuItem>
+                                            ))}
+                                          </TextField>
+                    </Grid>
+
+                  {/* <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth
                       id="transportCost"
@@ -278,12 +542,45 @@ const TransportationLanes = () => {
                       helperText={formik.touched.transportCost && formik.errors.transportCost}
                       size="small"
                     />
-                  </Grid>
+                  </Grid> */}
+
+                    <Grid item xs={12} sm={6} md={1.6}>
+                                          <TextField
+                                            fullWidth
+                                            id="transportCost"
+                                            name="transportCost"
+                                            label="Transport Cost* "
+                                            type="number"
+                                            value={formik.values.transportCost}
+                                            onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                            error={formik.touched.transportCost && Boolean(formik.errors.transportCost)}
+                                            helperText={formik.touched.transportCost && formik.errors.transportCost}
+                                            size="small"
+                                          />
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={0.8}>
+                                          <TextField
+                                            fullWidth name="transportCostUnits"
+                                            select onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                            value={formik.values.transportCostUnits}
+                                            size="small"
+                                          >
+                                            {costUnits.map((unit) => (
+                                              <MenuItem key={unit} value={unit}>
+                                                {unit}
+                                              </MenuItem>
+                                            ))}
+                                          </TextField>
+                    </Grid>
+
                 </Grid>
               </Box>
 
               {/* Carrier Data */}
-              <Box sx={{ marginBottom: 3 }}>
+
+              {/* <Box sx={{ marginBottom: 3 }}>
                 <h3>3. Carrier Data</h3>
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6} md={2.4}>
@@ -371,15 +668,15 @@ const TransportationLanes = () => {
                     />
                   </Grid>
                 </Grid>
-              </Box>
+              </Box> */}
 
               {/* Submit Button */}
               <Box sx={{ textAlign: 'center', marginTop: 3 }}>
                 <Button type="submit" variant="contained" color="primary">
-                  Submit
+                   {isEditing ? "Update lane": "Create lane"}
                 </Button>
               </Box>
-            </Box>
+      
           </form>
         </Box>
       </Collapse>
@@ -400,4 +697,6 @@ const TransportationLanes = () => {
   );
 };
 
-export default TransportationLanes;
+export default withAuthComponent(TransportationLanes);
+
+

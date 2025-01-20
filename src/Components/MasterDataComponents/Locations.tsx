@@ -27,7 +27,7 @@ import { withAuthComponent } from '../WithAuthComponent';
 import { useGetLocationMasterQuery, usePostLocationMasterMutation,useEditLocationMasterMutation ,useDeleteLocationMasterMutation } from '@/api/apiSlice';
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import MassUpload from '../MassUpload';
+import MassUpload from '../MassUpload/MassUpload';
 
 // Define the type for each location object returned by the backend
 export interface Location {
@@ -39,7 +39,7 @@ export interface Location {
   iata_code?: string;
   longitude: string;
   latitude: string;
-  timezone?: string;
+  time_zone?: string;
   city?: string;
   district?: string;
   state?: string;
@@ -155,13 +155,16 @@ const Locations: React.FC = () => {
                 console.log('edit body is :', editBody)
                 const locationId = editRow.id
                 const response = await editLocation({body:editBody, locationId}).unwrap()
-                console.log("edit response is ",response)
+                console.log("edit response is ", response)
+                formik.resetForm()
+                setShowForm(false)
               }
               else {
                 console.log("post create location ",body)
                   const response = await postLocation(body).unwrap();
                   console.log('response in post location:', response);
-                  resetForm();
+                formik.resetForm();
+                setShowForm(false)
               }
           
         } catch (error) {
@@ -263,7 +266,7 @@ const handleDelete = async (row: DataGridRow) => {
     iataCode: location.iata_code || `IATA-${200 + index}`,
     longitude: location.longitude,
     latitude: location.latitude,
-    timeZone: location.timezone || "UTC+05:30",
+    timeZone: location.time_zone || "UTC+05:30",
     city: location.city || `City-${index + 1}`,
     district: location.district || `District-${index + 1}`,
     state: location.state || `State-${index + 1}`,
@@ -695,7 +698,3 @@ const handleDelete = async (row: DataGridRow) => {
 };
 
 export default withAuthComponent(Locations);
-function resetForm() {
-  throw new Error('Function not implemented.');
-}
-

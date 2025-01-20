@@ -23,7 +23,7 @@ import styles from './MasterData.module.css'
 import { useDeleteVehicleMasterMutation, useEditVehicleMasterMutation, useGetVehicleMasterQuery, usePostVehicleMasterMutation } from '@/api/apiSlice';
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import MassUpload from '../MassUpload';
+import MassUpload from '../MassUpload/MassUpload';
 
 const weightUnits = ["tonn","kg", "g"] 
 const lengthUnits = ['m', 'cm', 'mm', ]
@@ -133,7 +133,7 @@ interface TransportationDetails {
   vehicle_type: string;
 }
 
-interface VehicleDetails {
+export interface VehicleDetails {
   time_zone: string;
   id: string;
   additional_details: AdditionalDetails;
@@ -341,7 +341,7 @@ const VehicleForm: React.FC = () => {
     id: vehicle?.veh_id,
     vehicleId : vehicle.vehicle_ID,
     // locationId: vehicle.loc_ID,
-     locationId: vehicle.location_id,
+     locationId: vehicle.loc_ID,
     timeZone: vehicle.time_zone,
     unlimitedUsage: vehicle?.unlimited_usage  ,
     individualResources: vehicle.individual_resource,
@@ -445,7 +445,7 @@ const VehicleForm: React.FC = () => {
             const body = {
                 vehicles: [
                     {
-                      location_id:  values.locationId,
+                      loc_ID:  values.locationId,
                       unlimited_usage: values.unlimitedUsage,
                       individual_resource: values.individualResources  ,
                       transportation_details: {
@@ -487,8 +487,8 @@ const VehicleForm: React.FC = () => {
                     }
                 ]
               }
-              const editBody =                     {
-                      location_id:  values.locationId,
+              const editBody = {
+                      loc_ID:  values.locationId,
                       unlimited_usage: values.unlimitedUsage,
                       individual_resource: values.individualResources  ,
                       transportation_details: {
@@ -617,7 +617,7 @@ const handleDelete = async (row: VehicleDetails) => {
                       <Grid item xs={12} sm={6} md={2.4}>
                         <TextField
                           fullWidth
-                          label="Location ID (1, 2, ..)"
+                          label="Location ID"
                           name="locationId"
                           value={values.locationId}
                           onChange={handleChange}

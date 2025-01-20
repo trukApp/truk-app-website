@@ -80,7 +80,7 @@ const PackagingForm = () => {
                 setShowForm(false)
                 formik.resetForm()
                 console.log('response in post location:', response);
-                 
+
               }
           
         } catch (error) {
@@ -168,7 +168,7 @@ const rows = data?.packages.map((packageItem :Package) => ({
     { field: "packagingDimensionsUoM", headerName: "Dimensions UoM", width: 200 },
     { field: "packagingDimensions", headerName: "Dimensions", width: 300 },
     { field: "handlingUnitType", headerName: "Handling Unit Type", width: 200 },
-          {
+    {
       field: "actions",
       headerName: "Actions",
       width: 100,

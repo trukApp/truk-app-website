@@ -35,7 +35,7 @@ interface User {
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery,
-  tagTypes: ["LocationMaster", "VehicleMaster", "PARTNERS", "DRIVERS","PackageMaster"],
+  tagTypes: ["PARTNERS", "DRIVERS", "CARRIER", "LocationMaster", "VehicleMaster", "PackageMaster", "LaneMaster", "DeviceMaster"],
   endpoints: (builder) => ({
     userLogin: builder.mutation<User, { phone: string; password: string }>({
       query: (body) => ({
@@ -74,7 +74,7 @@ export const apiSlice = createApi({
 
     getAllCustomersData: builder.query({
       query: (params) => ({
-        url: "business/get-partners",
+        url: "business/business-partners",
         method: "GET",
         params,
       }),
@@ -83,7 +83,7 @@ export const apiSlice = createApi({
 
     getAllVendorsData: builder.query({
       query: (params) => ({
-        url: "business/get-partners",
+        url: "business/business-partners",
         method: "GET",
         params,
       }),
@@ -125,6 +125,42 @@ export const apiSlice = createApi({
       }),
       providesTags: [{ type: "DRIVERS", id: "LIST" }],
     }),
+
+    //  carrier master
+    getCarrierMaster: builder.query({
+      query: () => ({
+        url: "carrier/all-carriers",
+        method: "GET",
+      }),
+      providesTags: [{ type: "CARRIER", id: "LIST" }],
+    }),
+
+    postCarrierMaster: builder.mutation({
+      query: (body) => ({
+        url: "carrier/create-carriers",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "CARRIER", id: "LIST" }],
+    }),
+
+    editCarrierMaster: builder.mutation({
+      query: ({ body, carrierId }) => ({
+        url: `carrier/edit-carrier?cr_id=${carrierId}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: [{ type: "CARRIER", id: "LIST" }],
+    }),
+
+    deleteCarrierMaster: builder.mutation({
+      query: (carrierId) => ({
+        url: `carrier/delete-carrier?cr_id=${carrierId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [{ type: "CARRIER", id: "LIST" }],
+    }),
+
 
     //  location master
     getLocationMaster: builder.query({
@@ -231,6 +267,76 @@ export const apiSlice = createApi({
       invalidatesTags: [{ type: "PackageMaster", id: "LIST" }],
     }),
 
+    // Lanes master
+    getLanesMaster: builder.query({
+      query: () => ({
+        url: "lane/all-lanes",
+        method: "GET",
+      }),
+      providesTags: [{ type: "LaneMaster", id: "LIST" }],
+    }),
+
+    postLaneMaster: builder.mutation({
+      query: (body) => ({
+        url: "lane/create-lanes",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "LaneMaster", id: "LIST" }],
+    }),
+
+    editLaneMaster: builder.mutation({
+      query: ({ body, laneId }) => ({
+        url: `lane/edit-lane?ln_id=${laneId}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: [{ type: "LaneMaster", id: "LIST" }],
+    }),
+
+    deleteLaneMaster: builder.mutation({
+      query: (laneId) => ({
+        url: `lane/delete-lane?ln_id=${laneId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [{ type: "LaneMaster", id: "LIST" }],
+    }),
+
+        // Device master
+    getDeviceMaster: builder.query({
+      query: () => ({
+        url: "device/all-devices",
+        method: "GET",
+      }),
+      providesTags: [{ type: "DeviceMaster", id: "LIST" }],
+    }),
+
+    postDeviceMaster: builder.mutation({
+      query: (body) => ({
+        url: "device/add-devices",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "DeviceMaster", id: "LIST" }],
+    }),
+
+    editDeviceMaster: builder.mutation({
+      query: ({ body, deviceId }) => ({
+        url: `device/edit-device?device_id=${deviceId}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: [{ type: "DeviceMaster", id: "LIST" }],
+    }),
+
+    deleteDeviceMaster: builder.mutation({
+      query: (deviceId) => ({
+        url: `device/delete-device?device_id=${deviceId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [{ type: "DeviceMaster", id: "LIST" }],
+    }),
+
   }),
 });
 
@@ -245,6 +351,10 @@ export const {
   useDeleteBusinessPartnerMutation,
   useEditDriverMutation,
   useDeleteDriverMutation,
+  useGetCarrierMasterQuery,
+  usePostCarrierMasterMutation,
+  useEditCarrierMasterMutation,
+  useDeleteCarrierMasterMutation,
   
   useGetLocationMasterQuery,
   usePostLocationMasterMutation,
@@ -258,6 +368,14 @@ export const {
   usePostPackageMasterMutation,
   useEditPackageMasterMutation,
   useDeletePackageMasterMutation,
+  useGetLanesMasterQuery,
+  usePostLaneMasterMutation,
+  useEditLaneMasterMutation,
+  useDeleteLaneMasterMutation,
+  useGetDeviceMasterQuery,
+  usePostDeviceMasterMutation,
+  useEditDeviceMasterMutation,
+  useDeleteDeviceMasterMutation,
   
 
 } = apiSlice;

@@ -13,7 +13,7 @@ import CarriersForm from '@/Components/BusinessPartnersForms/CarriersForm';
 import AgentForm from '@/Components/BusinessPartnersForms/AgentForm';
 
 const BusinessPartnersPage: React.FC = () => {
-    const [businessPartnerType, setBusinessPartnerType] = useState('customers');
+    const [businessPartnerType, setBusinessPartnerType] = useState('carriers');
 
     const handleDropdownChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setBusinessPartnerType(event.target.value);

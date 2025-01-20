@@ -1,5 +1,13 @@
-import React, { useState } from 'react';
-import { Box, Button, Collapse, Grid, TextField, Checkbox, FormControlLabel } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import {
+    Box, Button, Collapse, Grid, TextField, IconButton,
+    FormControl,
+    MenuItem,
+    Select,
+    FormHelperText,
+    InputLabel,
+    // Checkbox, FormControlLabel,
+} from '@mui/material';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import styles from './BusinessPartners.module.css';
@@ -7,56 +15,216 @@ import { DataGridComponent } from '../GridComponent';
 import { GridColDef } from '@mui/x-data-grid';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import { useGetCarrierMasterQuery,usePostCarrierMasterMutation,useEditCarrierMasterMutation,useDeleteCarrierMasterMutation, useGetLocationMasterQuery, useGetLanesMasterQuery } from '@/api/apiSlice';
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { withAuthComponent } from '../WithAuthComponent';
 
-const dummyCarrierData = [
-    {
-        id: 1,
-        carrierId: 'C001',
-        name: 'Fast Logistics',
-        address: '123 Main Street, Springfield',
-        contactPerson: 'John Doe',
-        contactNumber: '123-456-7890',
-        emailId: 'johndoe@fastlogistics.com',
-        vehicleTypes: 'Trucks, Vans',
-        locationIds: 'LOC001, LOC002',
-        laneIds: 'LANE001, LANE002',
-        deviceDetails: 'GPS Tracker, IoT Sensors',
-        enrollSpotAuction: true,
-        preferredCarrier: false,
-    },
-    {
-        id: 2,
-        carrierId: 'C002',
-        name: 'Express Movers',
-        address: '456 Elm Street, Metropolis',
-        contactPerson: 'Jane Smith',
-        contactNumber: '987-654-3210',
-        emailId: 'janesmith@expressmovers.com',
-        vehicleTypes: 'Cargo Trucks, Trailers',
-        locationIds: 'LOC003, LOC004',
-        laneIds: 'LANE003, LANE004',
-        deviceDetails: 'Fleet Management System',
+interface Location {
+    loc_ID: string;
+}
+interface CarrierFormFE  {
+    id: string;
+        carrierId: string,
+        name: string,
+        address: string,
+        contactPerson: string,
+        contactNumber: string,
+        emailId: string,
+        vehicleTypes: string[],
+        locationIds: string[],
+        laneIds: string[],
+        deviceDetails: string,
+        enrollSpotAuction: boolean,
+        preferredCarrier: boolean,
+};
+interface CarrierFormBE { 
+    carrier_loc_of_operation: string[];
+    carrier_lanes: string[];
+    vehicle_types_handling: string[];
+    carrier_correspondence: {
+        name: string;
+        email: string;
+        phone: string;
+    };
+    carrier_address: string;
+    carrier_name: string;
+    carrier_ID: string;
+    cr_id: string;
+        
+    }
+
+const CarrierForm: React.FC = () => {
+    const [showForm, setShowForm] = useState(false);
+          const [isEditing, setIsEditing] = useState(false);
+      const [editRow,setEditRow] = useState<CarrierFormFE | null>(null); ;
+      const { data, error } = useGetCarrierMasterQuery([])
+      const [postCarrier] = usePostCarrierMasterMutation()
+      const [editCarrier] = useEditCarrierMasterMutation()
+    const [deleteCarrier] = useDeleteCarrierMasterMutation()
+    const { data: locationsData, } = useGetLocationMasterQuery([])
+     const { data:lanesData } = useGetLanesMasterQuery([]);
+    
+    
+    const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
+    const getAllLanes = lanesData?.lanes.length > 0 ? lanesData?.lanes : []
+    console.log("get all lanes :", getAllLanes)
+     console.log('carrier data :', data?.carriers)
+  if (error) {
+    console.log("err while getting carrier info :", error)
+    }
+
+
+
+    
+const vehicleTypeOptions = ['Truck', 'Van', 'Container', 'Trailer'];
+  const handleEdit = (row: CarrierFormFE) => {
+    console.log("Edit row:", row);
+    setShowForm(true)
+    setIsEditing(true)
+    setEditRow(row)
+    };
+
+const handleDelete = async (row: CarrierFormFE) => {
+  const packageId = row?.id;
+  if (!packageId) {
+    console.error("Row ID is missing");
+    return;
+  }
+  const confirmed = window.confirm("Are you sure you want to delete this vehicle?");
+  
+  if (!confirmed) {
+    console.log("Delete canceled by user.");
+    return;
+  }
+
+  try {
+    const response = await deleteCarrier(packageId);
+    console.log("Delete response:", response);
+  } catch (error) {
+    console.error("Error deleting vehicle:", error);
+  }
+};
+    const initialCarrierValues = {
+        id:'',
+        carrierId: '',
+        name: '',
+        address: '',
+        contactPerson: '',
+        contactNumber: '',
+        emailId: '',
+        vehicleTypes: [] as string[],
+        locationIds: [] as string[],
+        laneIds: [] as string[],
+        deviceDetails: '',
         enrollSpotAuction: false,
-        preferredCarrier: true,
-    },
-    {
-        id: 3,
-        carrierId: 'C003',
-        name: 'Prime Carriers',
-        address: '789 Oak Avenue, Gotham',
-        contactPerson: 'Alice Johnson',
-        contactNumber: '555-123-4567',
-        emailId: 'alicejohnson@primecarriers.com',
-        vehicleTypes: 'Refrigerated Trucks, Flatbeds',
-        locationIds: 'LOC005, LOC006',
-        laneIds: 'LANE005, LANE006',
-        deviceDetails: 'Temperature Monitors, Dash Cams',
-        enrollSpotAuction: true,
-        preferredCarrier: true,
-    },
-];
+        preferredCarrier: false,
+    };
+    const [initialValues, setInitialValues] = useState(initialCarrierValues)
+    console.log("edit row :", editRow)
+        useEffect(() => {
+            if (editRow) {
+                setInitialValues(() => ({
+                    id: editRow?.id || '',
+                    carrierId: editRow?.carrierId || '',
+                    name: editRow?.name || '',
+                    address: editRow?.address || '',
+                    contactPerson: editRow?.contactPerson || '',
+                    contactNumber: editRow?.contactNumber || '',
+                    emailId: editRow?.emailId || '',
+                    vehicleTypes: editRow?.vehicleTypes || [],
+                    locationIds: editRow?.locationIds || [],
+                    laneIds: editRow?.laneIds || [],
+                    deviceDetails: editRow?.deviceDetails || '',
+                    enrollSpotAuction: editRow?.enrollSpotAuction || false,
+                    preferredCarrier: editRow?.preferredCarrier || false,
+                }))
+    }
+}, [editRow]);
 
-const carrierColumns: GridColDef[] = [
+    const carrierValidationSchema = Yup.object({
+        name: Yup.string().required('Name is required'),
+        address: Yup.string().required('Address is required'),
+        contactPerson: Yup.string().required('Contact Person is required'),
+        contactNumber: Yup.string().required('Contact Number is required'),
+        emailId: Yup.string().email('Invalid email format').required('Email ID is required'),
+        vehicleTypes: Yup.array().of(Yup.string()).min(1, 'Select at least one vehicle type'),
+        locationIds: Yup.array().of(Yup.string()).min(1, 'Select at least one location').required('Location is required'),
+        laneIds: Yup.array().of(Yup.string()).min(1, 'Select at least one lane').required('Lane IDs are required'),
+        // deviceDetails: Yup.string().required('Device Details are required'),
+        // enrollSpotAuction: Yup.boolean(),
+        // preferredCarrier: Yup.boolean(),
+    });
+
+    const handleCarrierSubmit = async (values: CarrierFormFE) => {
+        console.log('Carrier Form Submitted:', values);
+        try {
+            const body = {
+                carriers: [
+                    {
+                        carrier_name: values.name,
+                        carrier_address: values.address,
+                        carrier_correspondence: {
+                            name: values.contactPerson,
+                            email: values.emailId,
+                            phone: values.contactNumber
+                        },
+                        carrier_network_portal: 1,
+                        vehicle_types_handling: values.vehicleTypes,
+                        carrier_loc_of_operation:values.locationIds,
+                        carrier_lanes: values.laneIds
+                    },
+                ]
+                    }
+                    const editBody=                 {
+                        carrier_name: values.name,
+                        carrier_address: values.address,
+                        carrier_correspondence: {
+                            name: values.contactPerson,
+                            email: values.emailId,
+                            phone: values.contactNumber
+                        },
+                        carrier_network_portal: 1,
+                        vehicle_types_handling: values.vehicleTypes,
+                        carrier_loc_of_operation:values.locationIds,
+                        carrier_lanes: values.laneIds
+                    }
+            console.log("carrier body: ", body)
+            if (isEditing && editRow) {
+                // console.log('edit body is :', editBody)
+                const carrierId = editRow.id
+                const response = await editCarrier({body:editBody, carrierId}).unwrap()
+                console.log("edit response is ", response)
+                setShowForm(false)
+            }
+            else {
+                console.log("post create carrier ",body)
+                const response = await postCarrier(body).unwrap();
+                setShowForm(false)
+                console.log('response in post carrier:', response);
+
+            }
+        } catch (error) {
+            console.error('API Error:', error);
+        }
+    };
+    const rows = data?.carriers.map((carrier:CarrierFormBE) => ({
+        id: carrier.cr_id,
+        carrierId: carrier.carrier_ID,
+        name: carrier.carrier_name,
+        address: carrier.carrier_address,
+        contactPerson: carrier.carrier_correspondence.name,
+        contactNumber: carrier.carrier_correspondence.phone,
+        emailId: carrier.carrier_correspondence.email,
+        vehicleTypes: carrier.vehicle_types_handling,
+        locationIds: carrier.carrier_loc_of_operation,
+        laneIds: carrier.carrier_lanes,
+        // deviceDetails: carrier.deviceDetails,
+        // enrollSpotAuction: carrier.enrollSpotAuction,
+        // preferredCarrier: carrier.preferredCarrier,
+    }));
+    
+    const carrierColumns: GridColDef[] = [
     { field: 'carrierId', headerName: 'Carrier ID', flex: 1 },
     { field: 'name', headerName: 'Name', flex: 1.5 },
     { field: 'address', headerName: 'Address', flex: 2 },
@@ -66,57 +234,41 @@ const carrierColumns: GridColDef[] = [
     { field: 'vehicleTypes', headerName: 'Vehicle Types', flex: 1.5 },
     { field: 'locationIds', headerName: 'Locations', flex: 1.5 },
     { field: 'laneIds', headerName: 'Lane IDs', flex: 1.5 },
-    { field: 'deviceDetails', headerName: 'Device Details', flex: 2 },
+    // { field: 'deviceDetails', headerName: 'Device Details', flex: 2 },
+    // {
+    //     field: 'enrollSpotAuction',
+    //     headerName: 'Spot Auction',
+    //     flex: 1,
+    //     renderCell: (params) => params.value ? 'Yes' : 'No'
+    // },
+    // {
+    //     field: 'preferredCarrier',
+    //     headerName: 'Preferred Carrier',
+    //     flex: 1,
+    //     renderCell: (params) => params.value ? 'Yes' : 'No'
+    // },
     {
-        field: 'enrollSpotAuction',
-        headerName: 'Spot Auction',
-        flex: 1,
-        renderCell: (params: any) => params.value ? 'Yes' : 'No'
-    },
-    {
-        field: 'preferredCarrier',
-        headerName: 'Preferred Carrier',
-        flex: 1,
-        renderCell: (params: any) => params.value ? 'Yes' : 'No'
+      field: "actions",
+      headerName: "Actions",
+      width: 100,
+      renderCell: (params) => (
+        <div>
+          <IconButton
+            color="primary"
+            onClick={() => handleEdit(params.row)}
+          >
+            <EditIcon />
+          </IconButton>
+          <IconButton
+            color="error"
+            onClick={() => handleDelete(params.row)}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </div>
+      ),
     },
 ];
-
-const CarrierForm: React.FC = () => {
-    const [showForm, setShowForm] = useState(false);
-
-    const initialCarrierValues = {
-        carrierId: '',
-        name: '',
-        address: '',
-        contactPerson: '',
-        contactNumber: '',
-        emailId: '',
-        vehicleTypes: '',
-        locationIds: '',
-        laneIds: '',
-        deviceDetails: '',
-        enrollSpotAuction: false,
-        preferredCarrier: false,
-    };
-
-    const carrierValidationSchema = Yup.object({
-        carrierId: Yup.string().required('Carrier ID is required'),
-        name: Yup.string().required('Name is required'),
-        address: Yup.string().required('Address is required'),
-        contactPerson: Yup.string().required('Contact Person is required'),
-        contactNumber: Yup.string().required('Contact Number is required'),
-        emailId: Yup.string().email('Invalid email format').required('Email ID is required'),
-        vehicleTypes: Yup.string().required('Vehicle Types Handling is required'),
-        locationIds: Yup.string().required('Locations of Operation are required'),
-        laneIds: Yup.string().required('Lane IDs are required'),
-        deviceDetails: Yup.string().required('Device Details are required'),
-        enrollSpotAuction: Yup.boolean(),
-        preferredCarrier: Yup.boolean(),
-    });
-
-    const handleCarrierSubmit = (values: typeof initialCarrierValues) => {
-        console.log('Carrier Form Submitted:', values);
-    };
 
     return (
         <div className={styles.formsMainContainer}>
@@ -134,16 +286,19 @@ const CarrierForm: React.FC = () => {
             <Collapse in={showForm}>
                 <Box marginBottom={4} padding={2} border="1px solid #ccc" borderRadius={2}>
                     <Formik
-                        initialValues={initialCarrierValues}
+                        initialValues={initialValues}
+                        enableReinitialize={true}
                         validationSchema={carrierValidationSchema}
                         onSubmit={handleCarrierSubmit}
                     >
-                        {({ values, handleChange, handleBlur, errors, touched, setFieldValue }) => (
+                        {({ values, handleChange, handleBlur, errors, touched,
+                            // setFieldValue
+                        }) => (
                             <Form>
                                 <h3 className={styles.mainHeading}>General Data</h3>
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} sm={6} md={4}>
-                                        <TextField
+                                        <TextField disabled
                                             fullWidth size="small"
                                             label="Carrier ID"
                                             name="carrierId"
@@ -223,7 +378,7 @@ const CarrierForm: React.FC = () => {
 
                                 <h3 className={styles.mainHeading}>Transport Data</h3>
                                 <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6} md={4}>
+                                    {/* <Grid item xs={12} sm={6} md={4}>
                                         <TextField
                                             fullWidth size="small"
                                             label="Vehicle Types Handling"
@@ -234,9 +389,32 @@ const CarrierForm: React.FC = () => {
                                             error={touched.vehicleTypes && Boolean(errors.vehicleTypes)}
                                             helperText={touched.vehicleTypes && errors.vehicleTypes}
                                         />
+                                    </Grid> */}
+                                    <Grid item xs={12} sm={6} md={4}>
+                                    <FormControl fullWidth size="small" error={touched.vehicleTypes && Boolean(errors.vehicleTypes)}>
+                                        <InputLabel>Vehicle Types Handling</InputLabel>
+                                        <Select
+                                            multiple
+                                            label="Vehicle Types Handling"
+                                            name="vehicleTypes"
+                                            value={values.vehicleTypes}
+                                            onChange={handleChange} // Formik's change handler
+                                            onBlur={handleBlur}     // Formik's blur handler
+                                            renderValue={(selected) => (selected as string[]).join(', ')} // Display selected items as comma-separated list
+                                        >
+                                            {vehicleTypeOptions.map((type) => (
+                                                <MenuItem key={type} value={type}>
+                                                    {type}
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                        {touched.vehicleTypes && errors.vehicleTypes && (
+                                            <FormHelperText>{errors.vehicleTypes}</FormHelperText>
+                                        )}
+                                    </FormControl>
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={4}>
-                                        <TextField
+                                        {/* <TextField
                                             fullWidth size="small"
                                             label="Locations of Operation (Location IDs)"
                                             name="locationIds"
@@ -245,10 +423,32 @@ const CarrierForm: React.FC = () => {
                                             onBlur={handleBlur}
                                             error={touched.locationIds && Boolean(errors.locationIds)}
                                             helperText={touched.locationIds && errors.locationIds}
-                                        />
+                                        /> */}
+                                        <FormControl fullWidth size="small" error={touched.locationIds && Boolean(errors.locationIds)}>
+                                        <InputLabel>Location IDs</InputLabel>
+                                        <Select
+                                            multiple
+                                            label="Locations of Operation (Location IDs)"
+                                            name="locationIds"
+                                            value={values.locationIds}
+                                            onChange={handleChange} // Handles updates to the selected values
+                                            onBlur={handleBlur}
+                                            renderValue={(selected) => (selected as string[]).join(', ')} // Display selected items as comma-separated
+                                        >
+                                            {getAllLocations.map((location: Location) => (
+                                                <MenuItem key={location?.loc_ID} value={location?.loc_ID}>
+                                                    {location.loc_ID}
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                        {touched.locationIds && errors.locationIds && (
+                                            <FormHelperText>{errors.locationIds}</FormHelperText>
+                                        )}
+                                    </FormControl>
+
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={4}>
-                                        <TextField
+                                        {/* <TextField
                                             fullWidth size="small"
                                             label="Lane IDs"
                                             name="laneIds"
@@ -257,11 +457,33 @@ const CarrierForm: React.FC = () => {
                                             onBlur={handleBlur}
                                             error={touched.laneIds && Boolean(errors.laneIds)}
                                             helperText={touched.laneIds && errors.laneIds}
-                                        />
+                                        /> */}
+                                    <FormControl fullWidth size="small" error={touched.laneIds && Boolean(errors.laneIds)}>
+                                    <InputLabel>Lane IDs</InputLabel>
+                                    <Select
+                                        multiple
+                                        label="Lane IDs"
+                                        name="laneIds"
+                                        value={values.laneIds}
+                                        onChange={handleChange} // Formik's handler for field change
+                                        onBlur={handleBlur}     // Formik's handler for field blur
+                                        renderValue={(selected) => (selected as string[]).join(', ')} // Display selected lanes as comma-separated
+                                    >
+                                        {getAllLanes.map((lane: { lane_ID: string }) => (
+                                            <MenuItem key={lane.lane_ID} value={lane.lane_ID}>
+                                                {lane.lane_ID}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                    {touched.laneIds && errors.laneIds && (
+                                        <FormHelperText>{errors.laneIds}</FormHelperText>
+                                    )}
+                                </FormControl>
+
                                     </Grid>
                                 </Grid>
 
-                                <h3 className={styles.mainHeading}>Devices</h3>
+                                {/* <h3 className={styles.mainHeading}>Devices</h3>
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} sm={6} md={4}>
                                         <TextField
@@ -275,9 +497,9 @@ const CarrierForm: React.FC = () => {
                                             helperText={touched.deviceDetails && errors.deviceDetails}
                                         />
                                     </Grid>
-                                </Grid>
+                                </Grid> */}
 
-                                <h3 className={styles.mainHeading}>Spot Auction</h3>
+                                {/* <h3 className={styles.mainHeading}>Spot Auction</h3>
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} sm={6} md={4}>
                                         <FormControlLabel
@@ -301,11 +523,11 @@ const CarrierForm: React.FC = () => {
                                             label="Preferred Carrier"
                                         />
                                     </Grid>
-                                </Grid>
+                                </Grid> */}
 
                                 <Box marginTop={3} textAlign="center">
                                     <Button type="submit" variant="contained" color="primary">
-                                        Submit
+                                        {isEditing ? "Update carrier" : "Create carrier"}
                                     </Button>
                                 </Box>
                             </Form>
@@ -317,7 +539,7 @@ const CarrierForm: React.FC = () => {
             <Grid item xs={12} style={{ marginTop: '50px' }}>
                 <DataGridComponent
                     columns={carrierColumns}
-                    rows={dummyCarrierData}
+                    rows={rows}
                     isLoading={false}
                     pageSizeOptions={[10, 20]}
                     initialPageSize={10}
@@ -327,4 +549,4 @@ const CarrierForm: React.FC = () => {
     );
 };
 
-export default CarrierForm;
+export default withAuthComponent(CarrierForm);

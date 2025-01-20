@@ -32,7 +32,8 @@ const refreshAccessToken = async (refreshToken: string) => {
   );
   try {
     const response = await fetch(
-      `https://dev-api.trukapp.com/truk/log/refresh-token`,
+      // `https://dev-api.trukapp.com/truk/log/refresh-token`,
+      `http://192.168.0.50:8088/truk/log/refresh-token`,
 
       {
         method: "POST",
@@ -89,7 +90,8 @@ export const options: NextAuthOptions = {
         try {
           console.log("qwerty");
           const response = await fetch(
-            `https://dev-api.trukapp.com/truk/log/login`,
+            // `https://dev-api.trukapp.com/truk/log/login`,
+            `http://192.168.0.50:8088/truk/log/login`,
             {
               method: "POST",
               headers: {

@@ -47,7 +47,6 @@ interface Location {
     loc_ID: string;
     loc_desc: string;
     loc_type: string;
-    location_id: number;
     longitude: string;
     pincode: string;
     state: string;
@@ -202,7 +201,7 @@ const SupplierForm: React.FC = () => {
                     {
                         name: values?.name,
                         partner_type: "vendor",
-                        location_id: values?.locationId,
+                        loc_ID: values?.locationId,
                         correspondence: {
                             contact_person: values?.contactPerson,
                             contact_number: values?.contactNumber,
@@ -223,7 +222,7 @@ const SupplierForm: React.FC = () => {
                 ...updateRecordData,
                 name: values?.name,
                 partner_type: "vendor",
-                location_id: values?.locationId,
+                loc_ID: values?.locationId,
                 correspondence: {
                     contact_person: values?.contactPerson,
                     contact_number: values?.contactNumber,
@@ -267,11 +266,11 @@ const SupplierForm: React.FC = () => {
 
     const handleLocationChange = (
         event: SelectChangeEvent<string>,
-        setFieldValue: FormikProps<any>['setFieldValue']
+        setFieldValue: FormikProps<Location>['setFieldValue']
     ) => {
         const selectedLocationId = event.target.value;
         setFieldValue('locationId', selectedLocationId);
-        const selectedLocation = getAllLocations.find((loc: Location) => loc.location_id === Number(selectedLocationId));
+        const selectedLocation = getAllLocations.find((loc: Location) => loc.loc_ID === (selectedLocationId));
         console.log(selectedLocationId)
         // Check if the selectedLocation exists before calling setFieldValue
 
@@ -359,8 +358,8 @@ const SupplierForm: React.FC = () => {
                                             >
                                                 {getAllLocations.map((location: Location) => {
                                                     return (
-                                                        <MenuItem key={location?.location_id} value={location?.location_id}>
-                                                            {location.location_id}
+                                                        <MenuItem key={location?.loc_ID} value={location?.loc_ID}>
+                                                            {location.loc_ID}
                                                         </MenuItem>
                                                     );
                                                 })}
@@ -488,8 +487,8 @@ const SupplierForm: React.FC = () => {
                                                 onBlur={handleBlur}
                                             >
                                                 {getAllLocations.map((location: Location) => (
-                                                    <MenuItem key={location.location_id} value={location.location_id}>
-                                                        {location.location_id}
+                                                    <MenuItem key={location.loc_ID} value={location.loc_ID}>
+                                                        {location.loc_ID}
                                                     </MenuItem>
                                                 ))}
                                             </Select>
