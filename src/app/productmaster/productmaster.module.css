@@ -14,10 +14,11 @@
 }
 
 .basicDetailsHeading {
-  font-size: 18px;
+  font-size: 22px;
   font-weight: bold;
   font-family: "Poppins";
-  margin-top:10px
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 .createButton {

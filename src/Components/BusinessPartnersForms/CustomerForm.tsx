@@ -106,12 +106,12 @@ const CustomerForm: React.FC = () => {
     const [updatePartnerDetails] = useEditBusinessPartnerMutation();
     const [customerRegistration] = useCustomerRegistrationMutation();
     const [deleteBusinessPartner] = useDeleteBusinessPartnerMutation()
-    const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery([])
 
     const { data, error, isLoading } = useGetAllCustomersDataQuery({
         partner_type: "customer",
     })
 
+    const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery([])
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
     console.log("all customers data :", data?.partners)
     console.log("all locations :", locationsData?.locations)
@@ -149,7 +149,6 @@ const CustomerForm: React.FC = () => {
         id: item.partner_id,
         ...item,
     }));
-
 
     const columns: GridColDef[] = [
         { field: 'customer_id', headerName: 'Customer ID', width: 150 },
@@ -342,19 +341,6 @@ const CustomerForm: React.FC = () => {
                                             helperText={touched.name && errors.name}
                                         />
                                     </Grid>
-                                    {/* <Grid item xs={12} sm={6} md={2.4}>
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="Location ID"
-                                            name="locationId"
-                                            value={values.locationId}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.locationId && Boolean(errors.locationId)}
-                                            helperText={touched.locationId && errors.locationId}
-                                        />
-                                    </Grid> */}
-
 
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <FormControl fullWidth size="small" error={touched.locationId && Boolean(errors.locationId)}>

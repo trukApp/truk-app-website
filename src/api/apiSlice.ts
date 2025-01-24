@@ -35,7 +35,7 @@ interface User {
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery,
-  tagTypes: ["PARTNERS", "DRIVERS", "CARRIER", "LocationMaster", "VehicleMaster", "PackageMaster", "LaneMaster", "DeviceMaster","UomMaster"],
+  tagTypes: ["PARTNERS", "DRIVERS", "CARRIER", "LocationMaster", "VehicleMaster", "PackageMaster", "LaneMaster", "DeviceMaster","ProductMaster","UomMaster"],
   endpoints: (builder) => ({
     userLogin: builder.mutation<User, { phone: string; password: string }>({
       query: (body) => ({
@@ -177,6 +177,11 @@ export const apiSlice = createApi({
         method: "GET",
       }),
       providesTags: [{ type: "LocationMaster", id: "LIST" }],
+    }),
+
+    getLocationById: builder.query<string, string>({
+        query: (locationId) => `masLoc/location-ID?loc_ID=${locationId}`,
+           
     }),
 
     postLocationMaster: builder.mutation({
@@ -348,7 +353,7 @@ export const apiSlice = createApi({
     //  UOM Master
     getUomMaster: builder.query({
       query: () => ({
-        url: "masterUom/all-uom",
+        url: "device/all-devices",
         method: "GET",
       }),
       providesTags: [{ type: "UomMaster", id: "LIST" }],
@@ -356,7 +361,7 @@ export const apiSlice = createApi({
 
     postUomMaster: builder.mutation({
       query: (body) => ({
-        url: "masterUom/add-uom",
+        url: "device/add-devices",
         method: "POST",
         body,
       }),
@@ -364,8 +369,8 @@ export const apiSlice = createApi({
     }),
 
     editUomMaster: builder.mutation({
-      query: ({ body, uomId }) => ({
-        url: `masterUom/edit-uom?unit_id=${uomId}`,
+      query: ({ body, deviceId }) => ({
+        url: `device/edit-device?device_id=${deviceId}`,
         method: "PUT",
         body,
       }),
@@ -373,12 +378,38 @@ export const apiSlice = createApi({
     }),
 
     deleteUomMaster: builder.mutation({
-      query: (uomId) => ({
-        url: `masterUom/delete-uom?unit_id=${uomId}`,
+      query: (deviceId) => ({
+        url: `device/delete-device?device_id=${deviceId}`,
         method: "DELETE",
       }),
       invalidatesTags: [{ type: "UomMaster", id: "LIST" }],
     }),
+
+    //Product Master
+    getAllProducts: builder.query({
+      query: () => ({
+        url: "masterProducts/all-products",
+        method: "GET",
+      }),
+      providesTags: [{ type: "ProductMaster", id: "LIST" }],
+    }),
+
+    createProduct: builder.mutation({
+      query: (body) => ({
+        url: "masterProducts/add-products",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "ProductMaster", id: "LIST" }],
+    }),
+    deleteProduct: builder.mutation({
+      query: (productId) => ({
+        url:` masterProducts/delete-product?prod_id=${productId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [{ type: "ProductMaster", id: "LIST" }],
+    }),
+
 
   }),
 });
@@ -401,6 +432,7 @@ export const {
   useDeleteCarrierMasterMutation,
   
   useGetLocationMasterQuery,
+  useGetLocationByIdQuery,
   usePostLocationMasterMutation,
   useEditLocationMasterMutation,
   useDeleteLocationMasterMutation,
@@ -424,6 +456,9 @@ export const {
   usePostUomMasterMutation,
   useEditUomMasterMutation,
   useDeleteUomMasterMutation,
+  useGetAllProductsQuery,
+  useCreateProductMutation,
+  useDeleteProductMutation,
   
 
 } = apiSlice;
