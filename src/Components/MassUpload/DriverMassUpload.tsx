@@ -211,7 +211,7 @@ const handleUpload = async () => {
           }}
         >
           <Typography variant="h6">Mass Upload</Typography>
-          <Typography sx={{ mt: 2 }}>Step 1: Download the template.</Typography>
+          <Typography sx={{ mt: 2 }}>Step 1: Download the template 👇</Typography>
           <Link component="button" onClick={handleDownloadTemplate}>
             Download CSV Template
           </Link>

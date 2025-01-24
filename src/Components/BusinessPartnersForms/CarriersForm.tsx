@@ -121,7 +121,7 @@ const handleDelete = async (row: CarrierFormFE) => {
         preferredCarrier: false,
     };
     const [initialValues, setInitialValues] = useState(initialCarrierValues)
-    console.log("edit row :", editRow)
+
         useEffect(() => {
             if (editRow) {
                 setInitialValues(() => ({
@@ -426,7 +426,7 @@ const handleDelete = async (row: CarrierFormFE) => {
                                             helperText={touched.locationIds && errors.locationIds}
                                         /> */}
                                         <FormControl fullWidth size="small" error={touched.locationIds && Boolean(errors.locationIds)}>
-                                        <InputLabel>Location IDs</InputLabel>
+                                        <InputLabel>Locations of Operation (Location IDs)</InputLabel>
                                         <Select
                                             multiple
                                             label="Locations of Operation (Location IDs)"

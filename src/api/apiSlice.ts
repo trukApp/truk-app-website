@@ -35,7 +35,7 @@ interface User {
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery,
-  tagTypes: ["PARTNERS", "DRIVERS", "CARRIER", "LocationMaster", "VehicleMaster", "PackageMaster", "LaneMaster", "DeviceMaster"],
+  tagTypes: ["PARTNERS", "DRIVERS", "CARRIER", "LocationMaster", "VehicleMaster", "PackageMaster", "LaneMaster", "DeviceMaster","UomMaster"],
   endpoints: (builder) => ({
     userLogin: builder.mutation<User, { phone: string; password: string }>({
       query: (body) => ({
@@ -177,11 +177,6 @@ export const apiSlice = createApi({
         method: "GET",
       }),
       providesTags: [{ type: "LocationMaster", id: "LIST" }],
-    }),
-
-    getLocationById: builder.query<string, string>({
-        query: (locationId) => `masLoc/location-ID?loc_ID=${locationId}`,
-           
     }),
 
     postLocationMaster: builder.mutation({
@@ -350,6 +345,41 @@ export const apiSlice = createApi({
       invalidatesTags: [{ type: "DeviceMaster", id: "LIST" }],
     }),
 
+    //  UOM Master
+    getUomMaster: builder.query({
+      query: () => ({
+        url: "masterUom/all-uom",
+        method: "GET",
+      }),
+      providesTags: [{ type: "UomMaster", id: "LIST" }],
+    }),
+
+    postUomMaster: builder.mutation({
+      query: (body) => ({
+        url: "masterUom/add-uom",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "UomMaster", id: "LIST" }],
+    }),
+
+    editUomMaster: builder.mutation({
+      query: ({ body, uomId }) => ({
+        url: `masterUom/edit-uom?unit_id=${uomId}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: [{ type: "UomMaster", id: "LIST" }],
+    }),
+
+    deleteUomMaster: builder.mutation({
+      query: (uomId) => ({
+        url: `masterUom/delete-uom?unit_id=${uomId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [{ type: "UomMaster", id: "LIST" }],
+    }),
+
   }),
 });
 
@@ -371,7 +401,6 @@ export const {
   useDeleteCarrierMasterMutation,
   
   useGetLocationMasterQuery,
-  useGetLocationByIdQuery,
   usePostLocationMasterMutation,
   useEditLocationMasterMutation,
   useDeleteLocationMasterMutation,
@@ -391,6 +420,10 @@ export const {
   usePostDeviceMasterMutation,
   useEditDeviceMasterMutation,
   useDeleteDeviceMasterMutation,
+  useGetUomMasterQuery,
+  usePostUomMasterMutation,
+  useEditUomMasterMutation,
+  useDeleteUomMasterMutation,
   
 
 } = apiSlice;

@@ -18,11 +18,12 @@ import { DataGridComponent } from '../GridComponent';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import styles from './MasterData.module.css'
-import { useGetLanesMasterQuery,usePostLaneMasterMutation,useEditLaneMasterMutation,useDeleteLaneMasterMutation } from '@/api/apiSlice';
+import { useGetLanesMasterQuery, usePostLaneMasterMutation, useEditLaneMasterMutation, useDeleteLaneMasterMutation, useGetUomMasterQuery } from '@/api/apiSlice';
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { withAuthComponent } from '../WithAuthComponent';
 import MassUpload from '../MassUpload/MassUpload';
+
 
 interface LaneDetails {
   // General Data
@@ -50,6 +51,13 @@ interface LaneDetails {
   carrierEndDate: string;
   carrierCost: string;
 }
+interface unitsOfMeasure {
+  unit_name: string;
+  unit_desc: string;
+  alt_unit_name :string;
+  alt_unit_desc :string;
+
+}
 
 export interface Lane {
   des_loc_id: string;
@@ -73,10 +81,14 @@ const TransportationLanes = () => {
     const [showForm, setShowForm] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editRow,setEditRow] = useState<LaneDetails | null>(null); ;
-  const distanceUnits = ['km', 'm']
-  const durationUnits = ['hour', 'minute', 'seconds']
-  const costUnits = ['INR', 'USD']
-    const { data, error, isLoading } = useGetLanesMasterQuery([]);
+   
+  const { data, error, isLoading } = useGetLanesMasterQuery([]);
+  const { data: uom, error: uomErr } = useGetUomMasterQuery([])
+  if (uomErr) {
+    console.log("uom err:", uomErr)
+  }
+  const unitsofMeasurement = uom?.uomList?.map((item : unitsOfMeasure) => item.unit_name) || [];
+  console.log("all uom :", unitsofMeasurement)
     const [postLane] = usePostLaneMasterMutation();
     const [editLane] = useEditLaneMasterMutation();
     const [deleteLane] = useDeleteLaneMasterMutation()
@@ -184,11 +196,11 @@ const handleDelete = async (row: LaneDetails) => {
       transportStartDate: '',
       transportEndDate: '',
       transportDistance: '',
-      transportDistanceUnits:distanceUnits[0],
+      transportDistanceUnits:unitsofMeasurement[0],
       transportDuration: '',
-      transportDurationUnits : durationUnits[0],
+      transportDurationUnits : unitsofMeasurement[0],
       transportCost: '',
-      transportCostUnits : costUnits[0],
+      transportCostUnits : unitsofMeasurement[0],
 
       // Carrier Data
       carrierId: '',
@@ -297,7 +309,7 @@ const rows = data?.lanes.map((lane:Lane) => ({
     // { field: "carrierStartDate", headerName: "Carrier Start Date", width: 180 },
     // { field: "carrierEndDate", headerName: "Carrier End Date", width: 180 },
     // { field: "carrierCost", headerName: "Carrier Cost", width: 150 },
-        {
+    {
       field: "actions",
       headerName: "Actions",
       width: 200,
@@ -493,7 +505,7 @@ const rows = data?.lanes.map((lane:Lane) => ({
                                             value={formik.values.transportDistanceUnits}
                                             size="small"
                                           >
-                                            {distanceUnits.map((unit) => (
+                                            {unitsofMeasurement.map((unit:string) => (
                                               <MenuItem key={unit} value={unit}>
                                                 {unit}
                                               </MenuItem>
@@ -525,7 +537,7 @@ const rows = data?.lanes.map((lane:Lane) => ({
                                             value={formik.values.transportDurationUnits}
                                             size="small"
                                           >
-                                            {durationUnits.map((unit) => (
+                                            {unitsofMeasurement.map((unit:string) => (
                                               <MenuItem key={unit} value={unit}>
                                                 {unit}
                                               </MenuItem>
@@ -570,7 +582,7 @@ const rows = data?.lanes.map((lane:Lane) => ({
                                             value={formik.values.transportCostUnits}
                                             size="small"
                                           >
-                                            {costUnits.map((unit) => (
+                                            {unitsofMeasurement.map((unit:string) => (
                                               <MenuItem key={unit} value={unit}>
                                                 {unit}
                                               </MenuItem>
