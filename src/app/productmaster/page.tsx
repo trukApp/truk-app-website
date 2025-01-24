@@ -12,103 +12,83 @@ import {
     FormControlLabel,
     Typography,
     MenuItem,
+    FormControl,
+    InputLabel,
+    Select,
+    FormHelperText,
+    IconButton,
 } from '@mui/material';
 import style from './productmaster.module.css';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { GridColDef } from '@mui/x-data-grid';
+// import { GridColDef } from '@mui/x-data-grid';
 import { DataGridComponent } from '@/Components/GridComponent';
+import { useCreateProductMutation, useDeleteProductMutation, useGetAllProductsQuery, useGetLocationMasterQuery } from '@/api/apiSlice';
+import { GridCellParams } from '@mui/x-data-grid';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
+interface Product {
+    productName: string;
+    productCode: string;
+    category: string;
+    subCategory: string;
+    price: number;
+    stockQuantity: number;
+    manufacturer: string;
+    description: string;
+    warehouseLocation: string;
+    warehousePincode: string;
+    warehouseState: string;
+    warehouseCity: string;
+    warehouseCountry: string;
+    product_ID: number;
+    product_desc: string;
+    sales_uom: string;
+    basic_uom: string;
+    weight: string;
+    volume: string;
+    expiration: string;
+    best_before: string;
+    hsn_code: string;
+    sku_num: string;
+    fragile_goods: boolean;
+    dangerous_goods: boolean;
+    id: number;
+    prod_id: number;
+}
 
-const dummyData = [
-    {
-        id: 1,
-        productId: 'P001',
-        productDescription: 'Premium Quality Rice',
-        basicUoM: 'Kg',
-        salesUoM: 'Kg',
-        weightUoM: 'Kg',
-        volumeUoM: 'L',
-        shelfLife: '12 months',
-        expirationDate: '2025-12-31',
-        bestBeforeDate: '2025-06-30',
-        stackingFactor: '10',
-        documents: 'Spec Sheet',
-        locationIds: 'LOC001, LOC002',
-        packagingType: 'Bag',
-        generatePackagingLabel: true,
-        specialInstructions: 'Store in a cool, dry place',
-        fragileGoods: false,
-        dangerousGoods: false,
-        hazardousStorage: false,
-        skuNumber: 'SKU12345',
-        hsncode: '10061010',
-    },
-    {
-        id: 2,
-        productId: 'P002',
-        productDescription: 'Organic Wheat Flour',
-        basicUoM: 'Kg',
-        salesUoM: 'Kg',
-        weightUoM: 'Kg',
-        volumeUoM: 'L',
-        shelfLife: '6 months',
-        expirationDate: '2024-06-30',
-        bestBeforeDate: '2024-03-31',
-        stackingFactor: '8',
-        documents: 'Certificate of Authenticity',
-        locationIds: 'LOC003, LOC004',
-        packagingType: 'Box',
-        generatePackagingLabel: false,
-        specialInstructions: 'Avoid direct sunlight',
-        fragileGoods: false,
-        dangerousGoods: false,
-        hazardousStorage: false,
-        skuNumber: 'SKU67890',
-        hsncode: '11010000',
-    },
-    {
-        id: 3,
-        productId: 'P003',
-        productDescription: 'Cooking Oil',
-        basicUoM: 'L',
-        salesUoM: 'Bottle',
-        weightUoM: 'Kg',
-        volumeUoM: 'L',
-        shelfLife: '18 months',
-        expirationDate: '2026-03-31',
-        bestBeforeDate: '2025-12-31',
-        stackingFactor: '15',
-        documents: 'MSDS',
-        locationIds: 'LOC005',
-        packagingType: 'Can',
-        generatePackagingLabel: true,
-        specialInstructions: 'Keep away from open flame',
-        fragileGoods: false,
-        dangerousGoods: true,
-        hazardousStorage: true,
-        skuNumber: 'SKU54321',
-        hsncode: '15079010',
-    },
-];
+interface Location {
+    city: string;
+    country: string;
+    gln_code: string;
+    iata_code: string;
+    latitude: string;
+    loc_ID: string;
+    loc_desc: string;
+    loc_type: string;
+    // location_id: number;
+    longitude: string;
+    pincode: string;
+    state: string;
+    time_zone: string;
 
-// Define columns for the Data Grid
-const columns: GridColDef[] = [
-    { field: 'productId', headerName: 'Product ID', width:150 },
-    { field: 'productDescription', headerName: 'Product Description', width:150 },
-    { field: 'basicUoM', headerName: 'Basic UoM', width:150 },
-    { field: 'salesUoM', headerName: 'Sales UoM', width:150 },
-    { field: 'shelfLife', headerName: 'Shelf Life', width:150 },
-    { field: 'expirationDate', headerName: 'Expiration Date', width:150 },
-    { field: 'skuNumber', headerName: 'SKU Number', width:150 },
-    { field: 'hsncode', headerName: 'HSN Code', width:150 },
-];
+}
 
 const ProductMasterPage = () => {
+    const { data: productsData, error: allProductsFectchingError } = useGetAllProductsQuery([])
     const [showForm, setShowForm] = useState(false);
+    const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery([])
+    const [createNewProduct] = useCreateProductMutation();
+    const [deleteProduct] = useDeleteProductMutation()
+    const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
+    const allProductsData = productsData?.products || []
 
+    console.log("productsData: ", allProductsData)
+    console.log("Getting all product errors: ", allProductsFectchingError)
+    console.log("getLocationsError: ", getLocationsError)
     const initialValues = {
-        productId: '',
+        productName: '',
         productDescription: '',
         basicUoM: '',
         salesUoM: '',
@@ -119,7 +99,7 @@ const ProductMasterPage = () => {
         bestBeforeDate: '',
         stackingFactor: '',
         documents: '',
-        locationIds: '',
+        locationId: '',
         packagingType: '',
         generatePackagingLabel: false,
         specialInstructions: '',
@@ -130,25 +110,130 @@ const ProductMasterPage = () => {
         hsncode: '',
         weightUnit: '',
         volumeUnit: '',
+        temperatureControl: false,
     };
 
     const validationSchema = Yup.object({
-        productId: Yup.string().required('Product ID is required'),
+        productName: Yup.string().required('Product name is required'),
         productDescription: Yup.string().required('Product Description is required'),
         basicUoM: Yup.string().required('Basic Unit of Measure is required'),
         salesUoM: Yup.string().required('Sales Unit of Measure is required'),
     });
 
-    const handleSubmit = (values: typeof initialValues) => {
+    const handleEdit = (row: Product) => {
+        console.log('Edit clicked:', row);
+        // Perform edit actions here
+    };
+
+    const handleDelete = async (row: Product) => {
+        console.log('Delete clicked:', row);
+        const productId = row?.id
+        const response = await deleteProduct(productId)
+        console.log("delete response :", response)
+    };
+
+
+    const columns = [
+        { field: 'product_ID', headerName: 'Product ID', width: 150 },
+        { field: 'product_desc', headerName: 'Product Description', width: 200 },
+        { field: 'sales_uom', headerName: 'Sales UOM', width: 150 },
+        { field: 'basic_uom', headerName: 'Basic UOM', width: 150 },
+        { field: 'weight', headerName: 'Weight', width: 150 },
+        { field: 'volume', headerName: 'Volume', width: 150 },
+        { field: 'expiration', headerName: 'Expiration Date', width: 180 },
+        { field: 'best_before', headerName: 'Best Before Date', width: 180 },
+        { field: 'hsn_code', headerName: 'HSN Code', width: 150 },
+        { field: 'sku_num', headerName: 'SKU Number', width: 150 },
+        { field: 'fragile_goods', headerName: 'Fragile Goods', width: 180, valueFormatter: (params: GridCellParams) => params.value ? 'Yes' : 'No' },
+        { field: 'dangerous_goods', headerName: 'Dangerous Goods', width: 180, valueFormatter: (params: GridCellParams) => params.value ? 'Yes' : 'No' },
+        {
+            field: 'actions',
+            headerName: 'Actions',
+            width: 150,
+            renderCell: (params: GridCellParams) => (
+                <>
+                    <IconButton
+                        color="primary"
+                        onClick={() => handleEdit(params.row)}
+                    >
+                        <EditIcon />
+                    </IconButton>
+                    <IconButton
+                        color="secondary"
+                        onClick={() => handleDelete(params.row)}
+                    >
+                        <DeleteIcon />
+                    </IconButton>
+                </>
+            ),
+        },
+    ];
+
+    const rows = allProductsData.map((product: Product) => ({
+        id: product.prod_id,
+        product_ID: product.product_ID,
+        product_desc: product.product_desc,
+        sales_uom: product.sales_uom,
+        basic_uom: product.basic_uom,
+        weight: product.weight,
+        volume: product.volume,
+        expiration: product.expiration,
+        best_before: product.best_before,
+        hsn_code: product.hsn_code,
+        sku_num: product.sku_num,
+        fragile_goods: product.fragile_goods,
+        dangerous_goods: product.dangerous_goods,
+    }));
+
+
+    const handleSubmit = async (values: typeof initialValues) => {
         console.log('Form Submitted', values);
+        const createProductBody = {
+            products: [
+                {
+                    product_name: values?.productName,
+                    product_desc: values?.productDescription,
+                    basic_uom: values?.basicUoM,
+                    sales_uom: values?.salesUoM,
+                    weight: values?.weightUoM,
+                    weight_uom: values?.weightUnit,
+                    volume: values?.volumeUoM,
+                    volume_uom: values?.volumeUnit,
+                    expiration: values?.expirationDate,
+                    best_before: values?.bestBeforeDate,
+                    stacking_factor: values?.stackingFactor,
+                    sku_num: values?.skuNumber,
+                    hsn_code: values?.hsncode,
+                    documents: values?.documents,
+                    loc_ID: values?.locationId,
+                    packaging_type: [
+                        {
+                            pac_ID: values?.packagingType,
+                            location: values?.locationId
+                        }
+                    ],
+                    special_instructions: values?.specialInstructions,
+                    packing_label: values?.generatePackagingLabel,
+                    fragile_goods: values?.fragileGoods,
+                    dangerous_goods: values?.dangerousGoods,
+                    hazardous: values?.hazardousStorage,
+                    temp_controlled: values?.temperatureControl
+
+                }
+            ]
+        }
+
+        console.log("createProductBody: ", createProductBody)
+        const response = await createNewProduct(createProductBody).unwrap();
+        console.log('API Response:', response)
     };
 
     return (
         <Grid sx={{ margin: { xs: "0px", md: "0px 30px" } }}>
-            <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md:'24px' } }} align="center" gutterBottom>
+            <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md: '24px' } }} align="center" gutterBottom>
                 Product master
             </Typography>
-            <Box display="flex" justifyContent="flex-end"  gap={2}>
+            <Box display="flex" justifyContent="flex-end" gap={2}>
                 <Button
                     variant="contained"
                     onClick={() => setShowForm((prev) => !prev)}
@@ -166,96 +251,22 @@ const ProductMasterPage = () => {
                         validationSchema={validationSchema}
                         onSubmit={handleSubmit}
                     >
-                        {({ handleChange, handleBlur, values, touched, errors }) => (
+                        {({ handleChange, handleBlur, values, touched, errors, setFieldValue }) => (
                             <Form>
                                 <Typography variant="h6" className={style.basicDetailsHeading}>
                                     Basic Data
                                 </Typography>
-                                {/* <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6} md={2.4} >
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="Product ID*"
-                                            name="productId"
-                                            value={values.productId}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.productId && Boolean(errors.productId)}
-                                            helperText={touched.productId && errors.productId}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} sm={6} md={2.4} >
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="Product Description*"
-                                            name="productDescription"
-                                            value={values.productDescription}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={
-                                                touched.productDescription &&
-                                                Boolean(errors.productDescription)
-                                            }
-                                            helperText={touched.productDescription && errors.productDescription}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} sm={6} md={2.4} >
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="Basic Unit of Measure*"
-                                            name="basicUoM"
-                                            value={values.basicUoM}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.basicUoM && Boolean(errors.basicUoM)}
-                                            helperText={touched.basicUoM && errors.basicUoM}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} sm={6} md={2.4} >
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="Sales Unit of Measure*"
-                                            name="salesUoM"
-                                            value={values.salesUoM}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.salesUoM && Boolean(errors.salesUoM)}
-                                            helperText={touched.salesUoM && errors.salesUoM}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} sm={6} md={2.4} >
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="Weight - UoM"
-                                            name="weightUoM"
-                                            value={values.weightUoM}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} sm={6} md={2.4} >
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="Volume - UoM"
-                                            name="volumeUoM"
-                                            value={values.volumeUoM}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                        />
-                                    </Grid>
-                                </Grid> */}
-
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
                                             fullWidth size='small'
-                                            label="Product ID*"
-                                            name="productId"
-                                            value={values.productId}
+                                            label="Product name"
+                                            name="productName"
+                                            value={values.productName}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
-                                            error={touched.productId && Boolean(errors.productId)}
-                                            helperText={touched.productId && errors.productId}
+                                            error={touched.productName && Boolean(errors.productName)}
+                                            helperText={touched.productName && errors.productName}
                                         />
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={2.4} >
@@ -426,7 +437,7 @@ const ProductMasterPage = () => {
                                     Location Data
                                 </Typography>
                                 <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6} md={2.4} >
+                                    {/* <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
                                             fullWidth size='small'
                                             label="Location IDs (Plants/Warehouses)"
@@ -435,6 +446,28 @@ const ProductMasterPage = () => {
                                             onChange={handleChange}
                                             onBlur={handleBlur}
                                         />
+                                    </Grid> */}
+
+                                    <Grid item xs={12} sm={6} md={2.4}>
+                                        <FormControl fullWidth size="small" error={touched.locationId && Boolean(errors.locationId)}>
+                                            <InputLabel>Location of Source</InputLabel>
+                                            <Select
+                                                label="Location of Source"
+                                                name="locationOfSource"
+                                                value={values.locationId}
+                                                onChange={(e) => setFieldValue('locationId', e.target.value)}
+                                                onBlur={handleBlur}
+                                            >
+                                                {getAllLocations.map((location: Location) => (
+                                                    <MenuItem key={location.loc_ID} value={location.loc_ID}>
+                                                        {location.loc_ID}
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                            {touched.locationId && errors.locationId && (
+                                                <FormHelperText>{errors.locationId}</FormHelperText>
+                                            )}
+                                        </FormControl>
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
@@ -476,7 +509,7 @@ const ProductMasterPage = () => {
                                     Storage Data
                                 </Typography>
                                 <Grid container spacing={2}>
-                                    <Grid item xs={12} md={4}>
+                                    <Grid item xs={12} md={3}>
                                         <FormControlLabel
                                             control={
                                                 <Checkbox
@@ -486,10 +519,9 @@ const ProductMasterPage = () => {
                                                 />
                                             }
                                             label="Fragile Goods"
-                                            
                                         />
                                     </Grid>
-                                    <Grid item xs={12} md={4}>
+                                    <Grid item xs={12} md={3}>
                                         <FormControlLabel
                                             control={
                                                 <Checkbox
@@ -501,7 +533,7 @@ const ProductMasterPage = () => {
                                             label="Dangerous Goods"
                                         />
                                     </Grid>
-                                    <Grid item xs={12} md={4}>
+                                    <Grid item xs={12} md={3}>
                                         <FormControlLabel
                                             control={
                                                 <Checkbox
@@ -510,8 +542,19 @@ const ProductMasterPage = () => {
                                                     onChange={handleChange}
                                                 />
                                             }
-                                            label="Hazardous Substance Storage Rel."
-                                            
+                                            label="Hazardous Substance Storage"
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} md={3}>
+                                        <FormControlLabel
+                                            control={
+                                                <Checkbox
+                                                    name="temperatureControl"
+                                                    checked={values.temperatureControl}
+                                                    onChange={handleChange}
+                                                />
+                                            }
+                                            label="Temperature control"
                                         />
                                     </Grid>
                                 </Grid>
@@ -527,16 +570,18 @@ const ProductMasterPage = () => {
                 </Box>
             </Collapse>
 
-            <div style={{marginTop:'40px'}}>
+            <div style={{ marginTop: '40px' }}>
                 <DataGridComponent
-                columns={columns}
-                rows={dummyData}
-                isLoading={false}
-                pageSizeOptions={[10, 20,30]}
-                initialPageSize={10}
+                    // columns={columns}
+                    // rows={dummyData}
+                    rows={rows}  // Pass the dynamic rows here
+                    columns={columns}
+                    isLoading={false}
+                    pageSizeOptions={[10, 20, 30]}
+                    initialPageSize={10}
                 />
-                </div>
-            </Grid>
+            </div>
+        </Grid>
     );
 };
 
