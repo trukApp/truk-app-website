@@ -11,7 +11,7 @@ import styles from './MasterData.module.css';
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useGetDeviceMasterQuery,usePostDeviceMasterMutation, useEditDeviceMasterMutation,useDeleteDeviceMasterMutation } from '@/api/apiSlice';
-
+import MassUpload from '../MassUpload/MassUpload';
 
 interface DeviceMasterValues {
   id: string;
@@ -24,7 +24,7 @@ interface DeviceMasterValues {
   locationId: string;
 }
 
-interface DeviceInfoBE {
+export interface DeviceInfoBE {
   carrier_ID: string;
   carrier_id: string;
   cr_id: string;
@@ -223,6 +223,7 @@ const handleDelete = async (row: DeviceMasterValues) => {
           Create Device
           {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 4 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 4}} />}
         </Button>
+        <MassUpload arrayKey="devices"/>
       </Box>
 
 

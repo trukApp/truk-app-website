@@ -246,7 +246,10 @@ const UnitsOfMeasurement: React.FC = () => {
     altUnitDescription: '',
   };
 
-  const handleUnitNameChange = (unitName: string, setFieldValue: (field: string, value: any) => void) => {
+  const handleUnitNameChange = (
+    unitName: string,
+    setFieldValue: (field: keyof FormValues, value: FormValues[keyof FormValues]) => void
+  ) => {
     setFieldValue('unitName', unitName);
     setAltUnitOptions(unitMappings[unitName] || []);
     setFieldValue('altUnit', '');

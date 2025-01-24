@@ -10,29 +10,13 @@ import {
 } from '@mui/material';
 import { DropzoneArea } from 'mui-file-dropzone';
 import {
-  usePostLocationMasterMutation,
-  usePostVehicleMasterMutation,
-  usePostLaneMasterMutation,
-  usePostDeviceMasterMutation,
-  usePostPackageMasterMutation,
-  usePostCarrierMasterMutation,
-  useCustomerRegistrationMutation,
-  useVendorRegistrationMutation,
-  useDriverRegistrationMutation,
+  useDriverRegistrationMutation, useGetLocationMasterQuery
 } from '@/api/apiSlice';
 import {
-  locationColumnNames,
-  vehicleColumnNames,
-  laneColumnNames,
-  deviceColumnNames,
-  packageColumnNames,
-  carrierColumnNames,
-  customerColumnNames,
-  vendorColumnNames,
   driversColumnNames
 } from './CSVColumnNames'; 
 
-type EntityKey = 'locations' | 'vehicles' | 'lanes' | 'devices' | 'packages' | 'carriers' | 'partners' | 'drivers';
+type EntityKey = 'drivers';
 
 interface ColumnMapping {
   displayName: string;
@@ -42,50 +26,39 @@ interface ColumnMapping {
 
 interface MassUploadProps {
   arrayKey: EntityKey;
-  partnerType?: 'vendor' | 'customer';
 }
 
 interface ParsedRow {
   [key: string]: string;
 }
+interface Location {
+  loc_ID: string;
+  address_1: string;
+  address_2: string;
+  city: string;
+  state: string;
+  country: string;
+}
+interface DriverPayload {
+  [key: string]: string | undefined; // Other keys from the CSV
+  address?: string; // Resolved address field
+}
 
-const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
+const DriverMassUpload: React.FC<MassUploadProps> = ({ arrayKey }) => {
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { data } = useGetLocationMasterQuery([]);
+  const locationMasterData = data?.locations
 
   const theme = useTheme();
 
-  // API mutations
-  const [postLocationMaster] = usePostLocationMasterMutation();
-  const [postVehicleMaster] = usePostVehicleMasterMutation();
-  const [postLaneMaster] = usePostLaneMasterMutation();
-  const [postDeviceMaster] = usePostDeviceMasterMutation();
-  const [postPackageMaster] = usePostPackageMasterMutation();
-  const [postCarrierMaster] = usePostCarrierMasterMutation();
-  const [postCustomerMaster] = useCustomerRegistrationMutation();
-  const [postVendorMaster] = useVendorRegistrationMutation();
   const [postDriverMaster] = useDriverRegistrationMutation()
 
   // Column mappings for CSV files
   const getColumnMappings = (): ColumnMapping[] => {
     switch (arrayKey) {
-      case 'locations':
-        return locationColumnNames;
-      case 'vehicles':
-        return vehicleColumnNames;
-      case 'lanes':
-        return laneColumnNames;
-      case 'devices':
-        return deviceColumnNames;
-      case 'packages':
-        return packageColumnNames;
-      case 'carriers':
-        return carrierColumnNames;
-      case 'partners':
-        if (!partnerType) throw new Error('Partner type is required for partners.');
-        return partnerType === 'vendor' ? vendorColumnNames : customerColumnNames;
       case 'drivers':
         return driversColumnNames;
       default:
@@ -95,16 +68,6 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
 
   // Post mapping for API calls
   const postMapping: Record<EntityKey, (data: object) => Promise<unknown>> = {
-    locations: postLocationMaster,
-    vehicles: postVehicleMaster,
-    lanes: postLaneMaster,
-    devices: postDeviceMaster,
-    packages: postPackageMaster,
-    carriers: postCarrierMaster,
-    partners: (data) => {
-      if (!partnerType) return Promise.reject(new Error('Partner type is required for partners.'));
-      return partnerType === 'vendor' ? postVendorMaster(data) : postCustomerMaster(data);
-    },
     drivers:postDriverMaster,
   };
 
@@ -119,7 +82,6 @@ const mapCsvToPayload = <T extends object>(
       const value = row[displayName]?.trim();
 
       if (nestedKey) {
-        // Ensure the nested structure exists before assigning values
         const nestedAcc = acc as Record<string, NestedRecord>;
         if (!nestedAcc[nestedKey]) {
           nestedAcc[nestedKey] = {} as NestedRecord;
@@ -148,52 +110,85 @@ const mapCsvToPayload = <T extends object>(
     link.click();
   };
 
-  // Handle file upload
-  const handleUpload = async () => {
-    if (!file) {
-      setMessage('Please select a file.');
-      return;
+
+const handleUpload = async () => {
+  if (!file) {
+    setMessage('Please select a file.');
+    return;
+  }
+
+  setIsUploading(true);
+
+  try {
+    const columnMappings = getColumnMappings();
+
+    // Fetch locations using the query
+
+
+    if (!locationMasterData || !Array.isArray(locationMasterData)) {
+      throw new Error('Failed to fetch or invalid location master data.');
     }
 
-    setIsUploading(true);
-
-    try {
-      const columnMappings = getColumnMappings();
-
-      const parsedData = await new Promise<ParsedRow[]>((resolve, reject) => {
-        Papa.parse(file, {
-          header: true,
-          skipEmptyLines: true,
-          complete: (result) => {
-            if (result.errors.length) {
-              reject(new Error(result.errors[0].message));
-            } else {
-              resolve(result.data as ParsedRow[]);
-            }
-          },
-          error: reject,
-        });
+    // Parse the CSV data
+    const parsedData = await new Promise<ParsedRow[]>((resolve, reject) => {
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (result) => {
+          if (result.errors.length) {
+            reject(new Error(result.errors[0].message));
+          } else {
+            resolve(result.data as ParsedRow[]);
+          }
+        },
+        error: reject,
       });
+    });
 
-      const transformedData = mapCsvToPayload(parsedData, columnMappings);
-      const body = {
-      [arrayKey]: transformedData.map((item: object) => {
-        if (arrayKey === 'partners' && partnerType) {
-          return { ...item, partner_type: partnerType };
+    const transformedData = mapCsvToPayload<DriverPayload>(parsedData, columnMappings);
+
+    // Map CSV data to payload with address resolution for drivers
+    const body = {
+      [arrayKey]: transformedData.map((item) => {
+        if (arrayKey === 'drivers') {
+          const locationId = item['locations'];
+          const matchingLocation = locationMasterData.find(
+            (location: Location) => location.loc_ID === locationId
+          );
+
+          const addressParts = [
+          matchingLocation.address_1,
+          matchingLocation.address_2,
+          matchingLocation.city,
+          matchingLocation.state,
+          matchingLocation.country,
+        ].filter(Boolean);
+
+        const address = addressParts.length > 0
+          ? addressParts.join(', ')
+          : '';
+
+          return {
+            ...item,
+            locations: [locationId],
+            address,
+          };
         }
-        
+
         return item;
       }),
     };
-     console.log("payload body :", body)
-      await postMapping[arrayKey](body);
-      setMessage('Upload successful!');
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'An error occurred during upload.');
-    } finally {
-      setIsUploading(false);
-    }
-  };
+
+    console.log('Payload body:', body);
+    await postMapping[arrayKey](body);
+
+    setMessage('Upload successful!');
+  } catch (error) {
+    setMessage(error instanceof Error ? error.message : 'An error occurred during upload.');
+  } finally {
+    setIsUploading(false);
+  }
+};
 
   return (
     <Box>
@@ -259,4 +254,4 @@ const mapCsvToPayload = <T extends object>(
   );
 };
 
-export default MassUpload;
+export default DriverMassUpload;

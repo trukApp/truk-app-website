@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TextField, Grid, Button, Collapse, Box, FormControlLabel, Checkbox, Select, MenuItem, FormHelperText, FormControl, InputLabel, SelectChangeEvent } from '@mui/material';
+import { TextField, Grid, Button, Collapse, Box, FormControlLabel, Checkbox, Select, MenuItem, FormHelperText, FormControl, InputLabel, SelectChangeEvent, Autocomplete } from '@mui/material';
 import { Formik, Form, FormikProps } from 'formik';
 import * as Yup from 'yup';
 import styles from './BusinessPartners.module.css';
@@ -12,6 +12,7 @@ import { withAuthComponent } from '../WithAuthComponent';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
+import MassUpload from '../MassUpload/MassUpload';
 
 
 // Validation schema for CustomerForm
@@ -57,6 +58,7 @@ interface Customer {
     loc_of_source_country: string;
     partner_functions: PartnerFunctions;
     correspondence: Correspondence;
+    loc_ID: string
 }
 
 interface Location {
@@ -126,7 +128,7 @@ const CustomerForm: React.FC = () => {
 
     const mapRowToInitialValues = (rowData: Customer) => ({
         name: rowData.name || '',
-        locationId: rowData.loc_of_source || '',
+        locationId: rowData.loc_ID || '',
         pincode: rowData.loc_of_source_pincode || '',
         state: rowData.loc_of_source_state || '',
         city: rowData.loc_of_source_city || '',
@@ -248,13 +250,13 @@ const CustomerForm: React.FC = () => {
                 console.log("I am going update the record")
                 const response = await updatePartnerDetails({ body: editBody, partnerId: updateRecordId }).unwrap();
                 console.log('API Response:', response);
-                if (response) {
-                    setFormInitialValues(initialCustomerValues)
-                    setShowForm(false)
-                    setUpdateRecord(false)
-                    setUpdateRecordId(0)
-                    setUpdateRecordData({})
-                }
+                // if (response) {
+                //     setFormInitialValues(initialCustomerValues)
+                //     setShowForm(false)
+                //     setUpdateRecord(false)
+                //     setUpdateRecordId(0)
+                //     setUpdateRecordData({})
+                // }
             } else {
                 console.log("I am going create the record")
                 const response = await customerRegistration(body).unwrap();
@@ -280,7 +282,7 @@ const CustomerForm: React.FC = () => {
         const selectedLocationId = event.target.value;
         setFieldValue('locationId', selectedLocationId);
         const selectedLocation = getAllLocations.find((loc: Location) => loc.loc_ID === (selectedLocationId));
-        console.log(selectedLocationId)
+        console.log(selectedLocation)
         // Check if the selectedLocation exists before calling setFieldValue
 
         if (selectedLocation) {
@@ -313,6 +315,7 @@ const CustomerForm: React.FC = () => {
                     Create Customer
                     {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 8 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 8 }} />}
                 </Button>
+                <MassUpload arrayKey='partners' partnerType="customer" />
             </Box>
 
             <Collapse in={showForm}>
@@ -533,7 +536,7 @@ const CustomerForm: React.FC = () => {
                                 </Grid>
 
                                 <h3 className={styles.mainHeading}>Partner Functions</h3>
-                                <Grid container spacing={2} style={{ marginBottom: '30px' }}>
+                                {/* <Grid container spacing={2} style={{ marginBottom: '30px' }}>
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
@@ -570,6 +573,32 @@ const CustomerForm: React.FC = () => {
                                             helperText={touched.billToParty && errors.billToParty}
                                         />
                                     </Grid>
+                                </Grid> */}
+
+
+
+                                <Grid container spacing={2} style={{ marginBottom: '30px' }}>
+                                    {['shipToParty', 'soldToParty', 'billToParty'].map((field) => (
+                                        <Grid item xs={12} sm={6} md={2.4} key={field}>
+                                            <Autocomplete
+                                                options={customersData}
+                                                getOptionLabel={(option) => `${option.customer_id}`}
+                                                renderInput={(params) => (
+                                                    <TextField
+                                                        {...params}
+                                                        label={field.replace(/([A-Z])/g, ' $1')}
+                                                        size="small"
+                                                        onBlur={handleBlur}
+                                                    />
+                                                )}
+                                                value={customersData.find((item: Customer) => item.customer_id === values[field as keyof typeof values]) || null}
+                                                onChange={(event, newValue) => {
+                                                    setFieldValue(field, newValue ? newValue.customer_id : '');
+                                                }}
+                                                isOptionEqualToValue={(option, value) => option.customer_id === value}
+                                            />
+                                        </Grid>
+                                    ))}
                                 </Grid>
                                 {updateRecord ? (
                                     <Box marginTop={3} textAlign="center">

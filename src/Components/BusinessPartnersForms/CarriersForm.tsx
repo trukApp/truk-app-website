@@ -19,6 +19,7 @@ import { useGetCarrierMasterQuery,usePostCarrierMasterMutation,useEditCarrierMas
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { withAuthComponent } from '../WithAuthComponent';
+import MassUpload from '../MassUpload/MassUpload';
 
 interface Location {
     loc_ID: string;
@@ -38,7 +39,7 @@ interface CarrierFormFE  {
         enrollSpotAuction: boolean,
         preferredCarrier: boolean,
 };
-interface CarrierFormBE { 
+export interface CarrierFormBE {
     carrier_loc_of_operation: string[];
     carrier_lanes: string[];
     vehicle_types_handling: string[];
@@ -51,7 +52,6 @@ interface CarrierFormBE {
     carrier_name: string;
     carrier_ID: string;
     cr_id: string;
-        
     }
 
 const CarrierForm: React.FC = () => {
@@ -225,15 +225,15 @@ const handleDelete = async (row: CarrierFormFE) => {
     }));
     
     const carrierColumns: GridColDef[] = [
-    { field: 'carrierId', headerName: 'Carrier ID', flex: 1 },
-    { field: 'name', headerName: 'Name', flex: 1.5 },
-    { field: 'address', headerName: 'Address', flex: 2 },
-    { field: 'contactPerson', headerName: 'Contact Person', flex: 1.5 },
-    { field: 'contactNumber', headerName: 'Contact Number', flex: 1.5 },
-    { field: 'emailId', headerName: 'Email ID', flex: 2 },
-    { field: 'vehicleTypes', headerName: 'Vehicle Types', flex: 1.5 },
-    { field: 'locationIds', headerName: 'Locations', flex: 1.5 },
-    { field: 'laneIds', headerName: 'Lane IDs', flex: 1.5 },
+    { field: 'carrierId', headerName: 'Carrier ID', width:150 },
+    { field: 'name', headerName: 'Name', width:150 },
+    { field: 'address', headerName: 'Address', width:150 },
+    { field: 'contactPerson', headerName: 'Contact Person', width:150 },
+    { field: 'contactNumber', headerName: 'Contact Number', width:150 },
+    { field: 'emailId', headerName: 'Email ID', width:150 },
+    { field: 'vehicleTypes', headerName: 'Vehicle Types', width:150 },
+    { field: 'locationIds', headerName: 'Locations', width:150 },
+    { field: 'laneIds', headerName: 'Lane IDs', width:150 },
     // { field: 'deviceDetails', headerName: 'Device Details', flex: 2 },
     // {
     //     field: 'enrollSpotAuction',
@@ -281,6 +281,7 @@ const handleDelete = async (row: CarrierFormFE) => {
                     Create Carrier
                     {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 4 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 4 }} />}
                 </Button>
+                <MassUpload arrayKey='carriers'/>
             </Box>
 
             <Collapse in={showForm}>

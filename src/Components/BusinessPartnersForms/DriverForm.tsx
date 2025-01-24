@@ -12,10 +12,17 @@ import { GridColDef } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
+import DriverMassUpload from '../MassUpload/DriverMassUpload';
+
 interface DriverFormValues {
   driverName: string;
-  locationID: string;
-  address: string;
+  locations: string[];
+  address1: string;
+  address2: string;
+  city: string;
+  state: string;
+  country: string;
+  pincode: string;
   drivingLicense: string;
   expiryDate: string;
   driverContactNumber: string;
@@ -25,11 +32,10 @@ interface DriverFormValues {
 }
 
 interface Driver {
-  // vehicleTypes: any;
   id: number;
   dri_ID: string;
   driver_name: string;
-  location_loc_ID: string;
+  locations: string[];
   driver_correspondence: {
     email: string;
     phone: string;
@@ -39,7 +45,7 @@ interface Driver {
   location_city: string;
   location_country: string;
   location_state: string;
-  vehicle_types: string[];
+  vehicle_types: string;
   logged_in: number;
   driver_id: number;
   location_pincode: string;
@@ -49,7 +55,6 @@ interface Driver {
   location_loc_type: string;
   address: string;
   driverName: string;
-  locationID: string;
   drivingLicense: string;
   driverContactNumber: string;
   expiryDate: string;
@@ -63,12 +68,15 @@ interface Driver {
 }
 
 interface Location {
+  locations: string[];
   city: string;
   country: string;
   gln_code: string;
   iata_code: string;
   latitude: string;
   loc_ID: string;
+  address_1: string;
+  address_2: string;
   loc_desc: string;
   loc_type: string;
   location_id: number;
@@ -80,8 +88,10 @@ interface Location {
 
 const initialDriverValues = {
   driverName: '',
-  locationID: '',
-  address: '',
+  locations: [] as string[],
+  // address: '',
+  address1: '',
+  address2: '',
   drivingLicense: '',
   expiryDate: '',
   driverContactNumber: '',
@@ -103,8 +113,6 @@ const DriverForm: React.FC = () => {
   const [formInitialValues, setFormInitialValues] = useState(initialDriverValues);
   const [updateRecordData, setUpdateRecordData] = useState({});
   const [updateRecordId, setUpdateRecordId] = useState(0)
-  console.log("formInitialValues: ", formInitialValues)
-  console.log("updateRecordId: ", updateRecordId)
   const { data, error, isLoading } = useGetAllDriversDataQuery({})
   console.log("all drivers data :", data?.drivers)
   const driversData = data?.drivers.length > 0 ? data?.drivers : []
@@ -127,29 +135,35 @@ const DriverForm: React.FC = () => {
 
   const driverValidationSchema = Yup.object({
     driverName: Yup.string().required('Driver Name is required'),
-    locationID: Yup.string().required('Location ID is required'),
-    address: Yup.string().required('Address is required'),
+    locations: Yup.array().of(Yup.string()).min(1, 'Location id is required'),
     drivingLicense: Yup.string().required('Driving License is required'),
     expiryDate: Yup.string().required('Expiry Date is required'),
-    driverContactNumber: Yup.string().required('Contact Number is required'),
+    driverContactNumber: Yup.string().required('Contact Number is required').matches(/^\d{10}$/, 'Contact Number must be exactly 10 digits'),
     emailID: Yup.string().email('Invalid email format').required('Email ID is required'),
   });
 
-  const mapRowToInitialValues = (rowData: Driver) => ({
-    driverName: rowData.driverName || '',
-    locationID: rowData.locationID || '',
-    address: rowData.address || '',
-    drivingLicense: rowData.drivingLicense || '',
-    driverContactNumber: rowData.driverContactNumber || '',
-    expiryDate: rowData.expiryDate || '',
-    emailID: rowData.emailID || '',
-    vehicleTypes: [rowData.vehicleTypes],
-    pincode: rowData.locationPincode || '',
-    state: rowData.locationState || '',
-    city: rowData.locationCity || '',
-    country: rowData.locationCountry || '',
-    loggedIntoApp: rowData.loggedIntoApp === true,
-  });
+
+const mapRowToInitialValues = (rowData: Driver) => {
+  console.log('Row Data:', rowData);
+  const matchedLocation = getAllLocations.find((loc: Location) => loc.loc_ID === rowData?.locations[0]);
+
+  return {
+    driverName: rowData?.driverName || '',
+    locations: rowData?.locations ? [...rowData.locations] : [],
+    drivingLicense: rowData?.drivingLicense || '',
+    driverContactNumber: rowData?.driverContactNumber || '',
+    expiryDate: rowData?.expiryDate || '',
+    emailID: rowData?.emailID || '',
+    vehicleTypes: rowData?.vehicleTypes ? [...rowData.vehicleTypes] : [],
+    loggedIntoApp: rowData?.loggedIntoApp,
+    address1: matchedLocation?.address_1 || '',
+    address2: matchedLocation?.address_2 || '',
+    city: matchedLocation?.city || '',
+    state: matchedLocation?.state || '',
+    country: matchedLocation?.country || '',
+    pincode: matchedLocation?.pincode || '',
+  };
+};
 
 
   const handleEdit = async (rowData: Driver) => {
@@ -158,160 +172,182 @@ const DriverForm: React.FC = () => {
     setUpdateRecord(true)
     setUpdateRecordData(rowData)
     const updatedInitialValues = await mapRowToInitialValues(rowData);
-    console.log('Updated Initial Values:', updatedInitialValues);
+
     setUpdateRecordId(rowData?.id)
 
     setFormInitialValues(updatedInitialValues);
   };
 
   const handleDelete = async (rowData: Driver) => {
-    console.log('Delete clicked for:', rowData);
-    const deleteId = rowData?.id
-    const response = await deleteDriver(deleteId)
-    console.log("delete response :", response)
-  };
+  const deleteId = rowData?.id;
+  if (!deleteId) {
+    console.error("Row ID is missing");
+    return;
+  }
+  const confirmed = window.confirm("Are you sure you want to delete this vehicle?");
+  
+  if (!confirmed) {
+    console.log("Delete canceled by user.");
+    return;
+  }
 
-  const driverColumns: GridColDef[] = [
-    { field: 'driverID', headerName: 'Driver ID', width: 150 },
-    { field: 'driverName', headerName: 'Name', width: 200 },
-    { field: 'locationID', headerName: 'Location ID', width: 150 },
-    { field: 'drivingLicense', headerName: 'Driving License', width: 200 },
-    { field: 'expiryDate', headerName: 'Expiry Date', width: 150 },
-    { field: 'driverContactNumber', headerName: 'Contact Number', width: 150 },
-    { field: 'emailID', headerName: 'Email ID', width: 200 },
-    { field: 'vehicleTypes', headerName: 'Vehicle Types', width: 200 },
-    { field: 'loggedIntoApp', headerName: 'Logged In', width: 100 },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      width: 150,
-      renderCell: (params) => (
-        <>
-          <IconButton
-            color="primary"
-            onClick={() => handleEdit(params.row)}
-          >
-            <EditIcon />
-          </IconButton>
-          <IconButton
-            color="secondary"
-            onClick={() => handleDelete(params.row)}
-          >
-            <DeleteIcon />
-          </IconButton>
-        </>
-      ),
-    },
-  ];
+  try {
+    const response = await deleteDriver(deleteId);
+    console.log("Delete response:", response);
+  } catch (error) {
+    console.error("Error deleting vehicle:", error);
+  }
+};
+
+const driverColumns: GridColDef[] = [
+  { field: 'driverID', headerName: 'Driver ID', width: 150 },
+  { field: 'driverName', headerName: 'Name', width: 200 },
+  { field: 'locations', headerName: 'Location ID', width: 200 },
+  { field: 'address', headerName: 'Address', width: 300 },
+  { field: 'drivingLicense', headerName: 'Driving License', width: 200 },
+  {
+    field: 'expiryDate',
+    headerName: 'Expiry Date',
+    width: 150,
+// Format the date or show 'N/A' if missing
+  },
+  { field: 'driverContactNumber', headerName: 'Contact Number', width: 150 },
+  { field: 'emailID', headerName: 'Email ID', width: 200 },
+  { field: 'vehicleTypes', headerName: 'Vehicle Types', width: 200 },
+  { field: 'loggedIntoApp', headerName: 'Logged In', width: 100 },
+
+  {
+    field: 'actions',
+    headerName: 'Actions',
+    width: 150,
+    renderCell: (params) => (
+      <>
+        <IconButton color="primary" onClick={() => handleEdit(params.row)}>
+          <EditIcon />
+        </IconButton>
+        <IconButton color="secondary" onClick={() => handleDelete(params.row)}>
+          <DeleteIcon />
+        </IconButton>
+      </>
+    ),
+  },
+];
+
 
   const driversDataRows = driversData.map((driver: Driver) => ({
     id: driver?.driver_id,
     driverID: driver?.dri_ID,
     driverName: driver?.driver_name,
-    locationID: driver?.location_loc_ID,
-    locationCity: driver?.location_city,
-    locationCountry: driver?.location_country,
-    locationState: driver?.location_state,
-    locationPincode: driver?.location_pincode,
-    locationLongitude: driver?.location_longitude,
-    locationLatitude: driver?.location_latitude,
-    locationDescription: driver?.location_loc_desc,
+    locations: driver?.locations,
+    // locationCity: driver?.location_city,
+    // locationCountry: driver?.location_country,
+    // locationState: driver?.location_state,
+    // locationPincode: driver?.location_pincode,
+    // locationLongitude: driver?.location_longitude,
+    // locationLatitude: driver?.location_latitude,
+    // locationDescription: driver?.location_loc_desc,
     locationType: driver?.location_loc_type,
     drivingLicense: driver?.driver_correspondence?.driving_license,
     expiryDate: driver?.driver_correspondence?.expiry_date,
     driverContactNumber: driver?.driver_correspondence?.phone,
     emailID: driver?.driver_correspondence?.email,
-    vehicleTypes: driver?.vehicle_types.join(', '),
+    vehicleTypes: driver?.vehicle_types,
     loggedIntoApp: driver?.logged_in ? 'Yes' : 'No',
     address: driver?.address,
   })) || [];
 
-  const handleDriverSubmit = async (values: DriverFormValues) => {
+  const handleDriverSubmit: (values: DriverFormValues) => Promise<void> = async (values) => {
     console.log('Driver Form Submitted:', values);
     try {
       const body = {
         drivers: [
           {
-            location_id: values?.locationID,
+            locations: values?.locations,
             driver_name: values?.driverName,
-            address: values?.address,
+            address: [values?.address1,values?.address2,values?.city,values?.state,values?.country,values?.pincode,].filter((part) => part).join(', ') ,
             driver_correspondence: {
               driving_license: values?.drivingLicense,
               expiry_date: values?.expiryDate,
               phone: values?.driverContactNumber,
-              email: values?.emailID
+              email: values?.emailID,
             },
             vehicle_types: values?.vehicleTypes,
-            logged_in: values?.loggedIntoApp
-          }
-        ]
-      }
+            logged_in: values?.loggedIntoApp,
+          },
+        ],
+      };
 
       const editBody = {
         ...updateRecordData,
-        location_id: values?.locationID,
+        locations: values?.locations,
         driver_name: values?.driverName,
-        address: values?.address,
+        address: [values?.address1,values?.address2,values?.city,values?.state,values?.country,values?.pincode,].filter((part) => part).join(', ') ,
         driver_correspondence: {
           driving_license: values?.drivingLicense,
           expiry_date: values?.expiryDate,
           phone: values?.driverContactNumber,
-          email: values?.emailID
+          email: values?.emailID,
         },
         vehicle_types: values?.vehicleTypes,
-        logged_in: values?.loggedIntoApp
-      }
-      console.log("body: ", body)
+        logged_in: values?.loggedIntoApp,
+      };
+
+      console.log('body: ', body);
       if (updateRecord) {
         const response = await editDriverDetails({ body: editBody, driverId: updateRecordId }).unwrap();
         console.log('API Response:', response);
-        setFormInitialValues(initialDriverValues)
-        setShowForm(false)
-        setUpdateRecord(false)
-        setUpdateRecordId(0)
-        setUpdateRecordData({})
+        setFormInitialValues(initialDriverValues);
+        setShowForm(false);
+        setUpdateRecord(false);
+        setUpdateRecordId(0);
+        setUpdateRecordData({});
       } else {
+        console.log("post body for drivers :", body)
         const response = await driverRegistration(body).unwrap();
         console.log('API Response:', response);
-        setFormInitialValues(initialDriverValues)
-        setShowForm(false)
-        setUpdateRecord(false)
-        setUpdateRecordId(0)
-        setUpdateRecordData({})
+        setFormInitialValues(initialDriverValues);
+        setShowForm(false);
+        setUpdateRecord(false);
+        setUpdateRecordId(0);
+        setUpdateRecordData({});
       }
-
     } catch (error) {
       console.error('API Error:', error);
     }
   };
 
   const handleLocationChange = (
-    event: SelectChangeEvent<string>,
-    setFieldValue: FormikProps<any>['setFieldValue']
-  ) => {
-    const selectedLocationId = event.target.value;
-    setFieldValue('locationID', selectedLocationId);
-    const selectedLocation = getAllLocations.find((loc: Location) => loc.location_id === Number(selectedLocationId));
-    console.log(selectedLocationId)
-    // Check if the selectedLocation exists before calling setFieldValue
+  event: SelectChangeEvent<string>,
+  setFieldValue: FormikProps<DriverFormValues>['setFieldValue']
+) => {
+  const selectedLocation = event.target.value;
 
-    if (selectedLocation) {
+  // Update the locations field as an array with a single selected value
+  setFieldValue('locations', [selectedLocation]);
 
-      setFieldValue('city', selectedLocation?.city || '');
-      setFieldValue('district', selectedLocation?.district || '');
-      setFieldValue('state', selectedLocation?.state || '');
-      setFieldValue('country', selectedLocation?.country || '');
-      setFieldValue('pincode', selectedLocation?.pincode || '');
-    } else {
-      // Clear fields if no matching location found
-      setFieldValue('locationId', '');
-      setFieldValue('city', '');
-      setFieldValue('district', '');
-      setFieldValue('state', '');
-      setFieldValue('country', '');
-      setFieldValue('pincode', '');
-    }
-  };
+  // Find the selected location object
+  const matchedLocation = getAllLocations.find((loc: Location) => loc.loc_ID === selectedLocation);
+
+  if (matchedLocation) {
+    // Set corresponding fields from the matched location
+    setFieldValue('address1', matchedLocation.address_1 || '');
+    setFieldValue('address2', matchedLocation.address_2 || '');
+    setFieldValue('city', matchedLocation.city || '');
+    setFieldValue('district', matchedLocation.district || '');
+    setFieldValue('state', matchedLocation.state || '');
+    setFieldValue('country', matchedLocation.country || '');
+    setFieldValue('pincode', matchedLocation.pincode || '');
+  } else {
+    // Clear fields if no matching location is found
+    setFieldValue('city', '');
+    setFieldValue('district', '');
+    setFieldValue('state', '');
+    setFieldValue('country', '');
+    setFieldValue('pincode', '');
+  }
+};
+
+
   return (
     <div className={styles.formsMainContainer}>
       <Box display="flex" justifyContent="flex-end" gap={2}>
@@ -323,6 +359,7 @@ const DriverForm: React.FC = () => {
           Create Driver
           {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 4 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 4 }} />}
         </Button>
+        <DriverMassUpload arrayKey='drivers'/>
       </Box>
 
       <Collapse in={showForm}>
@@ -349,59 +386,33 @@ const DriverForm: React.FC = () => {
                       helperText={touched.driverName && errors.driverName}
                     />
                   </Grid>
-                  {/* <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth size='small'
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <FormControl fullWidth size="small" error={touched.locations && Boolean(errors.locations)}>
+                    <InputLabel>Location ID</InputLabel>
+                    <Select
                       label="Location ID"
-                      name="locationID"
-                      value={values.locationID}
-                      onChange={handleChange}
+                      name="locations"
+                      value={values.locations[0] || ''}
+                      onChange={(event) => handleLocationChange(event, setFieldValue)}
                       onBlur={handleBlur}
-                      error={touched.locationID && Boolean(errors.locationID)}
-                      helperText={touched.locationID && errors.locationID}
-                    />
-                  </Grid> */}
+                    >
+                      {getAllLocations.map((location: Location) => (
+                        <MenuItem key={location?.loc_ID} value={location?.loc_ID}>
+                          {location.loc_ID}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    {touched.locations && errors.locations && (
+                      <FormHelperText>{errors.locations}</FormHelperText>
+                    )}
+                  </FormControl>
 
-                  <Grid item xs={12} sm={6} md={2.4}>
-                    <FormControl fullWidth size="small" error={touched.locationID && Boolean(errors.locationID)}>
-                      <InputLabel>Location ID</InputLabel>
-                      <Select
-                        label="Location ID"
-                        name="locationID"
-                        value={values.locationID}
-                        onChange={(event) => handleLocationChange(event, setFieldValue)}
-                        onBlur={handleBlur}
-                      >
-                        {getAllLocations.map((location: Location) => {
-                          return (
-                            <MenuItem key={location?.location_id} value={location?.location_id}>
-                              {location.location_id}
-                            </MenuItem>
-                          );
-                        })}
-                      </Select>
-                      {touched.locationID && errors.locationID && (
-                        <FormHelperText>{errors.locationID}</FormHelperText>
-                      )}
-                    </FormControl>
                   </Grid>
-                  {/* <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth size='small'
-                      label="Address"
-                      name="address"
-                      value={values.address}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      error={touched.address && Boolean(errors.address)}
-                      helperText={touched.address && errors.address}
-                    />
-                  </Grid> */}
 
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth size='small'
-                      label="Pincode"
+                      label="Pincode" disabled
                       name="pincode"
                       value={values.pincode}
                       onChange={handleChange}
@@ -413,7 +424,31 @@ const DriverForm: React.FC = () => {
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth size='small'
-                      label="City"
+                      label="Address1" disabled
+                      name="address1"
+                      value={values.address1}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.address1 && Boolean(errors.address1)}
+                      helperText={touched.address1 && errors.address1}
+                    />
+                  </Grid>
+                      <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth size='small'
+                      label="Address2" disabled
+                      name="address2"
+                      value={values.address2}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.address2 && Boolean(errors.address2)}
+                      helperText={touched.address2 && errors.address2}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth size='small'
+                      label="City" disabled
                       name="city"
                       value={values.city}
                       onChange={handleChange}
@@ -422,11 +457,23 @@ const DriverForm: React.FC = () => {
                       helperText={touched.city && errors.city}
                     />
                   </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth size='small'
+                      label="State" disabled
+                      name="state"
+                      value={values.state}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.state && Boolean(errors.state)}
+                      helperText={touched.state && errors.state}
+                    />
+                  </Grid>
 
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth size='small'
-                      label="Country"
+                      label="Country" disabled
                       name="country"
                       value={values.country}
                       onChange={handleChange}
@@ -463,6 +510,9 @@ const DriverForm: React.FC = () => {
                       error={touched.expiryDate && Boolean(errors.expiryDate)}
                       helperText={touched.expiryDate && errors.expiryDate}
                       InputLabelProps={{ shrink: true }}
+                      InputProps={{
+                      inputProps: { min: new Date().toISOString().split('T')[0] },
+                      }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6} md={2.4}>
@@ -510,7 +560,7 @@ const DriverForm: React.FC = () => {
                         multiple: true,
                       }}
                     >
-                      {['Truck', 'Mini Auto', 'Lorry'].map((type) => (
+                      {['Truck', 'Mini Auto', 'Lorry','Container','Van',"Trailer","Car"].map((type) => (
                         <MenuItem key={type} value={type}>
                           {type}
                         </MenuItem>

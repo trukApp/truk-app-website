@@ -11,8 +11,8 @@ import styles from './MasterData.module.css';
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useGetPackageMasterQuery,usePostPackageMasterMutation,useEditPackageMasterMutation,useDeletePackageMasterMutation } from '@/api/apiSlice';
-
-interface Package {
+import MassUpload from '../MassUpload/MassUpload';
+export interface Package {
   handling_unit_type: string;
   dimensions: string;
   packageItem: string;
@@ -202,6 +202,7 @@ const rows = data?.packages.map((packageItem :Package) => ({
           Create Package
           {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 8 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 8 }} />}
         </Button>
+        <MassUpload arrayKey='packages' />
       </Box>
 
       <Collapse in={showForm}>

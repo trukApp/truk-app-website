@@ -325,17 +325,20 @@ const rows = data?.lanes.map((lane:Lane) => ({
       <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md:'24px' } }} align="center" gutterBottom>
           Transportation lanes master
       </Typography>
-      <Box display="flex" justifyContent="flex-end" >
+      <Box display="flex" justifyContent="flex-end">
+          <Box  >
         <Button
           variant="contained"
           onClick={() => setShowForm((prev) => !prev)}
           className={styles.createButton}
         >
           Create Lane
-          {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 8 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 8 }} />}
+          {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 4 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 4 }} />}
         </Button>
       </Box>
       <MassUpload arrayKey="lanes"/>
+      </Box>
+
 
 
       <Collapse in={showForm}>

@@ -11,6 +11,7 @@ import { useCustomerRegistrationMutation, useDeleteBusinessPartnerMutation, useE
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
+import MassUpload from '../MassUpload/MassUpload';
 
 interface PartnerFunctions {
     forwarding_agent: string;
@@ -23,7 +24,7 @@ interface Correspondence {
     contact_number: string;
     email: string;
 }
-interface Customer {
+export interface Customer {
     partner_id: number;
     supplier_id: number | null;
     customer_id: string;
@@ -187,7 +188,7 @@ const SupplierForm: React.FC = () => {
         contactPerson: Yup.string().required('Contact Person is required'),
         contactNumber: Yup.string().required('Contact Number is required'),
         emailId: Yup.string().email('Invalid email format').required('Email ID is required'),
-        locationOfSource: Yup.array().min(1, 'At least one location is required'),
+        locationOfSource: Yup.string().required( 'Location is required'),
         orderingAddress: Yup.string().required('Ship To Party is required'),
         goodsSupplier: Yup.string().required('Sold To Party is required'),
         forwardingAgent: Yup.string().required('Bill To Party is required')
@@ -304,6 +305,7 @@ const SupplierForm: React.FC = () => {
                     Create Vendor
                     {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 4 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 4 }} />}
                 </Button>
+                <MassUpload arrayKey='partners' partnerType="vendor"/>
             </Box>
 
             <Collapse in={showForm}>

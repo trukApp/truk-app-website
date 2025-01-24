@@ -54,6 +54,14 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: [{ type: "PARTNERS", id: "LIST" }],
     }),
+      vendorRegistration: builder.mutation({
+      query: (body) => ({
+        url: "business/create-partners",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "PARTNERS", id: "LIST" }],
+    }),
 
     editBusinessPartner: builder.mutation({
       query: ({ body, partnerId }) => ({
@@ -169,6 +177,11 @@ export const apiSlice = createApi({
         method: "GET",
       }),
       providesTags: [{ type: "LocationMaster", id: "LIST" }],
+    }),
+
+    getLocationById: builder.query<string, string>({
+        query: (locationId) => `masLoc/location-ID?loc_ID=${locationId}`,
+           
     }),
 
     postLocationMaster: builder.mutation({
@@ -343,6 +356,7 @@ export const apiSlice = createApi({
 export const {
   useUserLoginMutation,
   useCustomerRegistrationMutation,
+  useVendorRegistrationMutation,
   useDriverRegistrationMutation,
   useGetAllCustomersDataQuery,
   useGetAllVendorsDataQuery,
@@ -357,6 +371,7 @@ export const {
   useDeleteCarrierMasterMutation,
   
   useGetLocationMasterQuery,
+  useGetLocationByIdQuery,
   usePostLocationMasterMutation,
   useEditLocationMasterMutation,
   useDeleteLocationMasterMutation,

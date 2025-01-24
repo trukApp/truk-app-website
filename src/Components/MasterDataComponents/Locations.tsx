@@ -29,24 +29,25 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MassUpload from '../MassUpload/MassUpload';
 
-// Define the type for each location object returned by the backend
 export interface Location {
   location_id: number;
   loc_ID: string;
   loc_desc: string;
-  loc_type?: string;
-  gln_code?: string;
-  iata_code?: string;
+  loc_type: string;
+  gln_code: string;
+  iata_code: string;
   longitude: string;
   latitude: string;
-  time_zone?: string;
-  city?: string;
-  district?: string;
-  state?: string;
-  country?: string;
-  pincode?: string;
-  contact_name?: string;
-  contact_number?: string;
+  time_zone: string;
+  address_1: string;
+  address_2: string;
+  city: string;
+  district: string;
+  state: string;
+  country: string;
+  pincode: string;
+  contact_name: string;
+  contact_number: string;
 }
 
 // Define the type for each row in the DataGrid
@@ -127,6 +128,8 @@ const Locations: React.FC = () => {
                       longitude: values.longitude,
                       latitude: values.latitude,
                       time_zone: values.timeZone,
+                      address_1 : values.addressLine1,
+                      address_2:values.addressLine2,
                       city: values.city,
                       state: values.state,
                       country: values.country,
@@ -142,6 +145,8 @@ const Locations: React.FC = () => {
                       longitude: values.longitude,
                       latitude: values.latitude,
                       time_zone: values.timeZone,
+                      address_1 : values.addressLine1,
+                      address_2 : values.addressLine2,
                       city: values.city,
                       state: values.state,
                       country: values.country,
@@ -268,7 +273,9 @@ const handleDelete = async (row: DataGridRow) => {
     latitude: location.latitude,
     timeZone: location.time_zone || "UTC+05:30",
     city: location.city || `City-${index + 1}`,
-    district: location.district || `District-${index + 1}`,
+    addressLine1: location.address_1,
+    addressLine2:location.address_2,
+    // district: location.district || `District-${index + 1}`,
     state: location.state || `State-${index + 1}`,
     country: location.country || "India",
     pincode: location.pincode || `5000${index}`,
@@ -285,8 +292,10 @@ const handleDelete = async (row: DataGridRow) => {
     { field: "longitude", headerName: "Longitude", width: 150 },
     { field: "latitude", headerName: "Latitude", width: 150 },
     { field: "timeZone", headerName: "Time Zone", width: 150 },
+    { field: "addressLine1", headerName: "Address Line1", width: 150 },
+    { field: "addressLine2", headerName: "Address Line2", width: 150 },
     { field: "city", headerName: "City", width: 150 },
-    { field: "district", headerName: "District", width: 150 },
+    // { field: "district", headerName: "District", width: 150 },
     { field: "state", headerName: "State", width: 150 },
     { field: "country", headerName: "Country", width: 150 },
     { field: "pincode", headerName: "Pincode", width: 150 },
@@ -508,10 +517,11 @@ const handleDelete = async (row: DataGridRow) => {
                         fullWidth
                         size="small"
                         label="Address line 1"
-                        name="address line 1"
+                        name="addressLine1"
                         value={values.addressLine1}
                         onChange={handleChange}
-                        onBlur={handleBlur}
+                      onBlur={handleBlur}
+                      InputLabelProps={{ shrink: true }}
                       />
                   </Grid>
                    <Grid item xs={12} sm={6} md={2.4}>
@@ -519,10 +529,11 @@ const handleDelete = async (row: DataGridRow) => {
                         fullWidth
                         size="small"
                         label="Address line 2"
-                        name="address line 2"
+                        name="addressLine2"
                         value={values.addressLine2}
                         onChange={handleChange}
-                        onBlur={handleBlur}
+                      onBlur={handleBlur}
+                      InputLabelProps={{ shrink: true }}
                       />
                     </Grid>
                     <Grid item xs={12} sm={6} md={2.4}>
@@ -536,7 +547,7 @@ const handleDelete = async (row: DataGridRow) => {
                         onBlur={handleBlur}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={2.4}>
+                    {/* <Grid item xs={12} sm={6} md={2.4}>
                       <TextField
                         fullWidth
                         size="small"
@@ -546,7 +557,7 @@ const handleDelete = async (row: DataGridRow) => {
                         onChange={handleChange}
                         onBlur={handleBlur}
                       />
-                    </Grid>
+                    </Grid> */}
                     <Grid item xs={12} sm={6} md={2.4}>
                       <TextField
                         fullWidth
