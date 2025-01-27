@@ -353,7 +353,7 @@ export const apiSlice = createApi({
     //  UOM Master
     getUomMaster: builder.query({
       query: () => ({
-        url: "device/all-devices",
+        url: "masterUom/all-uom",
         method: "GET",
       }),
       providesTags: [{ type: "UomMaster", id: "LIST" }],
@@ -361,7 +361,7 @@ export const apiSlice = createApi({
 
     postUomMaster: builder.mutation({
       query: (body) => ({
-        url: "device/add-devices",
+        url: "masterUom/add-uom",
         method: "POST",
         body,
       }),
@@ -369,8 +369,8 @@ export const apiSlice = createApi({
     }),
 
     editUomMaster: builder.mutation({
-      query: ({ body, deviceId }) => ({
-        url: `device/edit-device?device_id=${deviceId}`,
+      query: ({ body, uomId }) => ({
+        url: `masterUom/edit-uom?unit_id=${uomId}`,
         method: "PUT",
         body,
       }),
@@ -378,8 +378,8 @@ export const apiSlice = createApi({
     }),
 
     deleteUomMaster: builder.mutation({
-      query: (deviceId) => ({
-        url: `device/delete-device?device_id=${deviceId}`,
+      query: (uomId) => ({
+        url: `masterUom/delete-uom?unit_id=1${uomId}`,
         method: "DELETE",
       }),
       invalidatesTags: [{ type: "UomMaster", id: "LIST" }],

@@ -1,4 +1,3 @@
-
 export const locationColumnNames = [
   { displayName: 'Location Description *', key: 'loc_desc' },
   { displayName: 'Location Type *', key: 'loc_type' },
@@ -121,3 +120,62 @@ export const driversColumnNames= [
   { displayName: 'Logged Into App', key: 'logged_in' },
 ];
 
+// export const productColumnNames = [
+//   { key: "product_name", displayName: "Product Name" },
+//   { key: "product_desc", displayName: "Product Description" },
+//   { key: "basic_uom", displayName: "Basic Unit of Measure" },
+//   { key: "sales_uom", displayName: "Sales Unit of Measure" },
+//   { key: "weight", displayName: "Weight" },
+//   { key: "weight_uom", displayName: "Weight Unit of Measure" },
+//   { key: "volume", displayName: "Volume" },
+//   { key: "volume_uom", displayName: "Volume Unit of Measure" },
+//   { key: "expiration", displayName: "Expiration Date" },
+//   { key: "best_before", displayName: "Best Before Date" },
+//   { key: "stacking_factor", displayName: "Stacking Factor" },
+//   { key: "sku_num", displayName: "SKU Number" },
+//   { key: "hsn_code", displayName: "HSN Code" },
+//   { key: "documents", displayName: "Documents" },
+//   { key: "loc_ID", displayName: "Location ID" },
+//   { key: "special_instructions", displayName: "Special Instructions" },
+//   { key: "packing_label", displayName: "Packing Label" },
+//   { key: "fragile_goods", displayName: "Fragile Goods" },
+//   { key: "dangerous_goods", displayName: "Dangerous Goods" },
+//   { key: "hazardous", displayName: "Hazardous" },
+//   { key: "temp_controlled", displayName: "Temperature Controlled" },
+//   { displayName: 'Packaging Type ID', key: 'pac_ID', nestedKey: 'packaging_type' },
+//   {displayName: 'Location id',key: 'location',nestedKey: 'packaging_type'},
+// ];
+
+export const productColumnNames = [
+  { key: "product_name", displayName: "Product Name", example: "Product A" },
+  { key: "product_desc", displayName: "Product Description", example: "High-quality product" },
+  { key: "basic_uom", displayName: "Basic Unit of Measure", example: "Kg" },
+  { key: "sales_uom", displayName: "Sales Unit of Measure", example: "CAN" },
+  { key: "weight", displayName: "Weight", example: "10" },
+  { key: "weight_uom", displayName: "Weight Unit of Measure", example: "Kg" },
+  { key: "volume", displayName: "Volume", example: "1.5" },
+  { key: "volume_uom", displayName: "Volume Unit of Measure", example: "L" },
+  { key: "expiration", displayName: "Expiration Date", example: "2025-12-31" },
+  { key: "best_before", displayName: "Best Before Date", example: "2025-06-30" },
+  { key: "stacking_factor", displayName: "Stacking Factor", example: "5" },
+  { key: "sku_num", displayName: "SKU Number", example: "SKU123456" },
+  { key: "hsn_code", displayName: "HSN Code", example: "HSN7890" },
+  { key: "documents", displayName: "Documents", example: "URL or file reference" },
+  { key: "loc_ID", displayName: "Location ID", example: "LOC000015" },
+  { key: "special_instructions", displayName: "Special Instructions", example: "Handle with care" },
+  { key: "packing_label", displayName: "Packing Label", example: "1 (Yes) or 0 (No)" },
+  { key: "fragile_goods", displayName: "Fragile Goods", example: "1 (Yes) or 0 (No)" },
+  { key: "dangerous_goods", displayName: "Dangerous Goods", example: "1 (Yes) or 0 (No)" },
+  { key: "hazardous", displayName: "Hazardous", example: "1 (Yes) or 0 (No)" },
+  { key: "temp_controlled", displayName: "Temperature Controlled", example: "1 (Yes) or 0 (No)" },
+  {
+    key: "packaging_type.pac_ID",
+    displayName: "Packaging Type ID",
+    example: "PKG000001",
+  },
+  {
+    key: "packaging_type.location",
+    displayName: "Packaging Location",
+    example: "LOC000015",
+  },
+];

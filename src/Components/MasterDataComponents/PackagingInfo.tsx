@@ -12,6 +12,8 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useGetPackageMasterQuery,usePostPackageMasterMutation,useEditPackageMasterMutation,useDeletePackageMasterMutation } from '@/api/apiSlice';
 import MassUpload from '../MassUpload/MassUpload';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 export interface Package {
   handling_unit_type: string;
   dimensions: string;
@@ -40,7 +42,9 @@ const PackagingForm = () => {
   const [postPackage] = usePostPackageMasterMutation()
   const [editPackage] = useEditPackageMasterMutation()
   const [deletePackage] = useDeletePackageMasterMutation()
-  const lengthUnits = ['meter', 'centi meter', 'milli meter','inch' ]
+  // const unitsofMeasurement = ['meter', 'centi meter', 'milli meter', 'inch']
+  const unitsofMeasurement = useSelector((state: RootState) => state.auth.unitsofMeasurement);
+  
   console.log('package data :', data?.packages)
   if (error) {
     console.log("err while getting package info :", error)
@@ -93,7 +97,7 @@ const PackagingForm = () => {
       id:'',
       packagingTypeId: '', // Auto-generated, read-only
       packagingTypeName: '',
-      packagingDimensionsUoM: lengthUnits[0],
+      packagingDimensionsUoM: unitsofMeasurement[0],
       packagingDimensions: '',
       handlingUnitType: '',
     },
@@ -285,7 +289,7 @@ const rows = data?.packages.map((packageItem :Package) => ({
                         helperText={formik.touched.packagingDimensionsUoM && formik.errors.packagingDimensionsUoM}
                         size="small"
                   >
-                      {lengthUnits.map((unit) => (
+                      {unitsofMeasurement.map((unit) => (
                           <MenuItem key={unit} value={unit}>
                               {unit}
                           </MenuItem>

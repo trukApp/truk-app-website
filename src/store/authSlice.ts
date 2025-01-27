@@ -42,6 +42,7 @@ export interface IAuthState {
   refreshToken: string | null;
   selectedPackages: Array<IPackage> | null;
   selectedTrucks: Array<ITruck> | null;
+  unitsofMeasurement: string[];
 }
 
 const initialState: IAuthState = {
@@ -51,6 +52,7 @@ const initialState: IAuthState = {
   refreshToken: null,
   selectedPackages: [],
   selectedTrucks: [],
+  unitsofMeasurement: [],
 };
 
 export const authSlice = createSlice({
@@ -75,6 +77,9 @@ export const authSlice = createSlice({
     setSelectedTrucks: (state, action: PayloadAction<Array<ITruck>>) => {
       state.selectedTrucks = action.payload;
     },
+    setUnitsofMeasurement: (state, action: PayloadAction<string[]>) => {
+      state.unitsofMeasurement = action.payload;
+    },
   },
 });
 
@@ -85,6 +90,7 @@ export const {
   setRefreshToken,
   setSelectedTrucks,
   setSelectedPackages,
+  setUnitsofMeasurement, 
 } = authSlice.actions;
 
 export const authReducer = authSlice.reducer;

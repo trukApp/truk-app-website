@@ -20,14 +20,13 @@ import { GridColDef } from "@mui/x-data-grid";
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import styles from './MasterData.module.css'
-import { useDeleteVehicleMasterMutation, useEditVehicleMasterMutation, useGetVehicleMasterQuery, usePostVehicleMasterMutation } from '@/api/apiSlice';
+import { useDeleteVehicleMasterMutation, useEditVehicleMasterMutation, useGetUomMasterQuery, useGetVehicleMasterQuery, usePostVehicleMasterMutation } from '@/api/apiSlice';
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MassUpload from '../MassUpload/MassUpload';
-
-const weightUnits = ["tonn","kg", "g"] 
-const lengthUnits = ['m', 'cm', 'mm', ]
-const volumnUnits = ['m^3', 'cm^3' , 'mm^3' ]
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '@/store';
+import { setUnitsofMeasurement } from '@/store/authSlice';
 
 export interface VehicleFormValues {
   id: string;
@@ -204,6 +203,7 @@ const validationSchema = Yup.object({
 });
 
 const VehicleForm: React.FC = () => {
+  const dispatch = useDispatch()
     const [isEditing, setIsEditing] = useState(false);
     const [editRow,setEditRow] = useState<VehicleFormValues | null>(null); ;
   const { data, error } = useGetVehicleMasterQuery([])
@@ -216,6 +216,23 @@ const VehicleForm: React.FC = () => {
 
   const vehiclesMaster = data?.vehicles
   console.log("all vehicles :", vehiclesMaster)
+  const unitsofMeasurement = useSelector((state: RootState) => state.auth.unitsofMeasurement);
+  
+  const { data: uom, error: uomErr } = useGetUomMasterQuery([])
+  if (uomErr) {
+    console.log("uom err:", uomErr)
+  }
+    useEffect(() => {
+    if (uom && uom.uomList) {
+      const unitsofMeasure = uom.uomList.map((item: { unit_name: string }) => item.unit_name);
+      dispatch(setUnitsofMeasurement(unitsofMeasure));
+      console.log("uom ", unitsofMeasure)
+    }
+
+    if (uomErr) {
+      console.error("uom error:", uomErr);
+    }
+  }, [uom, uomErr, dispatch]);
   const [showForm, setShowForm] = useState(false);
   const initialFormValues = {
     id: '',
@@ -229,37 +246,37 @@ const VehicleForm: React.FC = () => {
     vehicleGroup: "",
     ownership: "",
     payloadWeight: "",
-    payloadWeightUnits: weightUnits[0],
+    payloadWeightUnits: unitsofMeasurement[0],
     cubicCapacity: "",
-    cubicCapacityUnits: weightUnits[0],
+    cubicCapacityUnits: unitsofMeasurement[0],
     interiorLength: "",
-    interiorLengthUnits: lengthUnits[0],
+    interiorLengthUnits: unitsofMeasurement[0],
     interiorWidth: "",
-    interiorWidthUnits: lengthUnits[0],
+    interiorWidthUnits: unitsofMeasurement[0],
     interiorHeight: "",
-    interiorHeightUnits: lengthUnits[0],
+    interiorHeightUnits: unitsofMeasurement[0],
     tareWeight: "",
-    tareWeightUnits:weightUnits[0],
+    tareWeightUnits:unitsofMeasurement[0],
     maxGrossWeight: "",
-    maxGrossWeightUnits: weightUnits[0],
+    maxGrossWeightUnits: unitsofMeasurement[0],
     tareVolume: "",
-    tareVolumeUnits: "",
+    tareVolumeUnits: unitsofMeasurement[0],
     maxLength: "",
-    maxLengthUnits: lengthUnits[0],
+    maxLengthUnits: unitsofMeasurement[0],
     maxWidth: "",
-    maxWidthUnits: lengthUnits[0],
+    maxWidthUnits: unitsofMeasurement[0],
     maxHeight: "",
-    maxHeightUnits: lengthUnits[0],
+    maxHeightUnits: unitsofMeasurement[0],
     platformHeight: "",
-    platformHeightUnits: lengthUnits[0],
+    platformHeightUnits: unitsofMeasurement[0],
     topDeckHeight: "",
-    topDeckHeightUnits: lengthUnits[0],
+    topDeckHeightUnits: unitsofMeasurement[0],
     doorWidth: "",
-    doorWidthUnits: lengthUnits[0],
+    doorWidthUnits: unitsofMeasurement[0],
     doorHeight: "",
-    doorHeightUnits: lengthUnits[0],
+    doorHeightUnits: unitsofMeasurement[0],
     doorLength: "",
-    doorLengthUnits: lengthUnits[0],
+    doorLengthUnits: unitsofMeasurement[0],
     avgCost: "",
     downtimeStart: "",
     downtimeEnd: "",
@@ -794,7 +811,7 @@ const handleDelete = async (row: VehicleDetails) => {
                           value={values.payloadWeightUnits}
                           size="small"
                         >
-                          {weightUnits.map((unit) => (
+                          {unitsofMeasurement.map((unit) => (
                             <MenuItem key={unit} value={unit}>
                               {unit}
                             </MenuItem>
@@ -830,7 +847,7 @@ const handleDelete = async (row: VehicleDetails) => {
 
                           size="small"
                         >
-                          {weightUnits.map((unit) => (
+                          {unitsofMeasurement.map((unit) => (
                             <MenuItem key={unit} value={unit}>
                               {unit}
                             </MenuItem>
@@ -865,7 +882,7 @@ const handleDelete = async (row: VehicleDetails) => {
                           onChange={handleChange}
                           size="small"
                         >
-                          {lengthUnits.map((unit) => (
+                          {unitsofMeasurement.map((unit) => (
                             <MenuItem key={unit} value={unit}>
                               {unit}
                             </MenuItem>
@@ -900,7 +917,7 @@ const handleDelete = async (row: VehicleDetails) => {
                           onChange={handleChange}
                           size="small"
                         >
-                          {lengthUnits.map((unit) => (
+                          {unitsofMeasurement.map((unit) => (
                             <MenuItem key={unit} value={unit}>
                               {unit}
                             </MenuItem>
@@ -935,7 +952,7 @@ const handleDelete = async (row: VehicleDetails) => {
                           onChange={handleChange}
                           size="small"
                         >
-                          {lengthUnits.map((unit) => (
+                          {unitsofMeasurement.map((unit) => (
                             <MenuItem key={unit} value={unit}>
                               {unit}
                             </MenuItem>
@@ -978,7 +995,7 @@ const handleDelete = async (row: VehicleDetails) => {
                           onChange={handleChange}
                           size="small"
                         >
-                          {weightUnits.map((unit) => (
+                          {unitsofMeasurement.map((unit) => (
                             <MenuItem key={unit} value={unit}>
                               {unit}
                             </MenuItem>
@@ -1011,7 +1028,7 @@ const handleDelete = async (row: VehicleDetails) => {
                           onChange={handleChange}
                           size="small"
                         >
-                          {weightUnits.map((unit) => (
+                          {unitsofMeasurement.map((unit) => (
                             <MenuItem key={unit} value={unit}>
                               {unit}
                             </MenuItem>
@@ -1044,7 +1061,7 @@ const handleDelete = async (row: VehicleDetails) => {
                           onChange={handleChange}
                           size="small"
                         >
-                          {volumnUnits.map((unit) => (
+                          {unitsofMeasurement.map((unit) => (
                             <MenuItem key={unit} value={unit}>
                               {unit}
                             </MenuItem>
@@ -1077,7 +1094,7 @@ const handleDelete = async (row: VehicleDetails) => {
                           onChange={handleChange}
                           size="small"
                         >
-                          {lengthUnits.map((unit) => (
+                          {unitsofMeasurement.map((unit) => (
                             <MenuItem key={unit} value={unit}>
                               {unit}
                             </MenuItem>
@@ -1110,7 +1127,7 @@ const handleDelete = async (row: VehicleDetails) => {
                           onChange={handleChange}
                           size="small"
                         >
-                          {lengthUnits.map((unit) => (
+                          {unitsofMeasurement.map((unit) => (
                             <MenuItem key={unit} value={unit}>
                               {unit}
                             </MenuItem>
@@ -1143,7 +1160,7 @@ const handleDelete = async (row: VehicleDetails) => {
                           onChange={handleChange}
                           size="small"
                         >
-                          {lengthUnits.map((unit) => (
+                          {unitsofMeasurement.map((unit) => (
                             <MenuItem key={unit} value={unit}>
                               {unit}
                             </MenuItem>

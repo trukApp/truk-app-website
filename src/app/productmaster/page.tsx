@@ -27,6 +27,9 @@ import { useCreateProductMutation, useDeleteProductMutation, useGetAllProductsQu
 import { GridCellParams } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
+import MassUpload from '@/Components/MassUpload/MassUpload';
 
 interface Product {
     productName: string;
@@ -82,7 +85,8 @@ const ProductMasterPage = () => {
     const [createNewProduct] = useCreateProductMutation();
     const [deleteProduct] = useDeleteProductMutation()
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
-    const allProductsData = productsData?.products || []
+    const allProductsData = productsData?.products || [];
+    const unitsofMeasurement = useSelector((state: RootState) => state.auth.unitsofMeasurement);
 
     console.log("productsData: ", allProductsData)
     console.log("Getting all product errors: ", allProductsFectchingError)
@@ -108,8 +112,8 @@ const ProductMasterPage = () => {
         hazardousStorage: false,
         skuNumber: '',
         hsncode: '',
-        weightUnit: '',
-        volumeUnit: '',
+        weightUnit: unitsofMeasurement[0],
+        volumeUnit: unitsofMeasurement[0],
         temperatureControl: false,
     };
 
@@ -242,6 +246,7 @@ const ProductMasterPage = () => {
                     Create Product
                     {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 4 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 4 }} />}
                 </Button>
+                <MassUpload arrayKey='products' />
             </Box>
 
             <Collapse in={showForm}>
@@ -260,7 +265,7 @@ const ProductMasterPage = () => {
                                     <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
                                             fullWidth size='small'
-                                            label="Product name"
+                                            label="Product name*"
                                             name="productName"
                                             value={values.productName}
                                             onChange={handleChange}
@@ -281,9 +286,10 @@ const ProductMasterPage = () => {
                                             helperText={touched.productDescription && errors.productDescription}
                                         />
                                     </Grid>
-                                    <Grid item xs={12} sm={6} md={2.4} >
+                                    <Grid item xs={12} sm={6} md={2.4}   >
                                         <TextField
                                             fullWidth size='small'
+                                            select
                                             label="Basic Unit of Measure*"
                                             name="basicUoM"
                                             value={values.basicUoM}
@@ -291,7 +297,13 @@ const ProductMasterPage = () => {
                                             onBlur={handleBlur}
                                             error={touched.basicUoM && Boolean(errors.basicUoM)}
                                             helperText={touched.basicUoM && errors.basicUoM}
-                                        />
+                                        >
+                                        {unitsofMeasurement.map((unit) => (
+                                            <MenuItem key={unit} value={unit}>
+                                                {unit}
+                                            </MenuItem>
+                                        ))}
+                                        </TextField>
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
@@ -307,8 +319,9 @@ const ProductMasterPage = () => {
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={2.4}   >
                                         <TextField
-                                            fullWidth size='small'
-                                            label="Weight - UoM"
+                                            fullWidth size='small' 
+                                            type='number'
+                                            label="Weight"
                                             name="weightUoM"
                                             value={values.weightUoM}
                                             onChange={handleChange}
@@ -325,15 +338,17 @@ const ProductMasterPage = () => {
                                             onChange={handleChange}
                                             onBlur={handleBlur}
                                         >
-                                            <MenuItem value="gram">Gram</MenuItem>
-                                            <MenuItem value="kg">Kg</MenuItem>
-                                            <MenuItem value="ton">Ton</MenuItem>
+                                        {unitsofMeasurement.map((unit) => (
+                                            <MenuItem key={unit} value={unit}>
+                                                {unit}
+                                            </MenuItem>
+                                        ))}
                                         </TextField>
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={2.4}  >
                                         <TextField
                                             fullWidth size='small'
-                                            label="Volume - UoM"
+                                            label="Volume" type='number'
                                             name="volumeUoM"
                                             value={values.volumeUoM}
                                             onChange={handleChange}
@@ -350,9 +365,11 @@ const ProductMasterPage = () => {
                                             onChange={handleChange}
                                             onBlur={handleBlur}
                                         >
-                                            <MenuItem value="gram">Gram</MenuItem>
-                                            <MenuItem value="kg">Kg</MenuItem>
-                                            <MenuItem value="ton">Ton</MenuItem>
+                                        {unitsofMeasurement.map((unit) => (
+                                            <MenuItem key={unit} value={unit}>
+                                                {unit}
+                                            </MenuItem>
+                                        ))}
                                         </TextField>
                                     </Grid>
                                 </Grid>

@@ -18,7 +18,7 @@ import {
   usePostCarrierMasterMutation,
   useCustomerRegistrationMutation,
   useVendorRegistrationMutation,
-  useDriverRegistrationMutation,
+  useCreateProductMutation,
 } from '@/api/apiSlice';
 import {
   locationColumnNames,
@@ -29,15 +29,16 @@ import {
   carrierColumnNames,
   customerColumnNames,
   vendorColumnNames,
-  driversColumnNames
+  productColumnNames,
 } from './CSVColumnNames'; 
 
-type EntityKey = 'locations' | 'vehicles' | 'lanes' | 'devices' | 'packages' | 'carriers' | 'partners' | 'drivers';
+type EntityKey = 'locations' | 'vehicles' | 'lanes' | 'devices' | 'packages' | 'carriers' | 'partners' | 'products';
 
 interface ColumnMapping {
   displayName: string;
   key: string;
   nestedKey?: string;
+  example?: string;
 }
 
 interface MassUploadProps {
@@ -66,7 +67,7 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
   const [postCarrierMaster] = usePostCarrierMasterMutation();
   const [postCustomerMaster] = useCustomerRegistrationMutation();
   const [postVendorMaster] = useVendorRegistrationMutation();
-  const [postDriverMaster] = useDriverRegistrationMutation()
+  const [postProductMaster] = useCreateProductMutation();
 
   // Column mappings for CSV files
   const getColumnMappings = (): ColumnMapping[] => {
@@ -86,8 +87,8 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
       case 'partners':
         if (!partnerType) throw new Error('Partner type is required for partners.');
         return partnerType === 'vendor' ? vendorColumnNames : customerColumnNames;
-      case 'drivers':
-        return driversColumnNames;
+      case 'products':
+        return productColumnNames;
       default:
         throw new Error(`Unsupported arrayKey: ${arrayKey}`);
     }
@@ -105,7 +106,8 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
       if (!partnerType) return Promise.reject(new Error('Partner type is required for partners.'));
       return partnerType === 'vendor' ? postVendorMaster(data) : postCustomerMaster(data);
     },
-    drivers:postDriverMaster,
+    products: postProductMaster,
+    
   };
 
 type NestedRecord = Record<string, string>;
@@ -136,17 +138,41 @@ const mapCsvToPayload = <T extends object>(
 
 
   // Handle template download
+  // const handleDownloadTemplate = () => {
+  //   const columnMappings = getColumnMappings();
+  //   const csvContent = `data:text/csv;charset=utf-8,${columnMappings
+  //     .map((col) => col.displayName)
+  //     .join(',')}`;
+  //   const encodedUri = encodeURI(csvContent);
+  //   const link = document.createElement('a');
+  //   link.setAttribute('href', encodedUri);
+  //   link.setAttribute('download', `${arrayKey}_template.csv`);
+  //   link.click();
+  // };
   const handleDownloadTemplate = () => {
-    const columnMappings = getColumnMappings();
-    const csvContent = `data:text/csv;charset=utf-8,${columnMappings
-      .map((col) => col.displayName)
-      .join(',')}`;
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `${arrayKey}_template.csv`);
-    link.click();
-  };
+  const columnMappings = getColumnMappings();
+  
+  // Generate CSV header row
+  const headerRow = columnMappings.map((col) => col.displayName).join(',');
+
+  // Generate example data row (if `example` is defined in the mapping)
+  const exampleRow = columnMappings
+    .map((col) => (col.example ? col.example : '')) // Include example or empty value
+    .join(',');
+
+  // Combine header and example rows
+  const csvContent = `data:text/csv;charset=utf-8,${headerRow}\n${exampleRow}`;
+
+  // Encode the CSV content
+  const encodedUri = encodeURI(csvContent);
+
+  // Trigger download
+  const link = document.createElement('a');
+  link.setAttribute('href', encodedUri);
+  link.setAttribute('download', `${arrayKey}_template.csv`);
+  link.click();
+};
+
 
   // Handle file upload
   const handleUpload = async () => {
