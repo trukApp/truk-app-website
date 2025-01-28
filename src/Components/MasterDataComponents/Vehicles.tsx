@@ -20,13 +20,12 @@ import { GridColDef } from "@mui/x-data-grid";
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import styles from './MasterData.module.css'
-import { useDeleteVehicleMasterMutation, useEditVehicleMasterMutation, useGetUomMasterQuery, useGetVehicleMasterQuery, usePostVehicleMasterMutation } from '@/api/apiSlice';
+import { useDeleteVehicleMasterMutation, useEditVehicleMasterMutation, useGetVehicleMasterQuery, usePostVehicleMasterMutation } from '@/api/apiSlice';
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MassUpload from '../MassUpload/MassUpload';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
-import { setUnitsofMeasurement } from '@/store/authSlice';
 
 export interface VehicleFormValues {
   id: string;
@@ -203,7 +202,6 @@ const validationSchema = Yup.object({
 });
 
 const VehicleForm: React.FC = () => {
-  const dispatch = useDispatch()
     const [isEditing, setIsEditing] = useState(false);
     const [editRow,setEditRow] = useState<VehicleFormValues | null>(null); ;
   const { data, error } = useGetVehicleMasterQuery([])
@@ -218,21 +216,6 @@ const VehicleForm: React.FC = () => {
   console.log("all vehicles :", vehiclesMaster)
   const unitsofMeasurement = useSelector((state: RootState) => state.auth.unitsofMeasurement);
   
-  const { data: uom, error: uomErr } = useGetUomMasterQuery([])
-  if (uomErr) {
-    console.log("uom err:", uomErr)
-  }
-    useEffect(() => {
-    if (uom && uom.uomList) {
-      const unitsofMeasure = uom.uomList.map((item: { unit_name: string }) => item.unit_name);
-      dispatch(setUnitsofMeasurement(unitsofMeasure));
-      console.log("uom ", unitsofMeasure)
-    }
-
-    if (uomErr) {
-      console.error("uom error:", uomErr);
-    }
-  }, [uom, uomErr, dispatch]);
   const [showForm, setShowForm] = useState(false);
   const initialFormValues = {
     id: '',

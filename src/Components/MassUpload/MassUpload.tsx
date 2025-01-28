@@ -38,7 +38,6 @@ interface ColumnMapping {
   displayName: string;
   key: string;
   nestedKey?: string;
-  example?: string;
 }
 
 interface MassUploadProps {
@@ -138,41 +137,17 @@ const mapCsvToPayload = <T extends object>(
 
 
   // Handle template download
-  // const handleDownloadTemplate = () => {
-  //   const columnMappings = getColumnMappings();
-  //   const csvContent = `data:text/csv;charset=utf-8,${columnMappings
-  //     .map((col) => col.displayName)
-  //     .join(',')}`;
-  //   const encodedUri = encodeURI(csvContent);
-  //   const link = document.createElement('a');
-  //   link.setAttribute('href', encodedUri);
-  //   link.setAttribute('download', `${arrayKey}_template.csv`);
-  //   link.click();
-  // };
   const handleDownloadTemplate = () => {
-  const columnMappings = getColumnMappings();
-  
-  // Generate CSV header row
-  const headerRow = columnMappings.map((col) => col.displayName).join(',');
-
-  // Generate example data row (if `example` is defined in the mapping)
-  const exampleRow = columnMappings
-    .map((col) => (col.example ? col.example : '')) // Include example or empty value
-    .join(',');
-
-  // Combine header and example rows
-  const csvContent = `data:text/csv;charset=utf-8,${headerRow}\n${exampleRow}`;
-
-  // Encode the CSV content
-  const encodedUri = encodeURI(csvContent);
-
-  // Trigger download
-  const link = document.createElement('a');
-  link.setAttribute('href', encodedUri);
-  link.setAttribute('download', `${arrayKey}_template.csv`);
-  link.click();
-};
-
+    const columnMappings = getColumnMappings();
+    const csvContent = `data:text/csv;charset=utf-8,${columnMappings
+      .map((col) => col.displayName)
+      .join(',')}`;
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `${arrayKey}_template.csv`);
+    link.click();
+  };
 
   // Handle file upload
   const handleUpload = async () => {
@@ -213,7 +188,7 @@ const mapCsvToPayload = <T extends object>(
     };
      console.log("payload body :", body)
       await postMapping[arrayKey](body);
-      setMessage('Upload successful!');
+      // setMessage('Upload successful!');
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'An error occurred during upload.');
     } finally {

@@ -25,6 +25,12 @@ interface Correspondence {
     email: string;
 }
 export interface Customer {
+    location_country: string;
+    location_city: string;
+    location_state: string;
+    location_pincode: string;
+    loc_ID: string;
+    pod_relevant: number;
     partner_id: number;
     supplier_id: number | null;
     customer_id: string;
@@ -103,17 +109,17 @@ const SupplierForm: React.FC = () => {
 
     const mapRowToInitialValues = (rowData: Customer) => ({
         name: rowData.name || '',
-        locationId: rowData.loc_of_source || '',
-        pincode: rowData.loc_of_source_pincode || '',
-        state: rowData.loc_of_source_state || '',
-        city: rowData.loc_of_source_city || '',
+        locationId: rowData.loc_ID || '',
+        pincode: rowData.location_pincode || '',
+        state: rowData.location_state || '',
+        city: rowData.location_city || '',
         district: '',
-        country: rowData.loc_of_source_country || '',
+        country: rowData.location_country || '',
         contactPerson: rowData?.correspondence?.contact_person || '',
         contactNumber: rowData?.correspondence?.contact_number || '',
         emailId: rowData?.correspondence?.email || '',
         locationOfSource: [rowData.loc_of_source],
-        podRelevant: false,
+        podRelevant: rowData?.pod_relevant === 1,
         forwardingAgent: rowData?.partner_functions?.forwarding_agent || '',
         goodsSupplier: rowData?.partner_functions?.goods_supplier || '',
         orderingAddress: rowData?.partner_functions?.ordering_address || '',
@@ -140,13 +146,15 @@ const SupplierForm: React.FC = () => {
 
 
     const columns: GridColDef[] = [
-        { field: 'supplier_id', headerName: 'Customer ID', width: 150 },
+        { field: 'supplier_id', headerName: 'Supplier ID', width: 150 },
         { field: 'name', headerName: 'Name', width: 200 },
-        { field: 'loc_of_source', headerName: 'Location ID', width: 150 },
-        { field: 'loc_of_source_pincode', headerName: 'Pincode', width: 100 },
-        { field: 'loc_of_source_state', headerName: 'State', width: 150 },
-        { field: 'loc_of_source_city', headerName: 'City', width: 150 },
-        { field: 'loc_of_source_country', headerName: 'Country', width: 150 },
+        { field: 'loc_ID', headerName: 'Supplier Location ID', width: 150 },
+        { field: 'location_pincode', headerName: 'SupplierPincode', width: 100 },
+        { field: 'location_city', headerName: 'Supplier City', width: 150 },
+        { field: 'location_state', headerName: 'Supplier State', width: 150 },
+        { field: 'location_country', headerName: 'Supplier Country', width: 150 },
+        { field: 'loc_of_source', headerName: 'Source Location ID', width: 150 },
+        { field: 'pod_relevant', headerName: 'Pod relevant', width: 150 },
         {
             field: 'actions',
             headerName: 'Actions',
@@ -183,7 +191,6 @@ const SupplierForm: React.FC = () => {
         locationId: Yup.string().required('Location ID is required'),
         pincode: Yup.string().required('Pincode is required'),
         city: Yup.string().required('City is required'),
-        district: Yup.string().required('District is required'),
         country: Yup.string().required('Country is required'),
         contactPerson: Yup.string().required('Contact Person is required'),
         contactNumber: Yup.string().required('Contact Number is required'),
@@ -396,7 +403,7 @@ const SupplierForm: React.FC = () => {
                                             helperText={touched.city && errors.city}
                                         />
                                     </Grid>
-                                    <Grid item xs={12} sm={6} md={2.4}>
+                                    {/* <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
                                             label="District"
@@ -407,7 +414,7 @@ const SupplierForm: React.FC = () => {
                                             error={touched.district && Boolean(errors.district)}
                                             helperText={touched.district && errors.district}
                                         />
-                                    </Grid>
+                                    </Grid> */}
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'

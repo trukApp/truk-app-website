@@ -46,6 +46,11 @@ interface Correspondence {
     email: string;
 }
 interface Customer {
+    pod_relevant: number;
+    location_country: string;
+    location_city: string;
+    location_state: string;
+    location_pincode: string;
     partner_id: number;
     supplier_id: number | null;
     customer_id: string;
@@ -116,6 +121,7 @@ const CustomerForm: React.FC = () => {
     console.log("all customers data :", data?.partners)
     console.log("all locations :", locationsData?.locations)
     console.log("getLocationsError: ", getLocationsError)
+    console.log("form intials :", formInitialValues)
     const customersData = data?.partners.length > 0 ? data?.partners : []
 
     if (isLoading) {
@@ -129,16 +135,16 @@ const CustomerForm: React.FC = () => {
     const mapRowToInitialValues = (rowData: Customer) => ({
         name: rowData.name || '',
         locationId: rowData.loc_ID || '',
-        pincode: rowData.loc_of_source_pincode || '',
-        state: rowData.loc_of_source_state || '',
-        city: rowData.loc_of_source_city || '',
+        pincode: rowData.location_pincode || '',
+        state: rowData.location_state || '',
+        city: rowData.location_city || '',
         district: '',
-        country: rowData.loc_of_source_country || '',
+        country: rowData.location_country || '',
         contactPerson: rowData?.correspondence?.contact_person || '',
         contactNumber: rowData?.correspondence?.contact_number || '',
         emailId: rowData?.correspondence?.email || '',
         locationOfSource: [rowData.loc_of_source],
-        podRelevant: false,
+        podRelevant: rowData?.pod_relevant === 1,
         shipToParty: rowData?.partner_functions?.ship_to_party || '',
         soldToParty: rowData?.partner_functions?.sold_to_party || '',
         billToParty: rowData?.partner_functions?.bill_to_party || '',
@@ -153,11 +159,13 @@ const CustomerForm: React.FC = () => {
     const columns: GridColDef[] = [
         { field: 'customer_id', headerName: 'Customer ID', width: 150 },
         { field: 'name', headerName: 'Name', width: 200 },
-        { field: 'loc_of_source', headerName: 'Location ID', width: 150 },
-        { field: 'loc_of_source_pincode', headerName: 'Pincode', width: 100 },
-        { field: 'loc_of_source_state', headerName: 'State', width: 150 },
-        { field: 'loc_of_source_city', headerName: 'City', width: 150 },
-        { field: 'loc_of_source_country', headerName: 'Country', width: 150 },
+        { field: 'loc_ID', headerName: 'Customer Location ID', width: 150 },
+        { field: 'location_pincode', headerName: 'Customer Pincode', width: 100 },
+        { field: 'location_city', headerName: 'Customer City', width: 150 },
+        { field: 'location_state', headerName: 'Customer State', width: 150 },
+        { field: 'location_country', headerName: 'Customer Country', width: 150 },
+        { field: 'loc_of_source', headerName: 'Source Location ID', width: 150 },
+        { field: 'pod_relevant', headerName: 'Pod relevant', width: 150 },
         {
             field: 'actions',
             headerName: 'Actions',
@@ -200,7 +208,7 @@ const CustomerForm: React.FC = () => {
         console.log("delete response :", response)
     };
 
-    const handleCustomerSubmit = async (values: typeof initialCustomerValues) => {
+    const handleCustomerSubmit = async (values: typeof initialCustomerValues,{ resetForm }: { resetForm: () => void }) => {
         try {
             console.log('Customer Form Submitted:', values);
             const body = {
@@ -249,6 +257,12 @@ const CustomerForm: React.FC = () => {
                 console.log("I am going update the record")
                 const response = await updatePartnerDetails({ body: editBody, partnerId: updateRecordId }).unwrap();
                 console.log('API Response:', response);
+                resetForm()
+                setFormInitialValues(initialCustomerValues)
+                setShowForm(false)
+                setUpdateRecord(false)
+                setUpdateRecordId(0)
+                setUpdateRecordData({})
                 // if (response) {
                 //     setFormInitialValues(initialCustomerValues)
                 //     setShowForm(false)
@@ -266,8 +280,10 @@ const CustomerForm: React.FC = () => {
                     setUpdateRecord(false)
                     setUpdateRecordId(0)
                     setUpdateRecordData({})
+                    resetForm()
                 }
             }
+            
 
         } catch (error) {
             console.error('API Error:', error);
@@ -365,14 +381,11 @@ const CustomerForm: React.FC = () => {
                                             )}
                                         </FormControl>
                                     </Grid>
-
-
-
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
                                             label="Pincode"
-                                            name="pincode"
+                                            name="pincode" disabled
                                             value={values.pincode}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
@@ -383,7 +396,7 @@ const CustomerForm: React.FC = () => {
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
-                                            label="City"
+                                            label="City" disabled
                                             name="city"
                                             value={values.city}
                                             onChange={handleChange}
@@ -407,7 +420,7 @@ const CustomerForm: React.FC = () => {
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
-                                            label="State"
+                                            label="State" disabled
                                             name="state"
                                             value={values.state}
                                             onChange={handleChange}
@@ -419,7 +432,7 @@ const CustomerForm: React.FC = () => {
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
-                                            label="Country"
+                                            label="Country" disabled
                                             name="country"
                                             value={values.country}
                                             onChange={handleChange}
