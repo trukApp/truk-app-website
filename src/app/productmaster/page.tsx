@@ -23,7 +23,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 // import { GridColDef } from '@mui/x-data-grid';
 import { DataGridComponent } from '@/Components/GridComponent';
-import { useCreateProductMutation, useDeleteProductMutation, useGetAllProductsQuery, useGetLocationMasterQuery } from '@/api/apiSlice';
+import { useCreateProductMutation, useDeleteProductMutation, useEditProductMutation, useGetAllProductsQuery, useGetLocationMasterQuery } from '@/api/apiSlice';
 import { GridCellParams } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -31,6 +31,10 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import MassUpload from '@/Components/MassUpload/MassUpload';
 
+interface PackagingType {
+    pac_ID: string;
+    location: string;
+}
 interface Product {
     productName: string;
     productCode: string;
@@ -59,8 +63,20 @@ interface Product {
     dangerous_goods: boolean;
     id: number;
     prod_id: number;
+    loc_ID: string;
+    specialInstructions: string;
+    documents: string;
+    stacking_factor: string;
+    packaging_type: PackagingType[];
+    temp_controlled: boolean
+    hazardous: boolean;
+    product_name: string;
+    packagingType: PackagingType[];
+    packing_label: boolean;
+    special_instructions: string;
+    tempControl: boolean;
+    packingLabel: boolean
 }
-
 interface Location {
     city: string;
     country: string;
@@ -75,23 +91,14 @@ interface Location {
     pincode: string;
     state: string;
     time_zone: string;
-
+    productDescription: string;
+    temp_controlled: boolean;
+    hazardous: boolean;
 }
 
 const ProductMasterPage = () => {
-    const { data: productsData, error: allProductsFectchingError } = useGetAllProductsQuery([])
-    const [showForm, setShowForm] = useState(false);
-    const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery([])
-    const [createNewProduct] = useCreateProductMutation();
-    const [deleteProduct] = useDeleteProductMutation()
-    const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
-    const allProductsData = productsData?.products || [];
     const unitsofMeasurement = useSelector((state: RootState) => state.auth.unitsofMeasurement);
-
-    console.log("productsData: ", allProductsData)
-    console.log("Getting all product errors: ", allProductsFectchingError)
-    console.log("getLocationsError: ", getLocationsError)
-    const initialValues = {
+    const productFormInitialValues = {
         productName: '',
         productDescription: '',
         basicUoM: '',
@@ -116,6 +123,31 @@ const ProductMasterPage = () => {
         volumeUnit: unitsofMeasurement[0],
         temperatureControl: false,
     };
+    const [updateRecord, setUpdateRecord] = useState(false);
+    const [formInitialValues, setFormInitialValues] = useState(productFormInitialValues);
+    const [updateRecordData, setUpdateRecordData] = useState({});
+    const [updateRecordId, setUpdateRecordId] = useState(0)
+
+    const { data: productsData, error: allProductsFectchingError } = useGetAllProductsQuery([])
+    const [showForm, setShowForm] = useState(false);
+    const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery([])
+    const [createNewProduct] = useCreateProductMutation();
+    const [deleteProduct] = useDeleteProductMutation()
+    const [updateProductDetails] = useEditProductMutation();
+    const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
+    const allProductsData = productsData?.products || [];
+
+    console.log("updateRecord: ", updateRecordData)
+    console.log("updateRecordId: ", updateRecordId)
+
+
+    console.log("productsData: ", allProductsData)
+    console.log("Getting all product errors: ", allProductsFectchingError)
+    console.log("getLocationsError: ", getLocationsError)
+
+
+
+    console.log("initialValues: ", formInitialValues)
 
     const validationSchema = Yup.object({
         productName: Yup.string().required('Product name is required'),
@@ -124,9 +156,46 @@ const ProductMasterPage = () => {
         salesUoM: Yup.string().required('Sales Unit of Measure is required'),
     });
 
-    const handleEdit = (row: Product) => {
-        console.log('Edit clicked:', row);
-        // Perform edit actions here
+
+    const mapRowToInitialValues = (selectedProduct: Product) => ({
+        productName: selectedProduct.productName || '',
+        productDescription: selectedProduct.product_desc || '',
+        basicUoM: selectedProduct.basic_uom || '',
+        salesUoM: selectedProduct.sales_uom || '',
+        weightUoM: selectedProduct.weight || '',
+        volumeUoM: selectedProduct.volume || '',
+        shelfLife: '',
+        expirationDate: selectedProduct.expiration || '',
+        bestBeforeDate: selectedProduct.best_before || '',
+        stackingFactor: selectedProduct?.stacking_factor || '',
+        documents: '',
+        // locationId: selectedProduct.packaging_type?.location || '',
+        // packagingType: selectedProduct.packaging_type?.pac_ID || '',
+        locationId: selectedProduct?.packagingType[0]?.location || '',
+        packagingType: selectedProduct?.packagingType[0]?.pac_ID || '',
+        generatePackagingLabel: selectedProduct.packingLabel || false,
+        specialInstructions: selectedProduct.specialInstructions || '',
+        fragileGoods: selectedProduct.fragile_goods || false,
+        dangerousGoods: selectedProduct.dangerous_goods || false,
+        hazardousStorage: selectedProduct?.hazardous || false,
+        skuNumber: selectedProduct.sku_num || '',
+        hsncode: selectedProduct.hsn_code || '',
+        weightUnit: unitsofMeasurement[0],
+        volumeUnit: unitsofMeasurement[0],
+        temperatureControl: selectedProduct?.tempControl || false,
+    });
+
+    const handleEdit = async (rowData: Product) => {
+        console.log('Edit clicked for:', rowData);
+        console.log("rowData: ", rowData?.packagingType)
+        setShowForm(true)
+        setUpdateRecord(true)
+        setUpdateRecordData(rowData)
+        const updatedInitialValues = await mapRowToInitialValues(rowData);
+        console.log('Updated Initial Values:', updatedInitialValues);
+        setUpdateRecordId(rowData?.id)
+
+        setFormInitialValues(updatedInitialValues);
     };
 
     const handleDelete = async (row: Product) => {
@@ -138,6 +207,7 @@ const ProductMasterPage = () => {
 
 
     const columns = [
+        { field: 'productName', headerName: 'Product Name', width: 150 },
         { field: 'product_ID', headerName: 'Product ID', width: 150 },
         { field: 'product_desc', headerName: 'Product Description', width: 200 },
         { field: 'sales_uom', headerName: 'Sales UOM', width: 150 },
@@ -173,6 +243,22 @@ const ProductMasterPage = () => {
         },
     ];
 
+    // const rows = allProductsData.map((product: Product) => ({
+    //     id: product.prod_id,
+    //     product_ID: product.product_ID,
+    //     product_desc: product.product_desc,
+    //     sales_uom: product.sales_uom,
+    //     basic_uom: product.basic_uom,
+    //     weight: product.weight,
+    //     volume: product.volume,
+    //     expiration: product.expiration,
+    //     best_before: product.best_before,
+    //     hsn_code: product.hsn_code,
+    //     sku_num: product.sku_num,
+    //     fragile_goods: product.fragile_goods,
+    //     dangerous_goods: product.dangerous_goods,
+    // }));
+
     const rows = allProductsData.map((product: Product) => ({
         id: product.prod_id,
         product_ID: product.product_ID,
@@ -187,10 +273,22 @@ const ProductMasterPage = () => {
         sku_num: product.sku_num,
         fragile_goods: product.fragile_goods,
         dangerous_goods: product.dangerous_goods,
+        // Include all other properties you need here
+        documents: product.documents,
+        stacking_factor: product.stacking_factor,
+        locationId: product.loc_ID,
+        packagingType: product.packaging_type, // Make sure to map all properties
+        specialInstructions: product.special_instructions,
+        hazardousStorage: product.hazardous,
+        tempControl: product.temp_controlled,
+        productName: product?.product_name,
+        packingLabel: product?.packing_label,
+        hazardous: product?.hazardous
+
     }));
 
 
-    const handleSubmit = async (values: typeof initialValues) => {
+    const handleSubmit = async (values: typeof productFormInitialValues) => {
         console.log('Form Submitted', values);
         const createProductBody = {
             products: [
@@ -227,9 +325,56 @@ const ProductMasterPage = () => {
             ]
         }
 
-        console.log("createProductBody: ", createProductBody)
-        const response = await createNewProduct(createProductBody).unwrap();
-        console.log('API Response:', response)
+        const editProductBody = {
+            ...updateRecordData,
+            product_name: values?.productName,
+            product_desc: values?.productDescription,
+            basic_uom: values?.basicUoM,
+            sales_uom: values?.salesUoM,
+            weight: values?.weightUoM,
+            weight_uom: values?.weightUnit,
+            volume: values?.volumeUoM,
+            volume_uom: values?.volumeUnit,
+            expiration: values?.expirationDate,
+            best_before: values?.bestBeforeDate,
+            stacking_factor: values?.stackingFactor,
+            sku_num: values?.skuNumber,
+            hsn_code: values?.hsncode,
+            documents: values?.documents,
+            loc_ID: values?.locationId,
+            packaging_type: [
+                {
+                    pac_ID: values?.packagingType,
+                    location: values?.locationId
+                }
+            ],
+            special_instructions: values?.specialInstructions,
+            packing_label: values?.generatePackagingLabel,
+            fragile_goods: values?.fragileGoods,
+            dangerous_goods: values?.dangerousGoods,
+            hazardous: values?.hazardousStorage,
+            temp_controlled: values?.temperatureControl
+        }
+
+        if (updateRecord) {
+            console.log("I am going to update the existing record")
+            const response = await updateProductDetails({ body: editProductBody, productId: updateRecordId }).unwrap();
+            console.log('API Response:', response);
+            if (response) {
+                setFormInitialValues(productFormInitialValues)
+                setShowForm(false)
+                setUpdateRecord(false)
+                setUpdateRecordId(0)
+                setUpdateRecordData({})
+            }
+        } else {
+            console.log("I am going to create a record")
+            console.log("createProductBody: ", createProductBody)
+            const response = await createNewProduct(createProductBody).unwrap();
+            console.log('API Response:', response)
+        }
+
+
     };
 
     return (
@@ -252,11 +397,12 @@ const ProductMasterPage = () => {
             <Collapse in={showForm}>
                 <Box marginBottom={2} padding={2} border="1px solid #ccc" borderRadius={2}>
                     <Formik
-                        initialValues={initialValues}
+                        initialValues={formInitialValues}
                         validationSchema={validationSchema}
                         onSubmit={handleSubmit}
+                        enableReinitialize={true}
                     >
-                        {({ handleChange, handleBlur, values, touched, errors, setFieldValue }) => (
+                        {({ values, handleChange, handleBlur, errors, touched, setFieldValue }) => (
                             <Form>
                                 <Typography variant="h6" className={style.basicDetailsHeading}>
                                     Basic Data
@@ -298,11 +444,11 @@ const ProductMasterPage = () => {
                                             error={touched.basicUoM && Boolean(errors.basicUoM)}
                                             helperText={touched.basicUoM && errors.basicUoM}
                                         >
-                                        {unitsofMeasurement.map((unit) => (
-                                            <MenuItem key={unit} value={unit}>
-                                                {unit}
-                                            </MenuItem>
-                                        ))}
+                                            {unitsofMeasurement.map((unit) => (
+                                                <MenuItem key={unit} value={unit}>
+                                                    {unit}
+                                                </MenuItem>
+                                            ))}
                                         </TextField>
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={2.4} >
@@ -319,7 +465,7 @@ const ProductMasterPage = () => {
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={2.4}   >
                                         <TextField
-                                            fullWidth size='small' 
+                                            fullWidth size='small'
                                             type='number'
                                             label="Weight"
                                             name="weightUoM"
@@ -338,11 +484,11 @@ const ProductMasterPage = () => {
                                             onChange={handleChange}
                                             onBlur={handleBlur}
                                         >
-                                        {unitsofMeasurement.map((unit) => (
-                                            <MenuItem key={unit} value={unit}>
-                                                {unit}
-                                            </MenuItem>
-                                        ))}
+                                            {unitsofMeasurement.map((unit) => (
+                                                <MenuItem key={unit} value={unit}>
+                                                    {unit}
+                                                </MenuItem>
+                                            ))}
                                         </TextField>
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={2.4}  >
@@ -365,11 +511,11 @@ const ProductMasterPage = () => {
                                             onChange={handleChange}
                                             onBlur={handleBlur}
                                         >
-                                        {unitsofMeasurement.map((unit) => (
-                                            <MenuItem key={unit} value={unit}>
-                                                {unit}
-                                            </MenuItem>
-                                        ))}
+                                            {unitsofMeasurement.map((unit) => (
+                                                <MenuItem key={unit} value={unit}>
+                                                    {unit}
+                                                </MenuItem>
+                                            ))}
                                         </TextField>
                                     </Grid>
                                 </Grid>
@@ -577,12 +723,20 @@ const ProductMasterPage = () => {
                                 </Grid>
 
                                 <Box marginTop={2} textAlign="center">
-                                    <Button type="submit" variant="contained" color="primary">
-                                        Submit
-                                    </Button>
+                                    {updateRecord ? (
+                                        <Button type="submit" variant="contained" color="primary">
+                                            Update
+                                        </Button>
+                                    ) : (
+                                        <Button type="submit" variant="contained" color="primary">
+                                            Submit
+                                        </Button>
+                                    )}
+
                                 </Box>
                             </Form>
-                        )}
+                        )
+                        }
                     </Formik>
                 </Box>
             </Collapse>

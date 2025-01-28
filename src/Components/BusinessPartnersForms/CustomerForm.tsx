@@ -188,9 +188,10 @@ const CustomerForm: React.FC = () => {
         setUpdateRecordData(rowData)
         const updatedInitialValues = await mapRowToInitialValues(rowData);
         console.log('Updated Initial Values:', updatedInitialValues);
-        setUpdateRecordId(rowData?.partner_id)
+
 
         setFormInitialValues(updatedInitialValues);
+        setUpdateRecordId(rowData?.partner_id)
     };
 
     const handleDelete = async (rowData: Customer) => {
