@@ -35,7 +35,18 @@ interface User {
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery,
-  tagTypes: ["PARTNERS", "DRIVERS", "CARRIER", "LocationMaster", "VehicleMaster", "PackageMaster", "LaneMaster", "DeviceMaster","ProductMaster","UomMaster"],
+  tagTypes: [
+    "PARTNERS",
+    "DRIVERS",
+    "CARRIER",
+    "LocationMaster",
+    "VehicleMaster",
+    "PackageMaster",
+    "LaneMaster",
+    "DeviceMaster",
+    "ProductMaster",
+    "UomMaster",
+  ],
   endpoints: (builder) => ({
     userLogin: builder.mutation<User, { phone: string; password: string }>({
       query: (body) => ({
@@ -54,7 +65,7 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: [{ type: "PARTNERS", id: "LIST" }],
     }),
-      vendorRegistration: builder.mutation({
+    vendorRegistration: builder.mutation({
       query: (body) => ({
         url: "business/create-partners",
         method: "POST",
@@ -169,7 +180,6 @@ export const apiSlice = createApi({
       invalidatesTags: [{ type: "CARRIER", id: "LIST" }],
     }),
 
-
     //  location master
     getLocationMaster: builder.query({
       query: () => ({
@@ -180,8 +190,7 @@ export const apiSlice = createApi({
     }),
 
     getLocationById: builder.query<string, string>({
-        query: (locationId) => `masLoc/location-ID?loc_ID=${locationId}`,
-           
+      query: (locationId) => `masLoc/location-ID?loc_ID=${locationId}`,
     }),
 
     postLocationMaster: builder.mutation({
@@ -202,12 +211,12 @@ export const apiSlice = createApi({
       invalidatesTags: [{ type: "LocationMaster", id: "LIST" }],
     }),
 
-      deleteLocationMaster: builder.mutation({
-        query: (locationId) => ({
-            url: `masLoc/delete-location?id=${locationId}`,
-            method: "DELETE",
-        }),
-        invalidatesTags: [{ type: "LocationMaster", id: "LIST" }],
+    deleteLocationMaster: builder.mutation({
+      query: (locationId) => ({
+        url: `masLoc/delete-location?id=${locationId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [{ type: "LocationMaster", id: "LIST" }],
     }),
 
     // vehciles master
@@ -245,7 +254,7 @@ export const apiSlice = createApi({
       invalidatesTags: [{ type: "VehicleMaster", id: "LIST" }],
     }),
 
-     // Package master
+    // Package master
     getPackageMaster: builder.query({
       query: () => ({
         url: "package/get-all-packages",
@@ -315,7 +324,7 @@ export const apiSlice = createApi({
       invalidatesTags: [{ type: "LaneMaster", id: "LIST" }],
     }),
 
-        // Device master
+    // Device master
     getDeviceMaster: builder.query({
       query: () => ({
         url: "device/all-devices",
@@ -404,13 +413,20 @@ export const apiSlice = createApi({
     }),
     deleteProduct: builder.mutation({
       query: (productId) => ({
-        url:` masterProducts/delete-product?prod_id=${productId}`,
+        url: ` masterProducts/delete-product?prod_id=${productId}`,
         method: "DELETE",
       }),
       invalidatesTags: [{ type: "ProductMaster", id: "LIST" }],
     }),
 
-
+    editProduct: builder.mutation({
+      query: ({ body, productId }) => ({
+        url: `masterProducts/edit-product?prod_id=${productId}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: [{ type: "ProductMaster", id: "LIST" }],
+    }),
   }),
 });
 
@@ -430,7 +446,7 @@ export const {
   usePostCarrierMasterMutation,
   useEditCarrierMasterMutation,
   useDeleteCarrierMasterMutation,
-  
+
   useGetLocationMasterQuery,
   useGetLocationByIdQuery,
   usePostLocationMasterMutation,
@@ -459,6 +475,5 @@ export const {
   useGetAllProductsQuery,
   useCreateProductMutation,
   useDeleteProductMutation,
-  
-
+  useEditProductMutation,
 } = apiSlice;
