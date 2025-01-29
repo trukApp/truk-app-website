@@ -30,6 +30,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import MassUpload from '@/Components/MassUpload/MassUpload';
+import DataGridSkeletonLoader from '@/Components/LoaderComponent/DataGridSkeletonLoader';
 
 interface PackagingType {
     pac_ID: string;
@@ -101,8 +102,8 @@ const ProductMasterPage = () => {
     const productFormInitialValues = {
         productName: '',
         productDescription: '',
-        basicUoM: '',
-        salesUoM: '',
+        basicUoM: unitsofMeasurement[0],
+        salesUoM: unitsofMeasurement[0],
         weightUoM: '',
         volumeUoM: '',
         shelfLife: '',
@@ -128,7 +129,7 @@ const ProductMasterPage = () => {
     const [updateRecordData, setUpdateRecordData] = useState({});
     const [updateRecordId, setUpdateRecordId] = useState(0)
 
-    const { data: productsData, error: allProductsFectchingError } = useGetAllProductsQuery([])
+    const { data: productsData, error: allProductsFectchingError , isLoading } = useGetAllProductsQuery([])
     const [showForm, setShowForm] = useState(false);
     const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery([])
     const [createNewProduct] = useCreateProductMutation();
@@ -207,8 +208,8 @@ const ProductMasterPage = () => {
 
 
     const columns = [
-        { field: 'productName', headerName: 'Product Name', width: 150 },
         { field: 'product_ID', headerName: 'Product ID', width: 150 },
+        { field: 'productName', headerName: 'Product Name', width: 150 },
         { field: 'product_desc', headerName: 'Product Description', width: 200 },
         { field: 'sales_uom', headerName: 'Sales UOM', width: 150 },
         { field: 'basic_uom', headerName: 'Basic UOM', width: 150 },
@@ -243,21 +244,6 @@ const ProductMasterPage = () => {
         },
     ];
 
-    // const rows = allProductsData.map((product: Product) => ({
-    //     id: product.prod_id,
-    //     product_ID: product.product_ID,
-    //     product_desc: product.product_desc,
-    //     sales_uom: product.sales_uom,
-    //     basic_uom: product.basic_uom,
-    //     weight: product.weight,
-    //     volume: product.volume,
-    //     expiration: product.expiration,
-    //     best_before: product.best_before,
-    //     hsn_code: product.hsn_code,
-    //     sku_num: product.sku_num,
-    //     fragile_goods: product.fragile_goods,
-    //     dangerous_goods: product.dangerous_goods,
-    // }));
 
     const rows = allProductsData.map((product: Product) => ({
         id: product.prod_id,
@@ -288,7 +274,7 @@ const ProductMasterPage = () => {
     }));
 
 
-    const handleSubmit = async (values: typeof productFormInitialValues) => {
+    const handleSubmit = async (values: typeof productFormInitialValues,{resetForm} :{resetForm :()=> void}) => {
         console.log('Form Submitted', values);
         const createProductBody = {
             products: [
@@ -361,17 +347,21 @@ const ProductMasterPage = () => {
             const response = await updateProductDetails({ body: editProductBody, productId: updateRecordId }).unwrap();
             console.log('API Response:', response);
             if (response) {
+                resetForm()
                 setFormInitialValues(productFormInitialValues)
                 setShowForm(false)
                 setUpdateRecord(false)
                 setUpdateRecordId(0)
                 setUpdateRecordData({})
+        
             }
         } else {
             console.log("I am going to create a record")
             console.log("createProductBody: ", createProductBody)
             const response = await createNewProduct(createProductBody).unwrap();
             console.log('API Response:', response)
+            resetForm()
+            setShowForm(false)
         }
 
 
@@ -451,7 +441,7 @@ const ProductMasterPage = () => {
                                             ))}
                                         </TextField>
                                     </Grid>
-                                    <Grid item xs={12} sm={6} md={2.4} >
+                                    {/* <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
                                             fullWidth size='small'
                                             label="Sales Unit of Measure*"
@@ -462,6 +452,25 @@ const ProductMasterPage = () => {
                                             error={touched.salesUoM && Boolean(errors.salesUoM)}
                                             helperText={touched.salesUoM && errors.salesUoM}
                                         />
+                                    </Grid> */}
+                                      <Grid item xs={12} sm={6} md={2.4}   >
+                                        <TextField
+                                            fullWidth size='small'
+                                            select
+                                            label="Sales Unit of Measure*"
+                                            name="salesUoM"
+                                            value={values.salesUoM}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.salesUoM && Boolean(errors.salesUoM)}
+                                            helperText={touched.salesUoM && errors.salesUoM}
+                                        >
+                                            {unitsofMeasurement.map((unit) => (
+                                                <MenuItem key={unit} value={unit}>
+                                                    {unit}
+                                                </MenuItem>
+                                            ))}
+                                        </TextField>
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={2.4}   >
                                         <TextField
@@ -525,7 +534,7 @@ const ProductMasterPage = () => {
                                 </Typography>
 
                                 <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6} md={2.4} >
+                                    {/* <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
                                             fullWidth size='small'
                                             label="Expiration Date"
@@ -536,8 +545,30 @@ const ProductMasterPage = () => {
                                             onBlur={handleBlur}
                                             InputLabelProps={{ shrink: true }}
                                         />
+                                    </Grid> */}
+                                    <Grid item xs={12} sm={6} md={2.4}>
+                                        <TextField
+                                            fullWidth
+                                            size="small"
+                                            label="Expiration Date"
+                                            name="expirationDate"
+                                            type="date"
+                                            value={
+                                                values.expirationDate
+                                                ? values.expirationDate.split('-').reverse().join('-')
+                                                : ''
+                                            }
+                                            onChange={(e) => {
+                                                const selectedDate = e.target.value;
+                                                const formattedDate = selectedDate
+                                                    .split('-').reverse().join('-');
+                                            handleChange({ target: { name: 'expiryDate', value: formattedDate } });
+                                                    }}
+                                            onBlur={handleBlur}
+                                            InputLabelProps={{ shrink: true }}
+                                            />
                                     </Grid>
-                                    <Grid item xs={12} sm={6} md={2.4} >
+                                    {/* <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
                                             fullWidth size='small'
                                             label="Best Before Date"
@@ -548,6 +579,28 @@ const ProductMasterPage = () => {
                                             onBlur={handleBlur}
                                             InputLabelProps={{ shrink: true }}
                                         />
+                                    </Grid> */}
+                                    <Grid item xs={12} sm={6} md={2.4}>
+                                        <TextField
+                                            fullWidth
+                                            size="small"
+                                            label="Best Before Date"
+                                            name="bestBeforeDate"
+                                            type="date"
+                                            value={
+                                                values.bestBeforeDate
+                                                ? values.bestBeforeDate.split('-').reverse().join('-')
+                                                : ''
+                                            }
+                                            onChange={(e) => {
+                                                const selectedDate = e.target.value;
+                                                const formattedDate = selectedDate
+                                                    .split('-').reverse().join('-');
+                                            handleChange({ target: { name: 'expiryDate', value: formattedDate } });
+                                                    }}
+                                            onBlur={handleBlur}
+                                            InputLabelProps={{ shrink: true }}
+                                            />
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
@@ -723,16 +776,18 @@ const ProductMasterPage = () => {
                                 </Grid>
 
                                 <Box marginTop={2} textAlign="center">
-                                    {updateRecord ? (
-                                        <Button type="submit" variant="contained" color="primary">
-                                            Update
-                                        </Button>
-                                    ) : (
-                                        <Button type="submit" variant="contained" color="primary">
-                                            Submit
-                                        </Button>
-                                    )}
-
+                                   <Button type="submit" variant="contained" color="primary">
+                                            {updateRecord ? "Update product" : "Create product"}
+                                    </Button>
+                                    <Button
+                                                variant="contained"
+                                                      color="secondary"
+                                                      onClick={() => {
+                                                            setFormInitialValues(productFormInitialValues)
+                                                            setUpdateRecord(false)
+                                                          }}
+                                                      style={{ marginLeft: "10px" }}>Reset
+                                                  </Button>
                                 </Box>
                             </Form>
                         )
@@ -740,17 +795,18 @@ const ProductMasterPage = () => {
                     </Formik>
                 </Box>
             </Collapse>
-
-            <div style={{ marginTop: '40px' }}>
+            <div style={{ marginTop: "40px" }}>
+                {isLoading ? (
+                <DataGridSkeletonLoader columns={columns} />
+                ) : (
                 <DataGridComponent
-                    // columns={columns}
-                    // rows={dummyData}
-                    rows={rows}  // Pass the dynamic rows here
-                    columns={columns}
-                    isLoading={false}
-                    pageSizeOptions={[10, 20, 30]}
-                    initialPageSize={10}
+                        columns={columns}
+                        rows={rows}
+                        isLoading={false}
+                        pageSizeOptions={[10, 20, 30]}
+                        initialPageSize={10}
                 />
+                )}
             </div>
         </Grid>
     );

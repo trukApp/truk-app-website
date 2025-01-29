@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { Box, Button, MenuItem, TextField, Select, FormControl, InputLabel, OutlinedInput, Grid, Typography, Collapse, IconButton } from '@mui/material';
+import { Box, Button, MenuItem, TextField, Select, FormControl, InputLabel, OutlinedInput, Grid, Typography, Collapse, IconButton, Backdrop, CircularProgress } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { GridColDef } from '@mui/x-data-grid';
@@ -14,6 +14,7 @@ import { useGetPackageMasterQuery,usePostPackageMasterMutation,useEditPackageMas
 import MassUpload from '../MassUpload/MassUpload';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
+import DataGridSkeletonLoader from '../LoaderComponent/DataGridSkeletonLoader';
 export interface Package {
   handling_unit_type: string;
   dimensions: string;
@@ -38,10 +39,10 @@ const PackagingForm = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editRow,setEditRow] = useState<PackageInfo | null>(null); ;
   const [showForm, setShowForm] = useState(false);
-  const { data, error } = useGetPackageMasterQuery([])
-  const [postPackage] = usePostPackageMasterMutation()
-  const [editPackage] = useEditPackageMasterMutation()
-  const [deletePackage] = useDeletePackageMasterMutation()
+  const { data, error, isLoading } = useGetPackageMasterQuery([])
+  const [postPackage, {isLoading:postPackageLoading}] = usePostPackageMasterMutation()
+  const [editPackage,{isLoading:editPackageLoading}] = useEditPackageMasterMutation()
+  const [deletePackage,{isLoading:deletePackageLoading}] = useDeletePackageMasterMutation()
   // const unitsofMeasurement = ['meter', 'centi meter', 'milli meter', 'inch']
   const unitsofMeasurement = useSelector((state: RootState) => state.auth.unitsofMeasurement);
   
@@ -197,6 +198,15 @@ const rows = data?.packages.map((packageItem :Package) => ({
 
   return (
     <>
+      <Backdrop
+        sx={{
+          color: "#ffffff",
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+        }}
+        open={postPackageLoading || editPackageLoading || deletePackageLoading}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
       <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
         <Button
           variant="contained"
@@ -330,6 +340,16 @@ const rows = data?.packages.map((packageItem :Package) => ({
               <Button color="primary" variant="contained" type="submit">
                 {isEditing ? "Update package" : "Create pacakage"}
               </Button>
+              <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={() => {
+                        formik.resetForm()
+                        setIsEditing(false);
+                        setEditRow(null);
+                      }}
+                  style={{ marginLeft: "10px" }}>Reset
+              </Button>
             </Box>
           </form>
         </Box>
@@ -337,15 +357,19 @@ const rows = data?.packages.map((packageItem :Package) => ({
       </Collapse>
 
       {/* Data grid */}
-      <div style={{ marginTop: "60px" }}>
-        <DataGridComponent
-          columns={columns}
-          rows={rows}
-          isLoading={false}
-          pageSizeOptions={[10, 20, 30]}
-          initialPageSize={10}
-        />
-      </div>
+      <div style={{ marginTop: "40px" }}>
+        {isLoading ? (
+          <DataGridSkeletonLoader columns={columns} />
+        ) : (
+          <DataGridComponent
+                columns={columns}
+                rows={rows}
+                isLoading={false}
+                pageSizeOptions={[10, 20, 30]}
+                initialPageSize={10}
+          />
+        )}
+        </div>
     </>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Button, Collapse, Grid, TextField, FormControlLabel, Checkbox, MenuItem, SelectChangeEvent, FormControl, InputLabel, Select, FormHelperText } from '@mui/material';
+import { Box, Button, Collapse, Grid, TextField, FormControlLabel, Checkbox, MenuItem, SelectChangeEvent, FormControl, InputLabel, Select, FormHelperText, Backdrop, CircularProgress } from '@mui/material';
 import { Formik, Form, FormikProps } from 'formik';
 import * as Yup from 'yup';
 import styles from './BusinessPartners.module.css';
@@ -7,12 +7,12 @@ import { DataGridComponent } from '../GridComponent';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useDriverRegistrationMutation, useGetAllDriversDataQuery, useEditDriverMutation, useDeleteDriverMutation, useGetLocationMasterQuery } from '@/api/apiSlice';
-import { withAuthComponent } from '../WithAuthComponent';
 import { GridColDef } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import DriverMassUpload from '../MassUpload/DriverMassUpload';
+import DataGridSkeletonLoader from '../LoaderComponent/DataGridSkeletonLoader';
 
 interface DriverFormValues {
   driverName: string;
@@ -105,9 +105,9 @@ const initialDriverValues = {
 };
 
 const DriverForm: React.FC = () => {
-  const [driverRegistration] = useDriverRegistrationMutation();
-  const [editDriverDetails] = useEditDriverMutation()
-  const [deleteDriver] = useDeleteDriverMutation()
+  const [driverRegistration,{isLoading:postDriverLoading}] = useDriverRegistrationMutation();
+  const [editDriverDetails, {isLoading:editDriverLoading}] = useEditDriverMutation()
+  const [deleteDriver, {isLoading:deleteDriverLoading}] = useDeleteDriverMutation()
   const [showForm, setShowForm] = useState(false);
   const [updateRecord, setUpdateRecord] = useState(false);
   const [formInitialValues, setFormInitialValues] = useState(initialDriverValues);
@@ -214,7 +214,7 @@ const driverColumns: GridColDef[] = [
   { field: 'driverContactNumber', headerName: 'Contact Number', width: 150 },
   { field: 'emailID', headerName: 'Email ID', width: 200 },
   { field: 'vehicleTypes', headerName: 'Vehicle Types', width: 200 },
-  { field: 'loggedIntoApp', headerName: 'Logged In', width: 100 },
+  // { field: 'loggedIntoApp', headerName: 'Logged In', width: 100 },
 
   {
     field: 'actions',
@@ -252,7 +252,7 @@ const driverColumns: GridColDef[] = [
     driverContactNumber: driver?.driver_correspondence?.phone,
     emailID: driver?.driver_correspondence?.email,
     vehicleTypes: driver?.vehicle_types,
-    loggedIntoApp: driver?.logged_in ? 'Yes' : 'No',
+    loggedIntoApp: driver?.logged_in  ,
     address: driver?.address,
   })) || [];
 
@@ -350,6 +350,15 @@ const driverColumns: GridColDef[] = [
 
   return (
     <div className={styles.formsMainContainer}>
+        <Backdrop
+          sx={{
+            color: "#ffffff",
+            zIndex: (theme) => theme.zIndex.drawer + 1,
+          }}
+          open={postDriverLoading || editDriverLoading || deleteDriverLoading}
+        >
+          <CircularProgress color="inherit" />
+       </Backdrop>
       <Box display="flex" justifyContent="flex-end" gap={2}>
         <Button
           variant="contained"
@@ -498,21 +507,31 @@ const driverColumns: GridColDef[] = [
                       helperText={touched.drivingLicense && errors.drivingLicense}
                     />
                   </Grid>
+      
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
-                      fullWidth size='small'
+                      fullWidth
+                      size="small"
                       label="Expiry Date"
                       name="expiryDate"
                       type="date"
-                      value={values.expiryDate}
-                      onChange={handleChange}
+                      value={
+                        values.expiryDate
+                          ? values.expiryDate.split('-').reverse().join('-')
+                          : ''
+                      }
+                      onChange={(e) => {
+                        const selectedDate = e.target.value;
+                        const formattedDate = selectedDate
+                          .split('-')
+                          .reverse()
+                          .join('-');
+                        handleChange({ target: { name: 'expiryDate', value: formattedDate } });
+                      }}
                       onBlur={handleBlur}
                       error={touched.expiryDate && Boolean(errors.expiryDate)}
                       helperText={touched.expiryDate && errors.expiryDate}
                       InputLabelProps={{ shrink: true }}
-                      InputProps={{
-                      inputProps: { min: new Date().toISOString().split('T')[0] },
-                      }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6} md={2.4}>
@@ -580,37 +599,40 @@ const driverColumns: GridColDef[] = [
                   </Grid>
                 </Grid>
 
-                {updateRecord ? (
                   <Box marginTop={3} textAlign="center">
                     <Button type="submit" variant="contained" color="primary">
-                      Update
-                    </Button>
+                      {updateRecord ? "Update driver" : "Create driver"}
+                  </Button>
+                          <Button variant="contained" color="secondary"
+                                    onClick={() => {
+                                    setFormInitialValues(initialDriverValues);
+                                    setUpdateRecord(false)
+                                  }}
+                              style={{ marginLeft: "10px" }}>Reset
+                              </Button>
                   </Box>
-                ) : (
-                  <Box marginTop={3} textAlign="center">
-                    <Button type="submit" variant="contained" color="primary">
-                      Create
-                    </Button>
-                  </Box>
-                )}
               </Form>
             )}
           </Formik>
         </Box>
       </Collapse>
 
-      <Grid item xs={12} style={{ marginTop: '50px' }}>
-        <DataGridComponent
-          columns={driverColumns}
-          rows={driversDataRows}
-          isLoading={false}
-          pageSizeOptions={[10, 20]}
-          initialPageSize={10}
-        />
-      </Grid>
+        <div style={{ marginTop: "40px" }}>
+        {isLoading ? (
+          <DataGridSkeletonLoader columns={driverColumns} />
+        ) : (
+          <DataGridComponent
+                columns={driverColumns}
+                rows={driversDataRows}
+                isLoading={false}
+                pageSizeOptions={[10, 20, 30]}
+                initialPageSize={10}
+          />
+        )}
+        </div>
 
     </div>
   );
 };
 
-export default withAuthComponent(DriverForm);
+export default DriverForm;

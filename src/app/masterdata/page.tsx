@@ -6,8 +6,8 @@ import UnitsOfMeasurement from "@/Components/MasterDataComponents/UnitsOfMeasure
 import Locations from "@/Components/MasterDataComponents/Locations";
 import PackagingInfo from "@/Components/MasterDataComponents/PackagingInfo";
 import Lanes from "@/Components/MasterDataComponents/Lanes";
-// import VehicleGroup from "@/Components/MasterDataComponents/VehicleGroup";
 import DeviceMaster from "@/Components/MasterDataComponents/DeviceMaster";
+import { withAuthComponent } from "@/Components/WithAuthComponent";
 
 const MasterData: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState<string>("Vehicles");
@@ -67,4 +67,4 @@ const MasterData: React.FC = () => {
   );
 };
 
-export default MasterData;
+export default withAuthComponent(MasterData);

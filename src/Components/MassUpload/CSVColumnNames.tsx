@@ -1,8 +1,8 @@
 export const locationColumnNames = [
   { displayName: 'Location Description *', key: 'loc_desc' },
   { displayName: 'Location Type *', key: 'loc_type' },
-  { displayName: 'GLN Code', key: 'gln_code' },
-  { displayName: 'IATA Code', key: 'iata_code' },
+  { displayName: 'GLN Code (13 characters)', key: 'gln_code' },
+  { displayName: 'IATA Code (3 characters)', key: 'iata_code' },
   { displayName: 'Longitude *', key: 'longitude' },
   { displayName: 'Latitude *', key: 'latitude' },
   { displayName: 'Time Zone *', key: 'time_zone' },
@@ -11,13 +11,13 @@ export const locationColumnNames = [
   { displayName: 'City', key: 'city' },
   { displayName: 'State', key: 'state' },
   { displayName: 'Country', key: 'country' },
-  { displayName: 'Pincode', key: 'pincode' },
+  { displayName: 'Pincode (6 digits)', key: 'pincode' },
 ];
 
 export const vehicleColumnNames = [
   { displayName: 'Location ID', key: 'loc_ID' },
-  { displayName: 'Unlimited Usage', key: 'unlimited_usage' },
-  { displayName: 'Individual Resource', key: 'individual_resource' },
+  { displayName: 'Unlimited Usage (1 if Yes, 0 if No)', key: 'unlimited_usage' },
+  { displayName: 'Number of Individual Resources (if unlimited is 0 only)', key: 'individual_resource' },
   { displayName: 'Validity From', key: 'validity_from', nestedKey: 'transportation_details' },
   { displayName: 'Validity To', key: 'validity_to', nestedKey: 'transportation_details' },
   { displayName: 'Vehicle Type', key: 'vehicle_type', nestedKey: 'transportation_details' },
@@ -31,7 +31,6 @@ export const vehicleColumnNames = [
   { displayName: 'Tare Weight', key: 'tare_weight', nestedKey: 'physical_properties' },
   { displayName: 'Max Gross Weight', key: 'max_gross_weight', nestedKey: 'physical_properties' },
   { displayName: 'Tare Volume', key: 'tare_volume', nestedKey: 'physical_properties' },
-
   { displayName: 'Maximum length', key: 'max_length', nestedKey: 'physical_properties' },
   { displayName: 'Maximum width', key: 'max_width', nestedKey: 'physical_properties' },
   { displayName: 'Maximum height', key: 'max_height', nestedKey: 'physical_properties' },
@@ -113,11 +112,11 @@ export const driversColumnNames= [
   { displayName: 'Driver Name', key: 'driver_name' },
 
   {displayName: 'Driving License', key: 'driving_license',nestedKey: 'driver_correspondence',},
-  {displayName: 'Expiry Date (YYYY-MM-DD)',key: 'expiry_date',nestedKey: 'driver_correspondence',},
-  { displayName: 'Driver Contact Number',key: 'phone',nestedKey: 'driver_correspondence',},
-  {displayName: 'Email ID',key: 'email',nestedKey: 'driver_correspondence',},
+  {displayName: 'Expiry Date',key: 'expiry_date',nestedKey: 'driver_correspondence',},
+  { displayName: 'Driver Contact Number (10 digits)',key: 'phone',nestedKey: 'driver_correspondence',},
+  {displayName: 'Email ID (Valid email)',key: 'email',nestedKey: 'driver_correspondence',},
   { displayName: 'Vehicle Types', key: 'vehicle_types' },
-  { displayName: 'Logged Into App', key: 'logged_in' },
+  { displayName: 'Is Logged in (1 if Yes, 0 if No)', key: 'logged_in' },
 ];
 
 export const productColumnNames = [

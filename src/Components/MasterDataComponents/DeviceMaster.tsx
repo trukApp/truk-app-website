@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { Grid, TextField, Button, Box, Typography, Collapse,IconButton } from "@mui/material";
+import { Grid, TextField, Button, Box, Typography, Collapse,IconButton, Backdrop, CircularProgress } from "@mui/material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { GridColDef } from "@mui/x-data-grid";
@@ -12,6 +12,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useGetDeviceMasterQuery,usePostDeviceMasterMutation, useEditDeviceMasterMutation,useDeleteDeviceMasterMutation } from '@/api/apiSlice';
 import MassUpload from '../MassUpload/MassUpload';
+import DataGridSkeletonLoader from '../LoaderComponent/DataGridSkeletonLoader';
 
 interface DeviceMasterValues {
   id: string;
@@ -42,10 +43,10 @@ const DeviceMaster: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editRow, setEditRow] = useState<DeviceMasterValues | null>(null);
-      const { data, error, isLoading } = useGetDeviceMasterQuery([]);
-      const [postDevice] = usePostDeviceMasterMutation();
-      const [editDevice] = useEditDeviceMasterMutation();
-  const [deleteDevice] = useDeleteDeviceMasterMutation()
+  const { data, error, isLoading } = useGetDeviceMasterQuery([]);
+  const [postDevice, {isLoading:postDeviceLoading}] = usePostDeviceMasterMutation();
+  const [editDevice,{isLoading:editDeviceLoading}] = useEditDeviceMasterMutation();
+  const [deleteDevice,{isLoading:deleteDeviceLoading}] = useDeleteDeviceMasterMutation()
   console.log("device data :", data)
     if (isLoading) {
     console.log("Loading devices...");
@@ -153,14 +154,14 @@ const handleDelete = async (row: DeviceMasterValues) => {
   });
   const rows = data?.devices.map((device: DeviceInfoBE) => ({
     id: device.device_id,
-  deviceId: device.dev_ID,
-  deviceType: device.device_type,
-  deviceUID: device.device_UID,
-  simImeiNumber: device.sim_imei_num,
-  vehicleNumber: device.vehicle_number,
-  carrierId: device.carrier_ID,
-  locationId: device.loc_ID,
-}));
+    deviceId: device.dev_ID,
+    deviceType: device.device_type,
+    deviceUID: device.device_UID,
+    simImeiNumber: device.sim_imei_num,
+    vehicleNumber: device.vehicle_number,
+    carrierId: device.carrier_ID,
+    locationId: device.loc_ID,
+  }));
 
   const columns: GridColDef[] = [
   { field: "deviceId", headerName: "Device ID", width: 150 },
@@ -211,6 +212,15 @@ const handleDelete = async (row: DeviceMasterValues) => {
 
   return (
     <>
+      <Backdrop
+        sx={{
+          color: "#ffffff",
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+        }}
+        open={postDeviceLoading || editDeviceLoading || deleteDeviceLoading}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
       <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md:'24px' } }} align="center" gutterBottom>
           Device master
       </Typography>
@@ -237,8 +247,10 @@ const handleDelete = async (row: DeviceMasterValues) => {
                   fullWidth size='small'
                   id="deviceId"
                   name="deviceId"
-                  // label="Device ID (Auto Generated)"
-                  value="Device ID (Auto Generated)"
+                  label="Device ID (Auto Generated)"
+                  value={formik.values.deviceId}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
                   disabled
                 />
               </Grid>
@@ -327,11 +339,24 @@ const handleDelete = async (row: DeviceMasterValues) => {
                 />
               </Grid>
             </Grid>
-            <Box mt={3} textAlign='center' >
-              <Button variant="contained" color="primary" type="submit">
-                 {isEditing ? "Update device ": "Create device"}
-              </Button>
-            </Box>
+         <Box mt={3} textAlign="center">
+            <Button variant="contained" color="primary" type="submit">
+              {isEditing ? "Update device" : "Create device"}
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={() => {
+                formik.resetForm();
+                setIsEditing(false);
+                setEditRow(null);
+              }}
+              style={{ marginLeft: "10px" }}
+            >
+              Reset
+            </Button>
+          </Box>
+
           </form>
         </Box>
       </Collapse>
@@ -339,14 +364,18 @@ const handleDelete = async (row: DeviceMasterValues) => {
 
 
       <div style={{ marginTop: "40px" }}>
-        <DataGridComponent
-          columns={columns}
-          rows={rows}
-          isLoading={false}
-          pageSizeOptions={[10, 20, 30]}
-          initialPageSize={10}
-        />
-      </div>
+        {isLoading ? (
+          <DataGridSkeletonLoader columns={columns} />
+        ) : (
+          <DataGridComponent
+                columns={columns}
+                rows={rows}
+                isLoading={false}
+                pageSizeOptions={[10, 20, 30]}
+                initialPageSize={10}
+          />
+        )}
+        </div>
     </>
   );
 };

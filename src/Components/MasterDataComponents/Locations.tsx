@@ -2,8 +2,10 @@
 
 import React, { useEffect, useState } from 'react';
 import {
+  Backdrop,
   Box,
   Button,
+  CircularProgress,
   Collapse,
   Grid,
   IconButton,
@@ -23,11 +25,11 @@ import { GridColDef } from '@mui/x-data-grid';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import styles from './MasterData.module.css';
-import { withAuthComponent } from '../WithAuthComponent';
 import { useGetLocationMasterQuery, usePostLocationMasterMutation,useEditLocationMasterMutation ,useDeleteLocationMasterMutation } from '@/api/apiSlice';
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MassUpload from '../MassUpload/MassUpload';
+import DataGridSkeletonLoader from '../LoaderComponent/DataGridSkeletonLoader';
 
 export interface Location {
   location_id: number;
@@ -92,9 +94,9 @@ const Locations: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editRow,setEditRow] = useState<DataGridRow | null>(null); ;
   const { data, error, isLoading } = useGetLocationMasterQuery([]);
-  const [postLocation] = usePostLocationMasterMutation();
-  const [editLocation] = useEditLocationMasterMutation();
-  const [deleteLocation] = useDeleteLocationMasterMutation()
+  const [postLocation,{isLoading:postLocationLoading}] = usePostLocationMasterMutation();
+  const [editLocation,{isLoading:editLocationLoading}] = useEditLocationMasterMutation();
+  const [deleteLocation,{isLoading:deleteLocationLoading}] = useDeleteLocationMasterMutation()
 
 
   console.log("all locations :", data?.locations)
@@ -328,6 +330,15 @@ const handleDelete = async (row: DataGridRow) => {
 
   return (
     <>
+      <Backdrop
+        sx={{
+          color: "#ffffff",
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+        }}
+        open={postLocationLoading || editLocationLoading || deleteLocationLoading}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
       <Box
         component="form"
         onSubmit={handleSubmit}
@@ -686,6 +697,16 @@ const handleDelete = async (row: DataGridRow) => {
               <Button variant="contained" color="primary" type="submit">
                 {isEditing ? "Update location" : "Create location"}
               </Button>
+              <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={() => {
+                  formik.resetForm()
+                  setIsEditing(false);
+                  setEditRow(null);
+                    }}
+                  style={{ marginLeft: "10px" }}>Reset
+                </Button>
             </Box>
           </Box>
         </Collapse>
@@ -694,7 +715,7 @@ const handleDelete = async (row: DataGridRow) => {
       </Box>
 
       {/* Data grid */}
-      <div style={{ marginTop: "40px" }}>
+      {/* <div style={{ marginTop: "40px" }}>
         <DataGridComponent
           columns={columns}
           rows={rows}
@@ -702,10 +723,23 @@ const handleDelete = async (row: DataGridRow) => {
           pageSizeOptions={[10, 20, 30]}
           initialPageSize={10}
         />
+      </div> */}
+            <div style={{ marginTop: "40px" }}>
+        {isLoading ? (
+          <DataGridSkeletonLoader columns={columns} />
+        ) : (
+          <DataGridComponent
+                columns={columns}
+                rows={rows}
+                isLoading={false}
+                pageSizeOptions={[10, 20, 30]}
+                initialPageSize={10}
+          />
+        )}
       </div>
 
     </>
   );
 };
 
-export default withAuthComponent(Locations);
+export default Locations

@@ -6,6 +6,8 @@ import {
     Select,
     FormHelperText,
     InputLabel,
+    Backdrop,
+    CircularProgress,
     // Checkbox, FormControlLabel,
 } from '@mui/material';
 import { Formik, Form } from 'formik';
@@ -18,8 +20,8 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useGetCarrierMasterQuery,usePostCarrierMasterMutation,useEditCarrierMasterMutation,useDeleteCarrierMasterMutation, useGetLocationMasterQuery, useGetLanesMasterQuery } from '@/api/apiSlice';
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { withAuthComponent } from '../WithAuthComponent';
 import MassUpload from '../MassUpload/MassUpload';
+import DataGridSkeletonLoader from '../LoaderComponent/DataGridSkeletonLoader';
 
 interface Location {
     loc_ID: string;
@@ -58,10 +60,10 @@ const CarrierForm: React.FC = () => {
     const [showForm, setShowForm] = useState(false);
           const [isEditing, setIsEditing] = useState(false);
       const [editRow,setEditRow] = useState<CarrierFormFE | null>(null); ;
-      const { data, error } = useGetCarrierMasterQuery([])
-      const [postCarrier] = usePostCarrierMasterMutation()
-      const [editCarrier] = useEditCarrierMasterMutation()
-    const [deleteCarrier] = useDeleteCarrierMasterMutation()
+      const { data, error,isLoading } = useGetCarrierMasterQuery([])
+      const [postCarrier,{isLoading:postCarrierLoading}] = usePostCarrierMasterMutation()
+      const [editCarrier,{isLoading:editCarrierLoading}] = useEditCarrierMasterMutation()
+    const [deleteCarrier,{isLoading:deleteCarrierLoading}] = useDeleteCarrierMasterMutation()
     const { data: locationsData, } = useGetLocationMasterQuery([])
      const { data:lanesData } = useGetLanesMasterQuery([]);
     
@@ -196,11 +198,13 @@ const handleDelete = async (row: CarrierFormFE) => {
                 const response = await editCarrier({body:editBody, carrierId}).unwrap()
                 console.log("edit response is ", response)
                 setShowForm(false)
+                setInitialValues(initialCarrierValues)
             }
             else {
                 console.log("post create carrier ",body)
                 const response = await postCarrier(body).unwrap();
                 setShowForm(false)
+                setInitialValues(initialCarrierValues)
                 console.log('response in post carrier:', response);
 
             }
@@ -272,6 +276,15 @@ const handleDelete = async (row: CarrierFormFE) => {
 
     return (
         <div className={styles.formsMainContainer}>
+            <Backdrop
+                sx={{
+                color: "#ffffff",
+                zIndex: (theme) => theme.zIndex.drawer + 1,
+                }}
+                open={postCarrierLoading || editCarrierLoading || deleteCarrierLoading}
+            >
+                <CircularProgress color="inherit" />
+            </Backdrop>
             <Box display="flex" justifyContent="flex-end" gap={2}>
                 <Button
                     variant="contained"
@@ -530,24 +543,34 @@ const handleDelete = async (row: CarrierFormFE) => {
                                     <Button type="submit" variant="contained" color="primary">
                                         {isEditing ? "Update carrier" : "Create carrier"}
                                     </Button>
+                                        <Button variant="contained" color="secondary"
+                                                onClick={() => {
+                                                setInitialValues(initialCarrierValues)
+                                            setIsEditing(false)
+                                            }}
+                                            style={{ marginLeft: "10px" }}>Reset
+                                        </Button>
                                 </Box>
                             </Form>
                         )}
                     </Formik>
                 </Box>
             </Collapse>
-
-            <Grid item xs={12} style={{ marginTop: '50px' }}>
+            <div style={{ marginTop: "40px" }}>
+                {isLoading ? (
+                <DataGridSkeletonLoader columns={carrierColumns} />
+                ) : (
                 <DataGridComponent
-                    columns={carrierColumns}
-                    rows={rows}
-                    isLoading={false}
-                    pageSizeOptions={[10, 20]}
-                    initialPageSize={10}
+                        columns={carrierColumns}
+                        rows={rows}
+                        isLoading={false}
+                        pageSizeOptions={[10, 20, 30]}
+                        initialPageSize={10}
                 />
-            </Grid>
+                )}
+            </div>
         </div>
     );
 };
 
-export default withAuthComponent(CarrierForm);
+export default CarrierForm;

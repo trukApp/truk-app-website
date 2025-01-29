@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Button, Collapse, Grid, TextField, FormControlLabel, Checkbox, FormControl, InputLabel, MenuItem, Select, FormHelperText, SelectChangeEvent } from '@mui/material';
+import { Box, Button, Collapse, Grid, TextField, FormControlLabel, Checkbox, FormControl, InputLabel, MenuItem, Select, FormHelperText, SelectChangeEvent, Backdrop, CircularProgress } from '@mui/material';
 import { Formik, Form, FormikProps } from 'formik';
 import * as Yup from 'yup';
 import { DataGridComponent } from '../GridComponent';
@@ -12,6 +12,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import MassUpload from '../MassUpload/MassUpload';
+import DataGridSkeletonLoader from '../LoaderComponent/DataGridSkeletonLoader';
 
 interface PartnerFunctions {
     forwarding_agent: string;
@@ -86,9 +87,9 @@ const SupplierForm: React.FC = () => {
     const [formInitialValues, setFormInitialValues] = useState(initialSupplierValues);
     const [updateRecordData, setUpdateRecordData] = useState({});
     const [updateRecordId, setUpdateRecordId] = useState(0)
-    const [updatePartnerDetails] = useEditBusinessPartnerMutation();
-    const [customerRegistration] = useCustomerRegistrationMutation();
-    const [deleteBusinessPartner] = useDeleteBusinessPartnerMutation()
+    const [updatePartnerDetails,{isLoading:postVendorLoading}] = useEditBusinessPartnerMutation();
+    const [customerRegistration,{isLoading:editVendorLoading}] = useCustomerRegistrationMutation();
+    const [deleteBusinessPartner,{isLoading:deleteVendorLoading}] = useDeleteBusinessPartnerMutation()
     const { data, error, isLoading } = useGetAllVendorsDataQuery({
         partner_type: "vendor",
     })
@@ -154,7 +155,7 @@ const SupplierForm: React.FC = () => {
         { field: 'location_state', headerName: 'Supplier State', width: 150 },
         { field: 'location_country', headerName: 'Supplier Country', width: 150 },
         { field: 'loc_of_source', headerName: 'Source Location ID', width: 150 },
-        { field: 'pod_relevant', headerName: 'Pod relevant', width: 150 },
+        // { field: 'pod_relevant', headerName: 'Pod relevant', width: 150 },
         {
             field: 'actions',
             headerName: 'Actions',
@@ -302,7 +303,15 @@ const SupplierForm: React.FC = () => {
 
     return (
         <div className={styles.formsMainContainer}>
-
+            <Backdrop
+                sx={{
+                color: "#ffffff",
+                zIndex: (theme) => theme.zIndex.drawer + 1,
+                }}
+                open={postVendorLoading || editVendorLoading || deleteVendorLoading}
+            >
+                <CircularProgress color="inherit" />
+             </Backdrop>
             <Box display="flex" justifyContent="flex-end" gap={2}>
                 <Button
                     variant="contained"
@@ -383,7 +392,7 @@ const SupplierForm: React.FC = () => {
                                         <TextField
                                             fullWidth size='small'
                                             label="Pincode"
-                                            name="pincode"
+                                            name="pincode" disabled
                                             value={values.pincode}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
@@ -395,7 +404,7 @@ const SupplierForm: React.FC = () => {
                                         <TextField
                                             fullWidth size='small'
                                             label="City"
-                                            name="city"
+                                            name="city" disabled
                                             value={values.city}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
@@ -417,7 +426,7 @@ const SupplierForm: React.FC = () => {
                                     </Grid> */}
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                            fullWidth size='small'
+                                            fullWidth size='small' disabled
                                             label="Country"
                                             name="country"
                                             value={values.country}
@@ -560,35 +569,39 @@ const SupplierForm: React.FC = () => {
                                         />
                                     </Grid>
                                 </Grid>
-                                {updateRecord ? (
-
+                        
                                     <Box marginTop={3} textAlign="center">
                                         <Button type="submit" variant="contained" color="primary">
-                                            Update
-                                        </Button>
-                                    </Box>
-                                ) : (
-                                    <Box marginTop={3} textAlign="center">
-                                        <Button type="submit" variant="contained" color="primary">
-                                            Create
-                                        </Button>
-                                    </Box>
-                                )}
+                                            {updateRecord ?  "Update" : "Create" }
+                                    </Button>
+                                       <Button variant="contained" color="secondary"
+                                                onClick={() => {
+                                                setFormInitialValues(initialSupplierValues)
+                                                setUpdateRecord(false)
+                                            }}
+                                        style={{ marginLeft: "10px" }}>Reset
+                                    </Button>
+                                    
+                                </Box>
                             </Form>
                         )}
                     </Formik>
                 </Box>
             </Collapse>
 
-            <Grid item xs={12} style={{ marginTop: '50px' }}>
+            <div style={{ marginTop: "40px" }}>
+                {isLoading ? (
+                <DataGridSkeletonLoader columns={columns} />
+                ) : (
                 <DataGridComponent
-                    columns={columns}
-                    rows={mappedData}
-                    isLoading={false}
-                    pageSizeOptions={[10, 20]}
-                    initialPageSize={10}
+                        columns={columns}
+                        rows={mappedData}
+                        isLoading={false}
+                        pageSizeOptions={[10, 20, 30]}
+                        initialPageSize={10}
                 />
-            </Grid>
+                )}
+            </div>
         </div>
     );
 };

@@ -1,8 +1,10 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import {
+  Backdrop,
   Box,
   Button,
+  CircularProgress,
   Collapse,
   Grid,
   IconButton,
@@ -21,10 +23,10 @@ import styles from './MasterData.module.css'
 import { useGetLanesMasterQuery, usePostLaneMasterMutation, useEditLaneMasterMutation, useDeleteLaneMasterMutation, } from '@/api/apiSlice';
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { withAuthComponent } from '../WithAuthComponent';
 import MassUpload from '../MassUpload/MassUpload';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store'; 
+import DataGridSkeletonLoader from '../LoaderComponent/DataGridSkeletonLoader';
 
 
 interface LaneDetails {
@@ -86,14 +88,11 @@ const TransportationLanes = () => {
     const { data, error, isLoading } = useGetLanesMasterQuery([]);
     const unitsofMeasurement = useSelector((state: RootState) => state.auth.unitsofMeasurement);
   
-    const [postLane] = usePostLaneMasterMutation();
-    const [editLane] = useEditLaneMasterMutation();
-    const [deleteLane] = useDeleteLaneMasterMutation()
+    const [postLane, {isLoading:postLaneLoading}] = usePostLaneMasterMutation();
+    const [editLane,{isLoading:editLaneLoading}] = useEditLaneMasterMutation();
+    const [deleteLane,{isLoading:deleteLaneLoading}] = useDeleteLaneMasterMutation()
   
   console.log("all lanes :", data?.lanes)
-  if (isLoading) {
-    console.log("Loading lanes...");
-  }
 
   if (error) {
     console.error("Error fetching lanes:", error);
@@ -331,6 +330,15 @@ const rows = data?.lanes.map((lane:Lane) => ({
 
   return (
     <>
+      <Backdrop
+        sx={{
+          color: "#ffffff",
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+        }}
+        open={postLaneLoading || editLaneLoading || deleteLaneLoading}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
       <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md:'24px' } }} align="center" gutterBottom>
           Transportation lanes master
       </Typography>
@@ -438,20 +446,27 @@ const rows = data?.lanes.map((lane:Lane) => ({
                   </Grid>
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
-                      fullWidth
-                      id="transportStartDate"
-                      name="transportStartDate"
+                      fullWidth 
+                      id='transportStartDate'
+                      size="small"
                       label="Start Date*"
+                      name="transportStartDate"
                       type="date"
-                      value={formik.values.transportStartDate}
-                      onChange={formik.handleChange}
+                      value={formik.values.transportStartDate
+                              ? formik.values.transportStartDate.split('-').reverse().join('-'): ''}
+                      onChange={(e) => {const selectedDate = e.target.value;
+                                        const formattedDate = selectedDate.split('-')
+                                          .reverse()
+                                          .join('-');
+                                        formik.handleChange({ target: { name: 'transportStartDate', value: formattedDate } });
+                                  }}
+                      onBlur={formik.handleBlur}
                       error={formik.touched.transportStartDate && Boolean(formik.errors.transportStartDate)}
                       helperText={formik.touched.transportStartDate && formik.errors.transportStartDate}
-                      size="small"
                       InputLabelProps={{ shrink: true }}
-                    />
+                          />
                   </Grid>
-                  <Grid item xs={12} sm={6} md={2.4}>
+                  {/* <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth
                       id="transportEndDate"
@@ -465,6 +480,28 @@ const rows = data?.lanes.map((lane:Lane) => ({
                       size="small"
                       InputLabelProps={{ shrink: true }}
                     />
+                  </Grid> */}
+                    <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth 
+                      id='transportEndDate'
+                      size="small"
+                      label="End Date*"
+                      name="transportEndDate"
+                      type="date"
+                      value={formik.values.transportEndDate
+                              ? formik.values.transportEndDate.split('-').reverse().join('-'): ''}
+                      onChange={(e) => {const selectedDate = e.target.value;
+                                        const formattedDate = selectedDate.split('-')
+                                          .reverse()
+                                          .join('-');
+                                        formik.handleChange({ target: { name: 'transportEndDate', value: formattedDate } });
+                                  }}
+                      onBlur={formik.handleBlur}
+                      error={formik.touched.transportEndDate && Boolean(formik.errors.transportEndDate)}
+                      helperText={formik.touched.transportEndDate && formik.errors.transportEndDate}
+                      InputLabelProps={{ shrink: true }}
+                          />
                   </Grid>
                   {/* <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
@@ -686,6 +723,18 @@ const rows = data?.lanes.map((lane:Lane) => ({
               <Box sx={{ textAlign: 'center', marginTop: 3 }}>
                 <Button type="submit" variant="contained" color="primary">
                    {isEditing ? "Update lane": "Create lane"}
+              </Button>
+              <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={() => {
+                    formik.resetForm()
+                    setIsEditing(false);
+                    setEditRow(null);
+                    }}
+                style={{ marginLeft: "10px" }}
+                                                >
+                  Reset
                 </Button>
               </Box>
       
@@ -695,7 +744,7 @@ const rows = data?.lanes.map((lane:Lane) => ({
 
 
       {/* data grid */}
-      <div style={{ marginTop: "40px" }}>
+      {/* <div style={{ marginTop: "40px" }}>
         <DataGridComponent
           columns={columns}
           rows={rows}
@@ -703,12 +752,24 @@ const rows = data?.lanes.map((lane:Lane) => ({
           pageSizeOptions={[10, 20, 30]}
           initialPageSize={10}
         />
+      </div> */}
+      <div style={{ marginTop: "40px" }}>
+        {isLoading ? (
+          <DataGridSkeletonLoader columns={columns} />
+        ) : (
+          <DataGridComponent
+                columns={columns}
+                rows={rows}
+                isLoading={false}
+                pageSizeOptions={[10, 20, 30]}
+                initialPageSize={10}
+          />
+        )}
       </div>
-
     </>
   );
 };
 
-export default withAuthComponent(TransportationLanes);
+export default TransportationLanes;
 
 

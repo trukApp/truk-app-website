@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TextField, Grid, Button, Collapse, Box, FormControlLabel, Checkbox, Select, MenuItem, FormHelperText, FormControl, InputLabel, SelectChangeEvent, Autocomplete } from '@mui/material';
+import { TextField, Grid, Button, Collapse, Box, FormControlLabel, Checkbox, Select, MenuItem, FormHelperText, FormControl, InputLabel, SelectChangeEvent, Autocomplete, Backdrop, CircularProgress } from '@mui/material';
 import { Formik, Form, FormikProps } from 'formik';
 import * as Yup from 'yup';
 import styles from './BusinessPartners.module.css';
@@ -8,11 +8,11 @@ import { GridColDef } from '@mui/x-data-grid';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useCustomerRegistrationMutation, useDeleteBusinessPartnerMutation, useEditBusinessPartnerMutation, useGetAllCustomersDataQuery, useGetLocationMasterQuery } from '@/api/apiSlice';
-import { withAuthComponent } from '../WithAuthComponent';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import MassUpload from '../MassUpload/MassUpload';
+import DataGridSkeletonLoader from '../LoaderComponent/DataGridSkeletonLoader';
 
 
 // Validation schema for CustomerForm
@@ -108,9 +108,9 @@ const CustomerForm: React.FC = () => {
     const [formInitialValues, setFormInitialValues] = useState(initialCustomerValues);
     const [updateRecordData, setUpdateRecordData] = useState({});
     const [updateRecordId, setUpdateRecordId] = useState(0)
-    const [updatePartnerDetails] = useEditBusinessPartnerMutation();
-    const [customerRegistration] = useCustomerRegistrationMutation();
-    const [deleteBusinessPartner] = useDeleteBusinessPartnerMutation()
+    const [updatePartnerDetails,{isLoading:editCustomerLoading}] = useEditBusinessPartnerMutation();
+    const [customerRegistration, {isLoading:postCustomerLoading}] = useCustomerRegistrationMutation();
+    const [deleteBusinessPartner,{isLoading:deleteCustomerLoading}] = useDeleteBusinessPartnerMutation()
 
     const { data, error, isLoading } = useGetAllCustomersDataQuery({
         partner_type: "customer",
@@ -165,7 +165,7 @@ const CustomerForm: React.FC = () => {
         { field: 'location_state', headerName: 'Customer State', width: 150 },
         { field: 'location_country', headerName: 'Customer Country', width: 150 },
         { field: 'loc_of_source', headerName: 'Source Location ID', width: 150 },
-        { field: 'pod_relevant', headerName: 'Pod relevant', width: 150 },
+        // { field: 'pod_relevant', headerName: 'Pod relevant', width: 150 },
         {
             field: 'actions',
             headerName: 'Actions',
@@ -322,6 +322,15 @@ const CustomerForm: React.FC = () => {
 
     return (
         <Grid >
+            <Backdrop
+                sx={{
+                color: "#ffffff",
+                zIndex: (theme) => theme.zIndex.drawer + 1,
+                }}
+                open={postCustomerLoading || editCustomerLoading || deleteCustomerLoading}
+            >
+                <CircularProgress color="inherit" />
+             </Backdrop>
             <Box display="flex" justifyContent="flex-end" gap={2}>
                 <Button
                     variant="contained"
@@ -610,7 +619,16 @@ const CustomerForm: React.FC = () => {
                                     <Box marginTop={3} textAlign="center">
                                         <Button type="submit" variant="contained" color="primary">
                                             Create
-                                        </Button>
+                                            </Button>
+                                            <Button
+                                                    variant="contained"
+                                                    color="secondary"
+                                                    onClick={() => {
+                                                        setFormInitialValues(initialCustomerValues)
+                                                    setUpdateRecord(false)
+                                                    }}
+                                                    style={{ marginLeft: "10px" }}>Reset
+                                            </Button>
                                     </Box>
                                 )}
 
@@ -621,18 +639,22 @@ const CustomerForm: React.FC = () => {
             </Collapse>
 
 
-            <Grid item xs={12} style={{ marginTop: '50px' }}>
+            <div style={{ marginTop: "40px" }}>
+                {isLoading ? (
+                <DataGridSkeletonLoader columns={columns} />
+                ) : (
                 <DataGridComponent
-                    columns={columns}
-                    rows={mappedData}
-                    isLoading={false}
-                    pageSizeOptions={[10, 20]}
-                    initialPageSize={10}
+                        columns={columns}
+                        rows={mappedData}
+                        isLoading={false}
+                        pageSizeOptions={[10, 20, 30]}
+                        initialPageSize={10}
                 />
-            </Grid>
+                )}
+            </div>
         </Grid>
     );
 };
 
-export default withAuthComponent(CustomerForm);
+export default CustomerForm;
 
