@@ -94,11 +94,14 @@ import { Product } from '@/app/productmaster/page';
 import { FormControl, Grid, InputLabel, MenuItem, Select } from '@mui/material';
 import { useGetLocationMasterQuery } from '@/api/apiSlice';
 import { Location } from '../BusinessPartnersForms/CustomerForm';
+import DataGridSkeletonLoader from '../LoaderComponent/DataGridSkeletonLoader';
 
 interface ProductsTableProps {
     allProductsData: Product[];
+    isProductsLoading: boolean;
 }
-const PackagesTable: React.FC<ProductsTableProps> = ({ allProductsData }) => {
+
+const PackagesTable: React.FC<ProductsTableProps> = ({ allProductsData , isProductsLoading }) => {
     const dispatch = useAppDispatch();
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
     const sourceLocation = useAppSelector((state) => state.auth.createOrderDesination);
@@ -195,15 +198,21 @@ const PackagesTable: React.FC<ProductsTableProps> = ({ allProductsData }) => {
                 </FormControl>
             </Grid>
             <Grid sx={{ marginTop: '20px', marginBottom: '20px' }}>
-                <DataGrid
-                    rows={rows}
-                    columns={columns}
-                    checkboxSelection
-                    rowSelectionModel={selectionModel}
+				{isProductsLoading ? (
+					<DataGridSkeletonLoader columns={columns} />
+				) : (
+					<DataGrid
+						columns={columns}
+                        rows={rows}
+                        checkboxSelection
+						pageSizeOptions={[10, 20, 30]}
+						   rowSelectionModel={selectionModel}
                     onRowSelectionModelChange={(model) =>
                         handleSelectionChange(model as number[])
                     }
-                />
+					/>
+				)}
+		
             </Grid>
         </div>
     );
