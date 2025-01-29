@@ -26,7 +26,7 @@ interface Truck {
 
 interface TrucksTableProps {
     trucks: Truck[];
-    rootOptimization: []
+    // rootOptimization: []
 }
 
 const TrucksTable: React.FC<TrucksTableProps> = ({ trucks }) => {
