@@ -1,9 +1,9 @@
 const apiconfig = {
         develpoment: {
                 // apiBaseUrl: 'https://dev-api.trukapp.com/truk/',
-                // apiBaseUrl: 'http://192.168.10.10:8088/truk/',    // teja ofc
-                apiBaseUrl: 'http://192.168.29.78:8088/truk',    // teja pg
-                // apiBaseUrl: 'http://192.168.227.245:8088/truk',   //Bablu local
+                // apiBaseUrl: 'http://192.168.10.30:8088/truk/',    // teja ofc
+                // apiBaseUrl: 'http://192.168.29.78:8088/truk',    // teja pg
+                apiBaseUrl: 'http://192.168.0.35:8088/truk',   //Bablu local
 
         },
 };

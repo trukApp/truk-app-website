@@ -14,46 +14,51 @@ interface Truck {
     usage: string;
     truckName: string;
     id: number;
+
+    allocatedVolume: number;
+    vehicle_ID: string;
+    allocatedWeight: number;
+    leftoverWeight: string;
+    leftoverVolume: string;
+
+
 }
 
 interface TrucksTableProps {
     trucks: Truck[];
+    rootOptimization: []
 }
 
 const TrucksTable: React.FC<TrucksTableProps> = ({ trucks }) => {
+    console.log("trucks: ", trucks)
+    // console.log("rootOptimization: ", rootOptimization)
     const dispatch = useAppDispatch();
     const selectedTrucks = useAppSelector((state) => state.auth.selectedTrucks || []);
     const [selectionModel, setSelectionModel] = useState<number[]>([]);
     useEffect(() => {
         if (selectedTrucks.length > 0) {
             const selectedRowIds = selectedTrucks.map((truck: Truck) =>
-                trucks.findIndex((t) => t.id === truck.id)
+                trucks.findIndex((t) => t.vehicle_ID === truck.vehicle_ID)
             );
             setSelectionModel(selectedRowIds);
         }
     }, [selectedTrucks, trucks]);
 
     const columns: GridColDef[] = [
-        { field: 'truckName', headerName: 'Truck Name', width: 150 },
-        { field: 'capacity', headerName: 'Capacity', width: 150 },
-        { field: 'ownerName', headerName: 'Owner Name', width: 180 },
-        { field: 'truckNumber', headerName: 'Truck Number', width: 180 },
-        { field: 'height', headerName: 'Height', width: 120 },
-        { field: 'width', headerName: 'Width', width: 120 },
-        { field: 'length', headerName: 'Length', width: 120 },
-        { field: 'volume', headerName: 'Volume', width: 120 },
-        { field: 'usage', headerName: 'Usage', width: 120 },
-        { field: 'id', headerName: 'ID', width: 100 },
+        { field: 'vehicle_ID', headerName: 'Vechile ID', width: 150 },
+        { field: 'allocatedWeight', headerName: 'Allocated Weight', width: 180 },
+        { field: 'allocatedVolume', headerName: 'Allocated Volume', width: 150 },
+        { field: 'leftoverWeight', headerName: 'Left over Weight', width: 180 },
+        { field: 'leftoverVolume', headerName: 'Left over volume', width: 120 },
     ];
 
-    // const rows = trucks.map((truck: Truck) => ({
-    //     ...truck,
-    // }));
 
     const rows = trucks.map((truck: Truck, index: number) => ({
         ...truck,
         id: index,
     }));
+
+
     const handleSelectionChange = (selectionModel: number[]) => {
         const selectedTrucks = selectionModel.map((id: number) => trucks[id]);
         dispatch(setSelectedTrucks(selectedTrucks));

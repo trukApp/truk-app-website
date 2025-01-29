@@ -32,11 +32,12 @@ import { RootState } from '@/store';
 import MassUpload from '@/Components/MassUpload/MassUpload';
 import DataGridSkeletonLoader from '@/Components/LoaderComponent/DataGridSkeletonLoader';
 
-interface PackagingType {
+export interface PackagingType {
     pac_ID: string;
     location: string;
+
 }
-interface Product {
+export interface Product {
     productName: string;
     productCode: string;
     category: string;
@@ -50,7 +51,7 @@ interface Product {
     warehouseState: string;
     warehouseCity: string;
     warehouseCountry: string;
-    product_ID: number;
+    product_ID: string;
     product_desc: string;
     sales_uom: string;
     basic_uom: string;
@@ -76,7 +77,9 @@ interface Product {
     packing_label: boolean;
     special_instructions: string;
     tempControl: boolean;
-    packingLabel: boolean
+    packingLabel: boolean;
+    quantity: number;
+    destination: string;
 }
 interface Location {
     city: string;
@@ -140,14 +143,9 @@ const ProductMasterPage = () => {
 
     console.log("updateRecord: ", updateRecordData)
     console.log("updateRecordId: ", updateRecordId)
-
-
     console.log("productsData: ", allProductsData)
     console.log("Getting all product errors: ", allProductsFectchingError)
     console.log("getLocationsError: ", getLocationsError)
-
-
-
     console.log("initialValues: ", formInitialValues)
 
     const validationSchema = Yup.object({
@@ -170,8 +168,6 @@ const ProductMasterPage = () => {
         bestBeforeDate: selectedProduct.best_before || '',
         stackingFactor: selectedProduct?.stacking_factor || '',
         documents: '',
-        // locationId: selectedProduct.packaging_type?.location || '',
-        // packagingType: selectedProduct.packaging_type?.pac_ID || '',
         locationId: selectedProduct?.packagingType[0]?.location || '',
         packagingType: selectedProduct?.packagingType[0]?.pac_ID || '',
         generatePackagingLabel: selectedProduct.packingLabel || false,
@@ -205,7 +201,6 @@ const ProductMasterPage = () => {
         const response = await deleteProduct(productId)
         console.log("delete response :", response)
     };
-
 
     const columns = [
         { field: 'product_ID', headerName: 'Product ID', width: 150 },
@@ -259,11 +254,10 @@ const ProductMasterPage = () => {
         sku_num: product.sku_num,
         fragile_goods: product.fragile_goods,
         dangerous_goods: product.dangerous_goods,
-        // Include all other properties you need here
         documents: product.documents,
         stacking_factor: product.stacking_factor,
         locationId: product.loc_ID,
-        packagingType: product.packaging_type, // Make sure to map all properties
+        packagingType: product.packaging_type,
         specialInstructions: product.special_instructions,
         hazardousStorage: product.hazardous,
         tempControl: product.temp_controlled,
@@ -653,17 +647,6 @@ const ProductMasterPage = () => {
                                     Location Data
                                 </Typography>
                                 <Grid container spacing={2}>
-                                    {/* <Grid item xs={12} sm={6} md={2.4} >
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="Location IDs (Plants/Warehouses)"
-                                            name="locationIds"
-                                            value={values.locationIds}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                        />
-                                    </Grid> */}
-
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <FormControl fullWidth size="small" error={touched.locationId && Boolean(errors.locationId)}>
                                             <InputLabel>Location of Source</InputLabel>
