@@ -66,7 +66,7 @@ interface Customer {
     loc_ID: string
 }
 
-interface Location {
+export interface Location {
     city: string;
     country: string;
     gln_code: string;
@@ -209,7 +209,7 @@ const CustomerForm: React.FC = () => {
         console.log("delete response :", response)
     };
 
-    const handleCustomerSubmit = async (values: typeof initialCustomerValues,{ resetForm }: { resetForm: () => void }) => {
+    const handleCustomerSubmit = async (values: typeof initialCustomerValues, { resetForm }: { resetForm: () => void }) => {
         try {
             console.log('Customer Form Submitted:', values);
             const body = {
@@ -284,7 +284,7 @@ const CustomerForm: React.FC = () => {
                     resetForm()
                 }
             }
-            
+
 
         } catch (error) {
             console.error('API Error:', error);

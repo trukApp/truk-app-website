@@ -46,6 +46,7 @@ export const apiSlice = createApi({
     "DeviceMaster",
     "ProductMaster",
     "UomMaster",
+    "CreateOrder",
   ],
   endpoints: (builder) => ({
     userLogin: builder.mutation<User, { phone: string; password: string }>({
@@ -411,6 +412,7 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: [{ type: "ProductMaster", id: "LIST" }],
     }),
+
     deleteProduct: builder.mutation({
       query: (productId) => ({
         url: ` masterProducts/delete-product?prod_id=${productId}`,
@@ -426,6 +428,28 @@ export const apiSlice = createApi({
         body,
       }),
       invalidatesTags: [{ type: "ProductMaster", id: "LIST" }],
+    }),
+
+    //Crearte order
+    // selectTheProducts: builder.mutation({
+    //   query: (body) => ({
+    //     url: "createOrder/create-order",
+    //     method: "POST",
+    //     body,
+    //   }),
+    //   invalidatesTags: [{ type: "CreateOrder", id: "LIST" }],
+    // }),
+    selectTheProducts: builder.mutation({
+      query: (body) => {
+        // console.log("RTK Query Payload", JSON.stringify(body, null, 2));
+        // console.log("RTK Query Payload:", body);
+        return {
+          url: "createOrder/create-order",
+          method: "POST",
+          body,
+        };
+      },
+      invalidatesTags: [{ type: "CreateOrder", id: "LIST" }],
     }),
   }),
 });
@@ -446,7 +470,6 @@ export const {
   usePostCarrierMasterMutation,
   useEditCarrierMasterMutation,
   useDeleteCarrierMasterMutation,
-
   useGetLocationMasterQuery,
   useGetLocationByIdQuery,
   usePostLocationMasterMutation,
@@ -476,4 +499,5 @@ export const {
   useCreateProductMutation,
   useDeleteProductMutation,
   useEditProductMutation,
+  useSelectTheProductsMutation,
 } = apiSlice;
