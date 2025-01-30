@@ -491,7 +491,7 @@ const CreateOrder: React.FC = () => {
         const response = await selectTheTrucks(body).unwrap();
         if (response) {
             setSelectTrucks(response?.allocations)
-            setRouteOptimazition(response?.routes)
+            // setRouteOptimazition(response?.routes)
             console.log('API Response:', response);
             setOpenDialog(false);
             console.log("body: ", body)
