@@ -12,7 +12,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import DriverMassUpload from '../MassUpload/DriverMassUpload';
-import DataGridSkeletonLoader from '../LoaderComponent/DataGridSkeletonLoader';
+import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
+import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 
 interface DriverFormValues {
   driverName: string;
@@ -105,13 +106,16 @@ const initialDriverValues = {
 };
 
 const DriverForm: React.FC = () => {
+      const [snackbarOpen, setSnackbarOpen] = useState(false);
+      const [snackbarMessage, setSnackbarMessage] = useState("");
+      const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
   const [driverRegistration,{isLoading:postDriverLoading}] = useDriverRegistrationMutation();
   const [editDriverDetails, {isLoading:editDriverLoading}] = useEditDriverMutation()
   const [deleteDriver, {isLoading:deleteDriverLoading}] = useDeleteDriverMutation()
   const [showForm, setShowForm] = useState(false);
   const [updateRecord, setUpdateRecord] = useState(false);
   const [formInitialValues, setFormInitialValues] = useState(initialDriverValues);
-  const [updateRecordData, setUpdateRecordData] = useState({});
+  // const [updateRecordData, setUpdateRecordData] = useState({});
   const [updateRecordId, setUpdateRecordId] = useState(0)
   const { data, error, isLoading } = useGetAllDriversDataQuery({})
   console.log("all drivers data :", data?.drivers)
@@ -170,7 +174,7 @@ const mapRowToInitialValues = (rowData: Driver) => {
     console.log('Edit clicked for:', rowData);
     setShowForm(true)
     setUpdateRecord(true)
-    setUpdateRecordData(rowData)
+    // setUpdateRecordData(rowData)
     const updatedInitialValues = await mapRowToInitialValues(rowData);
 
     setUpdateRecordId(rowData?.id)
@@ -178,14 +182,17 @@ const mapRowToInitialValues = (rowData: Driver) => {
     setFormInitialValues(updatedInitialValues);
   };
 
-  const handleDelete = async (rowData: Driver) => {
+const handleDelete = async (rowData: Driver) => {
   const deleteId = rowData?.id;
   if (!deleteId) {
     console.error("Row ID is missing");
+    setSnackbarMessage("Error: Driver ID is missing!");
+    setSnackbarSeverity("error");
+    setSnackbarOpen(true);
     return;
   }
-  const confirmed = window.confirm("Are you sure you want to delete this vehicle?");
-  
+
+  const confirmed = window.confirm("Are you sure you want to delete this driver?");
   if (!confirmed) {
     console.log("Delete canceled by user.");
     return;
@@ -194,10 +201,18 @@ const mapRowToInitialValues = (rowData: Driver) => {
   try {
     const response = await deleteDriver(deleteId);
     console.log("Delete response:", response);
+
+    setSnackbarMessage("Driver deleted successfully!");
+    setSnackbarSeverity("success");
+    setSnackbarOpen(true);
   } catch (error) {
-    console.error("Error deleting vehicle:", error);
+    console.error("Error deleting driver:", error);
+    setSnackbarMessage("Failed to delete driver. Please try again.");
+    setSnackbarSeverity("error");
+    setSnackbarOpen(true);
   }
 };
+
 
 const driverColumns: GridColDef[] = [
   { field: 'driverID', headerName: 'Driver ID', width: 150 },
@@ -278,7 +293,7 @@ const driverColumns: GridColDef[] = [
       };
 
       const editBody = {
-        ...updateRecordData,
+        // ...updateRecordData,
         locations: values?.locations,
         driver_name: values?.driverName,
         address: [values?.address1,values?.address2,values?.city,values?.state,values?.country,values?.pincode,].filter((part) => part).join(', ') ,
@@ -294,13 +309,16 @@ const driverColumns: GridColDef[] = [
 
       console.log('body: ', body);
       if (updateRecord) {
+        console.log("edit body :", editBody)
         const response = await editDriverDetails({ body: editBody, driverId: updateRecordId }).unwrap();
         console.log('API Response:', response);
         setFormInitialValues(initialDriverValues);
         setShowForm(false);
         setUpdateRecord(false);
         setUpdateRecordId(0);
-        setUpdateRecordData({});
+        setSnackbarMessage("Driver updated successfully!");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
       } else {
         console.log("post body for drivers :", body)
         const response = await driverRegistration(body).unwrap();
@@ -309,10 +327,15 @@ const driverColumns: GridColDef[] = [
         setShowForm(false);
         setUpdateRecord(false);
         setUpdateRecordId(0);
-        setUpdateRecordData({});
+        setSnackbarMessage("Driver created successfully!");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
       }
     } catch (error) {
-      console.error('API Error:', error);
+        console.error('API Error:', error);
+        setSnackbarMessage("Something went wrong! Please try again");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
     }
   };
 
@@ -358,7 +381,13 @@ const driverColumns: GridColDef[] = [
           open={postDriverLoading || editDriverLoading || deleteDriverLoading}
         >
           <CircularProgress color="inherit" />
-       </Backdrop>
+      </Backdrop>
+      <SnackbarAlert
+                open={snackbarOpen}
+                message={snackbarMessage}
+                severity={snackbarSeverity}
+                onClose={() => setSnackbarOpen(false)}
+            />
       <Box display="flex" justifyContent="flex-end" gap={2}>
         <Button
           variant="contained"

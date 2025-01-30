@@ -29,7 +29,8 @@ import { useGetLocationMasterQuery, usePostLocationMasterMutation,useEditLocatio
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MassUpload from '../MassUpload/MassUpload';
-import DataGridSkeletonLoader from '../LoaderComponent/DataGridSkeletonLoader';
+import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
+import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 
 export interface Location {
   location_id: number;
@@ -90,6 +91,9 @@ const validationSchema = Yup.object({
 });
 
 const Locations: React.FC = () => {
+      const [snackbarOpen, setSnackbarOpen] = useState(false);
+      const [snackbarMessage, setSnackbarMessage] = useState("");
+      const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
   const [showForm, setShowForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editRow,setEditRow] = useState<DataGridRow | null>(null); ;
@@ -165,6 +169,10 @@ const Locations: React.FC = () => {
                 console.log("edit response is ", response)
                 formik.resetForm()
                 setShowForm(false)
+                setIsEditing(false)
+                     setSnackbarMessage("Locations updated successfully!");
+                    setSnackbarSeverity("success");
+                    setSnackbarOpen(true);
               }
               else {
                 console.log("post create location ",body)
@@ -172,10 +180,19 @@ const Locations: React.FC = () => {
                   console.log('response in post location:', response);
                 formik.resetForm();
                 setShowForm(false)
+                setIsEditing(false)
+                     setSnackbarMessage("Locations created successfully!");
+                    setSnackbarSeverity("success");
+                    setSnackbarOpen(true);
+
               }
           
         } catch (error) {
-            console.error('API Error:', error);
+          console.error('API Error:', error);
+               setSnackbarMessage("Something went wrong! please try again");
+                    setSnackbarSeverity("error");
+                    setSnackbarOpen(true);
+                    setShowForm(false)
         }
 
   }
@@ -192,8 +209,12 @@ const handleDelete = async (row: DataGridRow) => {
     const locationId = row?.id;
     if (!locationId) {
         console.error("Row ID is missing");
+        setSnackbarMessage("Error: Location ID is missing!");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
         return;
     }
+
     const confirmed = window.confirm("Are you sure you want to delete this item?");
     if (!confirmed) {
         console.log("Delete canceled by user.");
@@ -203,10 +224,21 @@ const handleDelete = async (row: DataGridRow) => {
     try {
         const response = await deleteLocation(locationId);
         console.log("Delete response:", response);
+
+        // Show success snackbar
+        setSnackbarMessage("Location deleted successfully!");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
     } catch (error) {
         console.error("Error deleting location:", error);
+
+        // Show error snackbar
+        setSnackbarMessage("Failed to delete location. Please try again.");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
     }
 };
+
 
 
   console.log("edit :",isEditing, editRow)
@@ -338,7 +370,13 @@ const handleDelete = async (row: DataGridRow) => {
         open={postLocationLoading || editLocationLoading || deleteLocationLoading}
       >
         <CircularProgress color="inherit" />
-      </Backdrop>
+      </Backdrop>
+      <SnackbarAlert
+                open={snackbarOpen}
+                message={snackbarMessage}
+                severity={snackbarSeverity}
+                onClose={() => setSnackbarOpen(false)}
+            />
       <Box
         component="form"
         onSubmit={handleSubmit}

@@ -26,7 +26,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import MassUpload from '../MassUpload/MassUpload';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store'; 
-import DataGridSkeletonLoader from '../LoaderComponent/DataGridSkeletonLoader';
+import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
+import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 
 
 interface LaneDetails {
@@ -82,6 +83,9 @@ export interface Lane {
   
 }
 const TransportationLanes = () => {
+      const [snackbarOpen, setSnackbarOpen] = useState(false);
+      const [snackbarMessage, setSnackbarMessage] = useState("");
+      const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const [showForm, setShowForm] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editRow, setEditRow] = useState<LaneDetails | null>(null);
@@ -138,16 +142,29 @@ const TransportationLanes = () => {
                 const response = await editLane({ body: editBody, laneId }).unwrap()
                 console.log("edit response is ", response)
                 formik.resetForm();
+                setIsEditing(false)
+                     setSnackbarMessage("Lanes updated successfully!");
+                    setSnackbarSeverity("success");
+                setSnackbarOpen(true);
+                setShowForm(false)
               }
               else {
                 console.log("post create lane ",body)
                   const response = await postLane(body).unwrap();
                   console.log('response in post lane:', response);
-                  formik.resetForm();
+                formik.resetForm();
+                     setSnackbarMessage("Lanes created successfully!");
+                    setSnackbarSeverity("success");
+                    setSnackbarOpen(true);
+                    setShowForm(false)
               }
           
         } catch (error) {
-            console.error('API Error:', error);
+          console.error('API Error:', error);
+               setSnackbarMessage("Something went wrong! please try again.");
+                setSnackbarSeverity("error");
+                setSnackbarOpen(true);
+                setShowForm(false)
         }
 
   }
@@ -163,8 +180,12 @@ const handleDelete = async (row: LaneDetails) => {
     const laneId = row?.id;
     if (!laneId) {
         console.error("Row ID is missing");
+        setSnackbarMessage("Error: Lane ID is missing!");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
         return;
     }
+
     const confirmed = window.confirm("Are you sure you want to delete this item?");
     if (!confirmed) {
         console.log("Delete canceled by user.");
@@ -174,10 +195,21 @@ const handleDelete = async (row: LaneDetails) => {
     try {
         const response = await deleteLane(laneId);
         console.log("Delete response:", response);
+
+        // Show success snackbar
+        setSnackbarMessage("Lane deleted successfully!");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
     } catch (error) {
         console.error("Error deleting lane:", error);
+
+        // Show error snackbar
+        setSnackbarMessage("Failed to delete lane. Please try again.");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
     }
 };
+
 
   const formik = useFormik({
     initialValues: {
@@ -338,7 +370,13 @@ const rows = data?.lanes.map((lane:Lane) => ({
         open={postLaneLoading || editLaneLoading || deleteLaneLoading}
       >
         <CircularProgress color="inherit" />
-      </Backdrop>
+      </Backdrop>
+      <SnackbarAlert
+                open={snackbarOpen}
+                message={snackbarMessage}
+                severity={snackbarSeverity}
+                onClose={() => setSnackbarOpen(false)}
+            />
       <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md:'24px' } }} align="center" gutterBottom>
           Transportation lanes master
       </Typography>

@@ -30,7 +30,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import MassUpload from '@/Components/MassUpload/MassUpload';
-import DataGridSkeletonLoader from '@/Components/LoaderComponent/DataGridSkeletonLoader';
+import DataGridSkeletonLoader from '@/Components/ReusableComponents/DataGridSkeletonLoader';
+import SnackbarAlert from '@/Components/ReusableComponents/SnackbarAlerts';
 
 export interface PackagingType {
     pac_ID: string;
@@ -101,6 +102,9 @@ interface Location {
 }
 
 const ProductMasterPage = () => {
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const unitsofMeasurement = useSelector((state: RootState) => state.auth.unitsofMeasurement);
     const productFormInitialValues = {
         productName: '',
@@ -131,7 +135,6 @@ const ProductMasterPage = () => {
     const [formInitialValues, setFormInitialValues] = useState(productFormInitialValues);
     const [updateRecordData, setUpdateRecordData] = useState({});
     const [updateRecordId, setUpdateRecordId] = useState(0)
-
     const { data: productsData, error: allProductsFectchingError , isLoading } = useGetAllProductsQuery([])
     const [showForm, setShowForm] = useState(false);
     const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery([])
@@ -195,12 +198,27 @@ const ProductMasterPage = () => {
         setFormInitialValues(updatedInitialValues);
     };
 
-    const handleDelete = async (row: Product) => {
-        console.log('Delete clicked:', row);
-        const productId = row?.id
-        const response = await deleteProduct(productId)
-        console.log("delete response :", response)
-    };
+const handleDelete = async (row: Product) => {
+    const confirmDelete = window.confirm(`Are you sure you want to delete ? This action cannot be undone.`);
+
+    if (!confirmDelete) return;
+
+    try {
+        console.log("Delete clicked:", row);
+        const productId = row?.id;
+        const response = await deleteProduct(productId);
+        console.log("Delete response:", response);
+        setSnackbarMessage("Product deleted successfully!");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
+    } catch (error) {
+        console.error("Delete error:", error);
+        setSnackbarMessage("Failed to delete product. Please try again.");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
+    }
+};
+
 
     const columns = [
         { field: 'product_ID', headerName: 'Product ID', width: 150 },
@@ -270,7 +288,8 @@ const ProductMasterPage = () => {
 
     const handleSubmit = async (values: typeof productFormInitialValues,{resetForm} :{resetForm :()=> void}) => {
         console.log('Form Submitted', values);
-        const createProductBody = {
+        try {
+                    const createProductBody = {
             products: [
                 {
                     product_name: values?.productName,
@@ -347,6 +366,9 @@ const ProductMasterPage = () => {
                 setUpdateRecord(false)
                 setUpdateRecordId(0)
                 setUpdateRecordData({})
+                setSnackbarMessage("Product updated successfully! ");
+                setSnackbarSeverity("success");
+				setSnackbarOpen(true);
         
             }
         } else {
@@ -356,13 +378,32 @@ const ProductMasterPage = () => {
             console.log('API Response:', response)
             resetForm()
             setShowForm(false)
+            setSnackbarMessage("Product created successfully!");
+            setSnackbarSeverity("success");
+			setSnackbarOpen(true);
         }
+        }
+        catch (error) {
+            console.log("err :", error)
+            resetForm()
+            setShowForm(false)
+            setSnackbarMessage("Something went wrong! please try again.");
+            setSnackbarSeverity("error");
+			setSnackbarOpen(true);
+        }
+
 
 
     };
 
     return (
         <Grid sx={{ margin: { xs: "0px", md: "0px 30px" } }}>
+            <SnackbarAlert
+                open={snackbarOpen}
+                message={snackbarMessage}
+                severity={snackbarSeverity}
+                onClose={() => setSnackbarOpen(false)}
+            />
             <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md: '24px' } }} align="center" gutterBottom>
                 Product master
             </Typography>

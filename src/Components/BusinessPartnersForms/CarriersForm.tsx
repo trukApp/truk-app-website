@@ -8,6 +8,8 @@ import {
     InputLabel,
     Backdrop,
     CircularProgress,
+    FormControlLabel,
+    Checkbox,
     // Checkbox, FormControlLabel,
 } from '@mui/material';
 import { Formik, Form } from 'formik';
@@ -21,7 +23,8 @@ import { useGetCarrierMasterQuery,usePostCarrierMasterMutation,useEditCarrierMas
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MassUpload from '../MassUpload/MassUpload';
-import DataGridSkeletonLoader from '../LoaderComponent/DataGridSkeletonLoader';
+import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
+import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 
 interface Location {
     loc_ID: string;
@@ -54,9 +57,13 @@ export interface CarrierFormBE {
     carrier_name: string;
     carrier_ID: string;
     cr_id: string;
+    carrier_network_portal: number;
     }
 
 const CarrierForm: React.FC = () => {
+        const [snackbarOpen, setSnackbarOpen] = useState(false);
+        const [snackbarMessage, setSnackbarMessage] = useState("");
+        const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const [showForm, setShowForm] = useState(false);
           const [isEditing, setIsEditing] = useState(false);
       const [editRow,setEditRow] = useState<CarrierFormFE | null>(null); ;
@@ -91,10 +98,13 @@ const handleDelete = async (row: CarrierFormFE) => {
   const packageId = row?.id;
   if (!packageId) {
     console.error("Row ID is missing");
+    setSnackbarMessage("Error: Vehicle ID is missing!");
+    setSnackbarSeverity("error");
+    setSnackbarOpen(true);
     return;
   }
-  const confirmed = window.confirm("Are you sure you want to delete this vehicle?");
-  
+
+  const confirmed = window.confirm("Are you sure you want to delete this vehicle? This action canot be undone.");
   if (!confirmed) {
     console.log("Delete canceled by user.");
     return;
@@ -103,10 +113,17 @@ const handleDelete = async (row: CarrierFormFE) => {
   try {
     const response = await deleteCarrier(packageId);
     console.log("Delete response:", response);
+    setSnackbarMessage("Vehicle deleted successfully!");
+    setSnackbarSeverity("success");
+    setSnackbarOpen(true);
   } catch (error) {
     console.error("Error deleting vehicle:", error);
+    setSnackbarMessage("Failed to delete vehicle. Please try again.");
+    setSnackbarSeverity("error");
+    setSnackbarOpen(true);
   }
 };
+
     const initialCarrierValues = {
         id:'',
         carrierId: '',
@@ -139,7 +156,7 @@ const handleDelete = async (row: CarrierFormFE) => {
                     laneIds: editRow?.laneIds || [],
                     deviceDetails: editRow?.deviceDetails || '',
                     enrollSpotAuction: editRow?.enrollSpotAuction || false,
-                    preferredCarrier: editRow?.preferredCarrier || false,
+                    preferredCarrier: editRow?.preferredCarrier || false ,
                 }))
     }
 }, [editRow]);
@@ -171,7 +188,7 @@ const handleDelete = async (row: CarrierFormFE) => {
                             email: values.emailId,
                             phone: values.contactNumber
                         },
-                        carrier_network_portal: 1,
+                        carrier_network_portal: `${values.preferredCarrier ? 1 : 0}`,
                         vehicle_types_handling: values.vehicleTypes,
                         carrier_loc_of_operation:values.locationIds,
                         carrier_lanes: values.laneIds
@@ -186,30 +203,39 @@ const handleDelete = async (row: CarrierFormFE) => {
                             email: values.emailId,
                             phone: values.contactNumber
                         },
-                        carrier_network_portal: 1,
+                        carrier_network_portal: `${values.preferredCarrier ? 1 : 0}`,
                         vehicle_types_handling: values.vehicleTypes,
                         carrier_loc_of_operation:values.locationIds,
                         carrier_lanes: values.laneIds
                     }
             console.log("carrier body: ", body)
             if (isEditing && editRow) {
-                // console.log('edit body is :', editBody)
+                console.log('edit body is :', editBody)
                 const carrierId = editRow.id
                 const response = await editCarrier({body:editBody, carrierId}).unwrap()
                 console.log("edit response is ", response)
                 setShowForm(false)
                 setInitialValues(initialCarrierValues)
+                setSnackbarMessage("Carrier details updated successfully!");
+                setSnackbarSeverity("success");
+                setSnackbarOpen(true);
             }
             else {
                 console.log("post create carrier ",body)
                 const response = await postCarrier(body).unwrap();
                 setShowForm(false)
                 setInitialValues(initialCarrierValues)
+                setSnackbarMessage("Carrier created successfully!");
+                setSnackbarSeverity("success");
+                setSnackbarOpen(true);
                 console.log('response in post carrier:', response);
 
             }
         } catch (error) {
             console.error('API Error:', error);
+                setSnackbarMessage("Something went wrong! Please try again");
+                setSnackbarSeverity("error");
+                setSnackbarOpen(true);
         }
     };
     const rows = data?.carriers.map((carrier:CarrierFormBE) => ({
@@ -225,7 +251,7 @@ const handleDelete = async (row: CarrierFormFE) => {
         laneIds: carrier.carrier_lanes,
         // deviceDetails: carrier.deviceDetails,
         // enrollSpotAuction: carrier.enrollSpotAuction,
-        // preferredCarrier: carrier.preferredCarrier,
+        preferredCarrier: carrier.carrier_network_portal,
     }));
     
     const carrierColumns: GridColDef[] = [
@@ -245,12 +271,12 @@ const handleDelete = async (row: CarrierFormFE) => {
     //     flex: 1,
     //     renderCell: (params) => params.value ? 'Yes' : 'No'
     // },
-    // {
-    //     field: 'preferredCarrier',
-    //     headerName: 'Preferred Carrier',
-    //     flex: 1,
-    //     renderCell: (params) => params.value ? 'Yes' : 'No'
-    // },
+    {
+        field: 'preferredCarrier',
+        headerName: 'Is enrolled on carrier network portal',
+        flex: 1,
+        renderCell: (params) => params.value ? 'Yes' : 'No'
+    },
     {
       field: "actions",
       headerName: "Actions",
@@ -284,7 +310,13 @@ const handleDelete = async (row: CarrierFormFE) => {
                 open={postCarrierLoading || editCarrierLoading || deleteCarrierLoading}
             >
                 <CircularProgress color="inherit" />
-            </Backdrop>
+            </Backdrop>
+            <SnackbarAlert
+                open={snackbarOpen}
+                message={snackbarMessage}
+                severity={snackbarSeverity}
+                onClose={() => setSnackbarOpen(false)}
+            />
             <Box display="flex" justifyContent="flex-end" gap={2}>
                 <Button
                     variant="contained"
@@ -306,7 +338,7 @@ const handleDelete = async (row: CarrierFormFE) => {
                         onSubmit={handleCarrierSubmit}
                     >
                         {({ values, handleChange, handleBlur, errors, touched,
-                            // setFieldValue
+                            setFieldValue
                         }) => (
                             <Form>
                                 <h3 className={styles.mainHeading}>General Data</h3>
@@ -496,6 +528,17 @@ const handleDelete = async (row: CarrierFormFE) => {
 
                                     </Grid>
                                 </Grid>
+                                             <Grid item xs={12} sm={6} md={4}>
+                                        <FormControlLabel
+                                            control={
+                                                <Checkbox
+                                                    checked={values.preferredCarrier}
+                                                    onChange={(e) => setFieldValue('preferredCarrier', e.target.checked)}
+                                                />
+                                            }
+                                            label="Is enrolled on carrier network portal"
+                                        />
+                                    </Grid>
 
                                 {/* <h3 className={styles.mainHeading}>Devices</h3>
                                 <Grid container spacing={2}>

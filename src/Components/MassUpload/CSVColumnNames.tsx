@@ -75,33 +75,33 @@ export const carrierColumnNames = [
   { displayName: 'Carrier Correspondence Name', key: 'name', nestedKey: 'carrier_correspondence' },
   { displayName: 'Carrier Correspondence Email', key: 'email', nestedKey: 'carrier_correspondence' },
   { displayName: 'Carrier Correspondence Phone', key: 'phone', nestedKey: 'carrier_correspondence' },
-  { displayName: 'Carrier Network Portal (if yes 0 else 1)', key: 'carrier_network_portal' },
+  { displayName: 'Is enrolled on Carrier Network Portal (if yes type 1 else 0)', key: 'carrier_network_portal' },
   { displayName: 'Vehicle Types Handling', key: 'vehicle_types_handling' },
   { displayName: 'Carrier Location of Operation', key: 'carrier_loc_of_operation' },
   { displayName: 'Carrier Lanes', key: 'carrier_lanes' }
 ]
 
 export const customerColumnNames = [
-  { displayName: "Name", key: "name" },
+  { displayName: "Customer name", key: "name" },
   { displayName: "Location ID", key: "loc_ID" },
   { displayName: "Contact Person", key: "contact_person", nestedKey: "correspondence" },
-  { displayName: "Contact Number", key: "contact_number", nestedKey: "correspondence" },
+  { displayName: "Contact mobile number (10 digits)", key: "contact_number", nestedKey: "correspondence" },
   { displayName: "Email", key: "email", nestedKey: "correspondence" },
-  { displayName: "Location of Source", key: "loc_of_source" },
-  { displayName: "POD Relevant", key: "pod_relevant" },
-  { displayName: "Ship-to Party", key: "ship_to_party", nestedKey: "partner_functions" },
-  { displayName: "Sold-to Party", key: "sold_to_party", nestedKey: "partner_functions" },
-  { displayName: "Bill-to Party", key: "bill_to_party", nestedKey: "partner_functions" },
+  { displayName: "Location of Source (Location id)", key: "loc_of_source" },
+  { displayName: "Is POD Relevant (if Yes type 1 else 0)", key: "pod_relevant" },
+  { displayName: "Ship-to Party (Customer id)", key: "ship_to_party", nestedKey: "partner_functions" },
+  { displayName: "Sold-to Party (Customer id)", key: "sold_to_party", nestedKey: "partner_functions" },
+  { displayName: "Bill-to Party (Customer id)", key: "bill_to_party", nestedKey: "partner_functions" },
 ];
 
 export const vendorColumnNames  = [
-  { displayName: 'Name', key: 'name' },
+  { displayName: 'Vendor name', key: 'name' },
   { displayName: 'Location ID', key: 'loc_ID' },
   { displayName: 'Contact Person', key: 'contact_person', nestedKey: 'correspondence' },
-  { displayName: 'Contact Number', key: 'contact_number', nestedKey: 'correspondence' },
+  { displayName: 'Contact mobile number (10 digits)', key: 'contact_number', nestedKey: 'correspondence' },
   { displayName: 'Email ID', key: 'email', nestedKey: 'correspondence' },
-  { displayName: 'Location of Source', key: 'loc_of_source' },
-  { displayName: 'POD Relevant', key: 'pod_relevant' },
+  { displayName: 'Location of Source (Location id)', key: 'loc_of_source' },
+  { displayName: 'Is POD Relevant (if Yes type 1 else 0)', key: 'pod_relevant' },
   { displayName: 'Ordering Address', key: 'ordering_address', nestedKey: 'partner_functions' },
   { displayName: 'Goods Supplier', key: 'goods_supplier', nestedKey: 'partner_functions' },
   { displayName: 'Forwarding Agent', key: 'forwarding_agent', nestedKey: 'partner_functions' }
@@ -116,7 +116,7 @@ export const driversColumnNames= [
   { displayName: 'Driver Contact Number (10 digits)',key: 'phone',nestedKey: 'driver_correspondence',},
   {displayName: 'Email ID (Valid email)',key: 'email',nestedKey: 'driver_correspondence',},
   { displayName: 'Vehicle Types', key: 'vehicle_types' },
-  { displayName: 'Is Logged in (1 if Yes, 0 if No)', key: 'logged_in' },
+  { displayName: 'Is Logged in (if Yes type 1 else 0)', key: 'logged_in' },
 ];
 
 export const productColumnNames = [

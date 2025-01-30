@@ -12,7 +12,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import MassUpload from '../MassUpload/MassUpload';
-import DataGridSkeletonLoader from '../LoaderComponent/DataGridSkeletonLoader';
+import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
+import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 
 interface PartnerFunctions {
     forwarding_agent: string;
@@ -73,7 +74,7 @@ const initialSupplierValues = {
     contactPerson: '',
     contactNumber: '',
     emailId: '',
-    locationOfSource: [] as string[],
+    locationOfSource: '',
     podRelevant: false,
     orderingAddress: '',
     goodsSupplier: '',
@@ -82,6 +83,9 @@ const initialSupplierValues = {
 
 
 const SupplierForm: React.FC = () => {
+        const [snackbarOpen, setSnackbarOpen] = useState(false);
+        const [snackbarMessage, setSnackbarMessage] = useState("");
+        const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const [showForm, setShowForm] = useState(false);
     const [updateRecord, setUpdateRecord] = useState(false);
     const [formInitialValues, setFormInitialValues] = useState(initialSupplierValues);
@@ -119,19 +123,44 @@ const SupplierForm: React.FC = () => {
         contactPerson: rowData?.correspondence?.contact_person || '',
         contactNumber: rowData?.correspondence?.contact_number || '',
         emailId: rowData?.correspondence?.email || '',
-        locationOfSource: [rowData.loc_of_source],
+        locationOfSource: rowData.loc_of_source,
         podRelevant: rowData?.pod_relevant === 1,
         forwardingAgent: rowData?.partner_functions?.forwarding_agent || '',
         goodsSupplier: rowData?.partner_functions?.goods_supplier || '',
         orderingAddress: rowData?.partner_functions?.ordering_address || '',
     });
 
-    const handleDelete = async (rowData: Customer) => {
-        console.log('Delete clicked for:', rowData);
-        const deleteId = rowData?.partner_id
-        const response = await deleteBusinessPartner(deleteId)
-        console.log("delete response :", response)
-    };;
+const handleDelete = async (rowData: Customer) => {
+  const deleteId = rowData?.partner_id;
+  if (!deleteId) {
+    console.error("Row ID is missing");
+    setSnackbarMessage("Error: Partner ID is missing!");
+    setSnackbarSeverity("error");
+    setSnackbarOpen(true);
+    return;
+  }
+
+  const confirmed = window.confirm("Are you sure you want to delete this partner?");
+  if (!confirmed) {
+    console.log("Delete canceled by user.");
+    return;
+  }
+
+  try {
+    const response = await deleteBusinessPartner(deleteId);
+    console.log("Delete response:", response);
+
+    setSnackbarMessage("Partner deleted successfully!");
+    setSnackbarSeverity("success");
+    setSnackbarOpen(true);
+  } catch (error) {
+    console.error("Error deleting partner:", error);
+    setSnackbarMessage("Failed to delete partner. Please try again.");
+    setSnackbarSeverity("error");
+    setSnackbarOpen(true);
+  }
+};
+
 
     const handleEdit = async (rowData: Customer) => {
         console.log('Edit clicked for:', rowData);
@@ -255,6 +284,9 @@ const SupplierForm: React.FC = () => {
                     setUpdateRecord(false)
                     setUpdateRecordId(0)
                     setUpdateRecordData({})
+                    setSnackbarMessage("Vendor updated successfully!");
+                    setSnackbarSeverity("success");
+                    setSnackbarOpen(true);
                 }
             } else {
                 console.log("I am going create the record")
@@ -266,10 +298,16 @@ const SupplierForm: React.FC = () => {
                     setUpdateRecord(false)
                     setUpdateRecordId(0)
                     setUpdateRecordData({})
+                    setSnackbarMessage("Vendor created successfully!");
+                    setSnackbarSeverity("success");
+                    setSnackbarOpen(true);
                 }
             }
         } catch (error) {
-            console.error('API Error:', error);
+                console.error('API Error:', error);
+                setSnackbarMessage("Something went wrong! Please try again");
+                setSnackbarSeverity("error");
+                setSnackbarOpen(true);
         }
     };
 
@@ -311,7 +349,13 @@ const SupplierForm: React.FC = () => {
                 open={postVendorLoading || editVendorLoading || deleteVendorLoading}
             >
                 <CircularProgress color="inherit" />
-             </Backdrop>
+            </Backdrop>
+            <SnackbarAlert
+                open={snackbarOpen}
+                message={snackbarMessage}
+                severity={snackbarSeverity}
+                onClose={() => setSnackbarOpen(false)}
+            />
             <Box display="flex" justifyContent="flex-end" gap={2}>
                 <Button
                     variant="contained"

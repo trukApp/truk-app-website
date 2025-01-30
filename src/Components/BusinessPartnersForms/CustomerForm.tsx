@@ -12,7 +12,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import MassUpload from '../MassUpload/MassUpload';
-import DataGridSkeletonLoader from '../LoaderComponent/DataGridSkeletonLoader';
+import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
+import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 
 
 // Validation schema for CustomerForm
@@ -103,6 +104,9 @@ const initialCustomerValues = {
 
 
 const CustomerForm: React.FC = () => {
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const [showForm, setShowForm] = useState(false);
     const [updateRecord, setUpdateRecord] = useState(false);
     const [formInitialValues, setFormInitialValues] = useState(initialCustomerValues);
@@ -203,11 +207,27 @@ const CustomerForm: React.FC = () => {
     };
 
     const handleDelete = async (rowData: Customer) => {
-        console.log('Delete clicked for:', rowData);
-        const deleteId = rowData?.partner_id
-        const response = await deleteBusinessPartner(deleteId)
-        console.log("delete response :", response)
-    };
+        const confirmDelete = window.confirm(`Are you sure you want to delete ? This action cannot be undone.`);
+        
+        if (!confirmDelete) return;
+
+        try {
+            console.log("Delete clicked for:", rowData);
+            const deleteId = rowData?.partner_id;
+            const response = await deleteBusinessPartner(deleteId);
+            console.log("Delete response:", response);
+
+            setSnackbarMessage("Customer deleted successfully!");
+            setSnackbarSeverity("info");
+            setSnackbarOpen(true);
+        } catch (error) {
+            console.error("Delete error:", error);
+            setSnackbarMessage("Failed to delete customer. Please try again.");
+            setSnackbarSeverity("error");
+            setSnackbarOpen(true);
+        }
+};
+
 
     const handleCustomerSubmit = async (values: typeof initialCustomerValues, { resetForm }: { resetForm: () => void }) => {
         try {
@@ -264,13 +284,9 @@ const CustomerForm: React.FC = () => {
                 setUpdateRecord(false)
                 setUpdateRecordId(0)
                 setUpdateRecordData({})
-                // if (response) {
-                //     setFormInitialValues(initialCustomerValues)
-                //     setShowForm(false)
-                //     setUpdateRecord(false)
-                //     setUpdateRecordId(0)
-                //     setUpdateRecordData({})
-                // }
+                setSnackbarMessage("Customer details updated successfully!");
+                setSnackbarSeverity("success");
+                setSnackbarOpen(true);
             } else {
                 console.log("I am going create the record")
                 const response = await customerRegistration(body).unwrap();
@@ -282,13 +298,19 @@ const CustomerForm: React.FC = () => {
                     setUpdateRecordId(0)
                     setUpdateRecordData({})
                     resetForm()
+                    setSnackbarMessage("Customer details posted successfully!");
+                    setSnackbarSeverity("success");
+                    setSnackbarOpen(true);
                 }
             }
 
 
         } catch (error) {
             console.error('API Error:', error);
-        }
+                setSnackbarMessage('Something went wrong! Please try again.');
+                setSnackbarSeverity("error");
+                setSnackbarOpen(true);
+                    }
     };
 
     const handleLocationChange = (
@@ -330,7 +352,13 @@ const CustomerForm: React.FC = () => {
                 open={postCustomerLoading || editCustomerLoading || deleteCustomerLoading}
             >
                 <CircularProgress color="inherit" />
-             </Backdrop>
+            </Backdrop>
+            <SnackbarAlert
+                open={snackbarOpen}
+                message={snackbarMessage}
+                severity={snackbarSeverity}
+                onClose={() => setSnackbarOpen(false)}
+            />
             <Box display="flex" justifyContent="flex-end" gap={2}>
                 <Button
                     variant="contained"
@@ -415,18 +443,6 @@ const CustomerForm: React.FC = () => {
                                             helperText={touched.city && errors.city}
                                         />
                                     </Grid>
-                                    {/* <Grid item xs={12} sm={6} md={2.4}>
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="District"
-                                            name="district"
-                                            value={values.district}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.district && Boolean(errors.district)}
-                                            helperText={touched.district && errors.district}
-                                        />
-                                    </Grid> */}
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
@@ -495,20 +511,6 @@ const CustomerForm: React.FC = () => {
 
                                 <h3 className={styles.mainHeading}>Shipping</h3>
                                 <Grid container spacing={2} style={{ marginBottom: '30px' }}>
-                                    {/* <Grid item xs={12} sm={6} md={2.4}>
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="Location of Source"
-                                            name="locationOfSource"
-                                            value={values.locationOfSource.join(', ')}
-                                            onChange={(e) => setFieldValue('locationOfSource', e.target.value.split(', '))}
-                                            onBlur={handleBlur}
-                                            error={touched.locationOfSource && Boolean(errors.locationOfSource)}
-                                            helperText={touched.locationOfSource && errors.locationOfSource}
-                                        />
-                                    </Grid> */}
-
-
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <FormControl fullWidth size="small" error={touched.locationOfSource && Boolean(errors.locationOfSource)}>
                                             <InputLabel>Location of Source</InputLabel>
@@ -545,47 +547,6 @@ const CustomerForm: React.FC = () => {
                                 </Grid>
 
                                 <h3 className={styles.mainHeading}>Partner Functions</h3>
-                                {/* <Grid container spacing={2} style={{ marginBottom: '30px' }}>
-                                    <Grid item xs={12} sm={6} md={2.4}>
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="Ship To Party"
-                                            name="shipToParty"
-                                            value={values.shipToParty}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.shipToParty && Boolean(errors.shipToParty)}
-                                            helperText={touched.shipToParty && errors.shipToParty}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} sm={6} md={2.4}>
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="Sold To Party"
-                                            name="soldToParty"
-                                            value={values.soldToParty}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.soldToParty && Boolean(errors.soldToParty)}
-                                            helperText={touched.soldToParty && errors.soldToParty}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} sm={6} md={2.4}>
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="Bill To Party"
-                                            name="billToParty"
-                                            value={values.billToParty}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.billToParty && Boolean(errors.billToParty)}
-                                            helperText={touched.billToParty && errors.billToParty}
-                                        />
-                                    </Grid>
-                                </Grid> */}
-
-
-
                                 <Grid container spacing={2} style={{ marginBottom: '30px' }}>
                                     {['shipToParty', 'soldToParty', 'billToParty'].map((field) => (
                                         <Grid item xs={12} sm={6} md={2.4} key={field}>
@@ -595,7 +556,10 @@ const CustomerForm: React.FC = () => {
                                                 renderInput={(params) => (
                                                     <TextField
                                                         {...params}
-                                                        label={field.replace(/([A-Z])/g, ' $1')}
+                                                        label={field
+                                                        .replace(/([A-Z])/g, ' $1')
+                                                        .replace(/^./, (str) => str.toUpperCase())
+                                                        }
                                                         size="small"
                                                         onBlur={handleBlur}
                                                     />
@@ -609,29 +573,19 @@ const CustomerForm: React.FC = () => {
                                         </Grid>
                                     ))}
                                 </Grid>
-                                {updateRecord ? (
                                     <Box marginTop={3} textAlign="center">
                                         <Button type="submit" variant="contained" color="primary">
-                                            Update
+                                            {updateRecord ? "Update record" : "Create record"}
+                                        </Button>
+                                        <Button variant="contained"
+                                            color="secondary"
+                                            onClick={() => {
+                                                setFormInitialValues(initialCustomerValues)
+                                                setUpdateRecord(false)
+                                            }}
+                                            style={{ marginLeft: "10px" }}>Reset
                                         </Button>
                                     </Box>
-                                ) : (
-                                    <Box marginTop={3} textAlign="center">
-                                        <Button type="submit" variant="contained" color="primary">
-                                            Create
-                                            </Button>
-                                            <Button
-                                                    variant="contained"
-                                                    color="secondary"
-                                                    onClick={() => {
-                                                        setFormInitialValues(initialCustomerValues)
-                                                    setUpdateRecord(false)
-                                                    }}
-                                                    style={{ marginLeft: "10px" }}>Reset
-                                            </Button>
-                                    </Box>
-                                )}
-
                             </Form>
                         )}
                     </Formik>

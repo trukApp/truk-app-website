@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import Papa from 'papaparse';
 import {
+  Backdrop,
   Box,
   Button,
+  CircularProgress,
   Link,
   Modal,
   Typography,
@@ -15,6 +17,7 @@ import {
 import {
   driversColumnNames
 } from './CSVColumnNames'; 
+import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 
 type EntityKey = 'drivers';
 
@@ -39,10 +42,10 @@ interface Location {
   state: string;
   country: string;
 }
-interface DriverPayload {
-  [key: string]: string | undefined; // Other keys from the CSV
-  address?: string; // Resolved address field
-}
+// interface DriverPayload {
+//   [key: string]: string | undefined; // Other keys from the CSV
+//   address?: string; // Resolved address field
+// }
 
 const DriverMassUpload: React.FC<MassUploadProps> = ({ arrayKey }) => {
   const [file, setFile] = useState<File | null>(null);
@@ -50,11 +53,14 @@ const DriverMassUpload: React.FC<MassUploadProps> = ({ arrayKey }) => {
   const [message, setMessage] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { data } = useGetLocationMasterQuery([]);
-  const locationMasterData = data?.locations
+  const locationMasterData = data?.locations;
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
 
   const theme = useTheme();
 
-  const [postDriverMaster] = useDriverRegistrationMutation()
+  const [postDriverMaster, {isLoading:driverLoading}] = useDriverRegistrationMutation()
 
   // Column mappings for CSV files
   const getColumnMappings = (): ColumnMapping[] => {
@@ -71,31 +77,60 @@ const DriverMassUpload: React.FC<MassUploadProps> = ({ arrayKey }) => {
     drivers:postDriverMaster,
   };
 
-type NestedRecord = Record<string, string>;
+// type NestedRecord = Record<string, string>;
 
-const mapCsvToPayload = <T extends object>(
+// const mapCsvToPayload = <T extends object>(
+//   data: ParsedRow[],
+//   columnMappings: ColumnMapping[]
+// ): T[] => {
+//   return data.map((row) => {
+//     return columnMappings.reduce<T>((acc, { displayName, key, nestedKey }) => {
+//       const value = row[displayName]?.trim();
+
+//       if (nestedKey) {
+//         const nestedAcc = acc as Record<string, NestedRecord>;
+//         if (!nestedAcc[nestedKey]) {
+//           nestedAcc[nestedKey] = {} as NestedRecord;
+//         }
+//         nestedAcc[nestedKey][key] = value;
+//       } else {
+//         (acc as Record<string, string>)[key] = value;
+//       }
+
+//       return acc;
+//     }, {} as T);
+//   });
+// };
+
+  const mapCsvToPayload = (
   data: ParsedRow[],
   columnMappings: ColumnMapping[]
-): T[] => {
+): Record<string, unknown>[] => {
   return data.map((row) => {
-    return columnMappings.reduce<T>((acc, { displayName, key, nestedKey }) => {
-      const value = row[displayName]?.trim();
+    const transformedRow: Record<string, unknown> = {};
 
-      if (nestedKey) {
-        const nestedAcc = acc as Record<string, NestedRecord>;
-        if (!nestedAcc[nestedKey]) {
-          nestedAcc[nestedKey] = {} as NestedRecord;
-        }
-        nestedAcc[nestedKey][key] = value;
-      } else {
-        (acc as Record<string, string>)[key] = value;
+    columnMappings.forEach(({ displayName, key, nestedKey }) => {
+      let value: string | string[] | undefined = row[displayName]?.trim();
+
+      // Convert specific fields into arrays
+      const arrayFields: string[] = ['vehicle_types'];
+      if (arrayFields.includes(key) && value) {
+        value = value.split(',').map((item) => item.trim());
       }
 
-      return acc;
-    }, {} as T);
+      if (nestedKey) {
+        if (typeof transformedRow[nestedKey] !== 'object' || transformedRow[nestedKey] === null) {
+          transformedRow[nestedKey] = {};
+        }
+        (transformedRow[nestedKey] as Record<string, string | string[]>)[key] = value;
+      } else {
+        transformedRow[key] = value;
+      }
+    });
+
+    return transformedRow;
   });
 };
-
 
   // Handle template download
   const handleDownloadTemplate = () => {
@@ -145,7 +180,7 @@ const handleUpload = async () => {
       });
     });
 
-    const transformedData = mapCsvToPayload<DriverPayload>(parsedData, columnMappings);
+    const transformedData = mapCsvToPayload(parsedData, columnMappings);
 
     // Map CSV data to payload with address resolution for drivers
     const body = {
@@ -181,10 +216,16 @@ const handleUpload = async () => {
 
     console.log('Payload body:', body);
     await postMapping[arrayKey](body);
-
-    setMessage('Upload successful!');
+    setSnackbarMessage("Data uploaded successfully!");
+    setSnackbarSeverity("success");
+    setSnackbarOpen(true);
+    setIsModalOpen(false)
   } catch (error) {
-    setMessage(error instanceof Error ? error.message : 'An error occurred during upload.');
+      setSnackbarMessage("Something went wrong! Please try again.");
+      setSnackbarSeverity("error");
+    setSnackbarOpen(true);
+    setIsModalOpen(false)
+    console.log(error)
   } finally {
     setIsUploading(false);
   }
@@ -192,6 +233,21 @@ const handleUpload = async () => {
 
   return (
     <Box>
+      <Backdrop
+        sx={{
+          color: "#ffffff",
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+        }}
+        open={driverLoading }
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+            <SnackbarAlert
+            open={snackbarOpen}
+            message={snackbarMessage}
+            severity={snackbarSeverity}
+            onClose={() => setSnackbarOpen(false)}
+      />
       <Button variant="contained" onClick={() => setIsModalOpen(true)}>
         Upload CSV
       </Button>
@@ -218,7 +274,7 @@ const handleUpload = async () => {
 
           <Typography sx={{ mt: 2 }}>Step 2: Upload your CSV file.</Typography>
           <DropzoneArea fileObjects={[]}
-            acceptedFiles={['.csv']}
+            acceptedFiles={['.csv']} showAlerts={false}
             filesLimit={1}
             onChange={(files) => setFile(files[0] || null)}
             dropzoneText="Drag and drop a CSV file here or click"

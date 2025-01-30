@@ -28,7 +28,8 @@ import {
 	useGetUomMasterQuery,
 	usePostUomMasterMutation,
 } from "@/api/apiSlice";
-import DataGridSkeletonLoader from "../LoaderComponent/DataGridSkeletonLoader";
+import DataGridSkeletonLoader from "../ReusableComponents/DataGridSkeletonLoader";
+import SnackbarAlert from "../ReusableComponents/SnackbarAlerts";
 
 interface FormValues {
 	unitName: string;
@@ -93,6 +94,9 @@ const unitMappings: Record<string, string[]> = {
 };
 
 const UnitsOfMeasurement: React.FC = () => {
+		const [snackbarOpen, setSnackbarOpen] = useState(false);
+		const [snackbarMessage, setSnackbarMessage] = useState("");
+		const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
 	const [showForm, setShowForm] = useState(false);
 	const [altUnitOptions, setAltUnitOptions] = useState<string[]>([]);
 	const [isEditing, setIsEditing] = useState(false);
@@ -179,6 +183,9 @@ const UnitsOfMeasurement: React.FC = () => {
 				setShowForm(false);
 				setIsEditing(false);
 				setInitialValues(initialFormValues);
+				setSnackbarMessage("UOM updated successfully!");
+                setSnackbarSeverity("success");
+                setSnackbarOpen(true);
 			} else {
 				console.log("post create uom :", body);
 				const response = await postUom(body).unwrap();
@@ -187,9 +194,18 @@ const UnitsOfMeasurement: React.FC = () => {
 				setShowForm(false);
 				setIsEditing(false);
 				setInitialValues(initialFormValues);
+				setSnackbarMessage("UOM created successfully!");
+                setSnackbarSeverity("success");
+                setSnackbarOpen(true);
 			}
 		} catch (error) {
 			console.error("API Error:", error);
+			    setSnackbarMessage("Something went wrong! please try again.");
+                setSnackbarSeverity("error");
+				setSnackbarOpen(true);
+				resetForm();
+				setShowForm(false);
+				setIsEditing(false);
 		}
 	};
 	const rows = data?.uomList.map((unit: unitTypesBE) => ({
@@ -207,27 +223,40 @@ const UnitsOfMeasurement: React.FC = () => {
 		setEditRow(row);
 	};
 
-	const handleDelete = async (row: FormValues) => {
-		const uomId = row?.id;
-		if (!uomId) {
-			console.error("Row ID is missing");
-			return;
-		}
-		const confirmed = window.confirm(
-			"Are you sure you want to delete this item?"
-		);
-		if (!confirmed) {
-			console.log("Delete canceled by user.");
-			return;
-		}
+const handleDelete = async (row: FormValues) => {
+  const uomId = row?.id;
+  if (!uomId) {
+    console.error("Row ID is missing");
+    setSnackbarMessage("Error: UOM ID is missing!");
+    setSnackbarSeverity("error");
+    setSnackbarOpen(true);
+    return;
+  }
 
-		try {
-			const response = await deleteUom(uomId);
-			console.log("Delete response:", response);
-		} catch (error) {
-			console.error("Error deleting uom:", error);
-		}
-	};
+  const confirmed = window.confirm("Are you sure you want to delete this item?");
+  if (!confirmed) {
+    console.log("Delete canceled by user.");
+    return;
+  }
+
+  try {
+    const response = await deleteUom(uomId);
+    console.log("Delete response:", response);
+
+    // Show success snackbar
+    setSnackbarMessage("UOM deleted successfully!");
+    setSnackbarSeverity("success");
+    setSnackbarOpen(true);
+  } catch (error) {
+    console.error("Error deleting uom:", error);
+
+    // Show error snackbar
+    setSnackbarMessage("Failed to delete UOM. Please try again.");
+    setSnackbarSeverity("error");
+    setSnackbarOpen(true);
+  }
+};
+
 
 	const columns: GridColDef[] = [
 		{ field: "unitName", headerName: "Unit Name", width: 150 },
@@ -267,6 +296,12 @@ const UnitsOfMeasurement: React.FC = () => {
 				<CircularProgress color="inherit" />
 				     
 			</Backdrop>
+			<SnackbarAlert
+                open={snackbarOpen}
+                message={snackbarMessage}
+                severity={snackbarSeverity}
+                onClose={() => setSnackbarOpen(false)}
+            />
 			<Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
 				<Button
 					variant="contained"

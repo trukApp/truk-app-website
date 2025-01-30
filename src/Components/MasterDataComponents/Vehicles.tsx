@@ -39,8 +39,9 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import MassUpload from "../MassUpload/MassUpload";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
-import DataGridSkeletonLoader from "../LoaderComponent/DataGridSkeletonLoader";
+import DataGridSkeletonLoader from "../ReusableComponents/DataGridSkeletonLoader";
 import { Location } from "./Locations";
+import SnackbarAlert from "../ReusableComponents/SnackbarAlerts";
 
 export interface VehicleFormValues {
 	vehicleId: string;
@@ -226,6 +227,9 @@ const validationSchema = Yup.object({
 });
 
 const VehicleForm: React.FC = () => {
+		const [snackbarOpen, setSnackbarOpen] = useState(false);
+		const [snackbarMessage, setSnackbarMessage] = useState("");
+		const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
 	const [isEditing, setIsEditing] = useState(false);
 	const [editRow, setEditRow] = useState<VehicleFormValues | null>(null);
 	const { data, error } = useGetVehicleMasterQuery([]);
@@ -583,16 +587,28 @@ const VehicleForm: React.FC = () => {
 				setShowForm(false);
 				setIsEditing(false);
 				resetForm();
+				setSnackbarMessage("Vehicle updated successfully!");
+            	setSnackbarSeverity("success");
+                setSnackbarOpen(true);
 			} else {
 				console.log("post create vehicle ", body);
 				const response = await postVehicle(body).unwrap();
-				console.log("response in post location:", response);
+				console.log("response in post vehicle:", response);
 				setShowForm(false);
 				resetForm();
+				setIsEditing(false)
+				setSnackbarMessage("Vehicle created successfully!");
+                setSnackbarSeverity("success");
+                setSnackbarOpen(true);
 			}
 		} catch (error) {
 			console.error("API Error:", error);
-			alert("try after some time");
+			setSnackbarMessage("Something went wrong! please try again");
+            setSnackbarSeverity("error");
+			setSnackbarOpen(true);
+			setShowForm(false);
+			resetForm();
+			setIsEditing(false)
 		}
 	};
 
@@ -602,29 +618,40 @@ const VehicleForm: React.FC = () => {
 		setIsEditing(true);
 		setEditRow(row);
 	};
-console.log('ise editing :', isEditing , editRow)
 	const handleDelete = async (row: VehicleDetails) => {
-		const vehicleId = row?.id;
-		if (!vehicleId) {
-			console.error("Row ID is missing");
-			return;
-		}
-		const confirmed = window.confirm(
-			"Are you sure you want to delete this vehicle?"
-		);
+  const vehicleId = row?.id;
+  if (!vehicleId) {
+    console.error("Row ID is missing");
+    setSnackbarMessage("Error: Vehicle ID is missing!");
+    setSnackbarSeverity("error");
+    setSnackbarOpen(true);
+    return;
+  }
 
-		if (!confirmed) {
-			console.log("Delete canceled by user.");
-			return;
-		}
+  const confirmed = window.confirm("Are you sure you want to delete this vehicle?");
+  if (!confirmed) {
+    console.log("Delete canceled by user.");
+    return;
+  }
 
-		try {
-			const response = await deleteVehicle(vehicleId);
-			console.log("Delete response:", response);
-		} catch (error) {
-			console.error("Error deleting vehicle:", error);
-		}
-	};
+  try {
+    const response = await deleteVehicle(vehicleId);
+    console.log("Delete response:", response);
+
+    // Show success snackbar
+    setSnackbarMessage("Vehicle deleted successfully!");
+    setSnackbarSeverity("success");
+    setSnackbarOpen(true);
+  } catch (error) {
+    console.error("Error deleting vehicle:", error);
+
+    // Show error snackbar
+    setSnackbarMessage("Failed to delete vehicle. Please try again.");
+    setSnackbarSeverity("error");
+    setSnackbarOpen(true);
+  }
+};
+
 
 	const handleLocationChange = (
 		event: SelectChangeEvent<string>,
@@ -658,6 +685,12 @@ console.log('ise editing :', isEditing , editRow)
 				<CircularProgress color="inherit" />
 				     
 			</Backdrop>
+			<SnackbarAlert
+                open={snackbarOpen}
+                message={snackbarMessage}
+                severity={snackbarSeverity}
+                onClose={() => setSnackbarOpen(false)}
+            />
 
 			<Box>
 				<Typography

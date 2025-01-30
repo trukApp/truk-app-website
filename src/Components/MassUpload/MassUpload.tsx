@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import Papa from 'papaparse';
 import {
+  Backdrop,
   Box,
   Button,
+  CircularProgress,
   Link,
   Modal,
   Typography,
@@ -31,6 +33,7 @@ import {
   vendorColumnNames,
   productColumnNames,
 } from './CSVColumnNames'; 
+import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 
 type EntityKey = 'locations' | 'vehicles' | 'lanes' | 'devices' | 'packages' | 'carriers' | 'partners' | 'products';
 
@@ -54,19 +57,22 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+      const [snackbarOpen, setSnackbarOpen] = useState(false);
+      const [snackbarMessage, setSnackbarMessage] = useState("");
+      const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
 
   const theme = useTheme();
 
   // API mutations
-  const [postLocationMaster] = usePostLocationMasterMutation();
-  const [postVehicleMaster] = usePostVehicleMasterMutation();
-  const [postLaneMaster] = usePostLaneMasterMutation();
-  const [postDeviceMaster] = usePostDeviceMasterMutation();
-  const [postPackageMaster] = usePostPackageMasterMutation();
-  const [postCarrierMaster] = usePostCarrierMasterMutation();
-  const [postCustomerMaster] = useCustomerRegistrationMutation();
-  const [postVendorMaster] = useVendorRegistrationMutation();
-  const [postProductMaster] = useCreateProductMutation();
+  const [postLocationMaster, {isLoading:locationLoading}] = usePostLocationMasterMutation();
+  const [postVehicleMaster,{isLoading:vehicleLoading}] = usePostVehicleMasterMutation();
+  const [postLaneMaster,{isLoading:laneLoading}] = usePostLaneMasterMutation();
+  const [postDeviceMaster,{isLoading:deviceLoading}] = usePostDeviceMasterMutation();
+  const [postPackageMaster,{isLoading:packageLoading}] = usePostPackageMasterMutation();
+  const [postCarrierMaster,{isLoading:carrierLoading}] = usePostCarrierMasterMutation();
+  const [postCustomerMaster,{isLoading:customerLoading}] = useCustomerRegistrationMutation();
+  const [postVendorMaster,{isLoading:vendorLoading}] = useVendorRegistrationMutation();
+  const [postProductMaster,{isLoading:productLoading}] = useCreateProductMutation();
 
   // Column mappings for CSV files
   const getColumnMappings = (): ColumnMapping[] => {
@@ -109,34 +115,65 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
     
   };
 
-type NestedRecord = Record<string, string>;
+// type NestedRecord = Record<string, string>;
 
-const mapCsvToPayload = <T extends object>(
+// const mapCsvToPayload = <T extends object>(
+//   data: ParsedRow[],
+//   columnMappings: ColumnMapping[]
+// ): T[] => {
+//   return data.map((row) => {
+//     return columnMappings.reduce<T>((acc, { displayName, key, nestedKey }) => {
+//       const value = row[displayName]?.trim();
+
+//       if (nestedKey) {
+//         const nestedAcc = acc as Record<string, NestedRecord>;
+//         if (!nestedAcc[nestedKey]) {
+//           nestedAcc[nestedKey] = {} as NestedRecord;
+//         }
+//         nestedAcc[nestedKey][key] = value;
+//       } else {
+//         (acc as Record<string, string>)[key] = value;
+//       }
+
+//       return acc;
+//     }, {} as T);
+//   });
+// };
+
+
+  // Handle template download
+  
+const mapCsvToPayload = (
   data: ParsedRow[],
   columnMappings: ColumnMapping[]
-): T[] => {
+): Record<string, unknown>[] => {
   return data.map((row) => {
-    return columnMappings.reduce<T>((acc, { displayName, key, nestedKey }) => {
-      const value = row[displayName]?.trim();
+    const transformedRow: Record<string, unknown> = {};
 
-      if (nestedKey) {
-        // Ensure the nested structure exists before assigning values
-        const nestedAcc = acc as Record<string, NestedRecord>;
-        if (!nestedAcc[nestedKey]) {
-          nestedAcc[nestedKey] = {} as NestedRecord;
-        }
-        nestedAcc[nestedKey][key] = value;
-      } else {
-        (acc as Record<string, string>)[key] = value;
+    columnMappings.forEach(({ displayName, key, nestedKey }) => {
+      let value: string | string[] | undefined = row[displayName]?.trim();
+
+      // Convert specific fields into arrays
+      const arrayFields: string[] = ['carrier_loc_of_operation', 'carrier_lanes', 'vehicle_types_handling'];
+      if (arrayFields.includes(key) && value) {
+        value = value.split(',').map((item) => item.trim());
       }
 
-      return acc;
-    }, {} as T);
+      if (nestedKey) {
+        if (typeof transformedRow[nestedKey] !== 'object' || transformedRow[nestedKey] === null) {
+          transformedRow[nestedKey] = {};
+        }
+        (transformedRow[nestedKey] as Record<string, string | string[]>)[key] = value;
+      } else {
+        transformedRow[key] = value;
+      }
+    });
+
+    return transformedRow;
   });
 };
 
 
-  // Handle template download
   const handleDownloadTemplate = () => {
     const columnMappings = getColumnMappings();
     const csvContent = `data:text/csv;charset=utf-8,${columnMappings
@@ -187,10 +224,17 @@ const mapCsvToPayload = <T extends object>(
       }),
     };
      console.log("payload body :", body)
-      await postMapping[arrayKey](body);
-      // setMessage('Upload successful!');
+        await postMapping[arrayKey](body);
+        setSnackbarMessage("Data uploaded successfully!");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
+        setIsModalOpen(false)
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'An error occurred during upload.');
+          setSnackbarMessage("Something went wrong! Please try again.");
+          setSnackbarSeverity("error");
+          setSnackbarOpen(true);
+          setIsModalOpen(false)
+          console.log("err :", error)
     } finally {
       setIsUploading(false);
     }
@@ -198,6 +242,21 @@ const mapCsvToPayload = <T extends object>(
 
   return (
     <Box>
+      <SnackbarAlert
+            open={snackbarOpen}
+            message={snackbarMessage}
+            severity={snackbarSeverity}
+            onClose={() => setSnackbarOpen(false)}
+      />
+        <Backdrop
+        sx={{
+          color: "#ffffff",
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+        }}
+        open={locationLoading || vehicleLoading || laneLoading || deviceLoading || packageLoading || customerLoading || vendorLoading || carrierLoading || productLoading}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
       <Button variant="contained" onClick={() => setIsModalOpen(true)}>
         Upload CSV
       </Button>
@@ -222,20 +281,31 @@ const mapCsvToPayload = <T extends object>(
             Download CSV Template
           </Link>
 
-          <Typography sx={{ mt: 2 }}>Step 2: Upload your CSV file.</Typography>
+          <Typography sx={{ mt: 2 }}>Step 2: Upload your filled CSV file.</Typography>
           <DropzoneArea fileObjects={[]}
             acceptedFiles={['.csv']}
             filesLimit={1}
             onChange={(files) => setFile(files[0] || null)}
+            showAlerts={false}
             dropzoneText="Drag and drop a CSV file here or click"
           />
-
-          {file && <Typography sx={{ mt: 2 }}>Selected file: {file.name}</Typography>}
-
+          {file && (
+          <Typography sx={{ mt: 2 }}>
+            Selected file: <span style={{ color: '#4766ff', fontWeight: 'bold' }}>{file.name}</span>
+          </Typography>
+        )}
           <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
-            <Button variant="outlined" onClick={() => setFile(null)} fullWidth>
+            <Button
+              variant="outlined"
+              onClick={() => {
+                setFile(null);
+                setIsModalOpen(false);
+              }}
+              fullWidth
+            >
               Cancel
             </Button>
+
             <Button
               variant="contained"
               color="primary"

@@ -12,7 +12,8 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useGetDeviceMasterQuery,usePostDeviceMasterMutation, useEditDeviceMasterMutation,useDeleteDeviceMasterMutation } from '@/api/apiSlice';
 import MassUpload from '../MassUpload/MassUpload';
-import DataGridSkeletonLoader from '../LoaderComponent/DataGridSkeletonLoader';
+import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
+import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 
 interface DeviceMasterValues {
   id: string;
@@ -40,6 +41,9 @@ export interface DeviceInfoBE {
 }
 
 const DeviceMaster: React.FC = () => {
+      const [snackbarOpen, setSnackbarOpen] = useState(false);
+      const [snackbarMessage, setSnackbarMessage] = useState("");
+      const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
   const [showForm, setShowForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editRow, setEditRow] = useState<DeviceMasterValues | null>(null);
@@ -88,16 +92,26 @@ const DeviceMaster: React.FC = () => {
                 const response = await editDevice({ body: editBody, deviceId }).unwrap()
                 console.log("edit response is ", response)
                 formik.resetForm();
+                setIsEditing(false)
+                setSnackbarMessage("Device info updated successfully!");
+                setSnackbarSeverity("success");
+                setSnackbarOpen(true);
               }
               else {
                 console.log("post create devices ",body)
                   const response = await postDevice(body).unwrap();
                   console.log('response in posting device:', response);
-                  formik.resetForm();
+                formik.resetForm();
+                setSnackbarMessage("Device info created successfully!");
+                setSnackbarSeverity("success");
+                setSnackbarOpen(true);
               }
           
         } catch (error) {
-            console.error('API Error:', error);
+          console.error('API Error:', error);
+              setSnackbarMessage("Something went wrong! please try again.");
+              setSnackbarSeverity("error");
+              setSnackbarOpen(true);
         }
 
   }
@@ -112,8 +126,12 @@ const handleDelete = async (row: DeviceMasterValues) => {
     const deviceId = row?.id;
     if (!deviceId) {
         console.error("Row ID is missing");
+        setSnackbarMessage("Error: Device ID is missing!");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
         return;
     }
+
     const confirmed = window.confirm("Are you sure you want to delete this item?");
     if (!confirmed) {
         console.log("Delete canceled by user.");
@@ -123,10 +141,17 @@ const handleDelete = async (row: DeviceMasterValues) => {
     try {
         const response = await deleteDevice(deviceId);
         console.log("Delete response:", response);
+        setSnackbarMessage("Device deleted successfully!");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
     } catch (error) {
-        console.error("Error deleting lane:", error);
+        console.error("Error deleting device:", error);
+        setSnackbarMessage("Failed to delete device. Please try again.");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
     }
 };
+
   const initialValues: DeviceMasterValues = {
     id:'',
     deviceId: "",
@@ -220,7 +245,13 @@ const handleDelete = async (row: DeviceMasterValues) => {
         open={postDeviceLoading || editDeviceLoading || deleteDeviceLoading}
       >
         <CircularProgress color="inherit" />
-      </Backdrop>
+      </Backdrop>
+      <SnackbarAlert
+                open={snackbarOpen}
+                message={snackbarMessage}
+                severity={snackbarSeverity}
+                onClose={() => setSnackbarOpen(false)}
+            />
       <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md:'24px' } }} align="center" gutterBottom>
           Device master
       </Typography>

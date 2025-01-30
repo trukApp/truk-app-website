@@ -94,7 +94,7 @@ import { Product } from '@/app/productmaster/page';
 import { FormControl, Grid, InputLabel, MenuItem, Select } from '@mui/material';
 import { useGetLocationMasterQuery } from '@/api/apiSlice';
 import { Location } from '../BusinessPartnersForms/CustomerForm';
-import DataGridSkeletonLoader from '../LoaderComponent/DataGridSkeletonLoader';
+import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
 
 interface ProductsTableProps {
     allProductsData: Product[];
