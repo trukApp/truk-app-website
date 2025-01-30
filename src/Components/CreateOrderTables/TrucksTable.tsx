@@ -26,12 +26,12 @@ interface Truck {
 
 interface TrucksTableProps {
     trucks: Truck[];
-    // rootOptimization: []
+    // routes: []
 }
 
 const TrucksTable: React.FC<TrucksTableProps> = ({ trucks }) => {
     console.log("trucks: ", trucks)
-    // console.log("rootOptimization: ", rootOptimization)
+    // console.log("rootOptimization: ", routes)
     const dispatch = useAppDispatch();
     const selectedTrucks = useAppSelector((state) => state.auth.selectedTrucks || []);
     const [selectionModel, setSelectionModel] = useState<number[]>([]);
@@ -81,3 +81,68 @@ const TrucksTable: React.FC<TrucksTableProps> = ({ trucks }) => {
 };
 
 export default TrucksTable;
+
+
+// import React, { useEffect, useState } from "react";
+// import { DataGrid, GridColDef } from "@mui/x-data-grid";
+// import { useAppSelector, useAppDispatch } from "@/store";
+// import { setSelectedTrucks } from "@/store/authSlice";
+// import GoogleMapComponent from "./GoogleMapComponent";
+
+// interface Truck {
+//     vehicle_ID: string;
+//     allocatedWeight: number;
+//     allocatedVolume: number;
+//     leftoverWeight: string;
+//     leftoverVolume: string;
+// }
+
+// interface RouteData {
+//     vehicle_ID: string;
+//     route: { start: string; end: string }[];
+// }
+
+// interface Props {
+//     trucks: Truck[];
+//     routes: RouteData[];
+// }
+
+// const TrucksTable: React.FC<Props> = ({ trucks, routes }) => {
+//     const dispatch = useAppDispatch();
+//     const selectedTrucks = useAppSelector((state) => state.auth.selectedTrucks || []);
+//     const [selectedRoutes, setSelectedRoutes] = useState<{ start: string; end: string }[]>([]);
+//     console.log("selectedTrucks: ", selectedTrucks)
+//     const columns: GridColDef[] = [
+//         { field: "vehicle_ID", headerName: "Vehicle ID", width: 150 },
+//         { field: "allocatedWeight", headerName: "Allocated Weight", width: 180 },
+//         { field: "allocatedVolume", headerName: "Allocated Volume", width: 150 },
+//         { field: "leftoverWeight", headerName: "Leftover Weight", width: 180 },
+//         { field: "leftoverVolume", headerName: "Leftover Volume", width: 120 },
+//     ];
+
+//     const rows = trucks.map((truck, index) => ({ ...truck, id: index }));
+
+//     const handleSelectionChange = (selectionModel: number[]) => {
+//         const selectedTrucksData = selectionModel.map((id) => trucks[id]);
+//         dispatch(setSelectedTrucks(selectedTrucksData));
+
+//         const selectedVehicleIDs = selectedTrucksData.map((truck) => truck.vehicle_ID);
+//         const matchingRoutes = routes.filter((route) => selectedVehicleIDs.includes(route.vehicle_ID));
+
+//         setSelectedRoutes(matchingRoutes.flatMap((route) => route.route));
+//     };
+
+//     return (
+//         <div style={{ height: 400, width: "100%" }}>
+//             <DataGrid
+//                 rows={rows}
+//                 columns={columns}
+//                 checkboxSelection
+//                 onRowSelectionModelChange={(model) => handleSelectionChange(model as number[])}
+//             />
+//             <GoogleMapComponent routes={selectedRoutes} />
+//         </div>
+//     );
+// };
+
+// export default TrucksTable;

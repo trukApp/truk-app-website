@@ -301,7 +301,7 @@ const CreateOrder: React.FC = () => {
     const [selectedPackage, setSelectedPackage] = useState<Product[]>([]);
     const [selectTheTrucks] = useSelectTheProductsMutation();
     const [selectTrucks, setSelectTrucks] = useState([])
-    // const [rootOptimization, setRouteOptimazition] = useState([])
+    const [rootOptimization, setRouteOptimazition] = useState([])
     const sourceLocation = useAppSelector((state) => state.auth.createOrderDesination);
     console.log("sourceLocation: ", sourceLocation)
 
@@ -311,7 +311,7 @@ const CreateOrder: React.FC = () => {
     const selectedTrucks = useAppSelector((state) => state.auth.selectedTrucks || []);
 
 
-    const { data: productsData, error: allProductsFectchingError,isLoading:isProductLoading } = useGetAllProductsQuery([]);
+    const { data: productsData, error: allProductsFectchingError, isLoading: isProductLoading } = useGetAllProductsQuery([]);
     if (allProductsFectchingError) {
     }
     const allProductsData = productsData?.products || [];
@@ -491,7 +491,7 @@ const CreateOrder: React.FC = () => {
         const response = await selectTheTrucks(body).unwrap();
         if (response) {
             setSelectTrucks(response?.allocations)
-            // setRouteOptimazition(response?.routes)
+            setRouteOptimazition(response?.routes)
             console.log('API Response:', response);
             setOpenDialog(false);
             console.log("body: ", body)
@@ -578,7 +578,6 @@ const CreateOrder: React.FC = () => {
                 </div>
             </div>
 
-            {/* Modal for quantity adjustment */}
             <Dialog open={openDialog} onClose={handleCancel} fullWidth maxWidth="sm">
                 <DialogTitle>Adjust Quantities</DialogTitle>
                 <DialogContent>
@@ -603,9 +602,6 @@ const CreateOrder: React.FC = () => {
                     ))}
                 </DialogContent>
                 <DialogActions>
-                    {/* <Button onClick={handleCancel} color="primary">
-                        Cancel
-                    </Button> */}
                     <Button
                         variant='contained' color='error'
                         // className={styles.nextButton}
@@ -620,9 +616,6 @@ const CreateOrder: React.FC = () => {
                     >
                         Continue
                     </Button>
-                    {/* <Button onClick={handleContinue} color="primary">
-                        Continue
-                    </Button> */}
                 </DialogActions>
             </Dialog>
         </div>
