@@ -301,7 +301,7 @@ const CreateOrder: React.FC = () => {
     const [selectedPackage, setSelectedPackage] = useState<Product[]>([]);
     const [selectTheTrucks] = useSelectTheProductsMutation();
     const [selectTrucks, setSelectTrucks] = useState([])
-    const [rootOptimization, setRouteOptimazition] = useState([])
+    // const [rootOptimization, setRouteOptimazition] = useState([])
     const sourceLocation = useAppSelector((state) => state.auth.createOrderDesination);
     console.log("sourceLocation: ", sourceLocation)
 
