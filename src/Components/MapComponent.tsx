@@ -1,17 +1,17 @@
-import { GoogleMaps } from "./GoogleMaps";
-import { GoogleMapsWrapper } from "./GoogleMapsWrapper";
+// import { GoogleMaps } from "./GoogleMaps";
+// import { GoogleMapsWrapper } from "./GoogleMapsWrapper";
 
 
-export const LOCATIONS = [
-    { lat: 28.4595, lng: 77.0266 },
-    { lat: 28.7041, lng: 77.1025 },
-];
+// export const LOCATIONS = [
+//     { lat: 28.4595, lng: 77.0266 },
+//     { lat: 28.7041, lng: 77.1025 },
+// ];
 
-export const MapComponent = () => (
-    <GoogleMapsWrapper>
-        <GoogleMaps locations={LOCATIONS} />
-    </GoogleMapsWrapper>
-);
+// export const MapComponent = () => (
+//     <GoogleMapsWrapper>
+//         <GoogleMaps locations={LOCATIONS} />
+//     </GoogleMapsWrapper>
+// );
 
 
 // import React from 'react';
@@ -56,71 +56,63 @@ export const MapComponent = () => (
 // };
 
 
-// // import React, { useEffect, useState } from 'react';
-// // import { GoogleMapsWrapper } from './GoogleMapsWrapper';
-// // import { GoogleMaps } from './GoogleMaps';
+import React from "react";
+import { GoogleMapsWrapper } from "./GoogleMapsWrapper";
+import { GoogleMaps } from "./GoogleMaps";
 
-// // interface Route {
-// //     vehicle_ID: string;
-// //     route: Array<{
-// //         start: string;
-// //         end: string;
-// //         distance: string;
-// //         duration: string;
-// //         loadAfterStop: number;
-// //         startLat: number;
-// //         startLng: number;
-// //         endLat: number;
-// //         endLng: number;
-// //     }>;
-// // }
+interface Latitude {
+    latitude: number;
+    longitude: number;
+}
+interface Route {
+    vehicle_ID: string;
+    route: Array<{
+        startLat: number;
+        startLng: number;
+        endLat: number;
+        endLng: number;
+        start: Latitude;
+        end: Latitude
+    }>;
+}
 
-// // interface MapComponentProps {
-// //     routes: Route[];
-// // }
+interface MapComponentProps {
+    routes: Route[];
+}
 
-// // const geocodeAddress = async (address: string) => {
-// //     const geocoder = new window.google.maps.Geocoder();
-// //     return new Promise<google.maps.LatLng>((resolve, reject) => {
-// //         geocoder.geocode({ address }, (results, status) => {
-// //             if (status === window.google.maps.GeocoderStatus.OK) {
-// //                 resolve(results[0].geometry.location);
-// //             } else {
-// //                 reject(new Error('Geocode failed: ' + status));
-// //             }
-// //         });
-// //     });
-// // };
+export const MapComponent: React.FC<MapComponentProps> = ({ routes }) => {
+    console.log("Received routes:", JSON.stringify(routes, null, 2)); // Log the full routes data
 
-// // export const MapComponent: React.FC<MapComponentProps> = ({ routes }) => {
-// //     const [locations, setLocations] = useState<google.maps.LatLngLiteral[]>([]);
+    if (!routes || routes.length === 0) {
+        console.warn("No routes data provided.");
+        return null; // Prevent rendering if no data
+    }
 
-// //     useEffect(() => {
-// //         const fetchLocations = async () => {
-// //             const newLocations: google.maps.LatLngLiteral[] = [];
+    const locations = routes
+        .flatMap((route) =>
+            route.route?.flatMap((segment) =>
+                segment.start && segment.end
+                    ? [
+                        { lat: segment.start.latitude, lng: segment.start.longitude },
+                        { lat: segment.end.latitude, lng: segment.end.longitude },
+                    ]
+                    : []
+            )
+        )
+        .filter((location) => location.lat && location.lng);
 
-// //             for (const route of routes) {
-// //                 try {
-// //                     // Geocode start and end addresses
-// //                     const startLocation = await geocodeAddress(route.route[0].start);
-// //                     const endLocation = await geocodeAddress(route.route[0].end);
+    console.log("Extracted locations:", locations); // Debug locations
 
-// //                     newLocations.push({ lat: startLocation.lat(), lng: startLocation.lng() });
-// //                     newLocations.push({ lat: endLocation.lat(), lng: endLocation.lng() });
-// //                 } catch (error) {
-// //                     console.error("Error geocoding address:", error);
-// //                 }
-// //             }
+    if (locations.length === 0) {
+        console.warn("No valid locations found.");
+        return null;
+    }
 
-// //             setLocations(newLocations);
-// //         };
+    return (
+        <GoogleMapsWrapper>
+            <GoogleMaps locations={locations} />
+        </GoogleMapsWrapper>
+    );
+};
 
-// //         fetchLocations();
-// //     }, [routes]);
 
-// //     return (
-// //         <GoogleMapsWrapper>
-// //             <GoogleMaps locations={locations} />
-// //         </GoogleMapsWrapper>
-// //     );
-// // };
