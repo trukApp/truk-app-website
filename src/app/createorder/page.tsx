@@ -527,7 +527,7 @@ const CreateOrder: React.FC = () => {
                     <div>
                         <Typography variant="h6">Select Truck</Typography>
                         <TrucksTable trucks={selectTrucks} />
-                        <MapComponent />
+                        <MapComponent routes={rootOptimization} />
                     </div>
                 )}
 
