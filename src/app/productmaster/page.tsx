@@ -137,7 +137,7 @@ const ProductMasterPage = () => {
     const [formInitialValues, setFormInitialValues] = useState(productFormInitialValues);
     const [updateRecordData, setUpdateRecordData] = useState({});
     const [updateRecordId, setUpdateRecordId] = useState(0)
-    const { data: productsData, error: allProductsFectchingError , isLoading } = useGetAllProductsQuery([])
+    const { data: productsData, error: allProductsFectchingError , isLoading } = useGetAllProductsQuery({page: paginationModel.page + 1, limit: paginationModel.pageSize})
     const [showForm, setShowForm] = useState(false);
     const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery([])
     const [createNewProduct] = useCreateProductMutation();
