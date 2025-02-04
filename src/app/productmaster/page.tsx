@@ -24,7 +24,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 // import { GridColDef } from '@mui/x-data-grid';
 import { DataGridComponent } from '@/Components/GridComponent';
 import { useCreateProductMutation, useDeleteProductMutation, useEditProductMutation, useGetAllProductsQuery, useGetLocationMasterQuery } from '@/api/apiSlice';
-import { GridCellParams } from '@mui/x-data-grid';
+import { GridCellParams, GridPaginationModel } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useSelector } from 'react-redux';
@@ -102,6 +102,8 @@ interface Location {
 }
 
 const ProductMasterPage = () => {
+     const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
+          const rowCount = 20
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
@@ -151,6 +153,9 @@ const ProductMasterPage = () => {
     console.log("getLocationsError: ", getLocationsError)
     console.log("initialValues: ", formInitialValues)
 
+    const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
+            setPaginationModel(newPaginationModel);
+            };
     const validationSchema = Yup.object({
         productName: Yup.string().required('Product name is required'),
         productDescription: Yup.string().required('Product Description is required'),
@@ -823,13 +828,14 @@ const handleDelete = async (row: Product) => {
                 {isLoading ? (
                 <DataGridSkeletonLoader columns={columns} />
                 ) : (
-                <DataGridComponent
+                      <DataGridComponent
                         columns={columns}
                         rows={rows}
-                        isLoading={false}
-                        pageSizeOptions={[10, 20, 30]}
-                        initialPageSize={10}
-                />
+                        isLoading={isLoading}
+                        paginationModel={paginationModel}
+                        rowCount={rowCount}
+                        onPaginationModelChange={handlePaginationModelChange}
+                        />
                 )}
             </div>
         </Grid>

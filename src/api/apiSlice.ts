@@ -410,8 +410,8 @@ getVehicleMaster: builder.query({
 
     //Product Master
     getAllProducts: builder.query({
-      query: () => ({
-        url: "masterProducts/all-products",
+      query: ({page,limit}) => ({
+        url: `masterProducts/all-products?page=${page}&limit=${limit}`,
         method: "GET",
       }),
       providesTags: [{ type: "ProductMaster", id: "LIST" }],
