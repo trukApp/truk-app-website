@@ -21,9 +21,10 @@ import {
 	SelectChangeEvent,
 	Backdrop,
 	CircularProgress,
+	Tooltip,
 } from "@mui/material";
 import { DataGridComponent } from "../GridComponent";
-import { GridColDef } from "@mui/x-data-grid";
+import { GridColDef, GridPaginationModel } from "@mui/x-data-grid";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import styles from "./MasterData.module.css";
@@ -188,13 +189,14 @@ const downtimeReasons = ["Maintenance", "Breakdown", "Inspection", "Other"];
 const validationSchema = Yup.object({
 	locationId: Yup.string().required("Location ID is required"),
 	timeZone: Yup.string().required("Time Zone is required"),
-	unlimitedUsage: Yup.boolean(),
-		individualResources: Yup.number()
-			.typeError("Must be a number")
-			.when("unlimitedUsage", {
-			is: false,
-			then: (schema) => schema.required("Required"),
-			}),
+  unlimitedUsage: Yup.boolean(),
+  individualResources: Yup.number()
+    .typeError("Must be a number")
+    .when("unlimitedUsage", {
+      is: false,
+      then: (schema) => schema.required("Individual Resources is required"),
+      otherwise: (schema) => schema.notRequired().nullable(),
+    }),
 	validityFrom: Yup.string().required("Validity start date is required"),
 	validityTo: Yup.string().required("Validity end date is required"),
 	vehicleType: Yup.string().required("Vehicle Type is required"),
@@ -227,18 +229,17 @@ const validationSchema = Yup.object({
 });
 
 const VehicleForm: React.FC = () => {
-		const [snackbarOpen, setSnackbarOpen] = useState(false);
-		const [snackbarMessage, setSnackbarMessage] = useState("");
-		const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
+	const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
+	const rowCount = 20
+	const [snackbarOpen, setSnackbarOpen] = useState(false);
+	const [snackbarMessage, setSnackbarMessage] = useState("");
+	const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
 	const [isEditing, setIsEditing] = useState(false);
 	const [editRow, setEditRow] = useState<VehicleFormValues | null>(null);
-	const { data, error } = useGetVehicleMasterQuery([]);
-	const [postVehicle, { isLoading: postVehicleLoading }] =
-		usePostVehicleMasterMutation();
-	const [editVehicle, { isLoading: editVehicleLoading }] =
-		useEditVehicleMasterMutation();
-	const [deleteVehicle, { isLoading: deleteVehicleLoading }] =
-		useDeleteVehicleMasterMutation();
+	const { data, error } = useGetVehicleMasterQuery({page: paginationModel.page + 1, limit: paginationModel.pageSize});
+	const [postVehicle, { isLoading: postVehicleLoading }] = usePostVehicleMasterMutation();
+	const [editVehicle, { isLoading: editVehicleLoading }] = useEditVehicleMasterMutation();
+	const [deleteVehicle, { isLoading: deleteVehicleLoading }] = useDeleteVehicleMasterMutation();
 	if (error) {
 		console.log("err in loading vehicles data :", error);
 	}
@@ -250,7 +251,9 @@ const VehicleForm: React.FC = () => {
 	const unitsofMeasurement = useSelector(
 		(state: RootState) => state.auth.unitsofMeasurement
 	);
-
+	const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
+    setPaginationModel(newPaginationModel);
+    };
 	const [showForm, setShowForm] = useState(false);
 	const initialFormValues = {
 		id: "",
@@ -775,14 +778,17 @@ const VehicleForm: React.FC = () => {
 														}
 														onBlur={handleBlur}
 													>
-														{getAllLocations.map((location: Location) => (
-															<MenuItem
-																key={location.loc_ID}
-																value={location.loc_ID}
-															>
-																{location.loc_ID}
-															</MenuItem>
-														))}
+													{getAllLocations.map((location:Location) => (
+														<Tooltip
+														key={location.loc_ID}
+														title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+														placement="right"
+														>
+														<MenuItem value={location.loc_ID}>
+															{location.loc_ID}
+														</MenuItem>
+														</Tooltip>
+													))}
 													</Select>
 													{touched.locationId && errors.locationId && (
 														<FormHelperText>{errors.locationId}</FormHelperText>
@@ -835,40 +841,41 @@ const VehicleForm: React.FC = () => {
 													/>
 												</Grid>
 											)} */}
-											<Grid item xs={12}>
-  <FormControlLabel
-    control={
-      <Checkbox
-        checked={values.unlimitedUsage}
-        onChange={(e) => {
-          const checked = e.target.checked;
-          setFieldValue("unlimitedUsage", checked);
-          if (checked) {
-            setFieldValue("individualResources", "");
-          }
-        }}
-      />
-    }
-    label="Unlimited Usage"
-  />
-</Grid>
-
-{!values.unlimitedUsage && (
-  <Grid item xs={12} sm={6} md={2.4}>
-    <TextField
-      fullWidth
-      label="Individual Resources"
-      name="individualResources"
-      type="number"
-      value={values.individualResources}
-      onChange={handleChange}
-      onBlur={handleBlur}
-      size="small"
-      error={touched.individualResources && Boolean(errors.individualResources)}
-      helperText={touched.individualResources && errors.individualResources}
+								<Grid item xs={12}>
+									<FormControlLabel
+									control={
+    <Checkbox
+      checked={values.unlimitedUsage}
+      onChange={(e) => {
+        const checked = e.target.checked;
+        setFieldValue("unlimitedUsage", checked);
+        if (checked) {
+          setFieldValue("individualResources", ""); // Ensures controlled input
+        }
+      }}
     />
-  </Grid>
-)}
+  }
+  label="Unlimited Usage"
+												/>
+								</Grid>
+
+								{!values.unlimitedUsage && (
+								<Grid item xs={12} sm={6} md={2.4}>
+									<TextField
+									fullWidth
+									label="Individual Resources"
+									name="individualResources"
+									type="number"
+									value={values.individualResources ?? ""} // Ensures controlled component
+									onChange={handleChange}
+									onBlur={handleBlur}
+									size="small"
+									error={touched.individualResources && Boolean(errors.individualResources)}
+									helperText={touched.individualResources && errors.individualResources}
+									/>
+								</Grid>
+								)}
+
 
 										</Grid>
 
@@ -1622,13 +1629,14 @@ const VehicleForm: React.FC = () => {
 				{isLoading ? (
 					<DataGridSkeletonLoader columns={columns} />
 				) : (
-					<DataGridComponent
-						columns={columns}
-						rows={rows}
-						isLoading={false}
-						pageSizeOptions={[10, 20, 30]}
-						initialPageSize={10}
-					/>
+						<DataGridComponent
+							columns={columns}
+							rows={rows}
+							isLoading={isLoading}
+							paginationModel={paginationModel}
+							rowCount={rowCount}
+							onPaginationModelChange={handlePaginationModelChange}
+						/>
 				)}
 			</div>
 		</>

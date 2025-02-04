@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Button, MenuItem, TextField, Select, FormControl, InputLabel, OutlinedInput, Grid, Typography, Collapse, IconButton, Backdrop, CircularProgress } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { GridColDef } from '@mui/x-data-grid';
+import { GridColDef, GridPaginationModel } from '@mui/x-data-grid';
 import { DataGridComponent } from '../GridComponent';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -37,13 +37,15 @@ interface PackageInfo {
 }
 
 const PackagingForm = () => {
+    const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
+        const rowCount = 20
       const [snackbarOpen, setSnackbarOpen] = useState(false);
       const [snackbarMessage, setSnackbarMessage] = useState("");
       const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
   const [isEditing, setIsEditing] = useState(false);
   const [editRow,setEditRow] = useState<PackageInfo | null>(null); ;
   const [showForm, setShowForm] = useState(false);
-  const { data, error, isLoading } = useGetPackageMasterQuery([])
+  const { data, error, isLoading } = useGetPackageMasterQuery({page: paginationModel.page + 1, limit: paginationModel.pageSize})
   const [postPackage, {isLoading:postPackageLoading}] = usePostPackageMasterMutation()
   const [editPackage,{isLoading:editPackageLoading}] = useEditPackageMasterMutation()
   const [deletePackage,{isLoading:deletePackageLoading}] = useDeletePackageMasterMutation()
@@ -54,6 +56,9 @@ const PackagingForm = () => {
   if (error) {
     console.log("err while getting package info :", error)
   }
+const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
+        setPaginationModel(newPaginationModel);
+        };
   const handleFormSubmit = async (values: PackageInfo) => {
     console.log("form submitted locations :", values)
 
@@ -398,13 +403,14 @@ const rows = data?.packages.map((packageItem :Package) => ({
         {isLoading ? (
           <DataGridSkeletonLoader columns={columns} />
         ) : (
-          <DataGridComponent
-                columns={columns}
-                rows={rows}
-                isLoading={false}
-                pageSizeOptions={[10, 20, 30]}
-                initialPageSize={10}
-          />
+         <DataGridComponent
+                                     columns={columns}
+                                     rows={rows}
+                                     isLoading={isLoading}
+                                     paginationModel={paginationModel}
+                                     rowCount={rowCount}
+                                     onPaginationModelChange={handlePaginationModelChange}
+                                   />
         )}
         </div>
     </>

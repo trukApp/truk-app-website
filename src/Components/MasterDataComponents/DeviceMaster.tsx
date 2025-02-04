@@ -1,19 +1,20 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { Grid, TextField, Button, Box, Typography, Collapse,IconButton, Backdrop, CircularProgress } from "@mui/material";
+import { Grid, TextField, Button, Box, Typography, Collapse,IconButton, Backdrop, CircularProgress, FormControl, InputLabel, Select, MenuItem, Tooltip, FormHelperText } from "@mui/material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { GridColDef } from "@mui/x-data-grid";
+import { GridColDef, GridPaginationModel } from "@mui/x-data-grid";
 import { DataGridComponent } from "../GridComponent";
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import styles from './MasterData.module.css';
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { useGetDeviceMasterQuery,usePostDeviceMasterMutation, useEditDeviceMasterMutation,useDeleteDeviceMasterMutation } from '@/api/apiSlice';
+import { useGetDeviceMasterQuery,usePostDeviceMasterMutation, useEditDeviceMasterMutation,useDeleteDeviceMasterMutation, useGetLocationMasterQuery } from '@/api/apiSlice';
 import MassUpload from '../MassUpload/MassUpload';
 import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
+import { Location } from './Locations';
 
 interface DeviceMasterValues {
   id: string;
@@ -41,16 +42,21 @@ export interface DeviceInfoBE {
 }
 
 const DeviceMaster: React.FC = () => {
+    const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
+    const rowCount = 20
       const [snackbarOpen, setSnackbarOpen] = useState(false);
       const [snackbarMessage, setSnackbarMessage] = useState("");
       const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
   const [showForm, setShowForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editRow, setEditRow] = useState<DeviceMasterValues | null>(null);
-  const { data, error, isLoading } = useGetDeviceMasterQuery([]);
+  const { data, error, isLoading } = useGetDeviceMasterQuery({page: paginationModel.page + 1, limit: paginationModel.pageSize});
   const [postDevice, {isLoading:postDeviceLoading}] = usePostDeviceMasterMutation();
   const [editDevice,{isLoading:editDeviceLoading}] = useEditDeviceMasterMutation();
-  const [deleteDevice,{isLoading:deleteDeviceLoading}] = useDeleteDeviceMasterMutation()
+  const [deleteDevice, { isLoading: deleteDeviceLoading }] = useDeleteDeviceMasterMutation()
+    const { data: locationsData } = useGetLocationMasterQuery([]);
+    const getAllLocations =
+      locationsData?.locations.length > 0 ? locationsData?.locations : [];
   console.log("device data :", data)
     if (isLoading) {
     console.log("Loading devices...");
@@ -60,6 +66,9 @@ const DeviceMaster: React.FC = () => {
     console.error("Error fetching devices:", error);
     // Handle the error case
   }
+    const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
+      setPaginationModel(newPaginationModel);
+      };
     
    const handleFormSubmit = async (values: DeviceMasterValues) => {
     // console.log("form submitted lanes :", values)
@@ -359,7 +368,7 @@ const handleDelete = async (row: DeviceMasterValues) => {
               </Grid>
 
               {/* Location ID */}
-              <Grid item xs={12} sm={6} md={2.4}>
+              {/* <Grid item xs={12} sm={6} md={2.4}>
                 <TextField
                   fullWidth size='small'
                   id="locationId"
@@ -368,7 +377,40 @@ const handleDelete = async (row: DeviceMasterValues) => {
                   value={formik.values.locationId}
                   onChange={formik.handleChange}
                 />
-              </Grid>
+              </Grid> */}
+              	<Grid item xs={12} sm={6} md={2.4}>
+												<FormControl
+													fullWidth
+													size="small"
+													error={
+														formik.touched.locationId && Boolean(formik.errors.locationId)
+													}
+												>
+													<InputLabel>Location ID</InputLabel>
+													<Select
+														label="Location ID"
+														name="locationId"
+														value={formik.values.locationId}
+														onChange={formik.handleChange}
+														onBlur={formik.handleBlur}
+													>
+													{getAllLocations.map((location:Location) => (
+														<Tooltip
+														key={location.loc_ID}
+														title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+														placement="right"
+														>
+														<MenuItem value={location.loc_ID}>
+															{location.loc_ID}
+														</MenuItem>
+														</Tooltip>
+													))}
+													</Select>
+													{formik.touched.locationId && formik.errors.locationId && (
+														<FormHelperText>{formik.errors.locationId}</FormHelperText>
+													)}
+												</FormControl>
+											</Grid>
             </Grid>
          <Box mt={3} textAlign="center">
             <Button variant="contained" color="primary" type="submit">
@@ -398,13 +440,14 @@ const handleDelete = async (row: DeviceMasterValues) => {
         {isLoading ? (
           <DataGridSkeletonLoader columns={columns} />
         ) : (
-          <DataGridComponent
-                columns={columns}
-                rows={rows}
-                isLoading={false}
-                pageSizeOptions={[10, 20, 30]}
-                initialPageSize={10}
-          />
+       <DataGridComponent
+                  columns={columns}
+                  rows={rows}
+                  isLoading={isLoading}
+                  paginationModel={paginationModel}
+                  rowCount={rowCount}
+                  onPaginationModelChange={handlePaginationModelChange}
+                />
         )}
         </div>
     </>

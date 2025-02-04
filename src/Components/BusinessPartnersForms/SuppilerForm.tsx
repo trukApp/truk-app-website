@@ -4,7 +4,7 @@ import { Formik, Form, FormikProps } from 'formik';
 import * as Yup from 'yup';
 import { DataGridComponent } from '../GridComponent';
 import styles from './BusinessPartners.module.css'
-import { GridColDef } from '@mui/x-data-grid';
+import { GridColDef, GridPaginationModel } from '@mui/x-data-grid';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useCustomerRegistrationMutation, useDeleteBusinessPartnerMutation, useEditBusinessPartnerMutation, useGetAllVendorsDataQuery, useGetLocationMasterQuery } from '@/api/apiSlice';
@@ -83,9 +83,11 @@ const initialSupplierValues = {
 
 
 const SupplierForm: React.FC = () => {
-        const [snackbarOpen, setSnackbarOpen] = useState(false);
-        const [snackbarMessage, setSnackbarMessage] = useState("");
-        const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
+    const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10, });
+    const rowCount = 20
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const [showForm, setShowForm] = useState(false);
     const [updateRecord, setUpdateRecord] = useState(false);
     const [formInitialValues, setFormInitialValues] = useState(initialSupplierValues);
@@ -95,7 +97,7 @@ const SupplierForm: React.FC = () => {
     const [customerRegistration,{isLoading:editVendorLoading}] = useCustomerRegistrationMutation();
     const [deleteBusinessPartner,{isLoading:deleteVendorLoading}] = useDeleteBusinessPartnerMutation()
     const { data, error, isLoading } = useGetAllVendorsDataQuery({
-        partner_type: "vendor",
+        partner_type: "vendor", page: paginationModel.page + 1, limit: paginationModel.pageSize
     })
     const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery([])
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
@@ -111,7 +113,9 @@ const SupplierForm: React.FC = () => {
     if (error) {
         console.error("getting error while fetching the customers data:", error);
     }
-
+    const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
+            setPaginationModel(newPaginationModel);
+        };
     const mapRowToInitialValues = (rowData: Customer) => ({
         name: rowData.name || '',
         locationId: rowData.loc_ID || '',
@@ -208,7 +212,7 @@ const handleDelete = async (rowData: Customer) => {
         },
     ];
 
-    const mappedData = vendorsData.map((item: Customer) => ({
+    const rows = vendorsData.map((item: Customer) => ({
         id: item.partner_id,
         ...item,
     }));
@@ -638,12 +642,13 @@ const handleDelete = async (rowData: Customer) => {
                 <DataGridSkeletonLoader columns={columns} />
                 ) : (
                 <DataGridComponent
-                        columns={columns}
-                        rows={mappedData}
-                        isLoading={false}
-                        pageSizeOptions={[10, 20, 30]}
-                        initialPageSize={10}
-                />
+                    columns={columns}
+                    rows={rows}
+                    isLoading={isLoading}
+                    paginationModel={paginationModel}
+                    rowCount={rowCount}
+                    onPaginationModelChange={handlePaginationModelChange}
+                    />
                 )}
             </div>
         </div>

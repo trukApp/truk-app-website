@@ -280,7 +280,11 @@ const handleUpload = async () => {
             dropzoneText="Drag and drop a CSV file here or click"
           />
 
-          {file && <Typography sx={{ mt: 2 }}>Selected file: {file.name}</Typography>}
+          {file && (
+            <Typography sx={{ mt: 2 }}>
+              Selected file: <span style={{ color: '#4766ff', fontWeight: 'bold' }}>{file.name}</span>
+            </Typography>
+          )}
 
           <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
             <Button variant="outlined" onClick={() => setFile(null)} fullWidth>

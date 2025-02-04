@@ -93,19 +93,27 @@ export const apiSlice = createApi({
     }),
 
     getAllCustomersData: builder.query({
-      query: (params) => ({
+      query: ({ partner_type, page, limit }) => ({
         url: "business/business-partners",
         method: "GET",
-        params,
+        params: {
+          partner_type,
+          page,
+          limit,
+      },
       }),
       providesTags: [{ type: "PARTNERS", id: "LIST" }],
     }),
 
     getAllVendorsData: builder.query({
-      query: (params) => ({
+      query: ({ partner_type, page, limit}) => ({
         url: "business/business-partners",
         method: "GET",
-        params,
+        params: {
+          partner_type,
+          page,
+          limit,
+      },
       }),
       providesTags: [{ type: "PARTNERS", id: "LIST" }],
     }),
@@ -148,8 +156,8 @@ export const apiSlice = createApi({
 
     //  carrier master
     getCarrierMaster: builder.query({
-      query: () => ({
-        url: "carrier/all-carriers",
+      query: ({page,limit}) => ({
+        url: `carrier/all-carriers?page=${page}&limit=${limit}`,
         method: "GET",
       }),
       providesTags: [{ type: "CARRIER", id: "LIST" }],
@@ -183,8 +191,8 @@ export const apiSlice = createApi({
 
     //  location master
     getLocationMaster: builder.query({
-      query: () => ({
-        url: "masLoc/all-locations",
+      query: ({page,limit}) => ({
+        url: `masLoc/all-locations?page=${page}&limit=${limit}`,
         method: "GET",
       }),
       providesTags: [{ type: "LocationMaster", id: "LIST" }],
@@ -221,13 +229,18 @@ export const apiSlice = createApi({
     }),
 
     // vehciles master
-    getVehicleMaster: builder.query({
-      query: () => ({
-        url: "vehicle/vehicles",
-        method: "GET",
-      }),
-      providesTags: [{ type: "VehicleMaster", id: "LIST" }],
-    }),
+getVehicleMaster: builder.query({
+  query: ({ page, limit }) => {
+    // Log the page and limit values
+    console.log('Fetching data for page:', page, 'with limit:', limit);
+    
+    return {
+      url: `vehicle/vehicles?page=${page}&limit=${limit}`,
+      method: "GET",
+    };
+  },
+  providesTags: [{ type: "VehicleMaster", id: "LIST" }],
+}),
 
     postVehicleMaster: builder.mutation({
       query: (body) => ({
@@ -257,8 +270,8 @@ export const apiSlice = createApi({
 
     // Package master
     getPackageMaster: builder.query({
-      query: () => ({
-        url: "package/get-all-packages",
+      query: ({page,limit}) => ({
+        url: `package/get-all-packages?page=${page}&limit=${limit}`,
         method: "GET",
       }),
       providesTags: [{ type: "PackageMaster", id: "LIST" }],
@@ -292,8 +305,8 @@ export const apiSlice = createApi({
 
     // Lanes master
     getLanesMaster: builder.query({
-      query: () => ({
-        url: "lane/all-lanes",
+      query: ({page,limit}) => ({
+        url: `lane/all-lanes?page=${page}&limit=${limit}`,
         method: "GET",
       }),
       providesTags: [{ type: "LaneMaster", id: "LIST" }],
@@ -327,8 +340,8 @@ export const apiSlice = createApi({
 
     // Device master
     getDeviceMaster: builder.query({
-      query: () => ({
-        url: "device/all-devices",
+      query: ({page,limit}) => ({
+        url: `device/all-devices?page=${page}&limit=${limit}`,
         method: "GET",
       }),
       providesTags: [{ type: "DeviceMaster", id: "LIST" }],

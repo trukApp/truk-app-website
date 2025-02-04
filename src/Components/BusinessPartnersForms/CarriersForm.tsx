@@ -16,7 +16,7 @@ import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import styles from './BusinessPartners.module.css';
 import { DataGridComponent } from '../GridComponent';
-import { GridColDef } from '@mui/x-data-grid';
+import { GridColDef, GridPaginationModel } from '@mui/x-data-grid';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useGetCarrierMasterQuery,usePostCarrierMasterMutation,useEditCarrierMasterMutation,useDeleteCarrierMasterMutation, useGetLocationMasterQuery, useGetLanesMasterQuery } from '@/api/apiSlice';
@@ -61,13 +61,15 @@ export interface CarrierFormBE {
     }
 
 const CarrierForm: React.FC = () => {
+    const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
+        const rowCount = 20
         const [snackbarOpen, setSnackbarOpen] = useState(false);
         const [snackbarMessage, setSnackbarMessage] = useState("");
         const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const [showForm, setShowForm] = useState(false);
           const [isEditing, setIsEditing] = useState(false);
       const [editRow,setEditRow] = useState<CarrierFormFE | null>(null); ;
-      const { data, error,isLoading } = useGetCarrierMasterQuery([])
+      const { data, error,isLoading } = useGetCarrierMasterQuery({page: paginationModel.page + 1, limit: paginationModel.pageSize})
       const [postCarrier,{isLoading:postCarrierLoading}] = usePostCarrierMasterMutation()
       const [editCarrier,{isLoading:editCarrierLoading}] = useEditCarrierMasterMutation()
     const [deleteCarrier,{isLoading:deleteCarrierLoading}] = useDeleteCarrierMasterMutation()
@@ -84,8 +86,9 @@ const CarrierForm: React.FC = () => {
     }
 
 
-
-    
+const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
+    setPaginationModel(newPaginationModel);
+    };
 const vehicleTypeOptions = ['Truck', 'Van', 'Container', 'Trailer'];
   const handleEdit = (row: CarrierFormFE) => {
     console.log("Edit row:", row);
@@ -254,7 +257,7 @@ const handleDelete = async (row: CarrierFormFE) => {
         preferredCarrier: carrier.carrier_network_portal,
     }));
     
-    const carrierColumns: GridColDef[] = [
+    const columns: GridColDef[] = [
     { field: 'carrierId', headerName: 'Carrier ID', width:150 },
     { field: 'name', headerName: 'Name', width:150 },
     { field: 'address', headerName: 'Address', width:150 },
@@ -601,15 +604,16 @@ const handleDelete = async (row: CarrierFormFE) => {
             </Collapse>
             <div style={{ marginTop: "40px" }}>
                 {isLoading ? (
-                <DataGridSkeletonLoader columns={carrierColumns} />
+                <DataGridSkeletonLoader columns={columns} />
                 ) : (
-                <DataGridComponent
-                        columns={carrierColumns}
-                        rows={rows}
-                        isLoading={false}
-                        pageSizeOptions={[10, 20, 30]}
-                        initialPageSize={10}
-                />
+                    <DataGridComponent
+                                        columns={columns}
+                                        rows={rows}
+                                        isLoading={isLoading}
+                                        paginationModel={paginationModel}
+                                        rowCount={rowCount}
+                                        onPaginationModelChange={handlePaginationModelChange}
+                                    />
                 )}
             </div>
         </div>

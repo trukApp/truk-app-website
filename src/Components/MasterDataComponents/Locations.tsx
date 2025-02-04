@@ -21,7 +21,7 @@ import {
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { DataGridComponent } from '../GridComponent';
-import { GridColDef } from '@mui/x-data-grid';
+import { GridColDef, GridPaginationModel } from '@mui/x-data-grid';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import styles from './MasterData.module.css';
@@ -91,13 +91,15 @@ const validationSchema = Yup.object({
 });
 
 const Locations: React.FC = () => {
+    const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
+      const rowCount = 20
       const [snackbarOpen, setSnackbarOpen] = useState(false);
       const [snackbarMessage, setSnackbarMessage] = useState("");
       const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
   const [showForm, setShowForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editRow,setEditRow] = useState<DataGridRow | null>(null); ;
-  const { data, error, isLoading } = useGetLocationMasterQuery([]);
+  const { data, error, isLoading } = useGetLocationMasterQuery({page: paginationModel.page + 1, limit: paginationModel.pageSize});
   const [postLocation,{isLoading:postLocationLoading}] = usePostLocationMasterMutation();
   const [editLocation,{isLoading:editLocationLoading}] = useEditLocationMasterMutation();
   const [deleteLocation,{isLoading:deleteLocationLoading}] = useDeleteLocationMasterMutation()
@@ -123,6 +125,9 @@ const Locations: React.FC = () => {
   //   { id: '5', name: 'Trailer - 005' },
   // ];
 
+const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
+        setPaginationModel(newPaginationModel);
+        };
   const handleFormSubmit = async (values: DataGridRow) => {
     console.log("form submitted locations :", values)
 
@@ -296,7 +301,7 @@ const handleDelete = async (row: DataGridRow) => {
   const { values, errors, touched, handleChange, handleBlur, handleSubmit } = formik;
 
 
-  const rows: DataGridRow[] = locationsMaster?.map((location: Location, index: number) => ({
+  const rows= locationsMaster?.map((location: Location, index: number) => ({
     id: location.location_id,
     locationId: location.loc_ID,
     locationDescription: location.loc_desc,
@@ -766,13 +771,14 @@ const handleDelete = async (row: DataGridRow) => {
         {isLoading ? (
           <DataGridSkeletonLoader columns={columns} />
         ) : (
-          <DataGridComponent
-                columns={columns}
-                rows={rows}
-                isLoading={false}
-                pageSizeOptions={[10, 20, 30]}
-                initialPageSize={10}
-          />
+             <DataGridComponent
+                                 columns={columns}
+                                 rows={rows}
+                                 isLoading={isLoading}
+                                 paginationModel={paginationModel}
+                                 rowCount={rowCount}
+                                 onPaginationModelChange={handlePaginationModelChange}
+                               />
         )}
       </div>
 

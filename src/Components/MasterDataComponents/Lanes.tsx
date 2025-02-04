@@ -6,21 +6,25 @@ import {
   Button,
   CircularProgress,
   Collapse,
+  FormControl,
+  FormHelperText,
   Grid,
   IconButton,
+  InputLabel,
   MenuItem,
+  Select,
   TextField,
   Typography,
 
 } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { GridColDef } from '@mui/x-data-grid';
+import { GridColDef, GridPaginationModel } from '@mui/x-data-grid';
 import { DataGridComponent } from '../GridComponent';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import styles from './MasterData.module.css'
-import { useGetLanesMasterQuery, usePostLaneMasterMutation, useEditLaneMasterMutation, useDeleteLaneMasterMutation, } from '@/api/apiSlice';
+import { useGetLanesMasterQuery, usePostLaneMasterMutation, useEditLaneMasterMutation, useDeleteLaneMasterMutation, useGetLocationMasterQuery, } from '@/api/apiSlice';
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MassUpload from '../MassUpload/MassUpload';
@@ -28,7 +32,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store'; 
 import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
-
+import { Location } from './Locations';
 
 interface LaneDetails {
   // General Data
@@ -83,18 +87,23 @@ export interface Lane {
   
 }
 const TransportationLanes = () => {
+    const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
+    const rowCount = 20
       const [snackbarOpen, setSnackbarOpen] = useState(false);
       const [snackbarMessage, setSnackbarMessage] = useState("");
       const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const [showForm, setShowForm] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editRow, setEditRow] = useState<LaneDetails | null>(null);
-    const { data, error, isLoading } = useGetLanesMasterQuery([]);
+    const { data, error, isLoading } = useGetLanesMasterQuery({page: paginationModel.page + 1, limit: paginationModel.pageSize});
     const unitsofMeasurement = useSelector((state: RootState) => state.auth.unitsofMeasurement);
   
     const [postLane, {isLoading:postLaneLoading}] = usePostLaneMasterMutation();
     const [editLane,{isLoading:editLaneLoading}] = useEditLaneMasterMutation();
-    const [deleteLane,{isLoading:deleteLaneLoading}] = useDeleteLaneMasterMutation()
+  const [deleteLane, { isLoading: deleteLaneLoading }] = useDeleteLaneMasterMutation()
+  const { data: locationsData } = useGetLocationMasterQuery([]);
+    const getAllLocations =
+      locationsData?.locations.length > 0 ? locationsData?.locations : [];
   
   console.log("all lanes :", data?.lanes)
 
@@ -103,6 +112,9 @@ const TransportationLanes = () => {
     // Handle the error case
   }
 
+    const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
+        setPaginationModel(newPaginationModel);
+        };
   const handleFormSubmit = async (values: LaneDetails) => {
     // console.log("form submitted lanes :", values)
 
@@ -415,35 +427,67 @@ const rows = data?.lanes.map((lane:Lane) => ({
                       size="small"
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth
-                      id="sourceLocationId"
-                      name="sourceLocationId"
-                      label="Source Location ID*"
-                      value={formik.values.sourceLocationId}
-                      onChange={formik.handleChange}
-                      error={formik.touched.sourceLocationId && Boolean(formik.errors.sourceLocationId)}
-                      helperText={formik.touched.sourceLocationId && formik.errors.sourceLocationId}
-                      size="small"
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth
-                      id="destinationLocationId"
-                      name="destinationLocationId"
-                      label="Destination Location ID*"
-                      value={formik.values.destinationLocationId}
-                      onChange={formik.handleChange}
-                      error={
-                        formik.touched.destinationLocationId &&
-                        Boolean(formik.errors.destinationLocationId)
-                      }
-                      helperText={formik.touched.destinationLocationId && formik.errors.destinationLocationId}
-                      size="small"
-                    />
-                  </Grid>
+
+                	<Grid item xs={12} sm={6} md={2.4}>
+												<FormControl
+													fullWidth id='sourceLocationId'
+													size="small"
+													error={
+														formik.touched.sourceLocationId && Boolean(formik.errors.sourceLocationId)
+													}
+												>
+													<InputLabel>Source Location ID</InputLabel>
+													<Select
+														label="Source Location ID*"
+														name="sourceLocationId"
+														value={formik.values.sourceLocationId}
+														onChange={formik.handleChange}
+														onBlur={formik.handleBlur}
+													>
+														{getAllLocations.map((location: Location) => (
+															<MenuItem
+																key={location.loc_ID}
+																value={location.loc_ID}
+															>
+																{location.loc_ID}
+															</MenuItem>
+														))}
+													</Select>
+													{formik.touched.sourceLocationId && formik.errors.sourceLocationId && (
+														<FormHelperText>{formik.errors.sourceLocationId}</FormHelperText>
+													)}
+												</FormControl>
+									</Grid>
+                	<Grid item xs={12} sm={6} md={2.4}>
+												<FormControl
+													fullWidth id='destinationLocationId'
+													size="small"
+													error={
+														formik.touched.destinationLocationId && Boolean(formik.errors.destinationLocationId)
+													}
+												>
+													<InputLabel>Destination Location ID</InputLabel>
+													<Select
+														label="Destination Location ID*"
+														name="destinationLocationId"
+														value={formik.values.destinationLocationId}
+														onChange={formik.handleChange}
+														onBlur={formik.handleBlur}
+													>
+														{getAllLocations.map((location: Location) => (
+															<MenuItem
+																key={location.loc_ID}
+																value={location.loc_ID}
+															>
+																{location.loc_ID}
+															</MenuItem>
+														))}
+													</Select>
+													{formik.touched.destinationLocationId && formik.errors.destinationLocationId && (
+														<FormHelperText>{formik.errors.destinationLocationId}</FormHelperText>
+													)}
+												</FormControl>
+									</Grid>
                 </Grid>
               </Box>
 
@@ -796,12 +840,13 @@ const rows = data?.lanes.map((lane:Lane) => ({
           <DataGridSkeletonLoader columns={columns} />
         ) : (
           <DataGridComponent
-                columns={columns}
-                rows={rows}
-                isLoading={false}
-                pageSizeOptions={[10, 20, 30]}
-                initialPageSize={10}
-          />
+                          columns={columns}
+                          rows={rows}
+                          isLoading={isLoading}
+                          paginationModel={paginationModel}
+                          rowCount={rowCount}
+                          onPaginationModelChange={handlePaginationModelChange}
+                        />
         )}
       </div>
     </>

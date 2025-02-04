@@ -7,7 +7,7 @@ import { DataGridComponent } from '../GridComponent';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useDriverRegistrationMutation, useGetAllDriversDataQuery, useEditDriverMutation, useDeleteDriverMutation, useGetLocationMasterQuery } from '@/api/apiSlice';
-import { GridColDef } from '@mui/x-data-grid';
+import { GridColDef, GridPaginationModel } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
@@ -106,6 +106,8 @@ const initialDriverValues = {
 };
 
 const DriverForm: React.FC = () => {
+  const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
+    const rowCount = 20
       const [snackbarOpen, setSnackbarOpen] = useState(false);
       const [snackbarMessage, setSnackbarMessage] = useState("");
       const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
@@ -117,7 +119,7 @@ const DriverForm: React.FC = () => {
   const [formInitialValues, setFormInitialValues] = useState(initialDriverValues);
   // const [updateRecordData, setUpdateRecordData] = useState({});
   const [updateRecordId, setUpdateRecordId] = useState(0)
-  const { data, error, isLoading } = useGetAllDriversDataQuery({})
+  const { data, error, isLoading } = useGetAllDriversDataQuery({page: paginationModel.page + 1, limit: paginationModel.pageSize})
   console.log("all drivers data :", data?.drivers)
   const driversData = data?.drivers.length > 0 ? data?.drivers : []
 
@@ -136,7 +138,9 @@ const DriverForm: React.FC = () => {
   console.log("drivers", driversData)
 
 
-
+const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
+    setPaginationModel(newPaginationModel);
+    };
   const driverValidationSchema = Yup.object({
     driverName: Yup.string().required('Driver Name is required'),
     locations: Yup.array().of(Yup.string()).min(1, 'Location id is required'),
@@ -214,7 +218,7 @@ const handleDelete = async (rowData: Driver) => {
 };
 
 
-const driverColumns: GridColDef[] = [
+const columns: GridColDef[] = [
   { field: 'driverID', headerName: 'Driver ID', width: 150 },
   { field: 'driverName', headerName: 'Name', width: 200 },
   { field: 'locations', headerName: 'Location ID', width: 200 },
@@ -249,7 +253,7 @@ const driverColumns: GridColDef[] = [
 ];
 
 
-  const driversDataRows = driversData.map((driver: Driver) => ({
+  const rows = driversData.map((driver: Driver) => ({
     id: driver?.driver_id,
     driverID: driver?.dri_ID,
     driverName: driver?.driver_name,
@@ -648,15 +652,16 @@ const driverColumns: GridColDef[] = [
 
         <div style={{ marginTop: "40px" }}>
         {isLoading ? (
-          <DataGridSkeletonLoader columns={driverColumns} />
+          <DataGridSkeletonLoader columns={columns} />
         ) : (
-          <DataGridComponent
-                columns={driverColumns}
-                rows={driversDataRows}
-                isLoading={false}
-                pageSizeOptions={[10, 20, 30]}
-                initialPageSize={10}
-          />
+              <DataGridComponent
+                                               columns={columns}
+                                               rows={rows}
+                                               isLoading={isLoading}
+                                               paginationModel={paginationModel}
+                                               rowCount={rowCount}
+                                               onPaginationModelChange={handlePaginationModelChange}
+                                           />
         )}
         </div>
 

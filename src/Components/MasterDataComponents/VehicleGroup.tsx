@@ -3,8 +3,6 @@ import React, { useState } from 'react';
 import { Grid, TextField, Button, MenuItem, Box, Typography, Collapse } from "@mui/material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { DataGridComponent } from "../GridComponent";
-import { GridColDef } from "@mui/x-data-grid";
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import styles from './MasterData.module.css'
@@ -14,19 +12,7 @@ interface VehicleGroupValues {
   vehicleGroupDescription: string;
   vehicleType: string;
 }
-const rows = Array.from({ length: 10 }, (_, id) => ({
-  id,
-  vehicleGroupId: `VG-${id + 1}`,
-  vehicleGroupDescription: `Group Description ${id + 1}`,
-  vehicleType: id % 3 === 0 ? "Truck" : id % 3 === 1 ? "Van" : "Container",
-}));
 
-// Columns Definition
-const columns: GridColDef[] = [
-  { field: "vehicleGroupId", headerName: "Vehicle Group ID", width: 200 },
-  { field: "vehicleGroupDescription", headerName: "Vehicle Group Description", width: 300 },
-  { field: "vehicleType", headerName: "Vehicle Type", width: 200 },
-];
 
 const VehicleGroup: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
@@ -146,15 +132,7 @@ const VehicleGroup: React.FC = () => {
 
 
 
-      <div style={{ marginTop: "40px" }}>
-        <DataGridComponent
-          columns={columns}
-          rows={rows}
-          isLoading={false}
-          pageSizeOptions={[10, 20, 30]}
-          initialPageSize={10}
-        />
-      </div>
+
     </>
   );
 };
