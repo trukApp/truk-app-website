@@ -62,11 +62,9 @@
 import React from 'react'
 
 const PickUpAndDropOffDetails = () => {
-  return (
-    <div>
-      hiii
-    </div>
-  )
+    return (
+        <div>PickUpAndDropOffDetails</div>
+    )
 }
 
 export default PickUpAndDropOffDetails
