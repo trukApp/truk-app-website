@@ -3,7 +3,7 @@ import { TextField, Grid, MenuItem, Box, Button, Collapse } from '@mui/material'
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import styles from './BusinessPartners.module.css';
-import { DataGridComponent } from '../GridComponent';
+// import { DataGridComponent } from '../GridComponent';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
@@ -16,21 +16,21 @@ interface AgentFormValues {
     contactNumber: string;
 }
 
-const dummyAgencyData = [
-    { id: 1, agencyName: "FastTrack Logistics", agencyId: "AG001", serviceArea: "North America", modeOfTransport: "Road", contactNumber: "+1-555-123-4567" },
-    { id: 2, agencyName: "SkyHigh Air Cargo", agencyId: "AG002", serviceArea: "Global", modeOfTransport: "Air", contactNumber: "+44-20-7946-0958" },
-    { id: 3, agencyName: "Oceanic Shipping Co.", agencyId: "AG003", serviceArea: "Asia-Pacific", modeOfTransport: "Sea", contactNumber: "+91-22-3456-7890" },
-    { id: 4, agencyName: "Urban Courier Services", agencyId: "AG004", serviceArea: "Urban Areas", modeOfTransport: "Bicycle", contactNumber: "+1-555-987-6543" },
-    { id: 5, agencyName: "Interstate Movers", agencyId: "AG005", serviceArea: "United States", modeOfTransport: "Truck", contactNumber: "+1-800-555-6789" },
-];
+// const dummyAgencyData = [
+//     { id: 1, agencyName: "FastTrack Logistics", agencyId: "AG001", serviceArea: "North America", modeOfTransport: "Road", contactNumber: "+1-555-123-4567" },
+//     { id: 2, agencyName: "SkyHigh Air Cargo", agencyId: "AG002", serviceArea: "Global", modeOfTransport: "Air", contactNumber: "+44-20-7946-0958" },
+//     { id: 3, agencyName: "Oceanic Shipping Co.", agencyId: "AG003", serviceArea: "Asia-Pacific", modeOfTransport: "Sea", contactNumber: "+91-22-3456-7890" },
+//     { id: 4, agencyName: "Urban Courier Services", agencyId: "AG004", serviceArea: "Urban Areas", modeOfTransport: "Bicycle", contactNumber: "+1-555-987-6543" },
+//     { id: 5, agencyName: "Interstate Movers", agencyId: "AG005", serviceArea: "United States", modeOfTransport: "Truck", contactNumber: "+1-800-555-6789" },
+// ];
 
-const agencyColumns = [
-    { field: "agencyName", headerName: "Agency Name", width: 200 },
-    { field: "agencyId", headerName: "Agency ID", width: 150 },
-    { field: "serviceArea", headerName: "Service Area", width: 200 },
-    { field: "modeOfTransport", headerName: "Mode of Transport", width: 200 },
-    { field: "contactNumber", headerName: "Contact Number", width: 200 },
-];
+// const agencyColumns = [
+//     { field: "agencyName", headerName: "Agency Name", width: 200 },
+//     { field: "agencyId", headerName: "Agency ID", width: 150 },
+//     { field: "serviceArea", headerName: "Service Area", width: 200 },
+//     { field: "modeOfTransport", headerName: "Mode of Transport", width: 200 },
+//     { field: "contactNumber", headerName: "Contact Number", width: 200 },
+// ];
 
 const transportModes = ['Road', 'Air', 'Sea', 'Rail'];
 
@@ -59,7 +59,7 @@ const AgentForm: React.FC = () => {
 
     return (
         <div className={styles.formsMainContainer}>
-            <Box display="flex" justifyContent="flex-end"  gap={2}>
+            <Box display="flex" justifyContent="flex-end" gap={2}>
                 <Button
                     variant="contained"
                     onClick={() => setShowForm((prev) => !prev)}
@@ -165,7 +165,7 @@ const AgentForm: React.FC = () => {
                 </Box>
             </Collapse>
 
-            <Grid item xs={12} style={{ marginTop: '50px' }}>
+            {/* <Grid item xs={12} style={{ marginTop: '50px' }}>
                 <DataGridComponent
                     columns={agencyColumns}
                     rows={dummyAgencyData}
@@ -173,7 +173,7 @@ const AgentForm: React.FC = () => {
                     pageSizeOptions={[10, 20]}
                     initialPageSize={10}
                 />
-            </Grid>
+            </Grid> */}
         </div>
     );
 };
