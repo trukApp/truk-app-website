@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Formik, Form, FormikHelpers } from "formik";
+import { Formik, Form,FormikProps } from "formik";
 import * as Yup from "yup";
 import {
 	TextField,
@@ -230,7 +230,6 @@ const validationSchema = Yup.object({
 
 const VehicleForm: React.FC = () => {
 	const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
-	const rowCount = 20
 	const [snackbarOpen, setSnackbarOpen] = useState(false);
 	const [snackbarMessage, setSnackbarMessage] = useState("");
 	const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
@@ -243,7 +242,7 @@ const VehicleForm: React.FC = () => {
 	if (error) {
 		console.log("err in loading vehicles data :", error);
 	}
-	const { data: locationsData, isLoading } = useGetLocationMasterQuery([]);
+	const { data: locationsData, isLoading } = useGetLocationMasterQuery({});
 	const getAllLocations =
 		locationsData?.locations.length > 0 ? locationsData?.locations : [];
 	const vehiclesMaster = data?.vehicles;
@@ -655,25 +654,14 @@ const VehicleForm: React.FC = () => {
   }
 };
 
-
-	const handleLocationChange = (
+  	const handleLocationChange = (
 		event: SelectChangeEvent<string>,
-		setFieldValue: FormikHelpers<{
-			locationId: string;
-			timeZone: string;
-		}>["setFieldValue"]
-	) => {
-		const selectedLocationId = event.target.value;
-		const selectedLocation = getAllLocations.find(
-			(loc: Location) => loc.loc_ID === selectedLocationId
-		);
-
-		setFieldValue("locationId", selectedLocationId, true);
-		setFieldValue(
-			"timeZone",
-			selectedLocation ? selectedLocation.time_zone : "",
-			true
-		);
+		setFieldValue: FormikProps<{ locationId: string; timeZone: string }>['setFieldValue']
+		) => {
+		const selectedLocation = event.target.value;
+		setFieldValue('locationId', selectedLocation);
+		const matchedLocation = getAllLocations?.find((loc: Location) => loc.loc_ID === selectedLocation);
+		setFieldValue("timeZone", matchedLocation ? matchedLocation?.time_zone : "");
 	};
 
 	return (
@@ -760,38 +748,29 @@ const VehicleForm: React.FC = () => {
 													disabled
 												/>
 											</Grid>
-											<Grid item xs={12} sm={6} md={2.4}>
-												<FormControl
-													fullWidth
-													size="small"
-													error={
-														touched.locationId && Boolean(errors.locationId)
-													}
-												>
-													<InputLabel>Location ID</InputLabel>
-													<Select
-														label="Location ID"
-														name="locationId"
-														value={values.locationId}
-														onChange={(event) =>
-															handleLocationChange(event, setFieldValue)
-														}
-														onBlur={handleBlur}
-													>
-													{getAllLocations.map((location:Location) => (
-														<Tooltip
-														key={location.loc_ID}
-														title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-														placement="right"
-														>
-														<MenuItem value={location.loc_ID}>
-															{location.loc_ID}
-														</MenuItem>
-														</Tooltip>
-													))}
+												<Grid item xs={12} sm={6} md={2.4}>
+																<FormControl fullWidth size="small" error={touched.locationId && Boolean(errors.locationId)}>
+																<InputLabel>Location ID</InputLabel>
+																<Select
+																label="Location ID"
+																name="locations"
+																value={values.locationId || ''}
+																onChange={(event) => handleLocationChange(event, setFieldValue)}
+																onBlur={handleBlur}
+																>
+															{getAllLocations?.map((location: Location) => (
+															<MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+																<Tooltip
+																title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+																placement="right"
+																>
+																<span style={{ flex: 1 }}>{location.loc_ID}</span>
+																</Tooltip>
+															</MenuItem>
+															))}
 													</Select>
-													{touched.locationId && errors.locationId && (
-														<FormHelperText>{errors.locationId}</FormHelperText>
+																{touched.locationId && errors.locationId && (
+													<FormHelperText>{errors.locationId}</FormHelperText>
 													)}
 												</FormControl>
 											</Grid>
@@ -1634,7 +1613,7 @@ const VehicleForm: React.FC = () => {
 							rows={rows}
 							isLoading={isLoading}
 							paginationModel={paginationModel}
-							rowCount={rowCount}
+							activeEntity="vehicles"
 							onPaginationModelChange={handlePaginationModelChange}
 						/>
 				)}

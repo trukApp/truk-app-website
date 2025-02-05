@@ -103,7 +103,6 @@ interface Location {
 
 const ProductMasterPage = () => {
      const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
-          const rowCount = 20
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
@@ -139,7 +138,7 @@ const ProductMasterPage = () => {
     const [updateRecordId, setUpdateRecordId] = useState(0)
     const { data: productsData, error: allProductsFectchingError , isLoading } = useGetAllProductsQuery({page: paginationModel.page + 1, limit: paginationModel.pageSize})
     const [showForm, setShowForm] = useState(false);
-    const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery([])
+    const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery({})
     const [createNewProduct] = useCreateProductMutation();
     const [deleteProduct] = useDeleteProductMutation()
     const [updateProductDetails] = useEditProductMutation();
@@ -828,13 +827,13 @@ const handleDelete = async (row: Product) => {
                 {isLoading ? (
                 <DataGridSkeletonLoader columns={columns} />
                 ) : (
-                      <DataGridComponent
+                    <DataGridComponent
                         columns={columns}
                         rows={rows}
                         isLoading={isLoading}
                         paginationModel={paginationModel}
-                        rowCount={rowCount}
                         onPaginationModelChange={handlePaginationModelChange}
+                        activeEntity='products'
                         />
                 )}
             </div>

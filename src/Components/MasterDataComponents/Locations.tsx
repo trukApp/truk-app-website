@@ -92,7 +92,6 @@ const validationSchema = Yup.object({
 
 const Locations: React.FC = () => {
     const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
-      const rowCount = 20
       const [snackbarOpen, setSnackbarOpen] = useState(false);
       const [snackbarMessage, setSnackbarMessage] = useState("");
       const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
@@ -772,13 +771,13 @@ const handleDelete = async (row: DataGridRow) => {
           <DataGridSkeletonLoader columns={columns} />
         ) : (
              <DataGridComponent
-                                 columns={columns}
-                                 rows={rows}
-                                 isLoading={isLoading}
-                                 paginationModel={paginationModel}
-                                 rowCount={rowCount}
-                                 onPaginationModelChange={handlePaginationModelChange}
-                               />
+                  columns={columns}
+                  rows={rows}
+                  isLoading={isLoading}
+                  paginationModel={paginationModel}
+                  activeEntity='locations'
+                  onPaginationModelChange={handlePaginationModelChange}
+              />
         )}
       </div>
 

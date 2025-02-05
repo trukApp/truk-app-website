@@ -62,7 +62,6 @@ export interface CarrierFormBE {
 
 const CarrierForm: React.FC = () => {
     const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
-        const rowCount = 20
         const [snackbarOpen, setSnackbarOpen] = useState(false);
         const [snackbarMessage, setSnackbarMessage] = useState("");
         const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
@@ -73,7 +72,7 @@ const CarrierForm: React.FC = () => {
       const [postCarrier,{isLoading:postCarrierLoading}] = usePostCarrierMasterMutation()
       const [editCarrier,{isLoading:editCarrierLoading}] = useEditCarrierMasterMutation()
     const [deleteCarrier,{isLoading:deleteCarrierLoading}] = useDeleteCarrierMasterMutation()
-    const { data: locationsData, } = useGetLocationMasterQuery([])
+    const { data: locationsData, } = useGetLocationMasterQuery({})
      const { data:lanesData } = useGetLanesMasterQuery([]);
     
     
@@ -611,7 +610,7 @@ const handleDelete = async (row: CarrierFormFE) => {
                                         rows={rows}
                                         isLoading={isLoading}
                                         paginationModel={paginationModel}
-                                        rowCount={rowCount}
+                                        activeEntity='carriers'
                                         onPaginationModelChange={handlePaginationModelChange}
                                     />
                 )}

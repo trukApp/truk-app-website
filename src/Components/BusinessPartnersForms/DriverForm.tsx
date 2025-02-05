@@ -107,7 +107,6 @@ const initialDriverValues = {
 
 const DriverForm: React.FC = () => {
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
-    const rowCount = 20
       const [snackbarOpen, setSnackbarOpen] = useState(false);
       const [snackbarMessage, setSnackbarMessage] = useState("");
       const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
@@ -123,7 +122,7 @@ const DriverForm: React.FC = () => {
   console.log("all drivers data :", data?.drivers)
   const driversData = data?.drivers.length > 0 ? data?.drivers : []
 
-  const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery([])
+  const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery({})
   const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
   console.log("all locations :", locationsData?.locations)
   console.log("getLocationsError: ", getLocationsError)
@@ -655,13 +654,13 @@ const columns: GridColDef[] = [
           <DataGridSkeletonLoader columns={columns} />
         ) : (
               <DataGridComponent
-                                               columns={columns}
-                                               rows={rows}
-                                               isLoading={isLoading}
-                                               paginationModel={paginationModel}
-                                               rowCount={rowCount}
-                                               onPaginationModelChange={handlePaginationModelChange}
-                                           />
+                          columns={columns}
+                          rows={rows}
+                          isLoading={isLoading}
+                          paginationModel={paginationModel}
+                          activeEntity='drivers'
+                          onPaginationModelChange={handlePaginationModelChange}
+              />
         )}
         </div>
 

@@ -88,7 +88,6 @@ export interface Lane {
 }
 const TransportationLanes = () => {
     const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
-    const rowCount = 20
       const [snackbarOpen, setSnackbarOpen] = useState(false);
       const [snackbarMessage, setSnackbarMessage] = useState("");
       const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
@@ -101,7 +100,7 @@ const TransportationLanes = () => {
     const [postLane, {isLoading:postLaneLoading}] = usePostLaneMasterMutation();
     const [editLane,{isLoading:editLaneLoading}] = useEditLaneMasterMutation();
   const [deleteLane, { isLoading: deleteLaneLoading }] = useDeleteLaneMasterMutation()
-  const { data: locationsData } = useGetLocationMasterQuery([]);
+  const { data: locationsData } = useGetLocationMasterQuery({});
     const getAllLocations =
       locationsData?.locations.length > 0 ? locationsData?.locations : [];
   
@@ -844,7 +843,7 @@ const rows = data?.lanes.map((lane:Lane) => ({
                           rows={rows}
                           isLoading={isLoading}
                           paginationModel={paginationModel}
-                          rowCount={rowCount}
+                          activeEntity='lanes'
                           onPaginationModelChange={handlePaginationModelChange}
                         />
         )}

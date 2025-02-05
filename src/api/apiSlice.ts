@@ -93,27 +93,19 @@ export const apiSlice = createApi({
     }),
 
     getAllCustomersData: builder.query({
-      query: ({ partner_type, page, limit }) => ({
+      query: (params) => ({
         url: "business/business-partners",
         method: "GET",
-        params: {
-          partner_type,
-          page,
-          limit,
-      },
+        params,
       }),
       providesTags: [{ type: "PARTNERS", id: "LIST" }],
     }),
 
     getAllVendorsData: builder.query({
-      query: ({ partner_type, page, limit}) => ({
+      query: (params) => ({
         url: "business/business-partners",
         method: "GET",
-        params: {
-          partner_type,
-          page,
-          limit,
-      },
+        params,
       }),
       providesTags: [{ type: "PARTNERS", id: "LIST" }],
     }),
@@ -156,9 +148,10 @@ export const apiSlice = createApi({
 
     //  carrier master
     getCarrierMaster: builder.query({
-      query: ({page,limit}) => ({
-        url: `carrier/all-carriers?page=${page}&limit=${limit}`,
+      query: (params) => ({
+        url: `carrier/all-carriers`,
         method: "GET",
+        params
       }),
       providesTags: [{ type: "CARRIER", id: "LIST" }],
     }),
@@ -191,15 +184,12 @@ export const apiSlice = createApi({
 
     //  location master
     getLocationMaster: builder.query({
-      query: ({page,limit}) => ({
-        url: `masLoc/all-locations?page=${page}&limit=${limit}`,
+      query: (params) => ({
+        url: `masLoc/all-locations`,
         method: "GET",
+        params
       }),
       providesTags: [{ type: "LocationMaster", id: "LIST" }],
-    }),
-
-    getLocationById: builder.query<string, string>({
-      query: (locationId) => `masLoc/location-ID?loc_ID=${locationId}`,
     }),
 
     postLocationMaster: builder.mutation({
@@ -229,18 +219,16 @@ export const apiSlice = createApi({
     }),
 
     // vehciles master
-getVehicleMaster: builder.query({
-  query: ({ page, limit }) => {
-    // Log the page and limit values
-    console.log('Fetching data for page:', page, 'with limit:', limit);
-    
-    return {
-      url: `vehicle/vehicles?page=${page}&limit=${limit}`,
-      method: "GET",
-    };
-  },
-  providesTags: [{ type: "VehicleMaster", id: "LIST" }],
-}),
+    getVehicleMaster: builder.query({
+      query: (params) => {
+        return {
+          url: `vehicle/vehicles`,
+          method: "GET",
+          params
+        };
+      },
+      providesTags: [{ type: "VehicleMaster", id: "LIST" }],
+    }),
 
     postVehicleMaster: builder.mutation({
       query: (body) => ({
@@ -270,9 +258,10 @@ getVehicleMaster: builder.query({
 
     // Package master
     getPackageMaster: builder.query({
-      query: ({page,limit}) => ({
-        url: `package/get-all-packages?page=${page}&limit=${limit}`,
+      query: (params) => ({
+        url: `package/get-all-packages`,
         method: "GET",
+        params
       }),
       providesTags: [{ type: "PackageMaster", id: "LIST" }],
     }),
@@ -305,9 +294,10 @@ getVehicleMaster: builder.query({
 
     // Lanes master
     getLanesMaster: builder.query({
-      query: ({page,limit}) => ({
-        url: `lane/all-lanes?page=${page}&limit=${limit}`,
+      query: (params) => ({
+        url: `lane/all-lanes`,
         method: "GET",
+        params
       }),
       providesTags: [{ type: "LaneMaster", id: "LIST" }],
     }),
@@ -340,9 +330,10 @@ getVehicleMaster: builder.query({
 
     // Device master
     getDeviceMaster: builder.query({
-      query: ({page,limit}) => ({
-        url: `device/all-devices?page=${page}&limit=${limit}`,
+      query: (params) => ({
+        url: `device/all-devices`,
         method: "GET",
+        params
       }),
       providesTags: [{ type: "DeviceMaster", id: "LIST" }],
     }),
@@ -375,9 +366,10 @@ getVehicleMaster: builder.query({
 
     //  UOM Master
     getUomMaster: builder.query({
-      query: () => ({
+      query: (params) => ({
         url: "masterUom/all-uom",
         method: "GET",
+        params
       }),
       providesTags: [{ type: "UomMaster", id: "LIST" }],
     }),
@@ -410,9 +402,10 @@ getVehicleMaster: builder.query({
 
     //Product Master
     getAllProducts: builder.query({
-      query: ({page,limit}) => ({
-        url: `masterProducts/all-products?page=${page}&limit=${limit}`,
+      query: (params) => ({
+        url: `masterProducts/all-products`,
         method: "GET",
+        params
       }),
       providesTags: [{ type: "ProductMaster", id: "LIST" }],
     }),
@@ -464,6 +457,14 @@ getVehicleMaster: builder.query({
       },
       invalidatesTags: [{ type: "CreateOrder", id: "LIST" }],
     }),
+
+    getDataCount: builder.query({
+      query: () => ({
+        url: `data/count-data`,
+        method: "GET",
+      }),
+      // providesTags: [{ type: "ProductMaster", id: "LIST" }],
+    }),
   }),
 });
 
@@ -484,7 +485,6 @@ export const {
   useEditCarrierMasterMutation,
   useDeleteCarrierMasterMutation,
   useGetLocationMasterQuery,
-  useGetLocationByIdQuery,
   usePostLocationMasterMutation,
   useEditLocationMasterMutation,
   useDeleteLocationMasterMutation,
@@ -513,4 +513,5 @@ export const {
   useDeleteProductMutation,
   useEditProductMutation,
   useSelectTheProductsMutation,
+  useGetDataCountQuery
 } = apiSlice;
