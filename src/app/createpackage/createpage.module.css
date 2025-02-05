@@ -1,4 +1,4 @@
-.packageNameTextField {
+/* .packageNameTextField {
   height: 15px;
 }
 
@@ -31,4 +31,45 @@
   font-size: 18px;
   font-weight: bold;
   color: purple;
+}
+
+.formContainer {
+  margin-top: 30px;
+  padding: 20px;
+} */
+
+.nextButton {
+  background-color: #6a0dad;
+  color: white;
+  border: none;
+  transition: background-color 0.3s ease;
+  padding-right: 30px;
+  padding-left: 30px;
+}
+
+.nextButton:hover {
+  background-color: #5a0ca1;
+}
+
+.backButton {
+  background-color: white;
+  color: #6a0dad;
+  border: 2px solid #a3000016;
+  transition: all 0.3s ease;
+  margin-right: 20px;
+  padding-right: 30px;
+  padding-left: 30px;
+}
+
+.backButton:hover {
+  background-color: #6a0dad;
+  color: white;
+}
+
+.buttonsContainer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 30px;
 }

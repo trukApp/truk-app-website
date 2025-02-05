@@ -1,0 +1,11 @@
+.mainHeading {
+  font-size: 20px;
+  font-family: "Poppins";
+  font-weight: bold;
+  margin-top: 15px;
+  margin-bottom: 5px;
+}
+
+.formsBgContainer {
+  padding: 30px;
+}

@@ -525,16 +525,26 @@ const CreatePackage = () => {
                         {activeStep === 6 && <TaxInfo />}
                     </Grid>
 
-                    <Grid container justifyContent="space-between" className={styles.buttonContainer}>
-                        <Button disabled={activeStep === 0} onClick={handleBack}>
+                    <div className={styles.buttonsContainer}>
+                        <Button
+                            variant='outlined' color='primary'
+                            disabled={activeStep === 0}
+                            onClick={handleBack}
+                            style={{ marginRight: '20px' }}
+                        >
                             Back
                         </Button>
                         {activeStep === steps.length - 1 ? (
                             <Button type="submit">Create Package</Button>
                         ) : (
-                            <Button onClick={handleNext}>Next</Button>
+                            <Button
+                                onClick={handleNext}
+                                variant='contained' color='primary'
+                            >
+                                Next
+                            </Button>
                         )}
-                    </Grid>
+                    </div>
                 </Form>
             )}
         </Formik>
