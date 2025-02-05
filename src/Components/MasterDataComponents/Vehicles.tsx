@@ -1583,7 +1583,7 @@ const VehicleForm: React.FC = () => {
 												{isEditing ? "Update vehicle" : "Create vehicle"}
 											</Button>
 											<Button
-												variant="contained"
+												variant="outlined"
 												color="secondary"
 												onClick={() => {
 													setInitialValues(initialFormValues);

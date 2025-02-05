@@ -10,6 +10,7 @@ import {
     CircularProgress,
     FormControlLabel,
     Checkbox,
+    Tooltip,
     // Checkbox, FormControlLabel,
 } from '@mui/material';
 import { Formik, Form } from 'formik';
@@ -25,10 +26,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import MassUpload from '../MassUpload/MassUpload';
 import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
-
-interface Location {
-    loc_ID: string;
-}
+import { Location } from '../MasterDataComponents/Locations';
+import { Lane } from '../MasterDataComponents/Lanes';
 interface CarrierFormFE  {
     id: string;
         carrierId: string,
@@ -483,11 +482,15 @@ const handleDelete = async (row: CarrierFormFE) => {
                                             onBlur={handleBlur}
                                             renderValue={(selected) => (selected as string[]).join(', ')} // Display selected items as comma-separated
                                         >
-                                            {getAllLocations.map((location: Location) => (
-                                                <MenuItem key={location?.loc_ID} value={location?.loc_ID}>
-                                                    {location.loc_ID}
-                                                </MenuItem>
-                                            ))}
+                                        {getAllLocations?.map((location: Location) => (
+                                            <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                                    <Tooltip
+                                                        title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                                        placement="right">
+                                                        <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                                    </Tooltip>
+                                            </MenuItem>
+                                        ))}
                                         </Select>
                                         {touched.locationIds && errors.locationIds && (
                                             <FormHelperText>{errors.locationIds}</FormHelperText>
@@ -517,9 +520,18 @@ const handleDelete = async (row: CarrierFormFE) => {
                                         onBlur={handleBlur}     // Formik's handler for field blur
                                         renderValue={(selected) => (selected as string[]).join(', ')} // Display selected lanes as comma-separated
                                     >
-                                        {getAllLanes.map((lane: { lane_ID: string }) => (
+                                        {/* {getAllLanes.map((lane: { lane_ID: string }) => (
                                             <MenuItem key={lane.lane_ID} value={lane.lane_ID}>
                                                 {lane.lane_ID}
+                                            </MenuItem>
+                                        ))} */}
+                                        {getAllLanes?.map((lane: Lane) => (
+                                            <MenuItem key={lane.lane_ID} value={String(lane.lane_ID)}>
+                                                <Tooltip
+                                                    title={`${lane.src_loc_desc}, ${lane.src_city}, ${lane.src_state} to ${lane.des_loc_desc}, ${lane.des_city}, ${lane.des_state} `}
+                                                    placement="right">
+                                                    <span style={{ flex: 1 }}>{lane.lane_ID}</span>
+                                                </Tooltip>
                                             </MenuItem>
                                         ))}
                                     </Select>
@@ -588,7 +600,7 @@ const handleDelete = async (row: CarrierFormFE) => {
                                     <Button type="submit" variant="contained" color="primary">
                                         {isEditing ? "Update carrier" : "Create carrier"}
                                     </Button>
-                                        <Button variant="contained" color="secondary"
+                                        <Button variant="outlined" color="secondary"
                                                 onClick={() => {
                                                 setInitialValues(initialCarrierValues)
                                             setIsEditing(false)

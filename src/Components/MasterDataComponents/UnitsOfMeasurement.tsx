@@ -16,7 +16,7 @@ import {
 	CircularProgress,
 } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
-import { DataGridComponent } from "../GridComponent";
+import {  DataGridNoPagination } from "../GridComponent";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import styles from "./MasterData.module.css";
@@ -93,7 +93,7 @@ const unitMappings: Record<string, string[]> = {
 	Millisecond: ["Microsecond", "Nanosecond"],
 };
 
-const UnitsOfMeasurement: React.FC = () => {
+const UnitsOfMeasurement: React.FC = () => { 
 		const [snackbarOpen, setSnackbarOpen] = useState(false);
 		const [snackbarMessage, setSnackbarMessage] = useState("");
 		const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
@@ -434,7 +434,7 @@ const handleDelete = async (row: FormValues) => {
 										{isEditing ? "Update UOM" : "Create UOM"}
 									</Button>
 									<Button
-										variant="contained"
+										variant="outlined"
 										color="secondary"
 										onClick={() => {
 											setInitialValues(initialFormValues);
@@ -455,13 +455,7 @@ const handleDelete = async (row: FormValues) => {
 				{isLoading ? (
 					<DataGridSkeletonLoader columns={columns} />
 				) : (
-					<DataGridComponent
-						columns={columns}
-						rows={rows}
-						isLoading={false}
-						pageSizeOptions={[10, 20, 30]}
-						initialPageSize={10}
-					/>
+				<DataGridNoPagination columns={columns} rows={rows} isLoading={isLoading}   />
 				)}
 			</div>
 		</Box>

@@ -10,11 +10,13 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import styles from './MasterData.module.css';
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { useGetDeviceMasterQuery,usePostDeviceMasterMutation, useEditDeviceMasterMutation,useDeleteDeviceMasterMutation, useGetLocationMasterQuery } from '@/api/apiSlice';
+import { useGetDeviceMasterQuery,usePostDeviceMasterMutation, useEditDeviceMasterMutation,useDeleteDeviceMasterMutation, useGetLocationMasterQuery, useGetCarrierMasterQuery } from '@/api/apiSlice';
 import MassUpload from '../MassUpload/MassUpload';
 import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 import { Location } from './Locations';
+import { CarrierFormBE } from '../BusinessPartnersForms/CarriersForm';
+
 
 interface DeviceMasterValues {
   id: string;
@@ -53,9 +55,10 @@ const DeviceMaster: React.FC = () => {
   const [postDevice, {isLoading:postDeviceLoading}] = usePostDeviceMasterMutation();
   const [editDevice,{isLoading:editDeviceLoading}] = useEditDeviceMasterMutation();
   const [deleteDevice, { isLoading: deleteDeviceLoading }] = useDeleteDeviceMasterMutation()
-    const { data: locationsData } = useGetLocationMasterQuery({});
-    const getAllLocations =
-      locationsData?.locations.length > 0 ? locationsData?.locations : [];
+  const { data: locationsData } = useGetLocationMasterQuery({});
+  const { data: carriersData } = useGetCarrierMasterQuery({});
+  const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
+  const getAllCarriers = carriersData?.carriers.length > 0 ? carriersData?.carriers : [];
   console.log("device data :", data)
     if (isLoading) {
     console.log("Loading devices...");
@@ -355,7 +358,7 @@ const handleDelete = async (row: DeviceMasterValues) => {
               </Grid>
 
               {/* Carrier ID */}
-              <Grid item xs={12} sm={6} md={2.4}>
+              {/* <Grid item xs={12} sm={6} md={2.4}>
                 <TextField
                   fullWidth size='small'
                   id="carrierId"
@@ -364,7 +367,39 @@ const handleDelete = async (row: DeviceMasterValues) => {
                   value={formik.values.carrierId}
                   onChange={formik.handleChange}
                 />
-              </Grid>
+              </Grid> */}
+                	<Grid item xs={12} sm={6} md={2.4}>
+												<FormControl
+													fullWidth
+													size="small"
+													error={
+														formik.touched.carrierId && Boolean(formik.errors.carrierId)
+													}
+												>
+													<InputLabel>Carrier ID</InputLabel>
+													<Select
+														label="Carrier ID"
+														name="carrierId"
+														value={formik.values.carrierId}
+														onChange={formik.handleChange}
+														onBlur={formik.handleBlur}
+													>
+					                  {getAllCarriers?.map((carrier: CarrierFormBE) => (
+                                        <MenuItem key={carrier?.carrier_ID} value={String(carrier.carrier_ID)}>
+                                          <Tooltip
+                                          title={`${carrier?.carrier_name}, ${carrier?.carrier_address}`}
+                                          placement="right"
+                                          >
+                                          <span style={{ flex: 1 }}>{carrier?.carrier_ID}</span>
+                                          </Tooltip>
+                                        </MenuItem>
+                                        ))}
+													</Select>
+													{formik.touched.carrierId && formik.errors.carrierId && (
+														<FormHelperText>{formik.errors.carrierId}</FormHelperText>
+													)}
+												</FormControl>
+								</Grid>
 
               {/* Location ID */}
               {/* <Grid item xs={12} sm={6} md={2.4}>
@@ -393,30 +428,29 @@ const handleDelete = async (row: DeviceMasterValues) => {
 														onChange={formik.handleChange}
 														onBlur={formik.handleBlur}
 													>
-													{getAllLocations.map((location:Location) => (
-														<Tooltip
-														key={location.loc_ID}
-														title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-														placement="right"
-														>
-														<MenuItem value={location.loc_ID}>
-															{location.loc_ID}
-														</MenuItem>
-														</Tooltip>
-													))}
+					                  {getAllLocations?.map((location: Location) => (
+                                        <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                          <Tooltip
+                                          title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                          placement="right"
+                                          >
+                                          <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                          </Tooltip>
+                                        </MenuItem>
+                            ))}
 													</Select>
 													{formik.touched.locationId && formik.errors.locationId && (
 														<FormHelperText>{formik.errors.locationId}</FormHelperText>
 													)}
 												</FormControl>
-											</Grid>
+								</Grid>
             </Grid>
-         <Box mt={3} textAlign="center">
+        <Box mt={3} textAlign="center">
             <Button variant="contained" color="primary" type="submit">
               {isEditing ? "Update device" : "Create device"}
             </Button>
             <Button
-              variant="contained"
+              variant="outlined"
               color="secondary"
               onClick={() => {
                 formik.resetForm();

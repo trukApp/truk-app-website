@@ -37,19 +37,18 @@ interface PackageInfo {
 }
 
 const PackagingForm = () => {
-    const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
-        const rowCount = 20
-      const [snackbarOpen, setSnackbarOpen] = useState(false);
-      const [snackbarMessage, setSnackbarMessage] = useState("");
-      const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
+  const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
   const [isEditing, setIsEditing] = useState(false);
   const [editRow,setEditRow] = useState<PackageInfo | null>(null); ;
   const [showForm, setShowForm] = useState(false);
   const { data, error, isLoading } = useGetPackageMasterQuery({page: paginationModel.page + 1, limit: paginationModel.pageSize})
+  const { data: allData} = useGetPackageMasterQuery({});
   const [postPackage, {isLoading:postPackageLoading}] = usePostPackageMasterMutation()
   const [editPackage,{isLoading:editPackageLoading}] = useEditPackageMasterMutation()
   const [deletePackage,{isLoading:deletePackageLoading}] = useDeletePackageMasterMutation()
-  // const unitsofMeasurement = ['meter', 'centi meter', 'milli meter', 'inch']
   const unitsofMeasurement = useSelector((state: RootState) => state.auth.unitsofMeasurement);
   
   console.log('package data :', data?.packages)
@@ -383,7 +382,7 @@ const rows = data?.packages.map((packageItem :Package) => ({
                 {isEditing ? "Update package" : "Create pacakage"}
               </Button>
               <Button
-                  variant="contained"
+                  variant="outlined"
                   color="secondary"
                   onClick={() => {
                         formik.resetForm()
@@ -404,13 +403,14 @@ const rows = data?.packages.map((packageItem :Package) => ({
           <DataGridSkeletonLoader columns={columns} />
         ) : (
          <DataGridComponent
-                                     columns={columns}
-                                     rows={rows}
-                                     isLoading={isLoading}
-                                     paginationModel={paginationModel}
-                                     rowCount={rowCount}
-                                     onPaginationModelChange={handlePaginationModelChange}
-                                   />
+              columns={columns}
+              rows={rows}
+              rowCount={allData && allData?.length}
+              isLoading={isLoading}
+              paginationModel={paginationModel}
+              activeEntity='packages'
+              onPaginationModelChange={handlePaginationModelChange}
+          />
         )}
         </div>
     </>

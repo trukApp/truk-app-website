@@ -17,13 +17,14 @@ import {
     Select,
     FormHelperText,
     IconButton,
+    Tooltip,
 } from '@mui/material';
 import style from './productmaster.module.css';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 // import { GridColDef } from '@mui/x-data-grid';
 import { DataGridComponent } from '@/Components/GridComponent';
-import { useCreateProductMutation, useDeleteProductMutation, useEditProductMutation, useGetAllProductsQuery, useGetLocationMasterQuery } from '@/api/apiSlice';
+import { useCreateProductMutation, useDeleteProductMutation, useEditProductMutation, useGetAllProductsQuery, useGetLocationMasterQuery, useGetPackageMasterQuery } from '@/api/apiSlice';
 import { GridCellParams, GridPaginationModel } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -32,6 +33,8 @@ import { RootState } from '@/store';
 import MassUpload from '@/Components/MassUpload/MassUpload';
 import DataGridSkeletonLoader from '@/Components/ReusableComponents/DataGridSkeletonLoader';
 import SnackbarAlert from '@/Components/ReusableComponents/SnackbarAlerts';
+import { Location } from '@/Components/MasterDataComponents/Locations';
+import { Package } from '@/Components/MasterDataComponents/PackagingInfo';
 
 export interface PackagingType {
     pac_ID: string;
@@ -82,24 +85,6 @@ export interface Product {
     quantity: number;
     destination: string;
 }
-interface Location {
-    city: string;
-    country: string;
-    gln_code: string;
-    iata_code: string;
-    latitude: string;
-    loc_ID: string;
-    loc_desc: string;
-    loc_type: string;
-    // location_id: number;
-    longitude: string;
-    pincode: string;
-    state: string;
-    time_zone: string;
-    productDescription: string;
-    temp_controlled: boolean;
-    hazardous: boolean;
-}
 
 const ProductMasterPage = () => {
      const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
@@ -139,10 +124,12 @@ const ProductMasterPage = () => {
     const { data: productsData, error: allProductsFectchingError , isLoading } = useGetAllProductsQuery({page: paginationModel.page + 1, limit: paginationModel.pageSize})
     const [showForm, setShowForm] = useState(false);
     const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery({})
+    const { data: packagesData,  } = useGetPackageMasterQuery({})
     const [createNewProduct] = useCreateProductMutation();
     const [deleteProduct] = useDeleteProductMutation()
     const [updateProductDetails] = useEditProductMutation();
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
+    const getAllPackages = packagesData?.packages.length > 0 ? packagesData?.packages : []
     const allProductsData = productsData?.products || [];
 
     console.log("updateRecord: ", updateRecordData)
@@ -684,8 +671,6 @@ const handleDelete = async (row: Product) => {
                                             onBlur={handleBlur}
                                         />
                                     </Grid>
-
-
                                 </Grid>
 
                                 <Typography variant="h6" className={style.basicDetailsHeading}>
@@ -702,18 +687,22 @@ const handleDelete = async (row: Product) => {
                                                 onChange={(e) => setFieldValue('locationId', e.target.value)}
                                                 onBlur={handleBlur}
                                             >
-                                                {getAllLocations.map((location: Location) => (
-                                                    <MenuItem key={location.loc_ID} value={location.loc_ID}>
-                                                        {location.loc_ID}
-                                                    </MenuItem>
-                                                ))}
+                                            {getAllLocations?.map((location: Location) => (
+                                                <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                                        <Tooltip
+                                                            title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                                            placement="right">
+                                                            <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                                        </Tooltip>
+                                                </MenuItem>
+                                            ))}
                                             </Select>
                                             {touched.locationId && errors.locationId && (
                                                 <FormHelperText>{errors.locationId}</FormHelperText>
                                             )}
                                         </FormControl>
                                     </Grid>
-                                    <Grid item xs={12} sm={6} md={2.4} >
+                                    {/* <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
                                             fullWidth size='small'
                                             label="Packaging Type"
@@ -722,6 +711,31 @@ const handleDelete = async (row: Product) => {
                                             onChange={handleChange}
                                             onBlur={handleBlur}
                                         />
+                                    </Grid> */}
+                                    <Grid item xs={12} sm={6} md={2.4}>
+                                        <FormControl fullWidth size="small" error={touched.locationId && Boolean(errors.locationId)}>
+                                            <InputLabel>Packaging Type</InputLabel>
+                                            <Select
+                                                label="Packaging Type"
+                                                name="packagingType"
+                                                value={values.packagingType}
+                                                onChange={(e) => setFieldValue('packagingType', e.target.value)}
+                                                onBlur={handleBlur}
+                                            >
+                                            {getAllPackages?.map((packages: Package) => (
+                                                <MenuItem key={packages.pac_ID} value={String(packages.pac_ID)}>
+                                                        <Tooltip
+                                                            title={`${packages.packaging_type_name}, ${packages.dimensions}, ${packages.dimensions_uom}`}
+                                                            placement="right">
+                                                            <span style={{ flex: 1 }}>{packages.pac_ID}</span>
+                                                        </Tooltip>
+                                                </MenuItem>
+                                            ))}
+                                            </Select>
+                                            {touched.packagingType && errors.packagingType && (
+                                                <FormHelperText>{errors.packagingType}</FormHelperText>
+                                            )}
+                                        </FormControl>
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={2.4} >
                                         <FormControlLabel
@@ -808,14 +822,14 @@ const handleDelete = async (row: Product) => {
                                             {updateRecord ? "Update product" : "Create product"}
                                     </Button>
                                     <Button
-                                                variant="contained"
-                                                      color="secondary"
-                                                      onClick={() => {
-                                                            setFormInitialValues(productFormInitialValues)
-                                                            setUpdateRecord(false)
-                                                          }}
-                                                      style={{ marginLeft: "10px" }}>Reset
-                                                  </Button>
+                                        variant="outlined"
+                                        color="secondary"
+                                        onClick={() => {
+                                            setFormInitialValues(productFormInitialValues)
+                                            setUpdateRecord(false)
+                                        }}
+                                        style={{ marginLeft: "10px" }}>Reset
+                                    </Button>
                                 </Box>
                             </Form>
                         )

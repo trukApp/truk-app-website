@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TextField, Grid, Button, Collapse, Box, FormControlLabel, Checkbox, Select, MenuItem, FormHelperText, FormControl, InputLabel, SelectChangeEvent, Autocomplete, Backdrop, CircularProgress } from '@mui/material';
+import { TextField, Grid, Button, Collapse, Box, FormControlLabel, Checkbox, Select, MenuItem, FormHelperText, FormControl, InputLabel, SelectChangeEvent, Autocomplete, Backdrop, CircularProgress, Tooltip } from '@mui/material';
 import { Formik, Form, FormikProps } from 'formik';
 import * as Yup from 'yup';
 import styles from './BusinessPartners.module.css';
@@ -14,6 +14,7 @@ import IconButton from '@mui/material/IconButton';
 import MassUpload from '../MassUpload/MassUpload';
 import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
+import { Location } from '../MasterDataComponents/Locations';
 
 
 // Validation schema for CustomerForm
@@ -67,23 +68,6 @@ interface Customer {
     loc_ID: string
 }
 
-export interface Location {
-    city: string;
-    country: string;
-    gln_code: string;
-    iata_code: string;
-    latitude: string;
-    loc_ID: string;
-    loc_desc: string;
-    loc_type: string;
-    // location_id: number;
-    longitude: string;
-    pincode: string;
-    state: string;
-    time_zone: string;
-}
-
-
 const initialCustomerValues = {
     name: '',
     locationId: '',
@@ -105,7 +89,6 @@ const initialCustomerValues = {
 
 const CustomerForm: React.FC = () => {
     const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10, });
-    const rowCount = 20
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
@@ -410,13 +393,16 @@ const CustomerForm: React.FC = () => {
                                                 onChange={(event) => handleLocationChange(event, setFieldValue)}
                                                 onBlur={handleBlur}
                                             >
-                                                {getAllLocations.map((location: Location) => {
-                                                    return (
-                                                        <MenuItem key={location?.loc_ID} value={location?.loc_ID}>
-                                                            {location.loc_ID}
-                                                        </MenuItem>
-                                                    );
-                                                })}
+                                            {getAllLocations?.map((location: Location) => (
+                                                    <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                                        <Tooltip
+                                                            title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                                            placement="right"
+                                                            >
+                                                           <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                                        </Tooltip>
+                                                    </MenuItem>
+                                            ))}
                                             </Select>
                                             {touched.locationId && errors.locationId && (
                                                 <FormHelperText>{errors.locationId}</FormHelperText>
@@ -525,11 +511,15 @@ const CustomerForm: React.FC = () => {
                                                 onChange={(e) => setFieldValue('locationOfSource', e.target.value)}
                                                 onBlur={handleBlur}
                                             >
-                                                {getAllLocations.map((location: Location) => (
-                                                    <MenuItem key={location.loc_ID} value={location.loc_ID}>
-                                                        {location.loc_ID}
-                                                    </MenuItem>
-                                                ))}
+                                            {getAllLocations?.map((location: Location) => (
+                                                <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                                    <Tooltip
+                                                        title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                                        placement="right">
+                                                        <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                                    </Tooltip>
+                                                </MenuItem>
+                                            ))}
                                             </Select>
                                             {touched.locationOfSource && errors.locationOfSource && (
                                                 <FormHelperText>{errors.locationOfSource}</FormHelperText>
@@ -557,6 +547,11 @@ const CustomerForm: React.FC = () => {
                                             <Autocomplete
                                                 options={customersData}
                                                 getOptionLabel={(option) => `${option.customer_id}`}
+                                                renderOption={(props, option) => (
+                                                    <Tooltip placement='right' title={`${option.name}, ${option.location_city}, ${option.location_state}, ${option.location_country}, ${option.location_pincode}`} arrow>
+                                                        <li {...props}>{option.customer_id}</li>
+                                                    </Tooltip>
+                                                    )}
                                                 renderInput={(params) => (
                                                     <TextField
                                                         {...params}
@@ -581,7 +576,7 @@ const CustomerForm: React.FC = () => {
                                         <Button type="submit" variant="contained" color="primary">
                                             {updateRecord ? "Update record" : "Create record"}
                                         </Button>
-                                        <Button variant="contained"
+                                        <Button variant="outlined"
                                             color="secondary"
                                             onClick={() => {
                                                 setFormInitialValues(initialCustomerValues)
@@ -606,7 +601,7 @@ const CustomerForm: React.FC = () => {
                         rows={rows}
                         isLoading={isLoading}
                         paginationModel={paginationModel}
-                        rowCount={rowCount}
+                        activeEntity='customers'
                         onPaginationModelChange={handlePaginationModelChange}
                     />
                 )}

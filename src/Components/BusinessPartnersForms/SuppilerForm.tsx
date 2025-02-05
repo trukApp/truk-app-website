@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Button, Collapse, Grid, TextField, FormControlLabel, Checkbox, FormControl, InputLabel, MenuItem, Select, FormHelperText, SelectChangeEvent, Backdrop, CircularProgress } from '@mui/material';
+import { Box, Button, Collapse, Grid, TextField, FormControlLabel, Checkbox, FormControl, InputLabel, MenuItem, Select, FormHelperText, SelectChangeEvent, Backdrop, CircularProgress, Tooltip } from '@mui/material';
 import { Formik, Form, FormikProps } from 'formik';
 import * as Yup from 'yup';
 import { DataGridComponent } from '../GridComponent';
@@ -14,6 +14,7 @@ import IconButton from '@mui/material/IconButton';
 import MassUpload from '../MassUpload/MassUpload';
 import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
+import { Location } from '../MasterDataComponents/Locations';
 
 interface PartnerFunctions {
     forwarding_agent: string;
@@ -47,22 +48,6 @@ export interface Customer {
     correspondence: Correspondence;
 }
 
-interface Location {
-    city: string;
-    country: string;
-    gln_code: string;
-    iata_code: string;
-    latitude: string;
-    loc_ID: string;
-    loc_desc: string;
-    loc_type: string;
-    longitude: string;
-    pincode: string;
-    state: string;
-    time_zone: string;
-}
-
-
 const initialSupplierValues = {
     // supplierId: '',
     name: '',
@@ -84,7 +69,6 @@ const initialSupplierValues = {
 
 const SupplierForm: React.FC = () => {
     const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10, });
-    const rowCount = 20
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
@@ -422,13 +406,15 @@ const handleDelete = async (rowData: Customer) => {
                                                 onChange={(event) => handleLocationChange(event, setFieldValue)}
                                                 onBlur={handleBlur}
                                             >
-                                                {getAllLocations.map((location: Location) => {
-                                                    return (
-                                                        <MenuItem key={location?.loc_ID} value={location?.loc_ID}>
-                                                            {location.loc_ID}
-                                                        </MenuItem>
-                                                    );
-                                                })}
+                                            {getAllLocations?.map((location: Location) => (
+                                                    <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                                        <Tooltip
+                                                            title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                                            placement="right">
+                                                            <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                                        </Tooltip>
+                                                    </MenuItem>
+                                            ))}
                                             </Select>
                                             {touched.locationId && errors.locationId && (
                                                 <FormHelperText>{errors.locationId}</FormHelperText>
@@ -552,11 +538,15 @@ const handleDelete = async (rowData: Customer) => {
                                                 onChange={(e) => setFieldValue('locationOfSource', e.target.value)}
                                                 onBlur={handleBlur}
                                             >
-                                                {getAllLocations.map((location: Location) => (
-                                                    <MenuItem key={location.loc_ID} value={location.loc_ID}>
-                                                        {location.loc_ID}
-                                                    </MenuItem>
-                                                ))}
+                                                        {getAllLocations?.map((location: Location) => (
+                                                            <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                                                <Tooltip
+                                                                    title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                                                    placement="right">
+                                                                    <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                                                </Tooltip>
+                                                            </MenuItem>
+                                                                                        ))}
                                             </Select>
                                             {touched.locationOfSource && errors.locationOfSource && (
                                                 <FormHelperText>{errors.locationOfSource}</FormHelperText>
@@ -622,7 +612,7 @@ const handleDelete = async (rowData: Customer) => {
                                         <Button type="submit" variant="contained" color="primary">
                                             {updateRecord ?  "Update" : "Create" }
                                     </Button>
-                                       <Button variant="contained" color="secondary"
+                                       <Button variant="outlined" color="secondary"
                                                 onClick={() => {
                                                 setFormInitialValues(initialSupplierValues)
                                                 setUpdateRecord(false)
@@ -646,7 +636,7 @@ const handleDelete = async (rowData: Customer) => {
                     rows={rows}
                     isLoading={isLoading}
                     paginationModel={paginationModel}
-                    rowCount={rowCount}
+                    activeEntity='vendors'
                     onPaginationModelChange={handlePaginationModelChange}
                     />
                 )}

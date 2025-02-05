@@ -445,7 +445,7 @@ const handleDelete = async (row: DataGridRow) => {
                       helperText={touched.locationDescription && errors.locationDescription}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6} md={2.4}>
+                  {/* <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth
                     size="small"
@@ -484,8 +484,19 @@ const handleDelete = async (row: DataGridRow) => {
                       <option value="rail junction">Rail Junction</option>
                       <option value="border cross point">Border Cross Point</option>
                     </TextField>
-                  </Grid>
-
+                  </Grid> */}
+                
+                <Grid item xs={12} sm={6} md={2.4}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="Location type"
+                    name="locationType"
+                    value={values.locationType}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  />
+                </Grid>
 
                 <Grid item xs={12} sm={6} md={2.4}>
                   <TextField
@@ -574,10 +585,10 @@ const handleDelete = async (row: DataGridRow) => {
                         value={values.addressLine1}
                         onChange={handleChange}
                       onBlur={handleBlur}
-                      InputLabelProps={{ shrink: true }}
+                      // InputLabelProps={{ shrink: true }}
                       />
                   </Grid>
-                   <Grid item xs={12} sm={6} md={2.4}>
+                    <Grid item xs={12} sm={6} md={2.4}>
                       <TextField
                         fullWidth
                         size="small"
@@ -585,8 +596,7 @@ const handleDelete = async (row: DataGridRow) => {
                         name="addressLine2"
                         value={values.addressLine2}
                         onChange={handleChange}
-                      onBlur={handleBlur}
-                      InputLabelProps={{ shrink: true }}
+                        onBlur={handleBlur}
                       />
                     </Grid>
                     <Grid item xs={12} sm={6} md={2.4}>
@@ -740,7 +750,7 @@ const handleDelete = async (row: DataGridRow) => {
                 {isEditing ? "Update location" : "Create location"}
               </Button>
               <Button
-                  variant="contained"
+                  variant='outlined'
                   color="secondary"
                   onClick={() => {
                   formik.resetForm()

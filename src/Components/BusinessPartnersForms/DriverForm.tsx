@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Button, Collapse, Grid, TextField, FormControlLabel, Checkbox, MenuItem, SelectChangeEvent, FormControl, InputLabel, Select, FormHelperText, Backdrop, CircularProgress } from '@mui/material';
+import { Box, Button, Collapse, Grid, TextField, FormControlLabel, Checkbox, MenuItem, SelectChangeEvent, FormControl, InputLabel, Select, FormHelperText, Backdrop, CircularProgress, Tooltip } from '@mui/material';
 import { Formik, Form, FormikProps } from 'formik';
 import * as Yup from 'yup';
 import styles from './BusinessPartners.module.css';
@@ -14,7 +14,7 @@ import IconButton from '@mui/material/IconButton';
 import DriverMassUpload from '../MassUpload/DriverMassUpload';
 import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
-
+import { Location } from '../MasterDataComponents/Locations';
 interface DriverFormValues {
   driverName: string;
   locations: string[];
@@ -66,25 +66,6 @@ interface Driver {
   locationState: string;
   locationCity: string;
   locationCountry: string;
-}
-
-interface Location {
-  locations: string[];
-  city: string;
-  country: string;
-  gln_code: string;
-  iata_code: string;
-  latitude: string;
-  loc_ID: string;
-  address_1: string;
-  address_2: string;
-  loc_desc: string;
-  loc_type: string;
-  location_id: number;
-  longitude: string;
-  pincode: string;
-  state: string;
-  time_zone: string;
 }
 
 const initialDriverValues = {
@@ -437,11 +418,15 @@ const columns: GridColDef[] = [
                       onChange={(event) => handleLocationChange(event, setFieldValue)}
                       onBlur={handleBlur}
                     >
-                      {getAllLocations.map((location: Location) => (
-                        <MenuItem key={location?.loc_ID} value={location?.loc_ID}>
-                          {location.loc_ID}
-                        </MenuItem>
-                      ))}
+                    {getAllLocations?.map((location: Location) => (
+                          <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                              <Tooltip
+                                  title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                  placement="right">
+                                  <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                              </Tooltip>
+                            </MenuItem>
+                                                                ))}
                     </Select>
                     {touched.locations && errors.locations && (
                       <FormHelperText>{errors.locations}</FormHelperText>
@@ -635,7 +620,7 @@ const columns: GridColDef[] = [
                     <Button type="submit" variant="contained" color="primary">
                       {updateRecord ? "Update driver" : "Create driver"}
                   </Button>
-                          <Button variant="contained" color="secondary"
+                          <Button variant="outlined" color="secondary"
                                     onClick={() => {
                                     setFormInitialValues(initialDriverValues);
                                     setUpdateRecord(false)

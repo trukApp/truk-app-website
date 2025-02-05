@@ -14,6 +14,7 @@ import {
   MenuItem,
   Select,
   TextField,
+  Tooltip,
   Typography,
 
 } from '@mui/material';
@@ -69,6 +70,12 @@ interface LaneDetails {
 // }
 
 export interface Lane {
+  des_state: string;
+  des_city: string;
+  des_loc_desc: string;
+  src_state: string;
+  src_city: string;
+  src_loc_desc: string;
   des_loc_id: string;
   src_loc_id: string;
   des_loc_ID: string;
@@ -443,14 +450,24 @@ const rows = data?.lanes.map((lane:Lane) => ({
 														onChange={formik.handleChange}
 														onBlur={formik.handleBlur}
 													>
-														{getAllLocations.map((location: Location) => (
+														{/* {getAllLocations.map((location: Location) => (
 															<MenuItem
 																key={location.loc_ID}
 																value={location.loc_ID}
 															>
 																{location.loc_ID}
 															</MenuItem>
-														))}
+														))} */}
+                            {getAllLocations?.map((location: Location) => (
+                                    <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                      <Tooltip
+                                            title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                            placement="right"
+                                      >
+                                        <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                      </Tooltip>
+                                    </MenuItem>
+                            ))}
 													</Select>
 													{formik.touched.sourceLocationId && formik.errors.sourceLocationId && (
 														<FormHelperText>{formik.errors.sourceLocationId}</FormHelperText>
@@ -473,14 +490,16 @@ const rows = data?.lanes.map((lane:Lane) => ({
 														onChange={formik.handleChange}
 														onBlur={formik.handleBlur}
 													>
-														{getAllLocations.map((location: Location) => (
-															<MenuItem
-																key={location.loc_ID}
-																value={location.loc_ID}
-															>
-																{location.loc_ID}
-															</MenuItem>
-														))}
+                            {getAllLocations?.map((location: Location) => (
+                                    <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                      <Tooltip
+                                            title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                            placement="right"
+                                      >
+                                        <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                      </Tooltip>
+                                    </MenuItem>
+                            ))}
 													</Select>
 													{formik.touched.destinationLocationId && formik.errors.destinationLocationId && (
 														<FormHelperText>{formik.errors.destinationLocationId}</FormHelperText>
@@ -806,7 +825,7 @@ const rows = data?.lanes.map((lane:Lane) => ({
                    {isEditing ? "Update lane": "Create lane"}
               </Button>
               <Button
-                    variant="contained"
+                    variant="outlined"
                     color="secondary"
                     onClick={() => {
                     formik.resetForm()
