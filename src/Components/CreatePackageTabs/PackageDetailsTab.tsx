@@ -50,7 +50,7 @@ const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
 	console.log("productListFromRedux: ", productListFromRedux)
 	// Initial values
 	const initialValues: FormValues = {
-		packageDetails: productListFromRedux ? productListFromRedux : [
+		packageDetails: productListFromRedux.length > 0 ? productListFromRedux : [
 			{
 				productId: "",
 				productName: "",
@@ -68,7 +68,7 @@ const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
 	const handleFormSubmit = (values: FormValues, actions: FormikHelpers<FormValues>, onNext: (values: FormValues) => void) => {
 		console.log("Form submitted values:", values);
 		dispatch(setProductsList(values.packageDetails))
-		onNext(values); 
+		onNext(values);
 	};
 	return (
 		<Grid>
