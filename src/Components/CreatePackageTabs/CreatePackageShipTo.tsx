@@ -55,7 +55,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                     <Grid container spacing={2} className={styles.formsBgContainer}>
                         <h3 className={styles.mainHeading}>Location Details</h3>
                         <Grid container spacing={2}>
-                            <Grid item xs={12} sm={6}>
+                            <Grid item xs={12} md={2.4}>
                                 <Field
                                     name="shipFrom.locationId"
                                     as={TextField}
@@ -66,7 +66,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                     helperText={touched.shipFrom?.locationId && errors.shipFrom?.locationId}
                                 />
                             </Grid>
-                            <Grid item xs={12} sm={6}>
+                            <Grid item xs={12} md={2.4}>
                                 <Field
                                     name="shipFrom.locationDescription"
                                     as={TextField}
@@ -81,7 +81,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
 
                         <h3 className={styles.mainHeading}>Contact Information</h3>
                         <Grid container spacing={2}>
-                            <Grid item xs={12} sm={6}>
+                            <Grid item xs={12} md={2.4}>
                                 <Field
                                     name="shipFrom.contactPerson"
                                     as={TextField}
@@ -92,7 +92,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                     helperText={touched.shipFrom?.contactPerson && errors.shipFrom?.contactPerson}
                                 />
                             </Grid>
-                            <Grid item xs={12} sm={6}>
+                            <Grid item xs={12} md={2.4}>
                                 <Field
                                     name="shipFrom.phoneNumber"
                                     as={TextField}
@@ -103,7 +103,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                     helperText={touched.shipFrom?.phoneNumber && errors.shipFrom?.phoneNumber}
                                 />
                             </Grid>
-                            <Grid item xs={12} sm={6}>
+                            <Grid item xs={12} md={2.4}>
                                 <Field
                                     name="shipFrom.email"
                                     as={TextField}
@@ -118,7 +118,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
 
                         <h3 className={styles.mainHeading}>Address Information</h3>
                         <Grid container spacing={2}>
-                            <Grid item xs={12} sm={6}>
+                            <Grid item xs={12} md={2.4}>
                                 <Field
                                     name="shipFrom.addressLine1"
                                     as={TextField}
@@ -129,7 +129,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                     helperText={touched.shipFrom?.addressLine1 && errors.shipFrom?.addressLine1}
                                 />
                             </Grid>
-                            <Grid item xs={12} sm={6}>
+                            <Grid item xs={12} md={2.4}>
                                 <Field
                                     name="shipFrom.addressLine2"
                                     as={TextField}
@@ -137,7 +137,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                     fullWidth
                                 />
                             </Grid>
-                            <Grid item xs={12} sm={6}>
+                            <Grid item xs={12} md={2.4}>
                                 <Field
                                     name="shipFrom.city"
                                     as={TextField}
@@ -148,7 +148,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                     helperText={touched.shipFrom?.city && errors.shipFrom?.city}
                                 />
                             </Grid>
-                            <Grid item xs={12} sm={6}>
+                            <Grid item xs={12} md={2.4}>
                                 <Field
                                     name="shipFrom.state"
                                     as={TextField}
@@ -159,7 +159,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                     helperText={touched.shipFrom?.state && errors.shipFrom?.state}
                                 />
                             </Grid>
-                            <Grid item xs={12} sm={6}>
+                            <Grid item xs={12} md={2.4}>
                                 <Field
                                     name="shipFrom.country"
                                     as={TextField}
@@ -170,7 +170,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                     helperText={touched.shipFrom?.country && errors.shipFrom?.country}
                                 />
                             </Grid>
-                            <Grid item xs={12} sm={6}>
+                            <Grid item xs={12} md={2.4}>
                                 <Field
                                     name="shipFrom.pincode"
                                     as={TextField}
@@ -185,13 +185,13 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
 
                         <h3 className={styles.mainHeading}>Save Options</h3>
                         <Grid container spacing={2}>
-                            <Grid item xs={12} sm={6}>
+                            <Grid item xs={12} md={2.4}>
                                 <FormControlLabel
                                     control={<Field name="shipFrom.saveAsNewLocationId" type="checkbox" as={Checkbox} />}
                                     label="Save as new Location ID"
                                 />
                             </Grid>
-                            <Grid item xs={12} sm={6}>
+                            <Grid item xs={12} md={2.4}>
                                 <FormControlLabel
                                     control={<Field name="shipFrom.saveAsDefaultShipFromLocation" type="checkbox" as={Checkbox} />}
                                     label="Save as default Ship From Location"
