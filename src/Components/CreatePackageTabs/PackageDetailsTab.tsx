@@ -2,7 +2,8 @@ import React from "react";
 import { Formik, Form, Field, FieldArray, FieldProps, FormikHelpers } from "formik";
 import * as Yup from "yup";
 import { Button, Grid, TextField } from "@mui/material";
-
+import { useAppDispatch, useAppSelector } from "@/store";
+import { setProductsList } from "@/store/authSlice";
 interface PackingDetailsTab {
 	onNext: (values: FormValues) => void;
 	onBack: () => void;
@@ -23,21 +24,7 @@ interface FormValues {
 	packageDetails: PackageDetails[];
 }
 
-// Initial values
-const initialValues: FormValues = {
-	packageDetails: [
-		{
-			productId: "",
-			productName: "",
-			hsnCode: "",
-			rfid: "",
-			dimensions: "",
-			quantity: "",
-			weight: "",
-			packagingType: "",
-		},
-	],
-};
+
 
 // Validation schema
 const validationSchema = Yup.object().shape({
@@ -55,19 +42,41 @@ const validationSchema = Yup.object().shape({
 	),
 });
 
-const handleFormSubmit = (values: FormValues, actions: FormikHelpers<FormValues>, onNext: (values: FormValues) => void) => {
-    console.log("Form submitted values:", values);
-    onNext(values); 
-};
+
 
 const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
+	const dispatch = useAppDispatch()
+	const productListFromRedux = useAppSelector((state) => state.auth.packagesDetails)
+	console.log("productListFromRedux: ", productListFromRedux)
+	// Initial values
+	const initialValues: FormValues = {
+		packageDetails: productListFromRedux ? productListFromRedux : [
+			{
+				productId: "",
+				productName: "",
+				hsnCode: "",
+				rfid: "",
+				dimensions: "",
+				quantity: "",
+				weight: "",
+				packagingType: "",
+			},
+		],
+	};
+
+
+	const handleFormSubmit = (values: FormValues, actions: FormikHelpers<FormValues>, onNext: (values: FormValues) => void) => {
+		console.log("Form submitted values:", values);
+		dispatch(setProductsList(values.packageDetails))
+		// onNext(values); 
+	};
 	return (
 		<Grid>
 			<Formik<FormValues>
 				initialValues={initialValues}
 				validationSchema={validationSchema}
-			 
-                onSubmit={(values, actions) => handleFormSubmit(values, actions, onNext)}
+
+				onSubmit={(values, actions) => handleFormSubmit(values, actions, onNext)}
 			>
 				{({ values, handleSubmit }) => (
 					<Form onSubmit={handleSubmit}>
