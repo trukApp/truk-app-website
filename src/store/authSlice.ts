@@ -100,6 +100,16 @@ export interface IShipTo {
   state: string;
 }
 
+export interface IProductDetail {
+  productId: string;
+  productName: string;
+  hsnCode: string;
+  dimensions: string;
+  packagingType: string;
+  quantity: string;
+  rfid: string;
+  weight: string;
+}
 export interface IAuthState {
   authState: boolean;
   bablu: string;
@@ -111,6 +121,7 @@ export interface IAuthState {
   createOrderDesination: string;
   packageShipFrom: IShipFrom | null;
   packageShipTo: IShipTo | null;
+  packagesDetails: Array<IProductDetail>;
 }
 
 const initialState: IAuthState = {
@@ -124,6 +135,7 @@ const initialState: IAuthState = {
   createOrderDesination: "",
   packageShipFrom: null,
   packageShipTo: null,
+  packagesDetails: [],
 };
 
 export const authSlice = createSlice({
@@ -162,6 +174,10 @@ export const authSlice = createSlice({
     setPackageShipTo: (state, action: PayloadAction<IShipFrom>) => {
       state.packageShipTo = action.payload;
     },
+    setProductsList: (state, action: PayloadAction<Array<IProductDetail>>) => {
+      console.log("Updating package details:", action.payload);
+      state.packagesDetails = action.payload;
+    },
   },
 });
 
@@ -176,6 +192,7 @@ export const {
   setCreateOrderDesination,
   setPackageShipFrom,
   setPackageShipTo,
+  setProductsList,
 } = authSlice.actions;
 
 export const authReducer = authSlice.reducer;
