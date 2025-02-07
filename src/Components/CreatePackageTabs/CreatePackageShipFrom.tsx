@@ -13,7 +13,13 @@ interface ShipFromProps {
     // onBack: () => void;
 }
 
-const validationSchema = Yup.object({
+
+
+const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
+    const dispatch = useAppDispatch()
+    const shipFromReduxValues = useAppSelector((state) => state.auth.packageShipFrom)
+    console.log("shipFromReduxValues: ", shipFromReduxValues)
+    const validationSchema = Yup.object({
     shipFrom: Yup.object({
         locationId: Yup.string().required('Location ID is required'),
         locationDescription: Yup.string().required('Location Description is required'),
@@ -29,11 +35,6 @@ const validationSchema = Yup.object({
         saveAsDefaultShipFromLocation: Yup.boolean(),
     })
 });
-
-const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
-    const dispatch = useAppDispatch()
-    const shipFromReduxValues = useAppSelector((state) => state.auth.packageShipFrom)
-    console.log("shipFromReduxValues: ", shipFromReduxValues)
     return (
         <Formik
             initialValues={{
@@ -62,9 +63,10 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
             }}
         >
             {({ touched, errors, handleSubmit }) => (
-                <Form>
-                    <Grid container spacing={2} className={styles.formsBgContainer}>
+                <Form className={styles.formsBgContainer}>
+                    <Grid container spacing={2}  >
                         <h3 className={styles.mainHeading}>Location Details</h3>
+                        {/* <Typography variant='h6'>Location Details</Typography> */}
                         <Grid container spacing={2}>
                             <Grid item xs={12} md={2.4}>
                                 <Field
@@ -72,7 +74,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                                     as={TextField}
                                     label="Location ID"
                                     fullWidth size='small'
-                                    required
+                                    
                                     error={touched.shipFrom?.locationId && Boolean(errors.shipFrom?.locationId)}
                                     helperText={touched.shipFrom?.locationId && errors.shipFrom?.locationId}
                                 />
@@ -83,7 +85,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                                     as={TextField}
                                     label="Location Description"
                                     fullWidth size='small'
-                                    required
+                                    
                                     error={touched.shipFrom?.locationDescription && Boolean(errors.shipFrom?.locationDescription)}
                                     helperText={touched.shipFrom?.locationDescription && errors.shipFrom?.locationDescription}
                                 />
@@ -98,7 +100,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                                     as={TextField}
                                     label="Contact Person"
                                     fullWidth size='small'
-                                    required
+                                    
                                     error={touched.shipFrom?.contactPerson && Boolean(errors.shipFrom?.contactPerson)}
                                     helperText={touched.shipFrom?.contactPerson && errors.shipFrom?.contactPerson}
                                 />
@@ -109,7 +111,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                                     as={TextField}
                                     label="Phone Number"
                                     fullWidth size='small'
-                                    required
+                                    
                                     error={touched.shipFrom?.phoneNumber && Boolean(errors.shipFrom?.phoneNumber)}
                                     helperText={touched.shipFrom?.phoneNumber && errors.shipFrom?.phoneNumber}
                                 />
@@ -120,7 +122,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                                     as={TextField}
                                     label="Email Address"
                                     fullWidth size='small'
-                                    required
+                                    
                                     error={touched.shipFrom?.email && Boolean(errors.shipFrom?.email)}
                                     helperText={touched.shipFrom?.email && errors.shipFrom?.email}
                                 />
@@ -135,7 +137,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                                     as={TextField}
                                     label="Address Line 1"
                                     fullWidth size='small'
-                                    required
+                                    
                                     error={touched.shipFrom?.addressLine1 && Boolean(errors.shipFrom?.addressLine1)}
                                     helperText={touched.shipFrom?.addressLine1 && errors.shipFrom?.addressLine1}
                                 />
@@ -154,7 +156,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                                     as={TextField}
                                     label="City"
                                     fullWidth size='small'
-                                    required
+                                    
                                     error={touched.shipFrom?.city && Boolean(errors.shipFrom?.city)}
                                     helperText={touched.shipFrom?.city && errors.shipFrom?.city}
                                 />
@@ -165,7 +167,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                                     as={TextField}
                                     label="State"
                                     fullWidth size='small'
-                                    required
+                                    
                                     error={touched.shipFrom?.state && Boolean(errors.shipFrom?.state)}
                                     helperText={touched.shipFrom?.state && errors.shipFrom?.state}
                                 />
@@ -176,7 +178,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                                     as={TextField}
                                     label="Country"
                                     fullWidth size='small'
-                                    required
+                                    
                                     error={touched.shipFrom?.country && Boolean(errors.shipFrom?.country)}
                                     helperText={touched.shipFrom?.country && errors.shipFrom?.country}
                                 />
@@ -187,7 +189,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                                     as={TextField}
                                     label="Pincode"
                                     fullWidth size='small'
-                                    required
+                                    
                                     error={touched.shipFrom?.pincode && Boolean(errors.shipFrom?.pincode)}
                                     helperText={touched.shipFrom?.pincode && errors.shipFrom?.pincode}
                                 />
@@ -211,17 +213,11 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                         </Grid>
 
                         {/* Back & Next Buttons */}
-                        <Grid container spacing={2} justifyContent="space-between" marginTop={2}>
-                            <Grid item>
-                                <Button variant="outlined">
-                                    Back
-                                </Button>
-                            </Grid>
+                        <Grid container spacing={2} justifyContent="center" marginTop={2}>
                             <Grid item>
                                 <Button
                                     variant="contained"
-                                    color="primary"
-                                    // disabled={!isValid || !dirty}
+                                    color="primary" 
                                     onClick={() => handleSubmit()}
                                 >
                                     Next

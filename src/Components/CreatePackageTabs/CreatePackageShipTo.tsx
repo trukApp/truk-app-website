@@ -207,7 +207,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                         </Grid>
 
                         {/* Back & Next Buttons */}
-                        <Grid container spacing={2} justifyContent="space-between" marginTop={2}>
+                        <Grid container spacing={2} justifyContent="center" marginTop={2}>
                             <Grid item>
                                 <Button variant="outlined" onClick={onBack}>
                                     Back
