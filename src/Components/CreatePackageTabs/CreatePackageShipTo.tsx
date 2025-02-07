@@ -3,9 +3,11 @@ import { Formik, Form, Field } from 'formik';
 import { Grid, TextField, Checkbox, FormControlLabel, Button } from '@mui/material';
 import * as Yup from 'yup';
 import styles from './CreatePackage.module.css';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { IShipTo, setPackageShipTo } from '@/store/authSlice';
 
 interface ShipToProps {
-    onNext: (values: any) => void;
+    onNext: (values: IShipTo) => void;
     onBack: () => void;
 }
 
@@ -26,28 +28,33 @@ const validationSchema = Yup.object({
 });
 
 const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
+    const dispatch = useAppDispatch()
+    const shipToReduxValues = useAppSelector((state) => state.auth.packageShipTo)
+    console.log("shipFromReduxValues: ", shipToReduxValues)
     return (
         <Formik
             initialValues={{
-                shipFrom: {
-                    locationId: '',
-                    locationDescription: '',
-                    contactPerson: '',
-                    phoneNumber: '',
-                    email: '',
-                    addressLine1: '',
-                    addressLine2: '',
-                    city: '',
-                    state: '',
-                    country: '',
-                    pincode: '',
-                    saveAsNewLocationId: false,
-                    saveAsDefaultShipFromLocation: false,
-                }
+                shipFrom: shipToReduxValues ? shipToReduxValues :
+                    {
+                        locationId: '',
+                        locationDescription: '',
+                        contactPerson: '',
+                        phoneNumber: '',
+                        email: '',
+                        addressLine1: '',
+                        addressLine2: '',
+                        city: '',
+                        state: '',
+                        country: '',
+                        pincode: '',
+                        saveAsNewLocationId: false,
+                        saveAsDefaultShipFromLocation: false,
+                    }
             }}
             validationSchema={validationSchema}
             onSubmit={(values) => {
-                onNext(values);
+                dispatch(setPackageShipTo(values?.shipFrom))
+                onNext(values.shipFrom);
             }}
         >
             {({ errors, touched, handleSubmit }) => (
