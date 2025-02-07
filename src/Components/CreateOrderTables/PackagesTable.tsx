@@ -93,7 +93,7 @@ import { setCreateOrderDesination, setSelectedPackages } from '@/store/authSlice
 import { Product } from '@/app/productmaster/page';
 import { FormControl, Grid, InputLabel, MenuItem, Select } from '@mui/material';
 import { useGetLocationMasterQuery } from '@/api/apiSlice';
-import { Location } from '../BusinessPartnersForms/CustomerForm';
+import { Location } from '../MasterDataComponents/Locations';
 import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
 
 interface ProductsTableProps {

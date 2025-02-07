@@ -1,161 +1,231 @@
 'use client';
 import React from 'react';
-import { Field, Formik, Form, FormikHelpers } from 'formik';
-import { Grid, TextField, Button } from '@mui/material';
+import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
+import { Checkbox, FormControlLabel, Grid, TextField, Button } from '@mui/material';
 import styles from './CreatePackage.module.css';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { setPackageBillTo } from '@/store/authSlice';
+import { IShipFrom } from '@/store/authSlice';
 
-interface PackageBillToTab {
-	onNext: (values: FormValues) => void;
-	onBack: () => void;
+interface ShipFromProps {
+    onNext: (values: IShipFrom) => void;
+    onBack: () => void;
 }
 
-interface BillTo {
-    locationId: string;
-    locationDescription: string;
-    detailedAddress: string;
-    contactPerson: string;
-    phoneNumber: string;
-    email: string;
-}
-
-interface FormValues {
-    billTo: BillTo;
-}
-
-// Initial Values
-const initialValues: FormValues = {
-    billTo: {
-        locationId: '',
-        locationDescription: '',
-        detailedAddress: '',
-        contactPerson: '',
-        phoneNumber: '',
-        email: '',
-    },
-};
-
-// Validation Schema
-const validationSchema = Yup.object().shape({
-    billTo: Yup.object().shape({
+const validationSchema = Yup.object({
+    shipFrom: Yup.object({
         locationId: Yup.string().required('Location ID is required'),
         locationDescription: Yup.string().required('Location Description is required'),
-        detailedAddress: Yup.string().required('Detailed Address is required'),
         contactPerson: Yup.string().required('Contact Person is required'),
-        phoneNumber: Yup.string()
-            .matches(/^[0-9]+$/, 'Phone Number must be numeric')
-            .min(10, 'Phone Number must be at least 10 digits')
-            .required('Phone Number is required'),
-        email: Yup.string().email('Invalid email format').required('Email is required'),
-    }),
+        phoneNumber: Yup.string().matches(/^\d{10}$/, 'Invalid phone number').required('Phone Number is required'),
+        email: Yup.string().email('Invalid email').required('Email is required'),
+        addressLine1: Yup.string().required('Address Line 1 is required'),
+        city: Yup.string().required('City is required'),
+        state: Yup.string().required('State is required'),
+        country: Yup.string().required('Country is required'),
+        pincode: Yup.string().matches(/^\d{6}$/, 'Invalid pincode').required('Pincode is required'),
+        saveAsNewLocationId: Yup.boolean(),
+        saveAsDefaultShipFromLocation: Yup.boolean(),
+    })
 });
 
-// Submit Handler
-const handleFormSubmit = (values: FormValues, actions: FormikHelpers<FormValues>, onNext: (values: FormValues) => void) => {
-    console.log('Form Submitted:', values);
-    onNext(values);
-};
-
-const BillTo: React.FC<PackageBillToTab> = ({ onNext, onBack })=> {
+const BillTo: React.FC<ShipFromProps> = ({ onNext,onBack }) => {
+    const dispatch = useAppDispatch()
+    const billToReduxValues = useAppSelector((state) => state.auth.packageBillTo)
+    console.log("shipFromReduxValues: ", billToReduxValues)
     return (
-        <Formik initialValues={initialValues}
+        <Formik
+            initialValues={{
+                shipFrom: billToReduxValues ? billToReduxValues :
+                    {
+                        locationId: '',
+                        locationDescription: '',
+                        contactPerson: '',
+                        phoneNumber: '',
+                        email: '',
+                        addressLine1: '',
+                        addressLine2: '',
+                        city: '',
+                        state: '',
+                        country: '',
+                        pincode: '',
+                        saveAsNewLocationId: false,
+                        saveAsDefaultShipFromLocation: false,
+                    }
+            }}
             validationSchema={validationSchema}
-            onSubmit={(values, actions) => handleFormSubmit(values, actions, onNext)}>
-            {({ touched, errors }) => (
-                <Form >
+            onSubmit={(values) => {
+                console.log("From values: ", values)
+                dispatch(setPackageBillTo(values?.shipFrom))
+                onNext(values.shipFrom);
+            }}
+        >
+            {({ touched, errors, handleSubmit }) => (
+                <Form>
                     <Grid container spacing={2} className={styles.formsBgContainer}>
-                        <h3 className={styles.mainHeading}>Billing Details</h3>
+                        <h3 className={styles.mainHeading}>Location Details</h3>
                         <Grid container spacing={2}>
                             <Grid item xs={12} md={2.4}>
                                 <Field
+                                    name="shipFrom.locationId"
                                     as={TextField}
-                                    name="billTo.locationId"
                                     label="Location ID"
-                                    fullWidth
-                                    size="small"
-                                    error={touched.billTo?.locationId && Boolean(errors.billTo?.locationId)}
-                                    helperText={touched.billTo?.locationId && errors.billTo?.locationId}
+                                    fullWidth size='small'
+                                    required
+                                    error={touched.shipFrom?.locationId && Boolean(errors.shipFrom?.locationId)}
+                                    helperText={touched.shipFrom?.locationId && errors.shipFrom?.locationId}
                                 />
                             </Grid>
                             <Grid item xs={12} md={2.4}>
                                 <Field
+                                    name="shipFrom.locationDescription"
                                     as={TextField}
-                                    name="billTo.locationDescription"
                                     label="Location Description"
-                                    fullWidth
-                                    size="small"
-                                    error={touched.billTo?.locationDescription && Boolean(errors.billTo?.locationDescription)}
-                                    helperText={touched.billTo?.locationDescription && errors.billTo?.locationDescription}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={2.4}>
-                                <Field
-                                    as={TextField}
-                                    name="billTo.detailedAddress"
-                                    label="Detailed Address with Pincode"
-                                    fullWidth
-                                    size="small"
-                                    error={touched.billTo?.detailedAddress && Boolean(errors.billTo?.detailedAddress)}
-                                    helperText={touched.billTo?.detailedAddress && errors.billTo?.detailedAddress}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={2.4}>
-                                <Field
-                                    as={TextField}
-                                    name="billTo.contactPerson"
-                                    label="Contact Person"
-                                    fullWidth
-                                    size="small"
-                                    error={touched.billTo?.contactPerson && Boolean(errors.billTo?.contactPerson)}
-                                    helperText={touched.billTo?.contactPerson && errors.billTo?.contactPerson}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={2.4}>
-                                <Field
-                                    as={TextField}
-                                    name="billTo.phoneNumber"
-                                    label="Phone Number"
-                                    fullWidth
-                                    size="small"
-                                    error={touched.billTo?.phoneNumber && Boolean(errors.billTo?.phoneNumber)}
-                                    helperText={touched.billTo?.phoneNumber && errors.billTo?.phoneNumber}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={2.4}>
-                                <Field
-                                    as={TextField}
-                                    name="billTo.email"
-                                    label="Email Address"
-                                    fullWidth
-                                    size="small"
-                                    error={touched.billTo?.email && Boolean(errors.billTo?.email)}
-                                    helperText={touched.billTo?.email && errors.billTo?.email}
+                                    fullWidth size='small'
+                                    required
+                                    error={touched.shipFrom?.locationDescription && Boolean(errors.shipFrom?.locationDescription)}
+                                    helperText={touched.shipFrom?.locationDescription && errors.shipFrom?.locationDescription}
                                 />
                             </Grid>
                         </Grid>
 
-                        {/* Submit Button */}
-                            <Grid
-                                container
-                                spacing={2}
-                                justifyContent="space-between"
-                                marginTop={2}
-                            >
-                        <Grid container spacing={2} justifyContent="space-between" marginTop={2}>
+                        <h3 className={styles.mainHeading}>Contact Information</h3>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12} md={2.4}>
+                                <Field
+                                    name="shipFrom.contactPerson"
+                                    as={TextField}
+                                    label="Contact Person"
+                                    fullWidth size='small'
+                                    required
+                                    error={touched.shipFrom?.contactPerson && Boolean(errors.shipFrom?.contactPerson)}
+                                    helperText={touched.shipFrom?.contactPerson && errors.shipFrom?.contactPerson}
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={2.4}>
+                                <Field
+                                    name="shipFrom.phoneNumber"
+                                    as={TextField}
+                                    label="Phone Number"
+                                    fullWidth size='small'
+                                    required
+                                    error={touched.shipFrom?.phoneNumber && Boolean(errors.shipFrom?.phoneNumber)}
+                                    helperText={touched.shipFrom?.phoneNumber && errors.shipFrom?.phoneNumber}
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={2.4}>
+                                <Field
+                                    name="shipFrom.email"
+                                    as={TextField}
+                                    label="Email Address"
+                                    fullWidth size='small'
+                                    required
+                                    error={touched.shipFrom?.email && Boolean(errors.shipFrom?.email)}
+                                    helperText={touched.shipFrom?.email && errors.shipFrom?.email}
+                                />
+                            </Grid>
+                        </Grid>
+
+                        <h3 className={styles.mainHeading}>Address Information</h3>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12} md={2.4}>
+                                <Field
+                                    name="shipFrom.addressLine1"
+                                    as={TextField}
+                                    label="Address Line 1"
+                                    fullWidth size='small'
+                                    required
+                                    error={touched.shipFrom?.addressLine1 && Boolean(errors.shipFrom?.addressLine1)}
+                                    helperText={touched.shipFrom?.addressLine1 && errors.shipFrom?.addressLine1}
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={2.4}>
+                                <Field
+                                    name="shipFrom.addressLine2"
+                                    as={TextField}
+                                    label="Address Line 2"
+                                    fullWidth size='small'
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={2.4}>
+                                <Field
+                                    name="shipFrom.city"
+                                    as={TextField}
+                                    label="City"
+                                    fullWidth size='small'
+                                    required
+                                    error={touched.shipFrom?.city && Boolean(errors.shipFrom?.city)}
+                                    helperText={touched.shipFrom?.city && errors.shipFrom?.city}
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={2.4}>
+                                <Field
+                                    name="shipFrom.state"
+                                    as={TextField}
+                                    label="State"
+                                    fullWidth size='small'
+                                    required
+                                    error={touched.shipFrom?.state && Boolean(errors.shipFrom?.state)}
+                                    helperText={touched.shipFrom?.state && errors.shipFrom?.state}
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={2.4}>
+                                <Field
+                                    name="shipFrom.country"
+                                    as={TextField}
+                                    label="Country"
+                                    fullWidth size='small'
+                                    required
+                                    error={touched.shipFrom?.country && Boolean(errors.shipFrom?.country)}
+                                    helperText={touched.shipFrom?.country && errors.shipFrom?.country}
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={2.4}>
+                                <Field
+                                    name="shipFrom.pincode"
+                                    as={TextField}
+                                    label="Pincode"
+                                    fullWidth size='small'
+                                    required
+                                    error={touched.shipFrom?.pincode && Boolean(errors.shipFrom?.pincode)}
+                                    helperText={touched.shipFrom?.pincode && errors.shipFrom?.pincode}
+                                />
+                            </Grid>
+                        </Grid>
+
+                        <h3 className={styles.mainHeading}>Save Options</h3>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12} md={2.4}>
+                                <FormControlLabel
+                                    control={<Field name="shipFrom.saveAsNewLocationId" type="checkbox" as={Checkbox} />}
+                                    label="Save as new Location ID"
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={2.4}>
+                                <FormControlLabel
+                                    control={<Field name="shipFrom.saveAsDefaultShipFromLocation" type="checkbox" as={Checkbox} />}
+                                    label="Save as default bill to location"
+                                />
+                            </Grid>
+                        </Grid>
+
+                        {/* Back & Next Buttons */}
+                        <Grid container spacing={2} justifyContent="center" marginTop={2}>
                             <Grid item>
-                                <Button variant="outlined" onClick={onBack}  >
+                                <Button variant="outlined" onClick={onBack}>
                                     Back
                                 </Button>
                             </Grid>
                             <Grid item>
                                 <Button
-                                    type="submit"
                                     variant="contained"
-                                    color="primary" 
+                                    color="primary"
+                                    // disabled={!isValid || !dirty}
+                                    onClick={() => handleSubmit()}
                                 >
                                     Next
                                 </Button>
-                            </Grid>
                             </Grid>
                         </Grid>
                     </Grid>

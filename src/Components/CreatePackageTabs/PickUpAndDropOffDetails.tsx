@@ -3,39 +3,46 @@ import React from 'react';
 import { Formik, Form, Field, FormikHelpers } from 'formik';
 import { Grid, TextField, Button } from '@mui/material';
 import * as Yup from 'yup';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { setPackagePickAndDropTimings } from '@/store/authSlice';
 
 interface PickupDropTab {
     onNext: (values: FormValues) => void;
     onBack: () => void;
 }
-// Define Form Values
-interface FormValues {
+export interface FormValues {
     pickupDateTime: string;
     dropoffDateTime: string;
     notes: string;
 }
 
-// Initial Values
-const initialValues: FormValues = {
-    pickupDateTime: '',
-    dropoffDateTime: '',
-    notes: '',
-};
 
-// Validation Schema
 const validationSchema = Yup.object({
     pickupDateTime: Yup.string().required('Pick up date & time is required'),
     dropoffDateTime: Yup.string().required('Drop off date & time is required'),
-    notes: Yup.string().max(300, 'Notes must be 300 characters or less'),
+    // notes: Yup.string().max(300, 'Notes must be 300 characters or less'),
 });
 
-const handleFormSubmit = (values: FormValues, actions: FormikHelpers<FormValues>, onNext: (values: FormValues) => void) => {
-    console.log('Form Submitted:', values);
-    onNext(values);
-    actions.setSubmitting(false);
-};
+
 
 const PickupDropoff: React.FC<PickupDropTab> = ({ onNext, onBack }) => {
+    const dispatch = useAppDispatch()
+    const packagePickUpAndDropTimingsFromRedux = useAppSelector((state) => state.auth.packagePickAndDropTimings)
+    console.log("packagePickUpAndDropTimingsFromRedux: ", packagePickUpAndDropTimingsFromRedux)
+
+    const initialValues: FormValues = packagePickUpAndDropTimingsFromRedux ? packagePickUpAndDropTimingsFromRedux : {
+        pickupDateTime: '',
+        dropoffDateTime: '',
+        notes: '',
+    };
+
+    const handleFormSubmit = (values: FormValues, actions: FormikHelpers<FormValues>, onNext: (values: FormValues) => void) => {
+        dispatch(setPackagePickAndDropTimings(values))
+        console.log('Form Submitted:', values);
+        onNext(values);
+        actions.setSubmitting(false);
+    };
+
     return (
         <Formik
             initialValues={initialValues}
@@ -82,13 +89,11 @@ const PickupDropoff: React.FC<PickupDropTab> = ({ onNext, onBack }) => {
                                 fullWidth
                                 multiline
                                 rows={3}
-                                error={touched.notes && Boolean(errors.notes)}
-                                helperText={touched.notes && errors.notes}
                             />
                         </Grid>
 
                         {/* Submit Button */}
-<Grid container spacing={2} justifyContent="space-between" marginTop={2}>
+                        <Grid container spacing={2} justifyContent="center" marginTop={2}>
                             <Grid item>
                                 <Button variant="outlined" onClick={onBack}  >
                                     Back
@@ -98,7 +103,7 @@ const PickupDropoff: React.FC<PickupDropTab> = ({ onNext, onBack }) => {
                                 <Button
                                     type="submit"
                                     variant="contained"
-                                    color="primary" 
+                                    color="primary"
                                 >
                                     Next
                                 </Button>
