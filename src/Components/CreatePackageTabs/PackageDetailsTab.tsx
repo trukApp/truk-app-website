@@ -154,7 +154,7 @@ const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
 						<Grid
 							container
 							spacing={2}
-							justifyContent="space-between"
+							justifyContent="center"
 							marginTop={2}
 						>
 							<Grid item>
