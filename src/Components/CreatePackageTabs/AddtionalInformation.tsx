@@ -72,7 +72,7 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
                                 name="additionalInfo.referenceId"
                                 label="Reference ID"
                                 fullWidth
-                                required
+                                
                                 size="small"
                                 error={touched.additionalInfo?.referenceId && Boolean(errors.additionalInfo?.referenceId)}
                                 helperText={touched.additionalInfo?.referenceId && errors.additionalInfo?.referenceId}
@@ -85,7 +85,7 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
                                 name="additionalInfo.invoiceNumber"
                                 label="Invoice #"
                                 fullWidth
-                                required
+                                
                                 size="small"
                                 error={touched.additionalInfo?.invoiceNumber && Boolean(errors.additionalInfo?.invoiceNumber)}
                                 helperText={touched.additionalInfo?.invoiceNumber && errors.additionalInfo?.invoiceNumber}
@@ -98,7 +98,7 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
                                 name="additionalInfo.poNumber"
                                 label="PO #"
                                 fullWidth
-                                required
+                                
                                 size="small"
                                 error={touched.additionalInfo?.poNumber && Boolean(errors.additionalInfo?.poNumber)}
                                 helperText={touched.additionalInfo?.poNumber && errors.additionalInfo?.poNumber}
@@ -111,7 +111,7 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
                                 name="additionalInfo.salesOrderNumber"
                                 label="Sales Order #"
                                 fullWidth
-                                required
+                                
                                 size="small"
                                 error={touched.additionalInfo?.salesOrderNumber && Boolean(errors.additionalInfo?.salesOrderNumber)}
                                 helperText={touched.additionalInfo?.salesOrderNumber && errors.additionalInfo?.salesOrderNumber}
@@ -124,26 +124,24 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
                                 name="additionalInfo.department"
                                 label="Department"
                                 fullWidth
-                                required
+                                
                                 size="small"
                                 error={touched.additionalInfo?.department && Boolean(errors.additionalInfo?.department)}
                                 helperText={touched.additionalInfo?.department && errors.additionalInfo?.department}
                             />
                         </Grid>
 
-                        <Grid item xs={12}>
-                            <FormControlLabel
-                                control={
-                                    <Field name="additionalInfo.returnLabel">
-                                        {({ field }: { field: any }) => (
-                                            <Checkbox {...field} checked={field.value} />
-                                        )}
-                                    </Field>
-                                }
-                                label="Return Label"
-                                labelPlacement="end"
-                            />
-                        </Grid>
+                            <Grid item xs={12}>
+                                <Field name="additionalInfo.returnLabel">
+                                    {({ field }: { field: { value: boolean; onChange: () => void; onBlur: () => void } }) => (
+                                        <FormControlLabel
+                                            control={<Checkbox {...field} checked={field.value} />}
+                                            label="Return Label"
+                                            labelPlacement="end"
+                                        />
+                                    )}
+                                </Field>
+                            </Grid>
 
                         {/* Navigation Buttons */}
                         <Grid container spacing={2} justifyContent="space-between" marginTop={2}>
