@@ -68,7 +68,7 @@ const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
 	const handleFormSubmit = (values: FormValues, actions: FormikHelpers<FormValues>, onNext: (values: FormValues) => void) => {
 		console.log("Form submitted values:", values);
 		dispatch(setProductsList(values.packageDetails))
-		// onNext(values); 
+		onNext(values); 
 	};
 	return (
 		<Grid>
