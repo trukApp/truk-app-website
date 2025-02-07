@@ -3,6 +3,12 @@ import { Formik, Form, Field, FieldArray, FieldProps } from "formik";
 import * as Yup from "yup";
 import { Button, Grid, TextField } from "@mui/material";
 
+
+interface PackingDetailsTab {
+    onNext: (values: any) => void;
+    onBack: () => void;
+}
+
 interface PackageDetails {
     productId: string;
     productName: string;
@@ -50,17 +56,20 @@ const validationSchema = Yup.object().shape({
     ),
 });
 
-const handleFormSubmit = (values:FormValues) => {
-    console.log("form submitted values :", values )
-}
+// const handleFormSubmit = (values:FormValues) => {
+//     console.log("form submitted values :", values )
+// }
 
-const PackageForm: React.FC = () => {
+const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
     return (
         <Grid>
             <Formik<FormValues>
             initialValues={initialValues}
             validationSchema={validationSchema}
-            onSubmit={handleFormSubmit}
+                onSubmit={(values) => {
+                console.log("form submitted values :", values )
+                onNext(values);
+            }}
         >
             {({ values, handleSubmit }) => (
                 <Form onSubmit={handleSubmit}>
@@ -127,11 +136,23 @@ const PackageForm: React.FC = () => {
                     </FieldArray>
 
                     {/* Submit Button */}
-                    <Grid item xs={12} style={{ marginTop: 10 }}>
-                        <Button type="submit" size='small' variant="contained" color="success">
-                            Next
-                        </Button>
-                    </Grid>
+                                          <Grid container spacing={2} justifyContent="space-between" marginTop={2}>
+                                              <Grid item>
+                                                  <Button variant="outlined" onClick={onBack}>
+                                                      Back
+                                                  </Button>
+                                              </Grid>
+                                              <Grid item>
+                                                  <Button
+                                                      variant="contained"
+                                                      color="primary"
+                                                      // disabled={!isValid || !dirty}
+                                                      onClick={() => handleSubmit()}
+                                                  >
+                                                      Next
+                                                  </Button>
+                                              </Grid>
+                                          </Grid>
                 </Form>
             )}
             </Formik>
