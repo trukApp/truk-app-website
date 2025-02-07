@@ -1,6 +1,8 @@
 // import { IPackage } from './authSlice';
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
+import { AdditionalInfo } from "@/Components/CreatePackageTabs/AddtionalInformation";
+import { FormValues } from "@/Components/CreatePackageTabs/PickUpAndDropOffDetails";
 export interface ITruck {
   id: number;
   ownerName: string;
@@ -110,6 +112,14 @@ export interface IProductDetail {
   rfid: string;
   weight: string;
 }
+
+export interface IPackageTax {
+  senderGSTN: string;
+  receiverGSTN: string;
+  carrierGSTN: string;
+  isSelfTransport: string;
+}
+
 export interface IAuthState {
   authState: boolean;
   bablu: string;
@@ -122,6 +132,10 @@ export interface IAuthState {
   packageShipFrom: IShipFrom | null;
   packageShipTo: IShipTo | null;
   packagesDetails: Array<IProductDetail>;
+  packageBillTo: IShipFrom | null;
+  packageAdditionalInfo: AdditionalInfo | null;
+  packagePickAndDropTimings: FormValues | null;
+  packageTax: IPackageTax | null;
 }
 
 const initialState: IAuthState = {
@@ -136,6 +150,10 @@ const initialState: IAuthState = {
   packageShipFrom: null,
   packageShipTo: null,
   packagesDetails: [],
+  packageBillTo: null,
+  packageAdditionalInfo: null,
+  packagePickAndDropTimings: null,
+  packageTax: null,
 };
 
 export const authSlice = createSlice({
@@ -178,6 +196,21 @@ export const authSlice = createSlice({
       console.log("Updating package details:", action.payload);
       state.packagesDetails = action.payload;
     },
+    setPackageBillTo: (state, action: PayloadAction<IShipFrom>) => {
+      state.packageBillTo = action.payload;
+    },
+    setPackageAddtionalInfo: (state, action: PayloadAction<AdditionalInfo>) => {
+      state.packageAdditionalInfo = action.payload;
+    },
+    setPackagePickAndDropTimings: (
+      state,
+      action: PayloadAction<FormValues>
+    ) => {
+      state.packagePickAndDropTimings = action.payload;
+    },
+    setPackageTax: (state, action: PayloadAction<IPackageTax>) => {
+      state.packageTax = action.payload;
+    },
   },
 });
 
@@ -193,6 +226,10 @@ export const {
   setPackageShipFrom,
   setPackageShipTo,
   setProductsList,
+  setPackageBillTo,
+  setPackageAddtionalInfo,
+  setPackagePickAndDropTimings,
+  setPackageTax,
 } = authSlice.actions;
 
 export const authReducer = authSlice.reducer;

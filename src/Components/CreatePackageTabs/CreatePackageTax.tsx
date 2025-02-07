@@ -3,6 +3,8 @@ import React from 'react';
 import { Formik, Form, Field, FormikHelpers } from 'formik';
 import { Grid, TextField, Button } from '@mui/material';
 import * as Yup from 'yup';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { setPackageTax } from '@/store/authSlice';
 
 interface TaxInfoValues {
     taxInfo: {
@@ -19,14 +21,7 @@ interface TaxInfoProps {
 }
 
 // Initial Values
-const initialValues: TaxInfoValues = {
-    taxInfo: {
-        senderGSTN: '',
-        receiverGSTN: '',
-        carrierGSTN: '',
-        isSelfTransport: '',
-    },
-};
+
 
 // Validation Schema
 const validationSchema = Yup.object().shape({
@@ -41,13 +36,28 @@ const validationSchema = Yup.object().shape({
 });
 
 // Submit Handler
-const handleSubmit = (values: TaxInfoValues, actions: FormikHelpers<TaxInfoValues>, onSubmit: (values: TaxInfoValues) => void) => {
-    console.log('Tax Info Submitted:', values);
-    actions.setSubmitting(false);
-    onSubmit(values)
-};
+
 
 const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
+    const dispatch = useAppDispatch()
+    const packageTaxFromRedux = useAppSelector((state) => state.auth.packageTax)
+    console.log("packageTaxFromRedux: ", packageTaxFromRedux)
+
+    const initialValues: TaxInfoValues = {
+        taxInfo: packageTaxFromRedux ? packageTaxFromRedux : {
+            senderGSTN: '',
+            receiverGSTN: '',
+            carrierGSTN: '',
+            isSelfTransport: '',
+        },
+    };
+
+    const handleSubmit = (values: TaxInfoValues, actions: FormikHelpers<TaxInfoValues>, onSubmit: (values: TaxInfoValues) => void) => {
+        console.log('Tax Info Submitted:', values);
+        dispatch(setPackageTax(values.taxInfo))
+        actions.setSubmitting(false);
+        onSubmit(values)
+    };
     return (
         <Formik
             initialValues={initialValues}
@@ -102,7 +112,7 @@ const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
                         </Grid>
 
                         {/* Navigation Buttons */}
-                        <Grid container spacing={2} justifyContent="space-between" marginTop={2}>
+                        <Grid container spacing={2} justifyContent="center" marginTop={2}>
                             <Grid item>
                                 <Button variant="outlined" onClick={onBack}>
                                     Back
