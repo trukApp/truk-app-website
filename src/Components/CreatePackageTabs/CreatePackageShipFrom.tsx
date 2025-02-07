@@ -4,9 +4,12 @@ import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { Checkbox, FormControlLabel, Grid, TextField, Button } from '@mui/material';
 import styles from './CreatePackage.module.css';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { setPackageShipFrom } from '@/store/authSlice';
+import { IShipFrom } from '@/store/authSlice';
 
 interface ShipFromProps {
-    onNext: (values: any) => void;
+    onNext: (values: IShipFrom) => void;
     // onBack: () => void;
 }
 
@@ -27,29 +30,35 @@ const validationSchema = Yup.object({
     })
 });
 
-const ShipFrom: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
+const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
+    const dispatch = useAppDispatch()
+    const shipFromReduxValues = useAppSelector((state) => state.auth.packageShipFrom)
+    console.log("shipFromReduxValues: ", shipFromReduxValues)
     return (
         <Formik
             initialValues={{
-                shipFrom: {
-                    locationId: '',
-                    locationDescription: '',
-                    contactPerson: '',
-                    phoneNumber: '',
-                    email: '',
-                    addressLine1: '',
-                    addressLine2: '',
-                    city: '',
-                    state: '',
-                    country: '',
-                    pincode: '',
-                    saveAsNewLocationId: false,
-                    saveAsDefaultShipFromLocation: false,
-                }
+                shipFrom: shipFromReduxValues ? shipFromReduxValues :
+                    {
+                        locationId: '',
+                        locationDescription: '',
+                        contactPerson: '',
+                        phoneNumber: '',
+                        email: '',
+                        addressLine1: '',
+                        addressLine2: '',
+                        city: '',
+                        state: '',
+                        country: '',
+                        pincode: '',
+                        saveAsNewLocationId: false,
+                        saveAsDefaultShipFromLocation: false,
+                    }
             }}
             validationSchema={validationSchema}
             onSubmit={(values) => {
-                onNext(values);
+                console.log("From values: ", values)
+                dispatch(setPackageShipFrom(values?.shipFrom))
+                onNext(values.shipFrom);
             }}
         >
             {({ touched, errors, handleSubmit }) => (
@@ -204,7 +213,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                         {/* Back & Next Buttons */}
                         <Grid container spacing={2} justifyContent="space-between" marginTop={2}>
                             <Grid item>
-                                <Button variant="outlined" onClick={onBack}>
+                                <Button variant="outlined">
                                     Back
                                 </Button>
                             </Grid>

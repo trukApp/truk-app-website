@@ -68,6 +68,38 @@ interface Product {
   packingLabel: boolean;
 }
 
+export interface IShipFrom {
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  contactPerson: string;
+  country: string;
+  email: string;
+  locationDescription: string;
+  locationId: string;
+  phoneNumber: string;
+  pincode: string;
+  saveAsDefaultShipFromLocation: boolean;
+  saveAsNewLocationId: boolean;
+  state: string;
+}
+
+export interface IShipTo {
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  contactPerson: string;
+  country: string;
+  email: string;
+  locationDescription: string;
+  locationId: string;
+  phoneNumber: string;
+  pincode: string;
+  saveAsDefaultShipFromLocation: boolean;
+  saveAsNewLocationId: boolean;
+  state: string;
+}
+
 export interface IAuthState {
   authState: boolean;
   bablu: string;
@@ -77,6 +109,8 @@ export interface IAuthState {
   unitsofMeasurement: string[];
   selectedPackages: Array<Product>;
   createOrderDesination: string;
+  packageShipFrom: IShipFrom | null;
+  packageShipTo: IShipTo | null;
 }
 
 const initialState: IAuthState = {
@@ -88,6 +122,8 @@ const initialState: IAuthState = {
   unitsofMeasurement: [],
   selectedPackages: [],
   createOrderDesination: "",
+  packageShipFrom: null,
+  packageShipTo: null,
 };
 
 export const authSlice = createSlice({
@@ -120,6 +156,12 @@ export const authSlice = createSlice({
       console.log("source location ", action.payload);
       state.createOrderDesination = action.payload;
     },
+    setPackageShipFrom: (state, action: PayloadAction<IShipFrom>) => {
+      state.packageShipFrom = action.payload;
+    },
+    setPackageShipTo: (state, action: PayloadAction<IShipFrom>) => {
+      state.packageShipTo = action.payload;
+    },
   },
 });
 
@@ -132,6 +174,8 @@ export const {
   setUnitsofMeasurement,
   setSelectedPackages,
   setCreateOrderDesination,
+  setPackageShipFrom,
+  setPackageShipTo,
 } = authSlice.actions;
 
 export const authReducer = authSlice.reducer;
