@@ -148,9 +148,10 @@ export const apiSlice = createApi({
 
     //  carrier master
     getCarrierMaster: builder.query({
-      query: () => ({
-        url: "carrier/all-carriers",
+      query: (params) => ({
+        url: `carrier/all-carriers`,
         method: "GET",
+        params
       }),
       providesTags: [{ type: "CARRIER", id: "LIST" }],
     }),
@@ -183,15 +184,12 @@ export const apiSlice = createApi({
 
     //  location master
     getLocationMaster: builder.query({
-      query: () => ({
-        url: "masLoc/all-locations",
+      query: (params) => ({
+        url: `masLoc/all-locations`,
         method: "GET",
+        params
       }),
       providesTags: [{ type: "LocationMaster", id: "LIST" }],
-    }),
-
-    getLocationById: builder.query<string, string>({
-      query: (locationId) => `masLoc/location-ID?loc_ID=${locationId}`,
     }),
 
     postLocationMaster: builder.mutation({
@@ -222,10 +220,13 @@ export const apiSlice = createApi({
 
     // vehciles master
     getVehicleMaster: builder.query({
-      query: () => ({
-        url: "vehicle/vehicles",
-        method: "GET",
-      }),
+      query: (params) => {
+        return {
+          url: `vehicle/vehicles`,
+          method: "GET",
+          params
+        };
+      },
       providesTags: [{ type: "VehicleMaster", id: "LIST" }],
     }),
 
@@ -257,9 +258,10 @@ export const apiSlice = createApi({
 
     // Package master
     getPackageMaster: builder.query({
-      query: () => ({
-        url: "package/get-all-packages",
+      query: (params) => ({
+        url: `package/get-all-packages`,
         method: "GET",
+        params
       }),
       providesTags: [{ type: "PackageMaster", id: "LIST" }],
     }),
@@ -292,9 +294,10 @@ export const apiSlice = createApi({
 
     // Lanes master
     getLanesMaster: builder.query({
-      query: () => ({
-        url: "lane/all-lanes",
+      query: (params) => ({
+        url: `lane/all-lanes`,
         method: "GET",
+        params
       }),
       providesTags: [{ type: "LaneMaster", id: "LIST" }],
     }),
@@ -327,9 +330,10 @@ export const apiSlice = createApi({
 
     // Device master
     getDeviceMaster: builder.query({
-      query: () => ({
-        url: "device/all-devices",
+      query: (params) => ({
+        url: `device/all-devices`,
         method: "GET",
+        params
       }),
       providesTags: [{ type: "DeviceMaster", id: "LIST" }],
     }),
@@ -362,9 +366,10 @@ export const apiSlice = createApi({
 
     //  UOM Master
     getUomMaster: builder.query({
-      query: () => ({
+      query: (params) => ({
         url: "masterUom/all-uom",
         method: "GET",
+        params
       }),
       providesTags: [{ type: "UomMaster", id: "LIST" }],
     }),
@@ -397,9 +402,10 @@ export const apiSlice = createApi({
 
     //Product Master
     getAllProducts: builder.query({
-      query: () => ({
-        url: "masterProducts/all-products",
+      query: (params) => ({
+        url: `masterProducts/all-products`,
         method: "GET",
+        params
       }),
       providesTags: [{ type: "ProductMaster", id: "LIST" }],
     }),
@@ -451,6 +457,14 @@ export const apiSlice = createApi({
       },
       invalidatesTags: [{ type: "CreateOrder", id: "LIST" }],
     }),
+
+    getDataCount: builder.query({
+      query: () => ({
+        url: `data/count-data`,
+        method: "GET",
+      }),
+      // providesTags: [{ type: "ProductMaster", id: "LIST" }],
+    }),
   }),
 });
 
@@ -471,7 +485,6 @@ export const {
   useEditCarrierMasterMutation,
   useDeleteCarrierMasterMutation,
   useGetLocationMasterQuery,
-  useGetLocationByIdQuery,
   usePostLocationMasterMutation,
   useEditLocationMasterMutation,
   useDeleteLocationMasterMutation,
@@ -500,4 +513,5 @@ export const {
   useDeleteProductMutation,
   useEditProductMutation,
   useSelectTheProductsMutation,
+  useGetDataCountQuery
 } = apiSlice;

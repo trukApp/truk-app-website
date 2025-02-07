@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Button, MenuItem, TextField, Select, FormControl, InputLabel, OutlinedInput, Grid, Typography, Collapse, IconButton, Backdrop, CircularProgress } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { GridColDef } from '@mui/x-data-grid';
+import { GridColDef, GridPaginationModel } from '@mui/x-data-grid';
 import { DataGridComponent } from '../GridComponent';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -14,7 +14,8 @@ import { useGetPackageMasterQuery,usePostPackageMasterMutation,useEditPackageMas
 import MassUpload from '../MassUpload/MassUpload';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
-import DataGridSkeletonLoader from '../LoaderComponent/DataGridSkeletonLoader';
+import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
+import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 export interface Package {
   handling_unit_type: string;
   dimensions: string;
@@ -36,20 +37,27 @@ interface PackageInfo {
 }
 
 const PackagingForm = () => {
+  const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
   const [isEditing, setIsEditing] = useState(false);
   const [editRow,setEditRow] = useState<PackageInfo | null>(null); ;
   const [showForm, setShowForm] = useState(false);
-  const { data, error, isLoading } = useGetPackageMasterQuery([])
+  const { data, error, isLoading } = useGetPackageMasterQuery({page: paginationModel.page + 1, limit: paginationModel.pageSize})
+  const { data: allData} = useGetPackageMasterQuery({});
   const [postPackage, {isLoading:postPackageLoading}] = usePostPackageMasterMutation()
   const [editPackage,{isLoading:editPackageLoading}] = useEditPackageMasterMutation()
   const [deletePackage,{isLoading:deletePackageLoading}] = useDeletePackageMasterMutation()
-  // const unitsofMeasurement = ['meter', 'centi meter', 'milli meter', 'inch']
   const unitsofMeasurement = useSelector((state: RootState) => state.auth.unitsofMeasurement);
   
   console.log('package data :', data?.packages)
   if (error) {
     console.log("err while getting package info :", error)
   }
+const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
+        setPaginationModel(newPaginationModel);
+        };
   const handleFormSubmit = async (values: PackageInfo) => {
     console.log("form submitted locations :", values)
 
@@ -78,18 +86,31 @@ const PackagingForm = () => {
                 console.log("edit response is ", response)
                 setShowForm(false)
                 formik.resetForm()
+                setIsEditing(false)
+                     setSnackbarMessage("Packaging info updated successfully!");
+                    setSnackbarSeverity("success");
+                    setSnackbarOpen(true);
               }
               else {
                 console.log("post create location ",body)
                 const response = await postPackage(body).unwrap();
                 setShowForm(false)
                 formik.resetForm()
+                setIsEditing(false)
+                     setSnackbarMessage("Packaging info created successfully!");
+                    setSnackbarSeverity("success");
+                    setSnackbarOpen(true);
                 console.log('response in post location:', response);
 
               }
           
         } catch (error) {
-            console.error('API Error:', error);
+          console.error('API Error:', error);
+          setIsEditing(false)
+          setShowForm(false)
+               setSnackbarMessage("Something went wrong! please try again");
+                    setSnackbarSeverity("error");
+                    setSnackbarOpen(true);
         }
 
   }
@@ -140,10 +161,13 @@ const handleDelete = async (row: PackageInfo) => {
   const packageId = row?.id;
   if (!packageId) {
     console.error("Row ID is missing");
+    setSnackbarMessage("Error: Package ID is missing!");
+    setSnackbarSeverity("error");
+    setSnackbarOpen(true);
     return;
   }
+
   const confirmed = window.confirm("Are you sure you want to delete this vehicle?");
-  
   if (!confirmed) {
     console.log("Delete canceled by user.");
     return;
@@ -152,10 +176,21 @@ const handleDelete = async (row: PackageInfo) => {
   try {
     const response = await deletePackage(packageId);
     console.log("Delete response:", response);
+
+    // Show success snackbar
+    setSnackbarMessage("Package deleted successfully!");
+    setSnackbarSeverity("success");
+    setSnackbarOpen(true);
   } catch (error) {
     console.error("Error deleting vehicle:", error);
+
+    // Show error snackbar
+    setSnackbarMessage("Failed to delete package. Please try again.");
+    setSnackbarSeverity("error");
+    setSnackbarOpen(true);
   }
 };
+
 
 const rows = data?.packages.map((packageItem :Package) => ({
   id: packageItem?.package_id,
@@ -206,7 +241,13 @@ const rows = data?.packages.map((packageItem :Package) => ({
         open={postPackageLoading || editPackageLoading || deletePackageLoading}
       >
         <CircularProgress color="inherit" />
-      </Backdrop>
+      </Backdrop>
+      <SnackbarAlert
+                open={snackbarOpen}
+                message={snackbarMessage}
+                severity={snackbarSeverity}
+                onClose={() => setSnackbarOpen(false)}
+            />
       <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
         <Button
           variant="contained"
@@ -341,7 +382,7 @@ const rows = data?.packages.map((packageItem :Package) => ({
                 {isEditing ? "Update package" : "Create pacakage"}
               </Button>
               <Button
-                  variant="contained"
+                  variant="outlined"
                   color="secondary"
                   onClick={() => {
                         formik.resetForm()
@@ -361,12 +402,14 @@ const rows = data?.packages.map((packageItem :Package) => ({
         {isLoading ? (
           <DataGridSkeletonLoader columns={columns} />
         ) : (
-          <DataGridComponent
-                columns={columns}
-                rows={rows}
-                isLoading={false}
-                pageSizeOptions={[10, 20, 30]}
-                initialPageSize={10}
+         <DataGridComponent
+              columns={columns}
+              rows={rows}
+              rowCount={allData && allData?.length}
+              isLoading={isLoading}
+              paginationModel={paginationModel}
+              activeEntity='packages'
+              onPaginationModelChange={handlePaginationModelChange}
           />
         )}
         </div>

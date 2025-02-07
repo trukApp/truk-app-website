@@ -16,15 +16,17 @@ export const locationColumnNames = [
 
 export const vehicleColumnNames = [
   { displayName: 'Location ID', key: 'loc_ID' },
-  { displayName: 'Unlimited Usage (1 if Yes, 0 if No)', key: 'unlimited_usage' },
+  { displayName: 'Is Unlimited Usage (if Yes type 1 else 0)', key: 'unlimited_usage' },
   { displayName: 'Number of Individual Resources (if unlimited is 0 only)', key: 'individual_resource' },
-  { displayName: 'Validity From', key: 'validity_from', nestedKey: 'transportation_details' },
-  { displayName: 'Validity To', key: 'validity_to', nestedKey: 'transportation_details' },
+  { displayName: 'Validity From (dd-mm-yyyy)', key: 'validity_from', nestedKey: 'transportation_details' },
+  { displayName: 'Validity To (dd-mm-yyyy)', key: 'validity_to', nestedKey: 'transportation_details' },
   { displayName: 'Vehicle Type', key: 'vehicle_type', nestedKey: 'transportation_details' },
   { displayName: 'Vehicle Group', key: 'vehicle_group', nestedKey: 'transportation_details' },
-  { displayName: 'Ownership', key: 'ownership', nestedKey: 'transportation_details' },
-  { displayName: 'Payload Weight', key: 'payload_weight', nestedKey: 'capacity' },
-  { displayName: 'Cubic Capacity', key: 'cubic_capacity', nestedKey: 'capacity' },
+  { displayName: 'Ownership (Self or Carrier)', key: 'ownership', nestedKey: 'transportation_details' },
+  { displayName: 'Payload Weight (Numeric)', key: 'payload_weight', nestedKey: 'capacity' },
+  { displayName: 'Payload Weight unit (unit only) ', key: 'payload_weight_unit', nestedKey: 'capacity' },
+  { displayName: 'Cubic Capacity (Numeric)', key: 'cubic_capacity', nestedKey: 'capacity' },
+  { displayName: 'Cubic Capacity unit (unit only)', key: 'cubic_capacity_unit', nestedKey: 'capacity' },
   { displayName: 'Interior Length', key: 'interior_length', nestedKey: 'capacity' },
   { displayName: 'Interior Width', key: 'interior_width', nestedKey: 'capacity' },
   { displayName: 'Interior Height', key: 'interior_height', nestedKey: 'capacity' },
@@ -34,12 +36,12 @@ export const vehicleColumnNames = [
   { displayName: 'Maximum length', key: 'max_length', nestedKey: 'physical_properties' },
   { displayName: 'Maximum width', key: 'max_width', nestedKey: 'physical_properties' },
   { displayName: 'Maximum height', key: 'max_height', nestedKey: 'physical_properties' },
-  { displayName: 'Downtime Starts From', key: 'downtime_starts_from', nestedKey: 'downtimes' },
-  { displayName: 'Downtime Ends', key: 'downtime_ends_from', nestedKey: 'downtimes' },
+  { displayName: 'Downtime Starts date ((dd-mm-yyyy))', key: 'downtime_starts_from', nestedKey: 'downtimes' },
+  { displayName: 'Downtime Ends date((dd-mm-yyyy))', key: 'downtime_ends_from', nestedKey: 'downtimes' },
   { displayName: 'Downtime Location', key: 'downtime_location', nestedKey: 'downtimes' },
   { displayName: 'Downtime Description', key: 'downtime_desc', nestedKey: 'downtimes' },
-  { displayName: 'Reason', key: 'reason', nestedKey: 'downtimes' },
-  { displayName: 'Cost Per Ton', key: 'cost_per_ton', nestedKey: 'additional_details' },
+  { displayName: 'Downtime Reason ', key: 'reason', nestedKey: 'downtimes' },
+  { displayName: 'Cost Per Ton (Rs.)', key: 'cost_per_ton', nestedKey: 'additional_details' },
 ];
 
 export const laneColumnNames = [
@@ -75,33 +77,33 @@ export const carrierColumnNames = [
   { displayName: 'Carrier Correspondence Name', key: 'name', nestedKey: 'carrier_correspondence' },
   { displayName: 'Carrier Correspondence Email', key: 'email', nestedKey: 'carrier_correspondence' },
   { displayName: 'Carrier Correspondence Phone', key: 'phone', nestedKey: 'carrier_correspondence' },
-  { displayName: 'Carrier Network Portal (if yes 0 else 1)', key: 'carrier_network_portal' },
+  { displayName: 'Is enrolled on Carrier Network Portal (if yes type 1 else 0)', key: 'carrier_network_portal' },
   { displayName: 'Vehicle Types Handling', key: 'vehicle_types_handling' },
   { displayName: 'Carrier Location of Operation', key: 'carrier_loc_of_operation' },
   { displayName: 'Carrier Lanes', key: 'carrier_lanes' }
 ]
 
 export const customerColumnNames = [
-  { displayName: "Name", key: "name" },
+  { displayName: "Customer name", key: "name" },
   { displayName: "Location ID", key: "loc_ID" },
   { displayName: "Contact Person", key: "contact_person", nestedKey: "correspondence" },
-  { displayName: "Contact Number", key: "contact_number", nestedKey: "correspondence" },
+  { displayName: "Contact mobile number (10 digits)", key: "contact_number", nestedKey: "correspondence" },
   { displayName: "Email", key: "email", nestedKey: "correspondence" },
-  { displayName: "Location of Source", key: "loc_of_source" },
-  { displayName: "POD Relevant", key: "pod_relevant" },
-  { displayName: "Ship-to Party", key: "ship_to_party", nestedKey: "partner_functions" },
-  { displayName: "Sold-to Party", key: "sold_to_party", nestedKey: "partner_functions" },
-  { displayName: "Bill-to Party", key: "bill_to_party", nestedKey: "partner_functions" },
+  { displayName: "Location of Source (Location id)", key: "loc_of_source" },
+  { displayName: "Is POD Relevant (if Yes type 1 else 0)", key: "pod_relevant" },
+  { displayName: "Ship-to Party (Customer id)", key: "ship_to_party", nestedKey: "partner_functions" },
+  { displayName: "Sold-to Party (Customer id)", key: "sold_to_party", nestedKey: "partner_functions" },
+  { displayName: "Bill-to Party (Customer id)", key: "bill_to_party", nestedKey: "partner_functions" },
 ];
 
 export const vendorColumnNames  = [
-  { displayName: 'Name', key: 'name' },
+  { displayName: 'Vendor name', key: 'name' },
   { displayName: 'Location ID', key: 'loc_ID' },
   { displayName: 'Contact Person', key: 'contact_person', nestedKey: 'correspondence' },
-  { displayName: 'Contact Number', key: 'contact_number', nestedKey: 'correspondence' },
+  { displayName: 'Contact mobile number (10 digits)', key: 'contact_number', nestedKey: 'correspondence' },
   { displayName: 'Email ID', key: 'email', nestedKey: 'correspondence' },
-  { displayName: 'Location of Source', key: 'loc_of_source' },
-  { displayName: 'POD Relevant', key: 'pod_relevant' },
+  { displayName: 'Location of Source (Location id)', key: 'loc_of_source' },
+  { displayName: 'Is POD Relevant (if Yes type 1 else 0)', key: 'pod_relevant' },
   { displayName: 'Ordering Address', key: 'ordering_address', nestedKey: 'partner_functions' },
   { displayName: 'Goods Supplier', key: 'goods_supplier', nestedKey: 'partner_functions' },
   { displayName: 'Forwarding Agent', key: 'forwarding_agent', nestedKey: 'partner_functions' }
@@ -116,7 +118,7 @@ export const driversColumnNames= [
   { displayName: 'Driver Contact Number (10 digits)',key: 'phone',nestedKey: 'driver_correspondence',},
   {displayName: 'Email ID (Valid email)',key: 'email',nestedKey: 'driver_correspondence',},
   { displayName: 'Vehicle Types', key: 'vehicle_types' },
-  { displayName: 'Is Logged in (1 if Yes, 0 if No)', key: 'logged_in' },
+  { displayName: 'Is Logged in (if Yes type 1 else 0)', key: 'logged_in' },
 ];
 
 export const productColumnNames = [

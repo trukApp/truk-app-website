@@ -6,28 +6,34 @@ import {
   Button,
   CircularProgress,
   Collapse,
+  FormControl,
+  FormHelperText,
   Grid,
   IconButton,
+  InputLabel,
   MenuItem,
+  Select,
   TextField,
+  Tooltip,
   Typography,
 
 } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { GridColDef } from '@mui/x-data-grid';
+import { GridColDef, GridPaginationModel } from '@mui/x-data-grid';
 import { DataGridComponent } from '../GridComponent';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import styles from './MasterData.module.css'
-import { useGetLanesMasterQuery, usePostLaneMasterMutation, useEditLaneMasterMutation, useDeleteLaneMasterMutation, } from '@/api/apiSlice';
+import { useGetLanesMasterQuery, usePostLaneMasterMutation, useEditLaneMasterMutation, useDeleteLaneMasterMutation, useGetLocationMasterQuery, } from '@/api/apiSlice';
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MassUpload from '../MassUpload/MassUpload';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store'; 
-import DataGridSkeletonLoader from '../LoaderComponent/DataGridSkeletonLoader';
-
+import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
+import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
+import { Location } from './Locations';
 
 interface LaneDetails {
   // General Data
@@ -64,6 +70,12 @@ interface LaneDetails {
 // }
 
 export interface Lane {
+  des_state: string;
+  des_city: string;
+  des_loc_desc: string;
+  src_state: string;
+  src_city: string;
+  src_loc_desc: string;
   des_loc_id: string;
   src_loc_id: string;
   des_loc_ID: string;
@@ -82,15 +94,22 @@ export interface Lane {
   
 }
 const TransportationLanes = () => {
+    const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
+      const [snackbarOpen, setSnackbarOpen] = useState(false);
+      const [snackbarMessage, setSnackbarMessage] = useState("");
+      const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const [showForm, setShowForm] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editRow, setEditRow] = useState<LaneDetails | null>(null);
-    const { data, error, isLoading } = useGetLanesMasterQuery([]);
+    const { data, error, isLoading } = useGetLanesMasterQuery({page: paginationModel.page + 1, limit: paginationModel.pageSize});
     const unitsofMeasurement = useSelector((state: RootState) => state.auth.unitsofMeasurement);
   
     const [postLane, {isLoading:postLaneLoading}] = usePostLaneMasterMutation();
     const [editLane,{isLoading:editLaneLoading}] = useEditLaneMasterMutation();
-    const [deleteLane,{isLoading:deleteLaneLoading}] = useDeleteLaneMasterMutation()
+  const [deleteLane, { isLoading: deleteLaneLoading }] = useDeleteLaneMasterMutation()
+  const { data: locationsData } = useGetLocationMasterQuery({});
+    const getAllLocations =
+      locationsData?.locations.length > 0 ? locationsData?.locations : [];
   
   console.log("all lanes :", data?.lanes)
 
@@ -99,6 +118,9 @@ const TransportationLanes = () => {
     // Handle the error case
   }
 
+    const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
+        setPaginationModel(newPaginationModel);
+        };
   const handleFormSubmit = async (values: LaneDetails) => {
     // console.log("form submitted lanes :", values)
 
@@ -138,16 +160,29 @@ const TransportationLanes = () => {
                 const response = await editLane({ body: editBody, laneId }).unwrap()
                 console.log("edit response is ", response)
                 formik.resetForm();
+                setIsEditing(false)
+                     setSnackbarMessage("Lanes updated successfully!");
+                    setSnackbarSeverity("success");
+                setSnackbarOpen(true);
+                setShowForm(false)
               }
               else {
                 console.log("post create lane ",body)
                   const response = await postLane(body).unwrap();
                   console.log('response in post lane:', response);
-                  formik.resetForm();
+                formik.resetForm();
+                     setSnackbarMessage("Lanes created successfully!");
+                    setSnackbarSeverity("success");
+                    setSnackbarOpen(true);
+                    setShowForm(false)
               }
           
         } catch (error) {
-            console.error('API Error:', error);
+          console.error('API Error:', error);
+               setSnackbarMessage("Something went wrong! please try again.");
+                setSnackbarSeverity("error");
+                setSnackbarOpen(true);
+                setShowForm(false)
         }
 
   }
@@ -163,8 +198,12 @@ const handleDelete = async (row: LaneDetails) => {
     const laneId = row?.id;
     if (!laneId) {
         console.error("Row ID is missing");
+        setSnackbarMessage("Error: Lane ID is missing!");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
         return;
     }
+
     const confirmed = window.confirm("Are you sure you want to delete this item?");
     if (!confirmed) {
         console.log("Delete canceled by user.");
@@ -174,10 +213,21 @@ const handleDelete = async (row: LaneDetails) => {
     try {
         const response = await deleteLane(laneId);
         console.log("Delete response:", response);
+
+        // Show success snackbar
+        setSnackbarMessage("Lane deleted successfully!");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
     } catch (error) {
         console.error("Error deleting lane:", error);
+
+        // Show error snackbar
+        setSnackbarMessage("Failed to delete lane. Please try again.");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
     }
 };
+
 
   const formik = useFormik({
     initialValues: {
@@ -338,7 +388,13 @@ const rows = data?.lanes.map((lane:Lane) => ({
         open={postLaneLoading || editLaneLoading || deleteLaneLoading}
       >
         <CircularProgress color="inherit" />
-      </Backdrop>
+      </Backdrop>
+      <SnackbarAlert
+                open={snackbarOpen}
+                message={snackbarMessage}
+                severity={snackbarSeverity}
+                onClose={() => setSnackbarOpen(false)}
+            />
       <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md:'24px' } }} align="center" gutterBottom>
           Transportation lanes master
       </Typography>
@@ -377,35 +433,79 @@ const rows = data?.lanes.map((lane:Lane) => ({
                       size="small"
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth
-                      id="sourceLocationId"
-                      name="sourceLocationId"
-                      label="Source Location ID*"
-                      value={formik.values.sourceLocationId}
-                      onChange={formik.handleChange}
-                      error={formik.touched.sourceLocationId && Boolean(formik.errors.sourceLocationId)}
-                      helperText={formik.touched.sourceLocationId && formik.errors.sourceLocationId}
-                      size="small"
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth
-                      id="destinationLocationId"
-                      name="destinationLocationId"
-                      label="Destination Location ID*"
-                      value={formik.values.destinationLocationId}
-                      onChange={formik.handleChange}
-                      error={
-                        formik.touched.destinationLocationId &&
-                        Boolean(formik.errors.destinationLocationId)
-                      }
-                      helperText={formik.touched.destinationLocationId && formik.errors.destinationLocationId}
-                      size="small"
-                    />
-                  </Grid>
+
+                	<Grid item xs={12} sm={6} md={2.4}>
+												<FormControl
+													fullWidth id='sourceLocationId'
+													size="small"
+													error={
+														formik.touched.sourceLocationId && Boolean(formik.errors.sourceLocationId)
+													}
+												>
+													<InputLabel>Source Location ID</InputLabel>
+													<Select
+														label="Source Location ID*"
+														name="sourceLocationId"
+														value={formik.values.sourceLocationId}
+														onChange={formik.handleChange}
+														onBlur={formik.handleBlur}
+													>
+														{/* {getAllLocations.map((location: Location) => (
+															<MenuItem
+																key={location.loc_ID}
+																value={location.loc_ID}
+															>
+																{location.loc_ID}
+															</MenuItem>
+														))} */}
+                            {getAllLocations?.map((location: Location) => (
+                                    <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                      <Tooltip
+                                            title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                            placement="right"
+                                      >
+                                        <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                      </Tooltip>
+                                    </MenuItem>
+                            ))}
+													</Select>
+													{formik.touched.sourceLocationId && formik.errors.sourceLocationId && (
+														<FormHelperText>{formik.errors.sourceLocationId}</FormHelperText>
+													)}
+												</FormControl>
+									</Grid>
+                	<Grid item xs={12} sm={6} md={2.4}>
+												<FormControl
+													fullWidth id='destinationLocationId'
+													size="small"
+													error={
+														formik.touched.destinationLocationId && Boolean(formik.errors.destinationLocationId)
+													}
+												>
+													<InputLabel>Destination Location ID</InputLabel>
+													<Select
+														label="Destination Location ID*"
+														name="destinationLocationId"
+														value={formik.values.destinationLocationId}
+														onChange={formik.handleChange}
+														onBlur={formik.handleBlur}
+													>
+                            {getAllLocations?.map((location: Location) => (
+                                    <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                      <Tooltip
+                                            title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                            placement="right"
+                                      >
+                                        <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                      </Tooltip>
+                                    </MenuItem>
+                            ))}
+													</Select>
+													{formik.touched.destinationLocationId && formik.errors.destinationLocationId && (
+														<FormHelperText>{formik.errors.destinationLocationId}</FormHelperText>
+													)}
+												</FormControl>
+									</Grid>
                 </Grid>
               </Box>
 
@@ -725,7 +825,7 @@ const rows = data?.lanes.map((lane:Lane) => ({
                    {isEditing ? "Update lane": "Create lane"}
               </Button>
               <Button
-                    variant="contained"
+                    variant="outlined"
                     color="secondary"
                     onClick={() => {
                     formik.resetForm()
@@ -758,12 +858,13 @@ const rows = data?.lanes.map((lane:Lane) => ({
           <DataGridSkeletonLoader columns={columns} />
         ) : (
           <DataGridComponent
-                columns={columns}
-                rows={rows}
-                isLoading={false}
-                pageSizeOptions={[10, 20, 30]}
-                initialPageSize={10}
-          />
+                          columns={columns}
+                          rows={rows}
+                          isLoading={isLoading}
+                          paginationModel={paginationModel}
+                          activeEntity='lanes'
+                          onPaginationModelChange={handlePaginationModelChange}
+                        />
         )}
       </div>
     </>

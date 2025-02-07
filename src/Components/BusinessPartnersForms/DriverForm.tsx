@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Button, Collapse, Grid, TextField, FormControlLabel, Checkbox, MenuItem, SelectChangeEvent, FormControl, InputLabel, Select, FormHelperText, Backdrop, CircularProgress } from '@mui/material';
+import { Box, Button, Collapse, Grid, TextField, FormControlLabel, Checkbox, MenuItem, SelectChangeEvent, FormControl, InputLabel, Select, FormHelperText, Backdrop, CircularProgress, Tooltip } from '@mui/material';
 import { Formik, Form, FormikProps } from 'formik';
 import * as Yup from 'yup';
 import styles from './BusinessPartners.module.css';
@@ -7,13 +7,14 @@ import { DataGridComponent } from '../GridComponent';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useDriverRegistrationMutation, useGetAllDriversDataQuery, useEditDriverMutation, useDeleteDriverMutation, useGetLocationMasterQuery } from '@/api/apiSlice';
-import { GridColDef } from '@mui/x-data-grid';
+import { GridColDef, GridPaginationModel } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import DriverMassUpload from '../MassUpload/DriverMassUpload';
-import DataGridSkeletonLoader from '../LoaderComponent/DataGridSkeletonLoader';
-
+import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
+import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
+import { Location } from '../MasterDataComponents/Locations';
 interface DriverFormValues {
   driverName: string;
   locations: string[];
@@ -67,25 +68,6 @@ interface Driver {
   locationCountry: string;
 }
 
-interface Location {
-  locations: string[];
-  city: string;
-  country: string;
-  gln_code: string;
-  iata_code: string;
-  latitude: string;
-  loc_ID: string;
-  address_1: string;
-  address_2: string;
-  loc_desc: string;
-  loc_type: string;
-  location_id: number;
-  longitude: string;
-  pincode: string;
-  state: string;
-  time_zone: string;
-}
-
 const initialDriverValues = {
   driverName: '',
   locations: [] as string[],
@@ -105,19 +87,23 @@ const initialDriverValues = {
 };
 
 const DriverForm: React.FC = () => {
+  const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
+      const [snackbarOpen, setSnackbarOpen] = useState(false);
+      const [snackbarMessage, setSnackbarMessage] = useState("");
+      const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
   const [driverRegistration,{isLoading:postDriverLoading}] = useDriverRegistrationMutation();
   const [editDriverDetails, {isLoading:editDriverLoading}] = useEditDriverMutation()
   const [deleteDriver, {isLoading:deleteDriverLoading}] = useDeleteDriverMutation()
   const [showForm, setShowForm] = useState(false);
   const [updateRecord, setUpdateRecord] = useState(false);
   const [formInitialValues, setFormInitialValues] = useState(initialDriverValues);
-  const [updateRecordData, setUpdateRecordData] = useState({});
+  // const [updateRecordData, setUpdateRecordData] = useState({});
   const [updateRecordId, setUpdateRecordId] = useState(0)
-  const { data, error, isLoading } = useGetAllDriversDataQuery({})
+  const { data, error, isLoading } = useGetAllDriversDataQuery({page: paginationModel.page + 1, limit: paginationModel.pageSize})
   console.log("all drivers data :", data?.drivers)
   const driversData = data?.drivers.length > 0 ? data?.drivers : []
 
-  const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery([])
+  const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery({})
   const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
   console.log("all locations :", locationsData?.locations)
   console.log("getLocationsError: ", getLocationsError)
@@ -132,7 +118,9 @@ const DriverForm: React.FC = () => {
   console.log("drivers", driversData)
 
 
-
+const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
+    setPaginationModel(newPaginationModel);
+    };
   const driverValidationSchema = Yup.object({
     driverName: Yup.string().required('Driver Name is required'),
     locations: Yup.array().of(Yup.string()).min(1, 'Location id is required'),
@@ -170,7 +158,7 @@ const mapRowToInitialValues = (rowData: Driver) => {
     console.log('Edit clicked for:', rowData);
     setShowForm(true)
     setUpdateRecord(true)
-    setUpdateRecordData(rowData)
+    // setUpdateRecordData(rowData)
     const updatedInitialValues = await mapRowToInitialValues(rowData);
 
     setUpdateRecordId(rowData?.id)
@@ -178,14 +166,17 @@ const mapRowToInitialValues = (rowData: Driver) => {
     setFormInitialValues(updatedInitialValues);
   };
 
-  const handleDelete = async (rowData: Driver) => {
+const handleDelete = async (rowData: Driver) => {
   const deleteId = rowData?.id;
   if (!deleteId) {
     console.error("Row ID is missing");
+    setSnackbarMessage("Error: Driver ID is missing!");
+    setSnackbarSeverity("error");
+    setSnackbarOpen(true);
     return;
   }
-  const confirmed = window.confirm("Are you sure you want to delete this vehicle?");
-  
+
+  const confirmed = window.confirm("Are you sure you want to delete this driver?");
   if (!confirmed) {
     console.log("Delete canceled by user.");
     return;
@@ -194,12 +185,20 @@ const mapRowToInitialValues = (rowData: Driver) => {
   try {
     const response = await deleteDriver(deleteId);
     console.log("Delete response:", response);
+
+    setSnackbarMessage("Driver deleted successfully!");
+    setSnackbarSeverity("success");
+    setSnackbarOpen(true);
   } catch (error) {
-    console.error("Error deleting vehicle:", error);
+    console.error("Error deleting driver:", error);
+    setSnackbarMessage("Failed to delete driver. Please try again.");
+    setSnackbarSeverity("error");
+    setSnackbarOpen(true);
   }
 };
 
-const driverColumns: GridColDef[] = [
+
+const columns: GridColDef[] = [
   { field: 'driverID', headerName: 'Driver ID', width: 150 },
   { field: 'driverName', headerName: 'Name', width: 200 },
   { field: 'locations', headerName: 'Location ID', width: 200 },
@@ -234,7 +233,7 @@ const driverColumns: GridColDef[] = [
 ];
 
 
-  const driversDataRows = driversData.map((driver: Driver) => ({
+  const rows = driversData.map((driver: Driver) => ({
     id: driver?.driver_id,
     driverID: driver?.dri_ID,
     driverName: driver?.driver_name,
@@ -278,7 +277,7 @@ const driverColumns: GridColDef[] = [
       };
 
       const editBody = {
-        ...updateRecordData,
+        // ...updateRecordData,
         locations: values?.locations,
         driver_name: values?.driverName,
         address: [values?.address1,values?.address2,values?.city,values?.state,values?.country,values?.pincode,].filter((part) => part).join(', ') ,
@@ -294,13 +293,16 @@ const driverColumns: GridColDef[] = [
 
       console.log('body: ', body);
       if (updateRecord) {
+        console.log("edit body :", editBody)
         const response = await editDriverDetails({ body: editBody, driverId: updateRecordId }).unwrap();
         console.log('API Response:', response);
         setFormInitialValues(initialDriverValues);
         setShowForm(false);
         setUpdateRecord(false);
         setUpdateRecordId(0);
-        setUpdateRecordData({});
+        setSnackbarMessage("Driver updated successfully!");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
       } else {
         console.log("post body for drivers :", body)
         const response = await driverRegistration(body).unwrap();
@@ -309,10 +311,15 @@ const driverColumns: GridColDef[] = [
         setShowForm(false);
         setUpdateRecord(false);
         setUpdateRecordId(0);
-        setUpdateRecordData({});
+        setSnackbarMessage("Driver created successfully!");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
       }
     } catch (error) {
-      console.error('API Error:', error);
+        console.error('API Error:', error);
+        setSnackbarMessage("Something went wrong! Please try again");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
     }
   };
 
@@ -358,7 +365,13 @@ const driverColumns: GridColDef[] = [
           open={postDriverLoading || editDriverLoading || deleteDriverLoading}
         >
           <CircularProgress color="inherit" />
-       </Backdrop>
+      </Backdrop>
+      <SnackbarAlert
+                open={snackbarOpen}
+                message={snackbarMessage}
+                severity={snackbarSeverity}
+                onClose={() => setSnackbarOpen(false)}
+            />
       <Box display="flex" justifyContent="flex-end" gap={2}>
         <Button
           variant="contained"
@@ -405,11 +418,15 @@ const driverColumns: GridColDef[] = [
                       onChange={(event) => handleLocationChange(event, setFieldValue)}
                       onBlur={handleBlur}
                     >
-                      {getAllLocations.map((location: Location) => (
-                        <MenuItem key={location?.loc_ID} value={location?.loc_ID}>
-                          {location.loc_ID}
-                        </MenuItem>
-                      ))}
+                    {getAllLocations?.map((location: Location) => (
+                          <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                              <Tooltip
+                                  title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                  placement="right">
+                                  <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                              </Tooltip>
+                            </MenuItem>
+                                                                ))}
                     </Select>
                     {touched.locations && errors.locations && (
                       <FormHelperText>{errors.locations}</FormHelperText>
@@ -603,7 +620,7 @@ const driverColumns: GridColDef[] = [
                     <Button type="submit" variant="contained" color="primary">
                       {updateRecord ? "Update driver" : "Create driver"}
                   </Button>
-                          <Button variant="contained" color="secondary"
+                          <Button variant="outlined" color="secondary"
                                     onClick={() => {
                                     setFormInitialValues(initialDriverValues);
                                     setUpdateRecord(false)
@@ -619,15 +636,16 @@ const driverColumns: GridColDef[] = [
 
         <div style={{ marginTop: "40px" }}>
         {isLoading ? (
-          <DataGridSkeletonLoader columns={driverColumns} />
+          <DataGridSkeletonLoader columns={columns} />
         ) : (
-          <DataGridComponent
-                columns={driverColumns}
-                rows={driversDataRows}
-                isLoading={false}
-                pageSizeOptions={[10, 20, 30]}
-                initialPageSize={10}
-          />
+              <DataGridComponent
+                          columns={columns}
+                          rows={rows}
+                          isLoading={isLoading}
+                          paginationModel={paginationModel}
+                          activeEntity='drivers'
+                          onPaginationModelChange={handlePaginationModelChange}
+              />
         )}
         </div>
 

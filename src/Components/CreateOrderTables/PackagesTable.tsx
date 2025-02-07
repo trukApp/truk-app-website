@@ -93,15 +93,15 @@ import { setCreateOrderDesination, setSelectedPackages } from '@/store/authSlice
 import { Product } from '@/app/productmaster/page';
 import { FormControl, Grid, InputLabel, MenuItem, Select } from '@mui/material';
 import { useGetLocationMasterQuery } from '@/api/apiSlice';
-import { Location } from '../BusinessPartnersForms/CustomerForm';
-import DataGridSkeletonLoader from '../LoaderComponent/DataGridSkeletonLoader';
+import { Location } from '../MasterDataComponents/Locations';
+import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
 
 interface ProductsTableProps {
     allProductsData: Product[];
     isProductsLoading: boolean;
 }
 
-const PackagesTable: React.FC<ProductsTableProps> = ({ allProductsData , isProductsLoading }) => {
+const PackagesTable: React.FC<ProductsTableProps> = ({ allProductsData, isProductsLoading }) => {
     const dispatch = useAppDispatch();
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
     const sourceLocation = useAppSelector((state) => state.auth.createOrderDesination);
@@ -136,7 +136,7 @@ const PackagesTable: React.FC<ProductsTableProps> = ({ allProductsData , isProdu
             field: 'fragile_goods',
             headerName: 'Fragile Goods',
             width: 180,
-            valueFormatter: (params: GridCellParams) => (params.value ? 'Yes' : 'No'),
+            valueFormatter: (params: GridCellParams) => (params?.value ? 'Yes' : 'No'),
         },
         {
             field: 'dangerous_goods',
@@ -198,21 +198,21 @@ const PackagesTable: React.FC<ProductsTableProps> = ({ allProductsData , isProdu
                 </FormControl>
             </Grid>
             <Grid sx={{ marginTop: '20px', marginBottom: '20px' }}>
-				{isProductsLoading ? (
-					<DataGridSkeletonLoader columns={columns} />
-				) : (
-					<DataGrid
-						columns={columns}
+                {isProductsLoading ? (
+                    <DataGridSkeletonLoader columns={columns} />
+                ) : (
+                    <DataGrid
+                        columns={columns}
                         rows={rows}
                         checkboxSelection
-						pageSizeOptions={[10, 20, 30]}
-						   rowSelectionModel={selectionModel}
-                    onRowSelectionModelChange={(model) =>
-                        handleSelectionChange(model as number[])
-                    }
-					/>
-				)}
-		
+                        pageSizeOptions={[10, 20, 30]}
+                        rowSelectionModel={selectionModel}
+                        onRowSelectionModelChange={(model) =>
+                            handleSelectionChange(model as number[])
+                        }
+                    />
+                )}
+
             </Grid>
         </div>
     );

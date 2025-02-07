@@ -17,20 +17,24 @@ import {
     Select,
     FormHelperText,
     IconButton,
+    Tooltip,
 } from '@mui/material';
 import style from './productmaster.module.css';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 // import { GridColDef } from '@mui/x-data-grid';
 import { DataGridComponent } from '@/Components/GridComponent';
-import { useCreateProductMutation, useDeleteProductMutation, useEditProductMutation, useGetAllProductsQuery, useGetLocationMasterQuery } from '@/api/apiSlice';
-import { GridCellParams } from '@mui/x-data-grid';
+import { useCreateProductMutation, useDeleteProductMutation, useEditProductMutation, useGetAllProductsQuery, useGetLocationMasterQuery, useGetPackageMasterQuery } from '@/api/apiSlice';
+import { GridCellParams, GridPaginationModel } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import MassUpload from '@/Components/MassUpload/MassUpload';
-import DataGridSkeletonLoader from '@/Components/LoaderComponent/DataGridSkeletonLoader';
+import DataGridSkeletonLoader from '@/Components/ReusableComponents/DataGridSkeletonLoader';
+import SnackbarAlert from '@/Components/ReusableComponents/SnackbarAlerts';
+import { Location } from '@/Components/MasterDataComponents/Locations';
+import { Package } from '@/Components/MasterDataComponents/PackagingInfo';
 
 export interface PackagingType {
     pac_ID: string;
@@ -81,26 +85,12 @@ export interface Product {
     quantity: number;
     destination: string;
 }
-interface Location {
-    city: string;
-    country: string;
-    gln_code: string;
-    iata_code: string;
-    latitude: string;
-    loc_ID: string;
-    loc_desc: string;
-    loc_type: string;
-    // location_id: number;
-    longitude: string;
-    pincode: string;
-    state: string;
-    time_zone: string;
-    productDescription: string;
-    temp_controlled: boolean;
-    hazardous: boolean;
-}
 
 const ProductMasterPage = () => {
+     const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const unitsofMeasurement = useSelector((state: RootState) => state.auth.unitsofMeasurement);
     const productFormInitialValues = {
         productName: '',
@@ -131,14 +121,15 @@ const ProductMasterPage = () => {
     const [formInitialValues, setFormInitialValues] = useState(productFormInitialValues);
     const [updateRecordData, setUpdateRecordData] = useState({});
     const [updateRecordId, setUpdateRecordId] = useState(0)
-
-    const { data: productsData, error: allProductsFectchingError , isLoading } = useGetAllProductsQuery([])
+    const { data: productsData, error: allProductsFectchingError , isLoading } = useGetAllProductsQuery({page: paginationModel.page + 1, limit: paginationModel.pageSize})
     const [showForm, setShowForm] = useState(false);
-    const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery([])
+    const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery({})
+    const { data: packagesData,  } = useGetPackageMasterQuery({})
     const [createNewProduct] = useCreateProductMutation();
     const [deleteProduct] = useDeleteProductMutation()
     const [updateProductDetails] = useEditProductMutation();
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
+    const getAllPackages = packagesData?.packages.length > 0 ? packagesData?.packages : []
     const allProductsData = productsData?.products || [];
 
     console.log("updateRecord: ", updateRecordData)
@@ -148,6 +139,9 @@ const ProductMasterPage = () => {
     console.log("getLocationsError: ", getLocationsError)
     console.log("initialValues: ", formInitialValues)
 
+    const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
+            setPaginationModel(newPaginationModel);
+            };
     const validationSchema = Yup.object({
         productName: Yup.string().required('Product name is required'),
         productDescription: Yup.string().required('Product Description is required'),
@@ -195,12 +189,27 @@ const ProductMasterPage = () => {
         setFormInitialValues(updatedInitialValues);
     };
 
-    const handleDelete = async (row: Product) => {
-        console.log('Delete clicked:', row);
-        const productId = row?.id
-        const response = await deleteProduct(productId)
-        console.log("delete response :", response)
-    };
+const handleDelete = async (row: Product) => {
+    const confirmDelete = window.confirm(`Are you sure you want to delete ? This action cannot be undone.`);
+
+    if (!confirmDelete) return;
+
+    try {
+        console.log("Delete clicked:", row);
+        const productId = row?.id;
+        const response = await deleteProduct(productId);
+        console.log("Delete response:", response);
+        setSnackbarMessage("Product deleted successfully!");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
+    } catch (error) {
+        console.error("Delete error:", error);
+        setSnackbarMessage("Failed to delete product. Please try again.");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
+    }
+};
+
 
     const columns = [
         { field: 'product_ID', headerName: 'Product ID', width: 150 },
@@ -270,7 +279,8 @@ const ProductMasterPage = () => {
 
     const handleSubmit = async (values: typeof productFormInitialValues,{resetForm} :{resetForm :()=> void}) => {
         console.log('Form Submitted', values);
-        const createProductBody = {
+        try {
+                    const createProductBody = {
             products: [
                 {
                     product_name: values?.productName,
@@ -347,6 +357,9 @@ const ProductMasterPage = () => {
                 setUpdateRecord(false)
                 setUpdateRecordId(0)
                 setUpdateRecordData({})
+                setSnackbarMessage("Product updated successfully! ");
+                setSnackbarSeverity("success");
+				setSnackbarOpen(true);
         
             }
         } else {
@@ -356,13 +369,32 @@ const ProductMasterPage = () => {
             console.log('API Response:', response)
             resetForm()
             setShowForm(false)
+            setSnackbarMessage("Product created successfully!");
+            setSnackbarSeverity("success");
+			setSnackbarOpen(true);
         }
+        }
+        catch (error) {
+            console.log("err :", error)
+            resetForm()
+            setShowForm(false)
+            setSnackbarMessage("Something went wrong! please try again.");
+            setSnackbarSeverity("error");
+			setSnackbarOpen(true);
+        }
+
 
 
     };
 
     return (
         <Grid sx={{ margin: { xs: "0px", md: "0px 30px" } }}>
+            <SnackbarAlert
+                open={snackbarOpen}
+                message={snackbarMessage}
+                severity={snackbarSeverity}
+                onClose={() => setSnackbarOpen(false)}
+            />
             <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md: '24px' } }} align="center" gutterBottom>
                 Product master
             </Typography>
@@ -639,8 +671,6 @@ const ProductMasterPage = () => {
                                             onBlur={handleBlur}
                                         />
                                     </Grid>
-
-
                                 </Grid>
 
                                 <Typography variant="h6" className={style.basicDetailsHeading}>
@@ -657,18 +687,22 @@ const ProductMasterPage = () => {
                                                 onChange={(e) => setFieldValue('locationId', e.target.value)}
                                                 onBlur={handleBlur}
                                             >
-                                                {getAllLocations.map((location: Location) => (
-                                                    <MenuItem key={location.loc_ID} value={location.loc_ID}>
-                                                        {location.loc_ID}
-                                                    </MenuItem>
-                                                ))}
+                                            {getAllLocations?.map((location: Location) => (
+                                                <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                                        <Tooltip
+                                                            title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                                            placement="right">
+                                                            <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                                        </Tooltip>
+                                                </MenuItem>
+                                            ))}
                                             </Select>
                                             {touched.locationId && errors.locationId && (
                                                 <FormHelperText>{errors.locationId}</FormHelperText>
                                             )}
                                         </FormControl>
                                     </Grid>
-                                    <Grid item xs={12} sm={6} md={2.4} >
+                                    {/* <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
                                             fullWidth size='small'
                                             label="Packaging Type"
@@ -677,6 +711,31 @@ const ProductMasterPage = () => {
                                             onChange={handleChange}
                                             onBlur={handleBlur}
                                         />
+                                    </Grid> */}
+                                    <Grid item xs={12} sm={6} md={2.4}>
+                                        <FormControl fullWidth size="small" error={touched.locationId && Boolean(errors.locationId)}>
+                                            <InputLabel>Packaging Type</InputLabel>
+                                            <Select
+                                                label="Packaging Type"
+                                                name="packagingType"
+                                                value={values.packagingType}
+                                                onChange={(e) => setFieldValue('packagingType', e.target.value)}
+                                                onBlur={handleBlur}
+                                            >
+                                            {getAllPackages?.map((packages: Package) => (
+                                                <MenuItem key={packages.pac_ID} value={String(packages.pac_ID)}>
+                                                        <Tooltip
+                                                            title={`${packages.packaging_type_name}, ${packages.dimensions}, ${packages.dimensions_uom}`}
+                                                            placement="right">
+                                                            <span style={{ flex: 1 }}>{packages.pac_ID}</span>
+                                                        </Tooltip>
+                                                </MenuItem>
+                                            ))}
+                                            </Select>
+                                            {touched.packagingType && errors.packagingType && (
+                                                <FormHelperText>{errors.packagingType}</FormHelperText>
+                                            )}
+                                        </FormControl>
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={2.4} >
                                         <FormControlLabel
@@ -763,14 +822,14 @@ const ProductMasterPage = () => {
                                             {updateRecord ? "Update product" : "Create product"}
                                     </Button>
                                     <Button
-                                                variant="contained"
-                                                      color="secondary"
-                                                      onClick={() => {
-                                                            setFormInitialValues(productFormInitialValues)
-                                                            setUpdateRecord(false)
-                                                          }}
-                                                      style={{ marginLeft: "10px" }}>Reset
-                                                  </Button>
+                                        variant="outlined"
+                                        color="secondary"
+                                        onClick={() => {
+                                            setFormInitialValues(productFormInitialValues)
+                                            setUpdateRecord(false)
+                                        }}
+                                        style={{ marginLeft: "10px" }}>Reset
+                                    </Button>
                                 </Box>
                             </Form>
                         )
@@ -782,13 +841,14 @@ const ProductMasterPage = () => {
                 {isLoading ? (
                 <DataGridSkeletonLoader columns={columns} />
                 ) : (
-                <DataGridComponent
+                    <DataGridComponent
                         columns={columns}
                         rows={rows}
-                        isLoading={false}
-                        pageSizeOptions={[10, 20, 30]}
-                        initialPageSize={10}
-                />
+                        isLoading={isLoading}
+                        paginationModel={paginationModel}
+                        onPaginationModelChange={handlePaginationModelChange}
+                        activeEntity='products'
+                        />
                 )}
             </div>
         </Grid>

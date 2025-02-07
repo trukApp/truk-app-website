@@ -21,7 +21,7 @@ import {
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { DataGridComponent } from '../GridComponent';
-import { GridColDef } from '@mui/x-data-grid';
+import { GridColDef, GridPaginationModel } from '@mui/x-data-grid';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import styles from './MasterData.module.css';
@@ -29,7 +29,8 @@ import { useGetLocationMasterQuery, usePostLocationMasterMutation,useEditLocatio
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MassUpload from '../MassUpload/MassUpload';
-import DataGridSkeletonLoader from '../LoaderComponent/DataGridSkeletonLoader';
+import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
+import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 
 export interface Location {
   location_id: number;
@@ -90,10 +91,14 @@ const validationSchema = Yup.object({
 });
 
 const Locations: React.FC = () => {
+    const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
+      const [snackbarOpen, setSnackbarOpen] = useState(false);
+      const [snackbarMessage, setSnackbarMessage] = useState("");
+      const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
   const [showForm, setShowForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editRow,setEditRow] = useState<DataGridRow | null>(null); ;
-  const { data, error, isLoading } = useGetLocationMasterQuery([]);
+  const { data, error, isLoading } = useGetLocationMasterQuery({page: paginationModel.page + 1, limit: paginationModel.pageSize});
   const [postLocation,{isLoading:postLocationLoading}] = usePostLocationMasterMutation();
   const [editLocation,{isLoading:editLocationLoading}] = useEditLocationMasterMutation();
   const [deleteLocation,{isLoading:deleteLocationLoading}] = useDeleteLocationMasterMutation()
@@ -119,6 +124,9 @@ const Locations: React.FC = () => {
   //   { id: '5', name: 'Trailer - 005' },
   // ];
 
+const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
+        setPaginationModel(newPaginationModel);
+        };
   const handleFormSubmit = async (values: DataGridRow) => {
     console.log("form submitted locations :", values)
 
@@ -165,6 +173,10 @@ const Locations: React.FC = () => {
                 console.log("edit response is ", response)
                 formik.resetForm()
                 setShowForm(false)
+                setIsEditing(false)
+                     setSnackbarMessage("Locations updated successfully!");
+                    setSnackbarSeverity("success");
+                    setSnackbarOpen(true);
               }
               else {
                 console.log("post create location ",body)
@@ -172,10 +184,19 @@ const Locations: React.FC = () => {
                   console.log('response in post location:', response);
                 formik.resetForm();
                 setShowForm(false)
+                setIsEditing(false)
+                     setSnackbarMessage("Locations created successfully!");
+                    setSnackbarSeverity("success");
+                    setSnackbarOpen(true);
+
               }
           
         } catch (error) {
-            console.error('API Error:', error);
+          console.error('API Error:', error);
+               setSnackbarMessage("Something went wrong! please try again");
+                    setSnackbarSeverity("error");
+                    setSnackbarOpen(true);
+                    setShowForm(false)
         }
 
   }
@@ -192,8 +213,12 @@ const handleDelete = async (row: DataGridRow) => {
     const locationId = row?.id;
     if (!locationId) {
         console.error("Row ID is missing");
+        setSnackbarMessage("Error: Location ID is missing!");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
         return;
     }
+
     const confirmed = window.confirm("Are you sure you want to delete this item?");
     if (!confirmed) {
         console.log("Delete canceled by user.");
@@ -203,10 +228,21 @@ const handleDelete = async (row: DataGridRow) => {
     try {
         const response = await deleteLocation(locationId);
         console.log("Delete response:", response);
+
+        // Show success snackbar
+        setSnackbarMessage("Location deleted successfully!");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
     } catch (error) {
         console.error("Error deleting location:", error);
+
+        // Show error snackbar
+        setSnackbarMessage("Failed to delete location. Please try again.");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
     }
 };
+
 
 
   console.log("edit :",isEditing, editRow)
@@ -264,7 +300,7 @@ const handleDelete = async (row: DataGridRow) => {
   const { values, errors, touched, handleChange, handleBlur, handleSubmit } = formik;
 
 
-  const rows: DataGridRow[] = locationsMaster?.map((location: Location, index: number) => ({
+  const rows= locationsMaster?.map((location: Location, index: number) => ({
     id: location.location_id,
     locationId: location.loc_ID,
     locationDescription: location.loc_desc,
@@ -338,7 +374,13 @@ const handleDelete = async (row: DataGridRow) => {
         open={postLocationLoading || editLocationLoading || deleteLocationLoading}
       >
         <CircularProgress color="inherit" />
-      </Backdrop>
+      </Backdrop>
+      <SnackbarAlert
+                open={snackbarOpen}
+                message={snackbarMessage}
+                severity={snackbarSeverity}
+                onClose={() => setSnackbarOpen(false)}
+            />
       <Box
         component="form"
         onSubmit={handleSubmit}
@@ -403,7 +445,7 @@ const handleDelete = async (row: DataGridRow) => {
                       helperText={touched.locationDescription && errors.locationDescription}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6} md={2.4}>
+                  {/* <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth
                     size="small"
@@ -442,8 +484,19 @@ const handleDelete = async (row: DataGridRow) => {
                       <option value="rail junction">Rail Junction</option>
                       <option value="border cross point">Border Cross Point</option>
                     </TextField>
-                  </Grid>
-
+                  </Grid> */}
+                
+                <Grid item xs={12} sm={6} md={2.4}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="Location type"
+                    name="locationType"
+                    value={values.locationType}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  />
+                </Grid>
 
                 <Grid item xs={12} sm={6} md={2.4}>
                   <TextField
@@ -532,10 +585,10 @@ const handleDelete = async (row: DataGridRow) => {
                         value={values.addressLine1}
                         onChange={handleChange}
                       onBlur={handleBlur}
-                      InputLabelProps={{ shrink: true }}
+                      // InputLabelProps={{ shrink: true }}
                       />
                   </Grid>
-                   <Grid item xs={12} sm={6} md={2.4}>
+                    <Grid item xs={12} sm={6} md={2.4}>
                       <TextField
                         fullWidth
                         size="small"
@@ -543,8 +596,7 @@ const handleDelete = async (row: DataGridRow) => {
                         name="addressLine2"
                         value={values.addressLine2}
                         onChange={handleChange}
-                      onBlur={handleBlur}
-                      InputLabelProps={{ shrink: true }}
+                        onBlur={handleBlur}
                       />
                     </Grid>
                     <Grid item xs={12} sm={6} md={2.4}>
@@ -698,7 +750,7 @@ const handleDelete = async (row: DataGridRow) => {
                 {isEditing ? "Update location" : "Create location"}
               </Button>
               <Button
-                  variant="contained"
+                  variant='outlined'
                   color="secondary"
                   onClick={() => {
                   formik.resetForm()
@@ -728,13 +780,14 @@ const handleDelete = async (row: DataGridRow) => {
         {isLoading ? (
           <DataGridSkeletonLoader columns={columns} />
         ) : (
-          <DataGridComponent
-                columns={columns}
-                rows={rows}
-                isLoading={false}
-                pageSizeOptions={[10, 20, 30]}
-                initialPageSize={10}
-          />
+             <DataGridComponent
+                  columns={columns}
+                  rows={rows}
+                  isLoading={isLoading}
+                  paginationModel={paginationModel}
+                  activeEntity='locations'
+                  onPaginationModelChange={handlePaginationModelChange}
+              />
         )}
       </div>
 

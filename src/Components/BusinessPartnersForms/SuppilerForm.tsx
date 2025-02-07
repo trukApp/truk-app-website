@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Box, Button, Collapse, Grid, TextField, FormControlLabel, Checkbox, FormControl, InputLabel, MenuItem, Select, FormHelperText, SelectChangeEvent, Backdrop, CircularProgress } from '@mui/material';
+import { Box, Button, Collapse, Grid, TextField, FormControlLabel, Checkbox, FormControl, InputLabel, MenuItem, Select, FormHelperText, SelectChangeEvent, Backdrop, CircularProgress, Tooltip } from '@mui/material';
 import { Formik, Form, FormikProps } from 'formik';
 import * as Yup from 'yup';
 import { DataGridComponent } from '../GridComponent';
 import styles from './BusinessPartners.module.css'
-import { GridColDef } from '@mui/x-data-grid';
+import { GridColDef, GridPaginationModel } from '@mui/x-data-grid';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useCustomerRegistrationMutation, useDeleteBusinessPartnerMutation, useEditBusinessPartnerMutation, useGetAllVendorsDataQuery, useGetLocationMasterQuery } from '@/api/apiSlice';
@@ -12,7 +12,9 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import MassUpload from '../MassUpload/MassUpload';
-import DataGridSkeletonLoader from '../LoaderComponent/DataGridSkeletonLoader';
+import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
+import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
+import { Location } from '../MasterDataComponents/Locations';
 
 interface PartnerFunctions {
     forwarding_agent: string;
@@ -46,22 +48,6 @@ export interface Customer {
     correspondence: Correspondence;
 }
 
-interface Location {
-    city: string;
-    country: string;
-    gln_code: string;
-    iata_code: string;
-    latitude: string;
-    loc_ID: string;
-    loc_desc: string;
-    loc_type: string;
-    longitude: string;
-    pincode: string;
-    state: string;
-    time_zone: string;
-}
-
-
 const initialSupplierValues = {
     // supplierId: '',
     name: '',
@@ -73,7 +59,7 @@ const initialSupplierValues = {
     contactPerson: '',
     contactNumber: '',
     emailId: '',
-    locationOfSource: [] as string[],
+    locationOfSource: '',
     podRelevant: false,
     orderingAddress: '',
     goodsSupplier: '',
@@ -82,6 +68,10 @@ const initialSupplierValues = {
 
 
 const SupplierForm: React.FC = () => {
+    const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10, });
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const [showForm, setShowForm] = useState(false);
     const [updateRecord, setUpdateRecord] = useState(false);
     const [formInitialValues, setFormInitialValues] = useState(initialSupplierValues);
@@ -91,7 +81,7 @@ const SupplierForm: React.FC = () => {
     const [customerRegistration,{isLoading:editVendorLoading}] = useCustomerRegistrationMutation();
     const [deleteBusinessPartner,{isLoading:deleteVendorLoading}] = useDeleteBusinessPartnerMutation()
     const { data, error, isLoading } = useGetAllVendorsDataQuery({
-        partner_type: "vendor",
+        partner_type: "vendor", page: paginationModel.page + 1, limit: paginationModel.pageSize
     })
     const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery([])
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
@@ -107,7 +97,9 @@ const SupplierForm: React.FC = () => {
     if (error) {
         console.error("getting error while fetching the customers data:", error);
     }
-
+    const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
+            setPaginationModel(newPaginationModel);
+        };
     const mapRowToInitialValues = (rowData: Customer) => ({
         name: rowData.name || '',
         locationId: rowData.loc_ID || '',
@@ -119,19 +111,44 @@ const SupplierForm: React.FC = () => {
         contactPerson: rowData?.correspondence?.contact_person || '',
         contactNumber: rowData?.correspondence?.contact_number || '',
         emailId: rowData?.correspondence?.email || '',
-        locationOfSource: [rowData.loc_of_source],
+        locationOfSource: rowData.loc_of_source,
         podRelevant: rowData?.pod_relevant === 1,
         forwardingAgent: rowData?.partner_functions?.forwarding_agent || '',
         goodsSupplier: rowData?.partner_functions?.goods_supplier || '',
         orderingAddress: rowData?.partner_functions?.ordering_address || '',
     });
 
-    const handleDelete = async (rowData: Customer) => {
-        console.log('Delete clicked for:', rowData);
-        const deleteId = rowData?.partner_id
-        const response = await deleteBusinessPartner(deleteId)
-        console.log("delete response :", response)
-    };;
+const handleDelete = async (rowData: Customer) => {
+  const deleteId = rowData?.partner_id;
+  if (!deleteId) {
+    console.error("Row ID is missing");
+    setSnackbarMessage("Error: Partner ID is missing!");
+    setSnackbarSeverity("error");
+    setSnackbarOpen(true);
+    return;
+  }
+
+  const confirmed = window.confirm("Are you sure you want to delete this partner?");
+  if (!confirmed) {
+    console.log("Delete canceled by user.");
+    return;
+  }
+
+  try {
+    const response = await deleteBusinessPartner(deleteId);
+    console.log("Delete response:", response);
+
+    setSnackbarMessage("Partner deleted successfully!");
+    setSnackbarSeverity("success");
+    setSnackbarOpen(true);
+  } catch (error) {
+    console.error("Error deleting partner:", error);
+    setSnackbarMessage("Failed to delete partner. Please try again.");
+    setSnackbarSeverity("error");
+    setSnackbarOpen(true);
+  }
+};
+
 
     const handleEdit = async (rowData: Customer) => {
         console.log('Edit clicked for:', rowData);
@@ -179,7 +196,7 @@ const SupplierForm: React.FC = () => {
         },
     ];
 
-    const mappedData = vendorsData.map((item: Customer) => ({
+    const rows = vendorsData.map((item: Customer) => ({
         id: item.partner_id,
         ...item,
     }));
@@ -255,6 +272,9 @@ const SupplierForm: React.FC = () => {
                     setUpdateRecord(false)
                     setUpdateRecordId(0)
                     setUpdateRecordData({})
+                    setSnackbarMessage("Vendor updated successfully!");
+                    setSnackbarSeverity("success");
+                    setSnackbarOpen(true);
                 }
             } else {
                 console.log("I am going create the record")
@@ -266,10 +286,16 @@ const SupplierForm: React.FC = () => {
                     setUpdateRecord(false)
                     setUpdateRecordId(0)
                     setUpdateRecordData({})
+                    setSnackbarMessage("Vendor created successfully!");
+                    setSnackbarSeverity("success");
+                    setSnackbarOpen(true);
                 }
             }
         } catch (error) {
-            console.error('API Error:', error);
+                console.error('API Error:', error);
+                setSnackbarMessage("Something went wrong! Please try again");
+                setSnackbarSeverity("error");
+                setSnackbarOpen(true);
         }
     };
 
@@ -311,7 +337,13 @@ const SupplierForm: React.FC = () => {
                 open={postVendorLoading || editVendorLoading || deleteVendorLoading}
             >
                 <CircularProgress color="inherit" />
-             </Backdrop>
+            </Backdrop>
+            <SnackbarAlert
+                open={snackbarOpen}
+                message={snackbarMessage}
+                severity={snackbarSeverity}
+                onClose={() => setSnackbarOpen(false)}
+            />
             <Box display="flex" justifyContent="flex-end" gap={2}>
                 <Button
                     variant="contained"
@@ -374,13 +406,15 @@ const SupplierForm: React.FC = () => {
                                                 onChange={(event) => handleLocationChange(event, setFieldValue)}
                                                 onBlur={handleBlur}
                                             >
-                                                {getAllLocations.map((location: Location) => {
-                                                    return (
-                                                        <MenuItem key={location?.loc_ID} value={location?.loc_ID}>
-                                                            {location.loc_ID}
-                                                        </MenuItem>
-                                                    );
-                                                })}
+                                            {getAllLocations?.map((location: Location) => (
+                                                    <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                                        <Tooltip
+                                                            title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                                            placement="right">
+                                                            <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                                        </Tooltip>
+                                                    </MenuItem>
+                                            ))}
                                             </Select>
                                             {touched.locationId && errors.locationId && (
                                                 <FormHelperText>{errors.locationId}</FormHelperText>
@@ -504,11 +538,15 @@ const SupplierForm: React.FC = () => {
                                                 onChange={(e) => setFieldValue('locationOfSource', e.target.value)}
                                                 onBlur={handleBlur}
                                             >
-                                                {getAllLocations.map((location: Location) => (
-                                                    <MenuItem key={location.loc_ID} value={location.loc_ID}>
-                                                        {location.loc_ID}
-                                                    </MenuItem>
-                                                ))}
+                                                        {getAllLocations?.map((location: Location) => (
+                                                            <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                                                <Tooltip
+                                                                    title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                                                    placement="right">
+                                                                    <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                                                </Tooltip>
+                                                            </MenuItem>
+                                                                                        ))}
                                             </Select>
                                             {touched.locationOfSource && errors.locationOfSource && (
                                                 <FormHelperText>{errors.locationOfSource}</FormHelperText>
@@ -574,7 +612,7 @@ const SupplierForm: React.FC = () => {
                                         <Button type="submit" variant="contained" color="primary">
                                             {updateRecord ?  "Update" : "Create" }
                                     </Button>
-                                       <Button variant="contained" color="secondary"
+                                       <Button variant="outlined" color="secondary"
                                                 onClick={() => {
                                                 setFormInitialValues(initialSupplierValues)
                                                 setUpdateRecord(false)
@@ -594,12 +632,13 @@ const SupplierForm: React.FC = () => {
                 <DataGridSkeletonLoader columns={columns} />
                 ) : (
                 <DataGridComponent
-                        columns={columns}
-                        rows={mappedData}
-                        isLoading={false}
-                        pageSizeOptions={[10, 20, 30]}
-                        initialPageSize={10}
-                />
+                    columns={columns}
+                    rows={rows}
+                    isLoading={isLoading}
+                    paginationModel={paginationModel}
+                    activeEntity='vendors'
+                    onPaginationModelChange={handlePaginationModelChange}
+                    />
                 )}
             </div>
         </div>

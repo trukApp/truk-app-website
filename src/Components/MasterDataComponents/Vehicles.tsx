@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Formik, Form, FormikHelpers } from "formik";
+import { Formik, Form,FormikProps } from "formik";
 import * as Yup from "yup";
 import {
 	TextField,
@@ -21,9 +21,10 @@ import {
 	SelectChangeEvent,
 	Backdrop,
 	CircularProgress,
+	Tooltip,
 } from "@mui/material";
 import { DataGridComponent } from "../GridComponent";
-import { GridColDef } from "@mui/x-data-grid";
+import { GridColDef, GridPaginationModel } from "@mui/x-data-grid";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import styles from "./MasterData.module.css";
@@ -39,8 +40,9 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import MassUpload from "../MassUpload/MassUpload";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
-import DataGridSkeletonLoader from "../LoaderComponent/DataGridSkeletonLoader";
+import DataGridSkeletonLoader from "../ReusableComponents/DataGridSkeletonLoader";
 import { Location } from "./Locations";
+import SnackbarAlert from "../ReusableComponents/SnackbarAlerts";
 
 export interface VehicleFormValues {
 	vehicleId: string;
@@ -187,13 +189,14 @@ const downtimeReasons = ["Maintenance", "Breakdown", "Inspection", "Other"];
 const validationSchema = Yup.object({
 	locationId: Yup.string().required("Location ID is required"),
 	timeZone: Yup.string().required("Time Zone is required"),
-	unlimitedUsage: Yup.boolean(),
-		individualResources: Yup.number()
-			.typeError("Must be a number")
-			.when("unlimitedUsage", {
-			is: false,
-			then: (schema) => schema.required("Required"),
-			}),
+  unlimitedUsage: Yup.boolean(),
+  individualResources: Yup.number()
+    .typeError("Must be a number")
+    .when("unlimitedUsage", {
+      is: false,
+      then: (schema) => schema.required("Individual Resources is required"),
+      otherwise: (schema) => schema.notRequired().nullable(),
+    }),
 	validityFrom: Yup.string().required("Validity start date is required"),
 	validityTo: Yup.string().required("Validity end date is required"),
 	vehicleType: Yup.string().required("Vehicle Type is required"),
@@ -226,19 +229,20 @@ const validationSchema = Yup.object({
 });
 
 const VehicleForm: React.FC = () => {
+	const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
+	const [snackbarOpen, setSnackbarOpen] = useState(false);
+	const [snackbarMessage, setSnackbarMessage] = useState("");
+	const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
 	const [isEditing, setIsEditing] = useState(false);
 	const [editRow, setEditRow] = useState<VehicleFormValues | null>(null);
-	const { data, error } = useGetVehicleMasterQuery([]);
-	const [postVehicle, { isLoading: postVehicleLoading }] =
-		usePostVehicleMasterMutation();
-	const [editVehicle, { isLoading: editVehicleLoading }] =
-		useEditVehicleMasterMutation();
-	const [deleteVehicle, { isLoading: deleteVehicleLoading }] =
-		useDeleteVehicleMasterMutation();
+	const { data, error } = useGetVehicleMasterQuery({page: paginationModel.page + 1, limit: paginationModel.pageSize});
+	const [postVehicle, { isLoading: postVehicleLoading }] = usePostVehicleMasterMutation();
+	const [editVehicle, { isLoading: editVehicleLoading }] = useEditVehicleMasterMutation();
+	const [deleteVehicle, { isLoading: deleteVehicleLoading }] = useDeleteVehicleMasterMutation();
 	if (error) {
 		console.log("err in loading vehicles data :", error);
 	}
-	const { data: locationsData, isLoading } = useGetLocationMasterQuery([]);
+	const { data: locationsData, isLoading } = useGetLocationMasterQuery({});
 	const getAllLocations =
 		locationsData?.locations.length > 0 ? locationsData?.locations : [];
 	const vehiclesMaster = data?.vehicles;
@@ -246,7 +250,9 @@ const VehicleForm: React.FC = () => {
 	const unitsofMeasurement = useSelector(
 		(state: RootState) => state.auth.unitsofMeasurement
 	);
-
+	const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
+    setPaginationModel(newPaginationModel);
+    };
 	const [showForm, setShowForm] = useState(false);
 	const initialFormValues = {
 		id: "",
@@ -583,16 +589,28 @@ const VehicleForm: React.FC = () => {
 				setShowForm(false);
 				setIsEditing(false);
 				resetForm();
+				setSnackbarMessage("Vehicle updated successfully!");
+            	setSnackbarSeverity("success");
+                setSnackbarOpen(true);
 			} else {
 				console.log("post create vehicle ", body);
 				const response = await postVehicle(body).unwrap();
-				console.log("response in post location:", response);
+				console.log("response in post vehicle:", response);
 				setShowForm(false);
 				resetForm();
+				setIsEditing(false)
+				setSnackbarMessage("Vehicle created successfully!");
+                setSnackbarSeverity("success");
+                setSnackbarOpen(true);
 			}
 		} catch (error) {
 			console.error("API Error:", error);
-			alert("try after some time");
+			setSnackbarMessage("Something went wrong! please try again");
+            setSnackbarSeverity("error");
+			setSnackbarOpen(true);
+			setShowForm(false);
+			resetForm();
+			setIsEditing(false)
 		}
 	};
 
@@ -602,48 +620,48 @@ const VehicleForm: React.FC = () => {
 		setIsEditing(true);
 		setEditRow(row);
 	};
-console.log('ise editing :', isEditing , editRow)
 	const handleDelete = async (row: VehicleDetails) => {
-		const vehicleId = row?.id;
-		if (!vehicleId) {
-			console.error("Row ID is missing");
-			return;
-		}
-		const confirmed = window.confirm(
-			"Are you sure you want to delete this vehicle?"
-		);
+  const vehicleId = row?.id;
+  if (!vehicleId) {
+    console.error("Row ID is missing");
+    setSnackbarMessage("Error: Vehicle ID is missing!");
+    setSnackbarSeverity("error");
+    setSnackbarOpen(true);
+    return;
+  }
 
-		if (!confirmed) {
-			console.log("Delete canceled by user.");
-			return;
-		}
+  const confirmed = window.confirm("Are you sure you want to delete this vehicle?");
+  if (!confirmed) {
+    console.log("Delete canceled by user.");
+    return;
+  }
 
-		try {
-			const response = await deleteVehicle(vehicleId);
-			console.log("Delete response:", response);
-		} catch (error) {
-			console.error("Error deleting vehicle:", error);
-		}
-	};
+  try {
+    const response = await deleteVehicle(vehicleId);
+    console.log("Delete response:", response);
 
-	const handleLocationChange = (
+    // Show success snackbar
+    setSnackbarMessage("Vehicle deleted successfully!");
+    setSnackbarSeverity("success");
+    setSnackbarOpen(true);
+  } catch (error) {
+    console.error("Error deleting vehicle:", error);
+
+    // Show error snackbar
+    setSnackbarMessage("Failed to delete vehicle. Please try again.");
+    setSnackbarSeverity("error");
+    setSnackbarOpen(true);
+  }
+};
+
+  	const handleLocationChange = (
 		event: SelectChangeEvent<string>,
-		setFieldValue: FormikHelpers<{
-			locationId: string;
-			timeZone: string;
-		}>["setFieldValue"]
-	) => {
-		const selectedLocationId = event.target.value;
-		const selectedLocation = getAllLocations.find(
-			(loc: Location) => loc.loc_ID === selectedLocationId
-		);
-
-		setFieldValue("locationId", selectedLocationId, true);
-		setFieldValue(
-			"timeZone",
-			selectedLocation ? selectedLocation.time_zone : "",
-			true
-		);
+		setFieldValue: FormikProps<{ locationId: string; timeZone: string }>['setFieldValue']
+		) => {
+		const selectedLocation = event.target.value;
+		setFieldValue('locationId', selectedLocation);
+		const matchedLocation = getAllLocations?.find((loc: Location) => loc.loc_ID === selectedLocation);
+		setFieldValue("timeZone", matchedLocation ? matchedLocation?.time_zone : "");
 	};
 
 	return (
@@ -658,6 +676,12 @@ console.log('ise editing :', isEditing , editRow)
 				<CircularProgress color="inherit" />
 				     
 			</Backdrop>
+			<SnackbarAlert
+                open={snackbarOpen}
+                message={snackbarMessage}
+                severity={snackbarSeverity}
+                onClose={() => setSnackbarOpen(false)}
+            />
 
 			<Box>
 				<Typography
@@ -724,35 +748,29 @@ console.log('ise editing :', isEditing , editRow)
 													disabled
 												/>
 											</Grid>
-											<Grid item xs={12} sm={6} md={2.4}>
-												<FormControl
-													fullWidth
-													size="small"
-													error={
-														touched.locationId && Boolean(errors.locationId)
-													}
-												>
-													<InputLabel>Location ID</InputLabel>
-													<Select
-														label="Location ID"
-														name="locationId"
-														value={values.locationId}
-														onChange={(event) =>
-															handleLocationChange(event, setFieldValue)
-														}
-														onBlur={handleBlur}
-													>
-														{getAllLocations.map((location: Location) => (
-															<MenuItem
-																key={location.loc_ID}
-																value={location.loc_ID}
-															>
-																{location.loc_ID}
+												<Grid item xs={12} sm={6} md={2.4}>
+																<FormControl fullWidth size="small" error={touched.locationId && Boolean(errors.locationId)}>
+																<InputLabel>Location ID</InputLabel>
+																<Select
+																label="Location ID"
+																name="locations"
+																value={values.locationId || ''}
+																onChange={(event) => handleLocationChange(event, setFieldValue)}
+																onBlur={handleBlur}
+																>
+															{getAllLocations?.map((location: Location) => (
+															<MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+																<Tooltip
+																title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+																placement="right"
+																>
+																<span style={{ flex: 1 }}>{location.loc_ID}</span>
+																</Tooltip>
 															</MenuItem>
-														))}
+															))}
 													</Select>
-													{touched.locationId && errors.locationId && (
-														<FormHelperText>{errors.locationId}</FormHelperText>
+																{touched.locationId && errors.locationId && (
+													<FormHelperText>{errors.locationId}</FormHelperText>
 													)}
 												</FormControl>
 											</Grid>
@@ -802,40 +820,41 @@ console.log('ise editing :', isEditing , editRow)
 													/>
 												</Grid>
 											)} */}
-											<Grid item xs={12}>
-  <FormControlLabel
-    control={
-      <Checkbox
-        checked={values.unlimitedUsage}
-        onChange={(e) => {
-          const checked = e.target.checked;
-          setFieldValue("unlimitedUsage", checked);
-          if (checked) {
-            setFieldValue("individualResources", "");
-          }
-        }}
-      />
-    }
-    label="Unlimited Usage"
-  />
-</Grid>
-
-{!values.unlimitedUsage && (
-  <Grid item xs={12} sm={6} md={2.4}>
-    <TextField
-      fullWidth
-      label="Individual Resources"
-      name="individualResources"
-      type="number"
-      value={values.individualResources}
-      onChange={handleChange}
-      onBlur={handleBlur}
-      size="small"
-      error={touched.individualResources && Boolean(errors.individualResources)}
-      helperText={touched.individualResources && errors.individualResources}
+								<Grid item xs={12}>
+									<FormControlLabel
+									control={
+    <Checkbox
+      checked={values.unlimitedUsage}
+      onChange={(e) => {
+        const checked = e.target.checked;
+        setFieldValue("unlimitedUsage", checked);
+        if (checked) {
+          setFieldValue("individualResources", ""); // Ensures controlled input
+        }
+      }}
     />
-  </Grid>
-)}
+  }
+  label="Unlimited Usage"
+												/>
+								</Grid>
+
+								{!values.unlimitedUsage && (
+								<Grid item xs={12} sm={6} md={2.4}>
+									<TextField
+									fullWidth
+									label="Individual Resources"
+									name="individualResources"
+									type="number"
+									value={values.individualResources ?? ""} // Ensures controlled component
+									onChange={handleChange}
+									onBlur={handleBlur}
+									size="small"
+									error={touched.individualResources && Boolean(errors.individualResources)}
+									helperText={touched.individualResources && errors.individualResources}
+									/>
+								</Grid>
+								)}
+
 
 										</Grid>
 
@@ -1564,7 +1583,7 @@ console.log('ise editing :', isEditing , editRow)
 												{isEditing ? "Update vehicle" : "Create vehicle"}
 											</Button>
 											<Button
-												variant="contained"
+												variant="outlined"
 												color="secondary"
 												onClick={() => {
 													setInitialValues(initialFormValues);
@@ -1589,13 +1608,14 @@ console.log('ise editing :', isEditing , editRow)
 				{isLoading ? (
 					<DataGridSkeletonLoader columns={columns} />
 				) : (
-					<DataGridComponent
-						columns={columns}
-						rows={rows}
-						isLoading={false}
-						pageSizeOptions={[10, 20, 30]}
-						initialPageSize={10}
-					/>
+						<DataGridComponent
+							columns={columns}
+							rows={rows}
+							isLoading={isLoading}
+							paginationModel={paginationModel}
+							activeEntity="vehicles"
+							onPaginationModelChange={handlePaginationModelChange}
+						/>
 				)}
 			</div>
 		</>

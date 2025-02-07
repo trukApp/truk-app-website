@@ -1,34 +1,40 @@
-.packageNameTextField {
-  height: 15px;
+.formContainer {
+  margin-top: 10px;
+  /* padding: 30px;  */
 }
 
-.submitButton {
-  background-color: #f3e5f5;
-  padding: 10px;
-  color: purple;
-  height: 50px;
-  padding-left: 70px;
-  padding-right: 70px;
-  font-weight: bold;
-  text-align: center;
-  font-size: 18px;
-  border-radius: 20px;
+.nextButton {
+  background-color: #6a0dad;
+  color: white;
+  border: none;
   transition: background-color 0.3s ease;
+  padding-right: 30px;
+  padding-left: 30px;
 }
 
-.submitButton:hover {
-  background-color: #d1c4e9;
+.nextButton:hover {
+  background-color: #5a0ca1;
 }
 
-.buttonContainer {
+.backButton {
+  background-color: white;
+  color: #6a0dad;
+  border: 2px solid #a3000016;
+  transition: all 0.3s ease;
+  margin-right: 20px;
+  padding-right: 30px;
+  padding-left: 30px;
+}
+
+.backButton:hover {
+  background-color: #6a0dad;
+  color: white;
+}
+
+.buttonsContainer {
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 60px;
-}
-
-.sectionHeading {
-  font-size: 18px;
-  font-weight: bold;
-  color: purple;
+  margin-top: 30px;
 }

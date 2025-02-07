@@ -1,6 +1,8 @@
 // import { IPackage } from './authSlice';
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
+import { AdditionalInfo } from "@/Components/CreatePackageTabs/AddtionalInformation";
+import { FormValues } from "@/Components/CreatePackageTabs/PickUpAndDropOffDetails";
 export interface ITruck {
   id: number;
   ownerName: string;
@@ -68,6 +70,56 @@ interface Product {
   packingLabel: boolean;
 }
 
+export interface IShipFrom {
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  contactPerson: string;
+  country: string;
+  email: string;
+  locationDescription: string;
+  locationId: string;
+  phoneNumber: string;
+  pincode: string;
+  saveAsDefaultShipFromLocation: boolean;
+  saveAsNewLocationId: boolean;
+  state: string;
+}
+
+export interface IShipTo {
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  contactPerson: string;
+  country: string;
+  email: string;
+  locationDescription: string;
+  locationId: string;
+  phoneNumber: string;
+  pincode: string;
+  saveAsDefaultShipFromLocation: boolean;
+  saveAsNewLocationId: boolean;
+  state: string;
+}
+
+export interface IProductDetail {
+  productId: string;
+  productName: string;
+  hsnCode: string;
+  dimensions: string;
+  packagingType: string;
+  quantity: string;
+  rfid: string;
+  weight: string;
+}
+
+export interface IPackageTax {
+  senderGSTN: string;
+  receiverGSTN: string;
+  carrierGSTN: string;
+  isSelfTransport: string;
+}
+
 export interface IAuthState {
   authState: boolean;
   bablu: string;
@@ -77,6 +129,13 @@ export interface IAuthState {
   unitsofMeasurement: string[];
   selectedPackages: Array<Product>;
   createOrderDesination: string;
+  packageShipFrom: IShipFrom | null;
+  packageShipTo: IShipTo | null;
+  packagesDetails: Array<IProductDetail>;
+  packageBillTo: IShipFrom | null;
+  packageAdditionalInfo: AdditionalInfo | null;
+  packagePickAndDropTimings: FormValues | null;
+  packageTax: IPackageTax | null;
 }
 
 const initialState: IAuthState = {
@@ -88,6 +147,13 @@ const initialState: IAuthState = {
   unitsofMeasurement: [],
   selectedPackages: [],
   createOrderDesination: "",
+  packageShipFrom: null,
+  packageShipTo: null,
+  packagesDetails: [],
+  packageBillTo: null,
+  packageAdditionalInfo: null,
+  packagePickAndDropTimings: null,
+  packageTax: null,
 };
 
 export const authSlice = createSlice({
@@ -120,6 +186,31 @@ export const authSlice = createSlice({
       console.log("source location ", action.payload);
       state.createOrderDesination = action.payload;
     },
+    setPackageShipFrom: (state, action: PayloadAction<IShipFrom>) => {
+      state.packageShipFrom = action.payload;
+    },
+    setPackageShipTo: (state, action: PayloadAction<IShipFrom>) => {
+      state.packageShipTo = action.payload;
+    },
+    setProductsList: (state, action: PayloadAction<Array<IProductDetail>>) => {
+      console.log("Updating package details:", action.payload);
+      state.packagesDetails = action.payload;
+    },
+    setPackageBillTo: (state, action: PayloadAction<IShipFrom>) => {
+      state.packageBillTo = action.payload;
+    },
+    setPackageAddtionalInfo: (state, action: PayloadAction<AdditionalInfo>) => {
+      state.packageAdditionalInfo = action.payload;
+    },
+    setPackagePickAndDropTimings: (
+      state,
+      action: PayloadAction<FormValues>
+    ) => {
+      state.packagePickAndDropTimings = action.payload;
+    },
+    setPackageTax: (state, action: PayloadAction<IPackageTax>) => {
+      state.packageTax = action.payload;
+    },
   },
 });
 
@@ -132,6 +223,13 @@ export const {
   setUnitsofMeasurement,
   setSelectedPackages,
   setCreateOrderDesination,
+  setPackageShipFrom,
+  setPackageShipTo,
+  setProductsList,
+  setPackageBillTo,
+  setPackageAddtionalInfo,
+  setPackagePickAndDropTimings,
+  setPackageTax,
 } = authSlice.actions;
 
 export const authReducer = authSlice.reducer;

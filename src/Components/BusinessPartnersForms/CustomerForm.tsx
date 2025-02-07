@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { TextField, Grid, Button, Collapse, Box, FormControlLabel, Checkbox, Select, MenuItem, FormHelperText, FormControl, InputLabel, SelectChangeEvent, Autocomplete, Backdrop, CircularProgress } from '@mui/material';
+import { TextField, Grid, Button, Collapse, Box, FormControlLabel, Checkbox, Select, MenuItem, FormHelperText, FormControl, InputLabel, SelectChangeEvent, Autocomplete, Backdrop, CircularProgress, Tooltip } from '@mui/material';
 import { Formik, Form, FormikProps } from 'formik';
 import * as Yup from 'yup';
 import styles from './BusinessPartners.module.css';
 import { DataGridComponent } from '../GridComponent';
-import { GridColDef } from '@mui/x-data-grid';
+import { GridColDef, GridPaginationModel } from '@mui/x-data-grid';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useCustomerRegistrationMutation, useDeleteBusinessPartnerMutation, useEditBusinessPartnerMutation, useGetAllCustomersDataQuery, useGetLocationMasterQuery } from '@/api/apiSlice';
@@ -12,7 +12,9 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import MassUpload from '../MassUpload/MassUpload';
-import DataGridSkeletonLoader from '../LoaderComponent/DataGridSkeletonLoader';
+import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
+import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
+import { Location } from '../MasterDataComponents/Locations';
 
 
 // Validation schema for CustomerForm
@@ -66,23 +68,6 @@ interface Customer {
     loc_ID: string
 }
 
-export interface Location {
-    city: string;
-    country: string;
-    gln_code: string;
-    iata_code: string;
-    latitude: string;
-    loc_ID: string;
-    loc_desc: string;
-    loc_type: string;
-    // location_id: number;
-    longitude: string;
-    pincode: string;
-    state: string;
-    time_zone: string;
-}
-
-
 const initialCustomerValues = {
     name: '',
     locationId: '',
@@ -103,6 +88,10 @@ const initialCustomerValues = {
 
 
 const CustomerForm: React.FC = () => {
+    const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10, });
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const [showForm, setShowForm] = useState(false);
     const [updateRecord, setUpdateRecord] = useState(false);
     const [formInitialValues, setFormInitialValues] = useState(initialCustomerValues);
@@ -113,7 +102,7 @@ const CustomerForm: React.FC = () => {
     const [deleteBusinessPartner,{isLoading:deleteCustomerLoading}] = useDeleteBusinessPartnerMutation()
 
     const { data, error, isLoading } = useGetAllCustomersDataQuery({
-        partner_type: "customer",
+        partner_type: "customer", page: paginationModel.page + 1, limit: paginationModel.pageSize
     })
 
     const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery([])
@@ -131,7 +120,9 @@ const CustomerForm: React.FC = () => {
     if (error) {
         console.error("getting error while fetching the customers data:", error);
     }
-
+    const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
+        setPaginationModel(newPaginationModel);
+    };
     const mapRowToInitialValues = (rowData: Customer) => ({
         name: rowData.name || '',
         locationId: rowData.loc_ID || '',
@@ -151,7 +142,7 @@ const CustomerForm: React.FC = () => {
     });
 
 
-    const mappedData = customersData.map((item: Customer) => ({
+    const rows = customersData.map((item: Customer) => ({
         id: item.partner_id,
         ...item,
     }));
@@ -203,11 +194,27 @@ const CustomerForm: React.FC = () => {
     };
 
     const handleDelete = async (rowData: Customer) => {
-        console.log('Delete clicked for:', rowData);
-        const deleteId = rowData?.partner_id
-        const response = await deleteBusinessPartner(deleteId)
-        console.log("delete response :", response)
-    };
+        const confirmDelete = window.confirm(`Are you sure you want to delete ? This action cannot be undone.`);
+        
+        if (!confirmDelete) return;
+
+        try {
+            console.log("Delete clicked for:", rowData);
+            const deleteId = rowData?.partner_id;
+            const response = await deleteBusinessPartner(deleteId);
+            console.log("Delete response:", response);
+
+            setSnackbarMessage("Customer deleted successfully!");
+            setSnackbarSeverity("info");
+            setSnackbarOpen(true);
+        } catch (error) {
+            console.error("Delete error:", error);
+            setSnackbarMessage("Failed to delete customer. Please try again.");
+            setSnackbarSeverity("error");
+            setSnackbarOpen(true);
+        }
+};
+
 
     const handleCustomerSubmit = async (values: typeof initialCustomerValues, { resetForm }: { resetForm: () => void }) => {
         try {
@@ -264,13 +271,9 @@ const CustomerForm: React.FC = () => {
                 setUpdateRecord(false)
                 setUpdateRecordId(0)
                 setUpdateRecordData({})
-                // if (response) {
-                //     setFormInitialValues(initialCustomerValues)
-                //     setShowForm(false)
-                //     setUpdateRecord(false)
-                //     setUpdateRecordId(0)
-                //     setUpdateRecordData({})
-                // }
+                setSnackbarMessage("Customer details updated successfully!");
+                setSnackbarSeverity("success");
+                setSnackbarOpen(true);
             } else {
                 console.log("I am going create the record")
                 const response = await customerRegistration(body).unwrap();
@@ -282,13 +285,19 @@ const CustomerForm: React.FC = () => {
                     setUpdateRecordId(0)
                     setUpdateRecordData({})
                     resetForm()
+                    setSnackbarMessage("Customer details posted successfully!");
+                    setSnackbarSeverity("success");
+                    setSnackbarOpen(true);
                 }
             }
 
 
         } catch (error) {
             console.error('API Error:', error);
-        }
+                setSnackbarMessage('Something went wrong! Please try again.');
+                setSnackbarSeverity("error");
+                setSnackbarOpen(true);
+                    }
     };
 
     const handleLocationChange = (
@@ -330,7 +339,13 @@ const CustomerForm: React.FC = () => {
                 open={postCustomerLoading || editCustomerLoading || deleteCustomerLoading}
             >
                 <CircularProgress color="inherit" />
-             </Backdrop>
+            </Backdrop>
+            <SnackbarAlert
+                open={snackbarOpen}
+                message={snackbarMessage}
+                severity={snackbarSeverity}
+                onClose={() => setSnackbarOpen(false)}
+            />
             <Box display="flex" justifyContent="flex-end" gap={2}>
                 <Button
                     variant="contained"
@@ -378,13 +393,16 @@ const CustomerForm: React.FC = () => {
                                                 onChange={(event) => handleLocationChange(event, setFieldValue)}
                                                 onBlur={handleBlur}
                                             >
-                                                {getAllLocations.map((location: Location) => {
-                                                    return (
-                                                        <MenuItem key={location?.loc_ID} value={location?.loc_ID}>
-                                                            {location.loc_ID}
-                                                        </MenuItem>
-                                                    );
-                                                })}
+                                            {getAllLocations?.map((location: Location) => (
+                                                    <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                                        <Tooltip
+                                                            title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                                            placement="right"
+                                                            >
+                                                           <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                                        </Tooltip>
+                                                    </MenuItem>
+                                            ))}
                                             </Select>
                                             {touched.locationId && errors.locationId && (
                                                 <FormHelperText>{errors.locationId}</FormHelperText>
@@ -415,18 +433,6 @@ const CustomerForm: React.FC = () => {
                                             helperText={touched.city && errors.city}
                                         />
                                     </Grid>
-                                    {/* <Grid item xs={12} sm={6} md={2.4}>
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="District"
-                                            name="district"
-                                            value={values.district}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.district && Boolean(errors.district)}
-                                            helperText={touched.district && errors.district}
-                                        />
-                                    </Grid> */}
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
@@ -495,20 +501,6 @@ const CustomerForm: React.FC = () => {
 
                                 <h3 className={styles.mainHeading}>Shipping</h3>
                                 <Grid container spacing={2} style={{ marginBottom: '30px' }}>
-                                    {/* <Grid item xs={12} sm={6} md={2.4}>
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="Location of Source"
-                                            name="locationOfSource"
-                                            value={values.locationOfSource.join(', ')}
-                                            onChange={(e) => setFieldValue('locationOfSource', e.target.value.split(', '))}
-                                            onBlur={handleBlur}
-                                            error={touched.locationOfSource && Boolean(errors.locationOfSource)}
-                                            helperText={touched.locationOfSource && errors.locationOfSource}
-                                        />
-                                    </Grid> */}
-
-
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <FormControl fullWidth size="small" error={touched.locationOfSource && Boolean(errors.locationOfSource)}>
                                             <InputLabel>Location of Source</InputLabel>
@@ -519,11 +511,15 @@ const CustomerForm: React.FC = () => {
                                                 onChange={(e) => setFieldValue('locationOfSource', e.target.value)}
                                                 onBlur={handleBlur}
                                             >
-                                                {getAllLocations.map((location: Location) => (
-                                                    <MenuItem key={location.loc_ID} value={location.loc_ID}>
-                                                        {location.loc_ID}
-                                                    </MenuItem>
-                                                ))}
+                                            {getAllLocations?.map((location: Location) => (
+                                                <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                                    <Tooltip
+                                                        title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                                        placement="right">
+                                                        <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                                    </Tooltip>
+                                                </MenuItem>
+                                            ))}
                                             </Select>
                                             {touched.locationOfSource && errors.locationOfSource && (
                                                 <FormHelperText>{errors.locationOfSource}</FormHelperText>
@@ -545,57 +541,24 @@ const CustomerForm: React.FC = () => {
                                 </Grid>
 
                                 <h3 className={styles.mainHeading}>Partner Functions</h3>
-                                {/* <Grid container spacing={2} style={{ marginBottom: '30px' }}>
-                                    <Grid item xs={12} sm={6} md={2.4}>
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="Ship To Party"
-                                            name="shipToParty"
-                                            value={values.shipToParty}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.shipToParty && Boolean(errors.shipToParty)}
-                                            helperText={touched.shipToParty && errors.shipToParty}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} sm={6} md={2.4}>
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="Sold To Party"
-                                            name="soldToParty"
-                                            value={values.soldToParty}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.soldToParty && Boolean(errors.soldToParty)}
-                                            helperText={touched.soldToParty && errors.soldToParty}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} sm={6} md={2.4}>
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="Bill To Party"
-                                            name="billToParty"
-                                            value={values.billToParty}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.billToParty && Boolean(errors.billToParty)}
-                                            helperText={touched.billToParty && errors.billToParty}
-                                        />
-                                    </Grid>
-                                </Grid> */}
-
-
-
                                 <Grid container spacing={2} style={{ marginBottom: '30px' }}>
                                     {['shipToParty', 'soldToParty', 'billToParty'].map((field) => (
                                         <Grid item xs={12} sm={6} md={2.4} key={field}>
                                             <Autocomplete
                                                 options={customersData}
                                                 getOptionLabel={(option) => `${option.customer_id}`}
+                                                renderOption={(props, option) => (
+                                                    <Tooltip placement='right' title={`${option.name}, ${option.location_city}, ${option.location_state}, ${option.location_country}, ${option.location_pincode}`} arrow>
+                                                        <li {...props}>{option.customer_id}</li>
+                                                    </Tooltip>
+                                                    )}
                                                 renderInput={(params) => (
                                                     <TextField
                                                         {...params}
-                                                        label={field.replace(/([A-Z])/g, ' $1')}
+                                                        label={field
+                                                        .replace(/([A-Z])/g, ' $1')
+                                                        .replace(/^./, (str) => str.toUpperCase())
+                                                        }
                                                         size="small"
                                                         onBlur={handleBlur}
                                                     />
@@ -609,29 +572,19 @@ const CustomerForm: React.FC = () => {
                                         </Grid>
                                     ))}
                                 </Grid>
-                                {updateRecord ? (
                                     <Box marginTop={3} textAlign="center">
                                         <Button type="submit" variant="contained" color="primary">
-                                            Update
+                                            {updateRecord ? "Update record" : "Create record"}
+                                        </Button>
+                                        <Button variant="outlined"
+                                            color="secondary"
+                                            onClick={() => {
+                                                setFormInitialValues(initialCustomerValues)
+                                                setUpdateRecord(false)
+                                            }}
+                                            style={{ marginLeft: "10px" }}>Reset
                                         </Button>
                                     </Box>
-                                ) : (
-                                    <Box marginTop={3} textAlign="center">
-                                        <Button type="submit" variant="contained" color="primary">
-                                            Create
-                                            </Button>
-                                            <Button
-                                                    variant="contained"
-                                                    color="secondary"
-                                                    onClick={() => {
-                                                        setFormInitialValues(initialCustomerValues)
-                                                    setUpdateRecord(false)
-                                                    }}
-                                                    style={{ marginLeft: "10px" }}>Reset
-                                            </Button>
-                                    </Box>
-                                )}
-
                             </Form>
                         )}
                     </Formik>
@@ -643,13 +596,14 @@ const CustomerForm: React.FC = () => {
                 {isLoading ? (
                 <DataGridSkeletonLoader columns={columns} />
                 ) : (
-                <DataGridComponent
+                    <DataGridComponent
                         columns={columns}
-                        rows={mappedData}
-                        isLoading={false}
-                        pageSizeOptions={[10, 20, 30]}
-                        initialPageSize={10}
-                />
+                        rows={rows}
+                        isLoading={isLoading}
+                        paginationModel={paginationModel}
+                        activeEntity='customers'
+                        onPaginationModelChange={handlePaginationModelChange}
+                    />
                 )}
             </div>
         </Grid>
