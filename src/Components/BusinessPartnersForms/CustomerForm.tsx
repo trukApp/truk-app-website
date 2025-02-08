@@ -97,9 +97,9 @@ const CustomerForm: React.FC = () => {
     const [formInitialValues, setFormInitialValues] = useState(initialCustomerValues);
     const [updateRecordData, setUpdateRecordData] = useState({});
     const [updateRecordId, setUpdateRecordId] = useState(0)
-    const [updatePartnerDetails,{isLoading:editCustomerLoading}] = useEditBusinessPartnerMutation();
-    const [customerRegistration, {isLoading:postCustomerLoading}] = useCustomerRegistrationMutation();
-    const [deleteBusinessPartner,{isLoading:deleteCustomerLoading}] = useDeleteBusinessPartnerMutation()
+    const [updatePartnerDetails, { isLoading: editCustomerLoading }] = useEditBusinessPartnerMutation();
+    const [customerRegistration, { isLoading: postCustomerLoading }] = useCustomerRegistrationMutation();
+    const [deleteBusinessPartner, { isLoading: deleteCustomerLoading }] = useDeleteBusinessPartnerMutation()
 
     const { data, error, isLoading } = useGetAllCustomersDataQuery({
         partner_type: "customer", page: paginationModel.page + 1, limit: paginationModel.pageSize
@@ -107,8 +107,8 @@ const CustomerForm: React.FC = () => {
 
     const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery([])
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
-    console.log("all customers data :", data?.partners)
     console.log("all locations :", locationsData?.locations)
+    console.log("all customers data :", data?.partners)
     console.log("getLocationsError: ", getLocationsError)
     console.log("form intials :", formInitialValues)
     const customersData = data?.partners.length > 0 ? data?.partners : []
@@ -195,7 +195,7 @@ const CustomerForm: React.FC = () => {
 
     const handleDelete = async (rowData: Customer) => {
         const confirmDelete = window.confirm(`Are you sure you want to delete ? This action cannot be undone.`);
-        
+
         if (!confirmDelete) return;
 
         try {
@@ -213,7 +213,7 @@ const CustomerForm: React.FC = () => {
             setSnackbarSeverity("error");
             setSnackbarOpen(true);
         }
-};
+    };
 
 
     const handleCustomerSubmit = async (values: typeof initialCustomerValues, { resetForm }: { resetForm: () => void }) => {
@@ -294,10 +294,10 @@ const CustomerForm: React.FC = () => {
 
         } catch (error) {
             console.error('API Error:', error);
-                setSnackbarMessage('Something went wrong! Please try again.');
-                setSnackbarSeverity("error");
-                setSnackbarOpen(true);
-                    }
+            setSnackbarMessage('Something went wrong! Please try again.');
+            setSnackbarSeverity("error");
+            setSnackbarOpen(true);
+        }
     };
 
     const handleLocationChange = (
@@ -333,8 +333,8 @@ const CustomerForm: React.FC = () => {
         <Grid >
             <Backdrop
                 sx={{
-                color: "#ffffff",
-                zIndex: (theme) => theme.zIndex.drawer + 1,
+                    color: "#ffffff",
+                    zIndex: (theme) => theme.zIndex.drawer + 1,
                 }}
                 open={postCustomerLoading || editCustomerLoading || deleteCustomerLoading}
             >
@@ -393,16 +393,16 @@ const CustomerForm: React.FC = () => {
                                                 onChange={(event) => handleLocationChange(event, setFieldValue)}
                                                 onBlur={handleBlur}
                                             >
-                                            {getAllLocations?.map((location: Location) => (
+                                                {getAllLocations?.map((location: Location) => (
                                                     <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
                                                         <Tooltip
                                                             title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
                                                             placement="right"
-                                                            >
-                                                           <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                                        >
+                                                            <span style={{ flex: 1 }}>{location.loc_ID}</span>
                                                         </Tooltip>
                                                     </MenuItem>
-                                            ))}
+                                                ))}
                                             </Select>
                                             {touched.locationId && errors.locationId && (
                                                 <FormHelperText>{errors.locationId}</FormHelperText>
@@ -511,15 +511,15 @@ const CustomerForm: React.FC = () => {
                                                 onChange={(e) => setFieldValue('locationOfSource', e.target.value)}
                                                 onBlur={handleBlur}
                                             >
-                                            {getAllLocations?.map((location: Location) => (
-                                                <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                                                    <Tooltip
-                                                        title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                                        placement="right">
-                                                        <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                                                    </Tooltip>
-                                                </MenuItem>
-                                            ))}
+                                                {getAllLocations?.map((location: Location) => (
+                                                    <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                                        <Tooltip
+                                                            title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                                            placement="right">
+                                                            <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                                        </Tooltip>
+                                                    </MenuItem>
+                                                ))}
                                             </Select>
                                             {touched.locationOfSource && errors.locationOfSource && (
                                                 <FormHelperText>{errors.locationOfSource}</FormHelperText>
@@ -551,13 +551,13 @@ const CustomerForm: React.FC = () => {
                                                     <Tooltip placement='right' title={`${option.name}, ${option.location_city}, ${option.location_state}, ${option.location_country}, ${option.location_pincode}`} arrow>
                                                         <li {...props}>{option.customer_id}</li>
                                                     </Tooltip>
-                                                    )}
+                                                )}
                                                 renderInput={(params) => (
                                                     <TextField
                                                         {...params}
                                                         label={field
-                                                        .replace(/([A-Z])/g, ' $1')
-                                                        .replace(/^./, (str) => str.toUpperCase())
+                                                            .replace(/([A-Z])/g, ' $1')
+                                                            .replace(/^./, (str) => str.toUpperCase())
                                                         }
                                                         size="small"
                                                         onBlur={handleBlur}
@@ -572,19 +572,19 @@ const CustomerForm: React.FC = () => {
                                         </Grid>
                                     ))}
                                 </Grid>
-                                    <Box marginTop={3} textAlign="center">
-                                        <Button type="submit" variant="contained" color="primary">
-                                            {updateRecord ? "Update record" : "Create record"}
-                                        </Button>
-                                        <Button variant="outlined"
-                                            color="secondary"
-                                            onClick={() => {
-                                                setFormInitialValues(initialCustomerValues)
-                                                setUpdateRecord(false)
-                                            }}
-                                            style={{ marginLeft: "10px" }}>Reset
-                                        </Button>
-                                    </Box>
+                                <Box marginTop={3} textAlign="center">
+                                    <Button type="submit" variant="contained" color="primary">
+                                        {updateRecord ? "Update record" : "Create record"}
+                                    </Button>
+                                    <Button variant="outlined"
+                                        color="secondary"
+                                        onClick={() => {
+                                            setFormInitialValues(initialCustomerValues)
+                                            setUpdateRecord(false)
+                                        }}
+                                        style={{ marginLeft: "10px" }}>Reset
+                                    </Button>
+                                </Box>
                             </Form>
                         )}
                     </Formik>
@@ -594,7 +594,7 @@ const CustomerForm: React.FC = () => {
 
             <div style={{ marginTop: "40px" }}>
                 {isLoading ? (
-                <DataGridSkeletonLoader columns={columns} />
+                    <DataGridSkeletonLoader columns={columns} />
                 ) : (
                     <DataGridComponent
                         columns={columns}

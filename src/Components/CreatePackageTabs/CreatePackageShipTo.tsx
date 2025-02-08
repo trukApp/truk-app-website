@@ -1,10 +1,12 @@
 import React from 'react';
-import { Formik, Form, Field } from 'formik';
-import { Grid, TextField, Checkbox, FormControlLabel, Button } from '@mui/material';
+import { Formik, Form, Field, FormikProps } from 'formik';
+import { Grid, TextField, Checkbox, FormControlLabel, Button, FormControl, InputLabel, Select, MenuItem, Tooltip, FormHelperText, SelectChangeEvent } from '@mui/material';
 import * as Yup from 'yup';
 import styles from './CreatePackage.module.css';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { IShipTo, setPackageShipTo } from '@/store/authSlice';
+import { useGetLocationMasterQuery } from '@/api/apiSlice';
+import { Location } from '../MasterDataComponents/Locations';
 
 interface ShipToProps {
     onNext: (values: IShipTo) => void;
@@ -18,8 +20,8 @@ const validationSchema = Yup.object({
         contactPerson: Yup.string().required('Contact Person is required'),
         phoneNumber: Yup.string().required('Phone Number is required'),
         email: Yup.string().email('Invalid email').required('Email is required'),
-        addressLine1: Yup.string().required('Address Line 1 is required'),
-        addressLine2: Yup.string(),
+        // addressLine1: Yup.string().required('Address Line 1 is required'),
+        // addressLine2: Yup.string(),
         city: Yup.string().required('City is required'),
         state: Yup.string().required('State is required'),
         country: Yup.string().required('Country is required'),
@@ -31,6 +33,42 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
     const dispatch = useAppDispatch()
     const shipToReduxValues = useAppSelector((state) => state.auth.packageShipTo)
     console.log("shipFromReduxValues: ", shipToReduxValues)
+
+    const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery([])
+    const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
+    console.log("all locations :", getAllLocations)
+
+    console.log("getLocationsError: ", getLocationsError)
+
+    const handleLocationChange = (
+        event: SelectChangeEvent<string>,
+        setFieldValue: FormikProps<{ shipFrom: IShipTo }>['setFieldValue']
+    ) => {
+        const selectedLocationId = event.target.value;
+        setFieldValue('shipFrom.locationId', selectedLocationId);
+
+        const selectedLocation = getAllLocations.find((loc: Location) => loc.loc_ID === selectedLocationId);
+
+        if (selectedLocation) {
+            setFieldValue('shipFrom.locationDescription', selectedLocation.loc_desc || '');
+            setFieldValue('shipFrom.addressLine1', selectedLocation.address_1 || '');
+            setFieldValue('shipFrom.addressLine2', selectedLocation.address_2 || '');
+            setFieldValue('shipFrom.city', selectedLocation.city || '');
+            setFieldValue('shipFrom.state', selectedLocation.state || '');
+            setFieldValue('shipFrom.country', selectedLocation.country || '');
+            setFieldValue('shipFrom.pincode', selectedLocation.pincode || '');
+        } else {
+            setFieldValue('shipFrom.locationDescription', '');
+            setFieldValue('shipFrom.addressLine1', '');
+            setFieldValue('shipFrom.addressLine2', '');
+            setFieldValue('shipFrom.locationId', '');
+            setFieldValue('shipFrom.city', '');
+            setFieldValue('shipFrom.state', '');
+            setFieldValue('shipFrom.country', '');
+            setFieldValue('shipFrom.pincode', '');
+        }
+    };
+
     return (
         <Formik
             initialValues={{
@@ -57,21 +95,35 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                 onNext(values.shipFrom);
             }}
         >
-            {({ errors, touched, handleSubmit }) => (
+            {({ errors, touched, handleSubmit, values, setFieldValue, handleBlur }) => (
                 <Form>
                     <Grid container spacing={2} className={styles.formsBgContainer}>
                         <h3 className={styles.mainHeading}>Location Details</h3>
                         <Grid container spacing={2}>
-                            <Grid item xs={12} md={2.4}>
-                                <Field
-                                    name="shipFrom.locationId"
-                                    as={TextField}
-                                    label="Location ID"
-                                    fullWidth
-                                    required
-                                    error={touched.shipFrom?.locationId && Boolean(errors.shipFrom?.locationId)}
-                                    helperText={touched.shipFrom?.locationId && errors.shipFrom?.locationId}
-                                />
+                            <Grid item xs={12} sm={6} md={2.4}>
+                                <FormControl fullWidth size="small" error={touched.shipFrom?.locationId && Boolean(errors.shipFrom?.locationId)}>
+                                    <InputLabel>Location ID</InputLabel>
+                                    <Select
+                                        label="Location ID"
+                                        name="shipFrom.locationId"
+                                        value={values.shipFrom?.locationId}
+                                        onChange={(event) => handleLocationChange(event, setFieldValue)}
+                                        onBlur={handleBlur}
+                                    >
+                                        {getAllLocations?.map((location: Location) => (
+                                            <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                                <Tooltip
+                                                    title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                                    placement="right">
+                                                    <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                                </Tooltip>
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                    {touched.shipFrom?.locationId && errors.shipFrom?.locationId && (
+                                        <FormHelperText>{errors.shipFrom?.locationId}</FormHelperText>
+                                    )}
+                                </FormControl>
                             </Grid>
                             <Grid item xs={12} md={2.4}>
                                 <Field
@@ -201,7 +253,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                             <Grid item xs={12} md={2.4}>
                                 <FormControlLabel
                                     control={<Field name="shipFrom.saveAsDefaultShipFromLocation" type="checkbox" as={Checkbox} />}
-                                    label="Save as default Ship From Location"
+                                    label="Save as default Ship To Location"
                                 />
                             </Grid>
                         </Grid>
