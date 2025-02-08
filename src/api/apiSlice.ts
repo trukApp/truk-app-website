@@ -47,6 +47,7 @@ export const apiSlice = createApi({
     "ProductMaster",
     "UomMaster",
     "CreateOrder",
+    "PackagesForOrder",
   ],
   endpoints: (builder) => ({
     userLogin: builder.mutation<User, { phone: string; password: string }>({
@@ -465,6 +466,41 @@ export const apiSlice = createApi({
       }),
       // providesTags: [{ type: "ProductMaster", id: "LIST" }],
     }),
+
+    getAllPackagesForOrder: builder.query({
+      query: (params) => ({
+        url: `products/packages/all-packages`,
+        method: "GET",
+        params
+      }),
+      providesTags: [{ type: "PackagesForOrder", id: "LIST" }],
+    }),
+
+    createPackageForOrder: builder.mutation({
+      query: (body) => ({
+        url: "products/packages/generate-package",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "PackagesForOrder", id: "LIST" }],
+    }),
+
+    deletePackageForOrder: builder.mutation({
+      query: (packageId) => ({
+        url: ` products/packages/delete-package?pac_id?pac_id=${packageId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [{ type: "PackagesForOrder", id: "LIST" }],
+    }),
+
+    editPackageForOrder: builder.mutation({
+      query: ({ body, packageId }) => ({
+        url: `products/packages/edit-package?pac_id=${packageId}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: [{ type: "PackagesForOrder", id: "LIST" }],
+    }),
   }),
 });
 
@@ -513,5 +549,10 @@ export const {
   useDeleteProductMutation,
   useEditProductMutation,
   useSelectTheProductsMutation,
-  useGetDataCountQuery
+  useGetDataCountQuery,
+  useGetAllPackagesForOrderQuery,
+  useCreatePackageForOrderMutation,
+  useDeletePackageForOrderMutation,
+  useEditPackageForOrderMutation
+  
 } = apiSlice;
