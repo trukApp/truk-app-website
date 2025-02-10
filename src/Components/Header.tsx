@@ -66,11 +66,12 @@ const Header = () => {
 
   return (
     <AppBar position="fixed"
-      color="info"
+      // color="info"
+      sx={{ backgroundColor: "#83214F" }}
     >
       <Toolbar>
         {/* Logo */}
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }} onClick={handleNavigationToHomePage}>
+        <Typography variant="h6" component="div" sx={{ flexGrow: 1, cursor: 'pointer' }} onClick={handleNavigationToHomePage}>
           Truk App 🚚
         </Typography>
 

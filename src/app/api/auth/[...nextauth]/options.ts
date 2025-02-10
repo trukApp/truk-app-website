@@ -55,8 +55,7 @@ const refreshAccessToken = async (refreshToken: string) => {
     return {
       accessToken: data.accessToken,
       // refreshToken: data.refreshToken || refreshToken,
-      accessTokenExpires: Date.now() + 24 * 60 * 60 * 1000,       // in milli seconds
-
+      accessTokenExpires: Date.now() + 24 * 60 * 60 * 1000, // in milli seconds
     };
   } catch (error) {
     console.error("Refresh token error:", error);
@@ -195,7 +194,7 @@ export const options: NextAuthOptions = {
 
   session: {
     strategy: "jwt",
-   maxAge: 24 * 60 * 60, //must return here in seconds
+    maxAge: 24 * 60 * 60, //must return here in seconds
   },
 
   jwt: {

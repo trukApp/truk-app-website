@@ -1,204 +1,122 @@
-// import React, { useEffect, useState } from 'react';
-// import { DataGrid, GridColDef } from '@mui/x-data-grid';
-// import { useAppSelector, useAppDispatch } from '@/store';
-// import { setSelectedPackages } from '@/store/authSlice';
-
-// interface Package {
-//     id: number;
-//     packageName: string;
-//     weight: string;
-//     length: string;
-//     width: string;
-//     volume: string;
-//     senderName: string;
-//     senderAddress: string;
-//     senderPincode: string;
-//     senderState: string;
-//     senderCountry: string;
-//     senderPhone: string;
-//     receiverName: string;
-//     receiverAddress: string;
-//     receiverPincode: string;
-//     receiverState: string;
-//     receiverCountry: string;
-//     receiverPhone: string;
-// }
-
-// interface PackagesTableProps {
-//     packages: Package[];
-// }
-
-// const PackagesTable: React.FC<PackagesTableProps> = ({ packages }) => {
-//     const dispatch = useAppDispatch();
-//     const selectedPackages = useAppSelector(
-//         (state) => state.auth.selectedPackages || [] // Handle nullable field
-//     );
-// const [selectionModel, setSelectionModel] = useState<number[]>([]);
-
-// useEffect(() => {
-//     if (selectedPackages.length > 0) {
-//         const selectedRowIds = selectedPackages.map((pkg) =>
-//             packages.findIndex((p) => p.packageName === pkg.packageName)
-//         );
-//         setSelectionModel(selectedRowIds);
-//     }
-// }, [selectedPackages, packages]);
-
-//     const columns: GridColDef[] = [
-//         { field: 'packageName', headerName: 'Package Name', width: 150 },
-//         { field: 'weight', headerName: 'Weight', width: 100 },
-//         { field: 'volume', headerName: 'Volume', width: 150 },
-//         { field: 'senderName', headerName: 'Sender Name', width: 150 },
-//         { field: 'senderAddress', headerName: 'Sender Address', width: 200 },
-//         { field: 'senderPincode', headerName: 'Sender Pincode', width: 150 },
-//         { field: 'receiverName', headerName: 'Receiver Name', width: 150 },
-//         { field: 'receiverAddress', headerName: 'Receiver Address', width: 200 },
-//         { field: 'receiverPincode', headerName: 'Receiver Pincode', width: 150 },
-//     ];
-
-//     const rows = packages.map((pkg, index: number) => ({
-//         ...pkg,
-//         id: index,
-//     }));
-
-//     const handleSelectionChange = (selectionModel: number[]) => {
-//         console.log("selectionMode: l", selectionModel)
-//         const selectedPackages = selectionModel.map((id) => packages[id]);
-//         console.log("selectedPackages: ", selectedPackages)
-//         dispatch(setSelectedPackages(selectedPackages));
-//     };
-
-//     return (
-//         <div style={{ height: 630, width: '100%' }}>
-//             <DataGrid
-//                 rows={rows}
-//                 columns={columns}
-//                 checkboxSelection
-//                 onRowSelectionModelChange={(model) =>
-//                     handleSelectionChange(model as number[])
-//                 }
-//                 rowSelectionModel={selectionModel}
-//             />
-//         </div>
-//     );
-// };
-
-// export default PackagesTable;
-
-
 import React, { useEffect, useState } from 'react';
 import { DataGrid, GridColDef, GridCellParams } from '@mui/x-data-grid';
 import { useAppSelector, useAppDispatch } from '@/store';
-import { setCreateOrderDesination, setSelectedPackages } from '@/store/authSlice';
-import { Product } from '@/app/productmaster/page';
-import { FormControl, Grid, InputLabel, MenuItem, Select } from '@mui/material';
-import { useGetLocationMasterQuery } from '@/api/apiSlice';
-import { Location } from '../MasterDataComponents/Locations';
+import { setSelectedPackages } from '@/store/authSlice';
+import { Grid } from '@mui/material';
 import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
 
-interface ProductsTableProps {
-    allProductsData: Product[];
-    isProductsLoading: boolean;
+export interface Product {
+    prod_ID: string;
+    quantity: number;
 }
 
-const PackagesTable: React.FC<ProductsTableProps> = ({ allProductsData, isProductsLoading }) => {
+export interface AdditionalInfo {
+    invoice: string;
+    reference_id: string;
+}
+
+export interface TaxInfo {
+    tax_rate: string;
+}
+
+export interface Package {
+    pac_id: number;
+    pack_ID: string;
+    ship_from: string;
+    ship_to: string;
+    product_ID: Product[];
+    package_info: string;
+    bill_to: string;
+    return_label: number;
+    additional_info: AdditionalInfo;
+    pickup_date_time: string;
+    dropoff_date_time: string;
+    tax_info: TaxInfo;
+}
+
+interface PackagesTableProps {
+    allPackagesData: Package[];
+    isPackagesLoading: boolean;
+}
+
+const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackagesLoading }) => {
     const dispatch = useAppDispatch();
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
-    const sourceLocation = useAppSelector((state) => state.auth.createOrderDesination);
-    console.log("sourceLocation: ", sourceLocation)
     const [selectionModel, setSelectionModel] = useState<number[]>([]);
-    const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery([])
-    const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
-    console.log("getLocationsError: ", getLocationsError)
-    const [locationId, setLocationId] = useState<string>(sourceLocation);
-
-    console.log("selectedPackages: ", selectedPackages)
 
     useEffect(() => {
-        // Update local selection model when Redux state changes
-        const selectedIds = selectedPackages.map((product) => product.prod_id);
+        const selectedIds = selectedPackages.map((pkg) => pkg.pac_id);
         setSelectionModel(selectedIds);
     }, [selectedPackages]);
 
     const columns: GridColDef[] = [
-        { field: 'productName', headerName: 'Product Name', width: 150 },
-        { field: 'product_ID', headerName: 'Product ID', width: 150 },
-        { field: 'product_desc', headerName: 'Product Description', width: 200 },
-        { field: 'sales_uom', headerName: 'Sales UOM', width: 150 },
-        { field: 'basic_uom', headerName: 'Basic UOM', width: 150 },
-        { field: 'weight', headerName: 'Weight', width: 150 },
-        { field: 'volume', headerName: 'Volume', width: 150 },
-        { field: 'expiration', headerName: 'Expiration Date', width: 180 },
-        { field: 'best_before', headerName: 'Best Before Date', width: 180 },
-        { field: 'hsn_code', headerName: 'HSN Code', width: 150 },
-        { field: 'sku_num', headerName: 'SKU Number', width: 150 },
+        { field: 'pack_ID', headerName: 'Package ID', width: 150 },
+        { field: 'ship_from', headerName: 'Ship From', width: 150 },
+        { field: 'ship_to', headerName: 'Ship To', width: 150 },
+        { field: 'package_info', headerName: 'Package Info', width: 150 },
+        { field: 'bill_to', headerName: 'Bill To', width: 150 },
+        { field: 'return_label', headerName: 'Return Label', width: 150 },
+        { field: 'pickup_date_time', headerName: 'Pickup Date & Time', width: 200 },
+        { field: 'dropoff_date_time', headerName: 'Dropoff Date & Time', width: 200 },
+        { field: 'tax_rate', headerName: 'Tax Rate', width: 150 },
         {
-            field: 'fragile_goods',
-            headerName: 'Fragile Goods',
-            width: 180,
-            valueFormatter: (params: GridCellParams) => (params?.value ? 'Yes' : 'No'),
+            field: 'product_details',
+            headerName: 'Product Details',
+            width: 300,
+            renderCell: (params: GridCellParams) => {
+                const products = params.value as { prod_ID: string; quantity: number }[]; // Type assertion
+                return (
+                    <div>
+                        {products?.map((prod) => (
+                            <div key={prod.prod_ID}>{`${prod.prod_ID} (Qty: ${prod.quantity})`}</div>
+                        ))}
+                    </div>
+                );
+            },
         },
         {
-            field: 'dangerous_goods',
-            headerName: 'Dangerous Goods',
-            width: 180,
-            valueFormatter: (params: GridCellParams) => (params.value ? 'Yes' : 'No'),
+            field: 'additional_info',
+            headerName: 'Additional Info',
+            width: 250,
+            renderCell: (params: GridCellParams) => {
+                const info = params.value as { invoice: string; reference_id: string }; // Type assertion
+                return (
+                    <div>
+                        <div>Invoice: {info?.invoice}</div>
+                        <div>Reference: {info?.reference_id}</div>
+                    </div>
+                );
+            },
         },
     ];
 
-    const rows = allProductsData.map((product: Product) => ({
-        id: product.prod_id,
-        product_ID: product.product_ID,
-        product_desc: product.product_desc,
-        sales_uom: product.sales_uom,
-        basic_uom: product.basic_uom,
-        weight: product.weight,
-        volume: product.volume,
-        expiration: product.expiration,
-        best_before: product.best_before,
-        hsn_code: product.hsn_code,
-        sku_num: product.sku_num,
-        fragile_goods: product.fragile_goods,
-        dangerous_goods: product.dangerous_goods,
-        productName: product.product_name,
+    const rows = allPackagesData.map((pkg: Package) => ({
+        id: pkg.pac_id,
+        pack_ID: pkg.pack_ID,
+        ship_from: pkg.ship_from,
+        ship_to: pkg.ship_to,
+        package_info: pkg.package_info,
+        bill_to: pkg.bill_to,
+        return_label: pkg.return_label,
+        pickup_date_time: pkg.pickup_date_time,
+        dropoff_date_time: pkg.dropoff_date_time,
+        tax_rate: pkg.tax_info.tax_rate,
+        product_details: pkg.product_ID,
+        additional_info: pkg.additional_info,
     }));
 
     const handleSelectionChange = (newSelection: number[]) => {
         setSelectionModel(newSelection);
-        const selectedProducts = newSelection
-            .map((id) => allProductsData.find((product) => product.prod_id === id))
-            .filter((product): product is Product => product !== undefined);
-
-        dispatch(setSelectedPackages(selectedProducts)); // Update Redux state
+        const selectedPackages = newSelection
+            .map((id) => allPackagesData.find((pkg) => pkg.pac_id === id))
+            .filter((pkg): pkg is Package => pkg !== undefined);
+        dispatch(setSelectedPackages(selectedPackages));
     };
 
     return (
         <div>
-
-            <Grid item xs={12} sm={6} md={2.4}>
-                <FormControl fullWidth size="small">
-                    <InputLabel>Location ID</InputLabel>
-                    <Select
-                        label="Location ID"
-                        name="locationId"
-                        value={locationId}
-                        onChange={(event) => {
-                            setLocationId(event.target.value)
-                            dispatch(setCreateOrderDesination(event.target.value))
-                        }}
-                    >
-                        {getAllLocations.map((location: Location) => {
-                            return (
-                                <MenuItem key={location?.loc_ID} value={location?.loc_ID}>
-                                    {location.loc_ID}
-                                </MenuItem>
-                            );
-                        })}
-                    </Select>
-                </FormControl>
-            </Grid>
             <Grid sx={{ marginTop: '20px', marginBottom: '20px' }}>
-                {isProductsLoading ? (
+                {isPackagesLoading ? (
                     <DataGridSkeletonLoader columns={columns} />
                 ) : (
                     <DataGrid
@@ -212,7 +130,6 @@ const PackagesTable: React.FC<ProductsTableProps> = ({ allProductsData, isProduc
                         }
                     />
                 )}
-
             </Grid>
         </div>
     );
