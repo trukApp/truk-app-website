@@ -4,7 +4,7 @@ import { Formik, Form, Field, FormikHelpers } from 'formik';
 import { Grid, TextField, Button, Backdrop, CircularProgress } from '@mui/material';
 import * as Yup from 'yup';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { setPackageTax } from '@/store/authSlice';
+import { setPackageAddtionalInfo, setPackageBillTo, setPackagePickAndDropTimings, setPackageShipFrom, setPackageShipTo, setPackageTax, setSelectedPackages } from '@/store/authSlice';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 import { useCreatePackageForOrderMutation } from '@/api/apiSlice';
 
@@ -95,9 +95,19 @@ const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
             console.log("createPackageBody: ", createPackageBody)
             const response = await createPackageOrder(createPackageBody).unwrap();
             console.log('API Response:', response)
+            dispatch(setPackageShipFrom(null));
+            dispatch(setPackageShipTo(null));
+                dispatch(setPackageBillTo(null));
+                dispatch(setPackageTax(null))
+                dispatch(setPackageAddtionalInfo(null));
+                dispatch(setSelectedPackages([]))
+                dispatch(setPackagePickAndDropTimings(null))
+                
+
             setSnackbarMessage("Package created successfully!");
             setSnackbarSeverity("success");
-			setSnackbarOpen(true);
+            setSnackbarOpen(true);
+                
         }
         catch (error) {
             console.log("err :", error)
@@ -147,7 +157,7 @@ const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
                                 as={TextField}
                                 name="taxInfo.receiverGSTN"
                                 label="GSTN of the Receiver"
-                                fullWidth
+                                fullWidth 
                                 error={touched.taxInfo?.receiverGSTN && Boolean(errors.taxInfo?.receiverGSTN)}
                                 helperText={touched.taxInfo?.receiverGSTN && errors.taxInfo?.receiverGSTN}
                             />
