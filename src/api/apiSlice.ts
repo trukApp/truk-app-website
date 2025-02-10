@@ -152,7 +152,7 @@ export const apiSlice = createApi({
       query: (params) => ({
         url: `carrier/all-carriers`,
         method: "GET",
-        params
+        params,
       }),
       providesTags: [{ type: "CARRIER", id: "LIST" }],
     }),
@@ -188,7 +188,7 @@ export const apiSlice = createApi({
       query: (params) => ({
         url: `masLoc/all-locations`,
         method: "GET",
-        params
+        params,
       }),
       providesTags: [{ type: "LocationMaster", id: "LIST" }],
     }),
@@ -225,7 +225,7 @@ export const apiSlice = createApi({
         return {
           url: `vehicle/vehicles`,
           method: "GET",
-          params
+          params,
         };
       },
       providesTags: [{ type: "VehicleMaster", id: "LIST" }],
@@ -262,7 +262,7 @@ export const apiSlice = createApi({
       query: (params) => ({
         url: `package/get-all-packages`,
         method: "GET",
-        params
+        params,
       }),
       providesTags: [{ type: "PackageMaster", id: "LIST" }],
     }),
@@ -298,7 +298,7 @@ export const apiSlice = createApi({
       query: (params) => ({
         url: `lane/all-lanes`,
         method: "GET",
-        params
+        params,
       }),
       providesTags: [{ type: "LaneMaster", id: "LIST" }],
     }),
@@ -334,7 +334,7 @@ export const apiSlice = createApi({
       query: (params) => ({
         url: `device/all-devices`,
         method: "GET",
-        params
+        params,
       }),
       providesTags: [{ type: "DeviceMaster", id: "LIST" }],
     }),
@@ -370,7 +370,7 @@ export const apiSlice = createApi({
       query: (params) => ({
         url: "masterUom/all-uom",
         method: "GET",
-        params
+        params,
       }),
       providesTags: [{ type: "UomMaster", id: "LIST" }],
     }),
@@ -406,7 +406,7 @@ export const apiSlice = createApi({
       query: (params) => ({
         url: `masterProducts/all-products`,
         method: "GET",
-        params
+        params,
       }),
       providesTags: [{ type: "ProductMaster", id: "LIST" }],
     }),
@@ -438,14 +438,6 @@ export const apiSlice = createApi({
     }),
 
     //Crearte order
-    // selectTheProducts: builder.mutation({
-    //   query: (body) => ({
-    //     url: "createOrder/create-order",
-    //     method: "POST",
-    //     body,
-    //   }),
-    //   invalidatesTags: [{ type: "CreateOrder", id: "LIST" }],
-    // }),
     selectTheProducts: builder.mutation({
       query: (body) => {
         // console.log("RTK Query Payload", JSON.stringify(body, null, 2));
@@ -456,7 +448,7 @@ export const apiSlice = createApi({
           body,
         };
       },
-      invalidatesTags: [{ type: "CreateOrder", id: "LIST" }],
+      invalidatesTags: [{ type: "PackagesForOrder", id: "LIST" }],
     }),
 
     getDataCount: builder.query({
@@ -467,11 +459,12 @@ export const apiSlice = createApi({
       // providesTags: [{ type: "ProductMaster", id: "LIST" }],
     }),
 
+    //Create Order
     getAllPackagesForOrder: builder.query({
       query: (params) => ({
         url: `products/packages/all-packages`,
         method: "GET",
-        params
+        params,
       }),
       providesTags: [{ type: "PackagesForOrder", id: "LIST" }],
     }),
@@ -553,6 +546,5 @@ export const {
   useGetAllPackagesForOrderQuery,
   useCreatePackageForOrderMutation,
   useDeletePackageForOrderMutation,
-  useEditPackageForOrderMutation
-  
+  useEditPackageForOrderMutation,
 } = apiSlice;

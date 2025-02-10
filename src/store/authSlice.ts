@@ -3,6 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { AdditionalInfo } from "@/Components/CreatePackageTabs/AddtionalInformation";
 import { FormValues } from "@/Components/CreatePackageTabs/PickUpAndDropOffDetails";
+import { Package } from "@/Components/CreateOrderTables/PackagesTable";
 export interface ITruck {
   id: number;
   ownerName: string;
@@ -22,53 +23,53 @@ export interface ITruck {
   leftoverVolume: string;
 }
 
-interface PackagingType {
-  pac_ID: string;
-  location: string;
-}
+// interface PackagingType {
+//   pac_ID: string;
+//   location: string;
+// }
 
-interface Product {
-  productName: string;
-  productCode: string;
-  category: string;
-  subCategory: string;
-  price: number;
-  stockQuantity: number;
-  manufacturer: string;
-  description: string;
-  warehouseLocation: string;
-  warehousePincode: string;
-  warehouseState: string;
-  warehouseCity: string;
-  warehouseCountry: string;
-  product_ID: string;
-  product_desc: string;
-  sales_uom: string;
-  basic_uom: string;
-  weight: string;
-  volume: string;
-  expiration: string;
-  best_before: string;
-  hsn_code: string;
-  sku_num: string;
-  fragile_goods: boolean;
-  dangerous_goods: boolean;
-  id: number;
-  prod_id: number;
-  loc_ID: string;
-  specialInstructions: string;
-  documents: string;
-  stacking_factor: string;
-  packaging_type: PackagingType[];
-  temp_controlled: boolean;
-  hazardous: boolean;
-  product_name: string;
-  packagingType: PackagingType[];
-  packing_label: boolean;
-  special_instructions: string;
-  tempControl: boolean;
-  packingLabel: boolean;
-}
+// interface Product {
+//   productName: string;
+//   productCode: string;
+//   category: string;
+//   subCategory: string;
+//   price: number;
+//   stockQuantity: number;
+//   manufacturer: string;
+//   description: string;
+//   warehouseLocation: string;
+//   warehousePincode: string;
+//   warehouseState: string;
+//   warehouseCity: string;
+//   warehouseCountry: string;
+//   product_ID: string;
+//   product_desc: string;
+//   sales_uom: string;
+//   basic_uom: string;
+//   weight: string;
+//   volume: string;
+//   expiration: string;
+//   best_before: string;
+//   hsn_code: string;
+//   sku_num: string;
+//   fragile_goods: boolean;
+//   dangerous_goods: boolean;
+//   id: number;
+//   prod_id: number;
+//   loc_ID: string;
+//   specialInstructions: string;
+//   documents: string;
+//   stacking_factor: string;
+//   packaging_type: PackagingType[];
+//   temp_controlled: boolean;
+//   hazardous: boolean;
+//   product_name: string;
+//   packagingType: PackagingType[];
+//   packing_label: boolean;
+//   special_instructions: string;
+//   tempControl: boolean;
+//   packingLabel: boolean;
+// }
 
 export interface IShipFrom {
   addressLine1: string;
@@ -127,7 +128,7 @@ export interface IAuthState {
   refreshToken: string | null;
   selectedTrucks: Array<ITruck> | null;
   unitsofMeasurement: string[];
-  selectedPackages: Array<Product>;
+  selectedPackages: Array<Package>;
   createOrderDesination: string;
   packageShipFrom: IShipFrom | null;
   packageShipTo: IShipTo | null;
@@ -178,7 +179,7 @@ export const authSlice = createSlice({
     setUnitsofMeasurement: (state, action: PayloadAction<string[]>) => {
       state.unitsofMeasurement = action.payload;
     },
-    setSelectedPackages: (state, action: PayloadAction<Array<Product>>) => {
+    setSelectedPackages: (state, action: PayloadAction<Array<Package>>) => {
       console.log("action.payload: ", action.payload);
       state.selectedPackages = action.payload; // Update selected packages
     },
