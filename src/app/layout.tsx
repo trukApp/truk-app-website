@@ -33,15 +33,15 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <ThemeProvider theme={theme}>
-           <CssBaseline />
+          <CssBaseline />
           <ReduxProvider>
             <Header />
-            <Grid sx={{ marginTop: {xs:'20px',md:'33px'},  padding: '15px' }}>
+            <Grid sx={{ marginTop: { xs: '20px', md: '33px' }, padding: '15px', backgroundColor: "#FAF1F8", minHeight: '73vh' }}>
               {children}
             </Grid>
             <Footer />
-            </ReduxProvider>
-          </ThemeProvider>
+          </ReduxProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

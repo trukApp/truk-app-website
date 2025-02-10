@@ -1,26 +1,29 @@
 'use client';
 import React from 'react';
-import { Box, Typography, Card, CardMedia } from '@mui/material';
+import { Box, Typography, Card } from '@mui/material';
+import AnalyticsIcon from '@mui/icons-material/Analytics';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 
 const RatingsAndReviews = () => {
   const tiles = [
     {
       title: 'Transport order analytics',
-      image: 'https://jai-mp.s3.eu-north-1.amazonaws.com/settings-3110.png',
+      icon: <AnalyticsIcon sx={{ fontSize: { xs: 40, sm: 50, md: 60 } }} />,
     },
     {
       title: 'Carrier performance',
-      image: 'https://jai-mp.s3.eu-north-1.amazonaws.com/settings-3110.png',
+      icon: <LocalShippingIcon sx={{ fontSize: { xs: 40, sm: 50, md: 60 } }} />,
     },
     {
       title: 'Cost analysis',
-      image: 'https://jai-mp.s3.eu-north-1.amazonaws.com/settings-3110.png',
+      icon: <AttachMoneyIcon sx={{ fontSize: { xs: 40, sm: 50, md: 60 } }} />,
     },
   ];
 
   return (
     <Box>
-      <Typography variant="h6" sx={{ mt:4,marginBottom:'1px', color: 'primary.main', fontWeight: 'bold' }}>
+      <Typography variant="h6" sx={{ mt: 4, mb: 1, color: '#83214F', fontWeight: 'bold' }}>
         Reviews & Ratings
       </Typography>
       <Box
@@ -39,38 +42,29 @@ const RatingsAndReviews = () => {
           <Card
             key={index}
             sx={{
-              p: 1,
+              p: 2,
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               textAlign: 'center',
-              backgroundColor: '#e3efff',
+              backgroundColor: '#ffffff',
               boxShadow: 3,
-              borderRadius: 2,
+              borderRadius: 5,
               transition: 'transform 0.2s, box-shadow 0.2s',
               '&:hover': {
                 transform: 'translateY(-5px)',
                 boxShadow: 6,
-                backgroundColor: '#c7ddfb',
+                backgroundColor: '#FAF1F8',
               },
             }}
           >
-            <CardMedia
-              component="img"
-              src={tile.image}
-              alt={tile.title}
-              sx={{
-                width: { xs: 60, sm: 80, md: 100 },
-                height: { xs: 60, sm: 80, md: 100 },
-                objectFit: 'contain',
-                mb: 2,
-              }}
-            />
+            {tile.icon}
             <Typography
               variant="h6"
               sx={{
                 fontSize: { xs: '14px', sm: '16px', md: '18px' },
                 fontWeight: 'bold',
+                mt: 1,
               }}
             >
               {tile.title}

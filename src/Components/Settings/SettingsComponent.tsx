@@ -1,18 +1,19 @@
 'use client';
 import React from 'react';
-import { Box, Typography, Card, CardMedia } from '@mui/material';
+import { Box, Typography, Card } from '@mui/material';
+import { Settings, Build, Notifications, Link } from '@mui/icons-material';
 
 const SettingsComponent = () => {
   const tiles = [
-    { title: 'User settings', image: 'https://jai-mp.s3.eu-north-1.amazonaws.com/settings-3110.png' },
-    { title: 'Config settings', image: 'https://jai-mp.s3.eu-north-1.amazonaws.com/settings-3110.png' },
-    { title: 'Notification settings', image: 'https://jai-mp.s3.eu-north-1.amazonaws.com/settings-3110.png' },
-    { title: 'System connections', image: 'https://jai-mp.s3.eu-north-1.amazonaws.com/settings-3110.png' },
+    { title: 'User Settings', icon: <Settings sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} /> },
+    { title: 'Config Settings', icon: <Build sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} /> },
+    { title: 'Notification Settings', icon: <Notifications sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} /> },
+    { title: 'System Connections', icon: <Link sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} /> },
   ];
 
   return (
-    <Box >
-      <Typography variant="h6" sx={{ marginBottom:'1px', color: 'primary.main',fontWeight:'bold' }}>
+    <Box>
+      <Typography variant="h6" sx={{ marginBottom: '1px', color: '#83214F', fontWeight: 'bold' }}>
         Settings
       </Typography>
       <Box
@@ -31,39 +32,24 @@ const SettingsComponent = () => {
           <Card
             key={index}
             sx={{
-              p: 1,
+              p: 2,
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               textAlign: 'center',
-              backgroundColor: '#e3efff',
+              backgroundColor: '#ffffff',
               boxShadow: 3,
-              borderRadius: 2,
+              borderRadius: 5,
               transition: 'transform 0.2s, box-shadow 0.2s',
               '&:hover': {
                 transform: 'translateY(-5px)',
-                  boxShadow: 6,
-                  backgroundColor: '#c7ddfb',
-    //                     '& .card-title': {
-    //     color: '#fff',
-    //   },
+                boxShadow: 6,
+                backgroundColor: '#FAF1F8',
               },
             }}
           >
-            <CardMedia
-              component="img"
-              src={tile.image}
-              alt={tile.title}
-              sx={{
-                width: { xs: 60, sm: 80, md: 100 },
-                height: { xs: 60, sm: 80, md: 100 },
-                objectFit: 'contain',
-                mb: 2,
-              }}
-            />
-                <Typography 
-                    className="card-title"
-                    variant="h6" sx={{ fontSize: { xs: '14px', sm: '16px', md: '18px' }, fontWeight: 'bold' }}>
+            <Box sx={{ mb: 2 }}>{tile.icon}</Box>
+            <Typography variant="h6" sx={{ fontSize: { xs: '14px', sm: '16px', md: '18px' }, fontWeight: 'bold' }}>
               {tile.title}
             </Typography>
           </Card>

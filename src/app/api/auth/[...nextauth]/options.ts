@@ -34,7 +34,9 @@ const refreshAccessToken = async (refreshToken: string) => {
     const response = await fetch(
       // `https://dev-api.trukapp.com/truk/log/refresh-token`,
       // `http://192.168.10.24:8088/truk/log/refresh-token`,    // teja ofc
-      `http://192.168.29.78:8088/truk/log/refresh-token`,    // teja pg
+      // `http://192.168.29.78:8088/truk/log/refresh-token`,    // teja pg
+      `http:// 192.168.10.41:8088/truk/log/refresh-token`, //  Bablu local
+
       {
         method: "POST",
         headers: {
@@ -55,8 +57,7 @@ const refreshAccessToken = async (refreshToken: string) => {
     return {
       accessToken: data.accessToken,
       // refreshToken: data.refreshToken || refreshToken,
-      accessTokenExpires: Date.now() + 24 * 60 * 60 * 1000,       // in milli seconds
-
+      accessTokenExpires: Date.now() + 24 * 60 * 60 * 1000, // in milli seconds
     };
   } catch (error) {
     console.error("Refresh token error:", error);
@@ -92,7 +93,9 @@ export const options: NextAuthOptions = {
           const response = await fetch(
             // `https://dev-api.trukapp.com/truk/log/login`,
             // `http://192.168.10.24:8088/truk/log/login`,   // teja ofc
-            `http://192.168.29.78:8088/truk/log/login`,      // teja pg
+            // `http://192.168.29.78:8088/truk/log/login`, // teja pg
+            `http://192.168.10.41:8088/truk/log/login`, //Bablu local
+
             {
               method: "POST",
               headers: {
@@ -195,7 +198,7 @@ export const options: NextAuthOptions = {
 
   session: {
     strategy: "jwt",
-   maxAge: 24 * 60 * 60, //must return here in seconds
+    maxAge: 24 * 60 * 60, //must return here in seconds
   },
 
   jwt: {
