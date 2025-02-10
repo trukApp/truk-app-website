@@ -84,6 +84,11 @@ const validationSchema = Yup.object({
   latitude: Yup.string().required('Latitude  is required'),
   longitude: Yup.string().required('Longitude  is required'),
   timeZone: Yup.string().required('Time zone is required'),
+  addressLine1: Yup.string().required('Address line 1 is required'),
+  city: Yup.string().required('City  is required'),
+  state: Yup.string().required('State  is required'),
+  country: Yup.string().required('Country is required'),
+  pincode: Yup.string().required('Pincode is required'),
   // vehiclesNearBy: Yup.array()
   // .min(1, 'Select at least one vehicle')
   // .required('Required'),
@@ -91,7 +96,7 @@ const validationSchema = Yup.object({
 });
 
 const Locations: React.FC = () => {
-    const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
+      const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
       const [snackbarOpen, setSnackbarOpen] = useState(false);
       const [snackbarMessage, setSnackbarMessage] = useState("");
       const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
@@ -519,6 +524,7 @@ const handleDelete = async (row: DataGridRow) => {
                     value={values.iataCode}
                     onChange={handleChange}
                     onBlur={handleBlur}
+
                     inputProps={{ maxLength: 3 }}
                   />
                 </Grid>
@@ -580,11 +586,13 @@ const handleDelete = async (row: DataGridRow) => {
                       <TextField
                         fullWidth
                         size="small"
-                        label="Address line 1"
+                        label="Address line 1*"
                         name="addressLine1"
                         value={values.addressLine1}
                         onChange={handleChange}
                       onBlur={handleBlur}
+                      error={touched.addressLine1 && Boolean(errors.addressLine1)}
+                      helperText={touched.addressLine1 && errors.addressLine1}
                       // InputLabelProps={{ shrink: true }}
                       />
                   </Grid>
@@ -603,11 +611,13 @@ const handleDelete = async (row: DataGridRow) => {
                       <TextField
                         fullWidth
                         size="small"
-                        label="City"
+                        label="City*"
                         name="city"
                         value={values.city}
                         onChange={handleChange}
-                        onBlur={handleBlur}
+                      onBlur={handleBlur}
+                      error={touched.city && Boolean(errors.city)}
+                      helperText={touched.city && errors.city}
                       />
                     </Grid>
                     {/* <Grid item xs={12} sm={6} md={2.4}>
@@ -625,33 +635,39 @@ const handleDelete = async (row: DataGridRow) => {
                       <TextField
                         fullWidth
                         size="small"
-                        label="State"
+                        label="State*"
                         name="state"
                         value={values.state}
                         onChange={handleChange}
-                        onBlur={handleBlur}
+                      onBlur={handleBlur}
+                      error={touched.state && Boolean(errors.state)}
+                      helperText={touched.state && errors.state}                      
                       />
                     </Grid>
                     <Grid item xs={12} sm={6} md={2.4}>
                       <TextField
                         fullWidth
                         size="small"
-                        label="Country"
+                        label="Country*"
                         name="country"
                         value={values.country}
                         onChange={handleChange}
-                        onBlur={handleBlur}
+                      onBlur={handleBlur}
+                      error={touched.country && Boolean(errors.country)}
+                      helperText={touched.country && errors.country}                      
                       />
                     </Grid>
                     <Grid item xs={12} sm={6} md={2.4}>
                       <TextField
                         fullWidth
                         size="small"
-                        label="Pincode"
+                        label="Pincode*"
                         name="pincode"
                         value={values.pincode}
                         onChange={handleChange}
-                        onBlur={handleBlur}
+                      onBlur={handleBlur}
+                      error={touched.pincode && Boolean(errors.pincode)}
+                      helperText={touched.pincode && errors.pincode}
                       />
                     </Grid>
                   </Grid>

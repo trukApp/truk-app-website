@@ -22,7 +22,7 @@ const SnackbarAlert: React.FC<SnackbarAlertProps> = ({
       onClose={onClose}
       anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
     >
-      <Alert onClose={onClose} severity={severity} variant="filled">
+      <Alert onClose={onClose} severity={severity} variant="filled" sx={{fontFamily:"Roboto, Arial, sans-serif"}}>
         {message}
       </Alert>
     </Snackbar>

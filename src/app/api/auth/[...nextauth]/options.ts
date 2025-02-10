@@ -33,8 +33,8 @@ const refreshAccessToken = async (refreshToken: string) => {
   try {
     const response = await fetch(
       // `https://dev-api.trukapp.com/truk/log/refresh-token`,
-      // `http://192.168.10.24:8088/truk/log/refresh-token`,    // teja ofc
-      `http://192.168.29.78:8088/truk/log/refresh-token`,    // teja pg
+      `http://192.168.10.28:8088/truk/log/refresh-token`,    // teja ofc
+      // `http://192.168.29.78:8088/truk/log/refresh-token`,    // teja pg
       {
         method: "POST",
         headers: {
@@ -91,8 +91,8 @@ export const options: NextAuthOptions = {
           console.log("qwerty");
           const response = await fetch(
             // `https://dev-api.trukapp.com/truk/log/login`,
-            // `http://192.168.10.24:8088/truk/log/login`,   // teja ofc
-            `http://192.168.29.78:8088/truk/log/login`,      // teja pg
+            `http://192.168.10.28:8088/truk/log/login`,   // teja ofc
+            // `http://192.168.29.78:8088/truk/log/login`,      // teja pg
             {
               method: "POST",
               headers: {

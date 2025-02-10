@@ -20,8 +20,6 @@ const MasterData: React.FC = () => {
     switch (selectedTab) {
       case "Vehicles":
         return <Vehicles />;
-      // case "Vehicle group":
-      //   return <VehicleGroup />;
       case "Device master":
         return <DeviceMaster />;
       case "Lanes":

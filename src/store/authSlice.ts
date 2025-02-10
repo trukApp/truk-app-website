@@ -81,9 +81,15 @@ export interface IShipFrom {
   locationId: string;
   phoneNumber: string;
   pincode: string;
-  saveAsDefaultShipFromLocation: boolean;
-  saveAsNewLocationId: boolean;
+  // saveAsDefaultShipFromLocation: boolean;
+  // saveAsNewLocationId: boolean;
   state: string;
+  latitude: string;
+  longitude: string;
+  timeZone: string;
+  locationType: string;
+  glnCode: string;
+  iataCode: string;
 }
 
 export interface IShipTo {
@@ -97,9 +103,15 @@ export interface IShipTo {
   locationId: string;
   phoneNumber: string;
   pincode: string;
-  saveAsDefaultShipFromLocation: boolean;
-  saveAsNewLocationId: boolean;
   state: string;
+  latitude: string;
+  longitude: string;
+  timeZone: string;
+  locationType: string;
+  glnCode: string;
+iataCode: string;
+// saveAsNewLocationId: boolean,
+// saveAsDefaultShipFromLocation: boolean,
 }
 
 export interface IProductDetail {
@@ -112,6 +124,7 @@ export interface IProductDetail {
   rfid: string;
   weight: string;
 }
+
 
 export interface IPackageTax {
   senderGSTN: string;
@@ -136,7 +149,15 @@ export interface IAuthState {
   packageAdditionalInfo: AdditionalInfo | null;
   packagePickAndDropTimings: FormValues | null;
   packageTax: IPackageTax | null;
+  shipFromState: IShipFrom | null;
+  shipToState: IShipTo | null;
+  packageDetailsState: IProductDetail | null;
+  billToState: IShipFrom | null;
+  additionalInfoState: AdditionalInfo | null;
+  pickupDropoffState: FormValues | null;
+  taxInfoState: IPackageTax | null;
 }
+
 
 const initialState: IAuthState = {
   authState: false,
@@ -154,13 +175,22 @@ const initialState: IAuthState = {
   packageAdditionalInfo: null,
   packagePickAndDropTimings: null,
   packageTax: null,
+  shipFromState: null,
+  shipToState: null,
+  packageDetailsState: null,
+  billToState: null,
+  additionalInfoState: null,
+  pickupDropoffState: null,
+  taxInfoState: null,
 };
+
+
 
 export const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setAuthState: (state, action: PayloadAction<boolean>) => {
+    setAuthState: (state, action: PayloadAction<boolean >) => {
       state.authState = action.payload;
     },
     setBabluName: (state, action: PayloadAction<string>) => {
@@ -178,39 +208,67 @@ export const authSlice = createSlice({
     setUnitsofMeasurement: (state, action: PayloadAction<string[]>) => {
       state.unitsofMeasurement = action.payload;
     },
-    setSelectedPackages: (state, action: PayloadAction<Array<Product>>) => {
+    setSelectedPackages: (state, action: PayloadAction<Array<Product >>) => {
       console.log("action.payload: ", action.payload);
-      state.selectedPackages = action.payload; // Update selected packages
+      state.selectedPackages = action.payload ; // Update selected packages
     },
     setCreateOrderDesination: (state, action: PayloadAction<string>) => {
       console.log("source location ", action.payload);
       state.createOrderDesination = action.payload;
     },
-    setPackageShipFrom: (state, action: PayloadAction<IShipFrom>) => {
+    setPackageShipFrom: (state, action: PayloadAction<IShipFrom | null>) => {
       state.packageShipFrom = action.payload;
     },
-    setPackageShipTo: (state, action: PayloadAction<IShipFrom>) => {
+    clearPackageShipFrom: (state) => {
+      state.packageShipFrom = null;
+    },
+    setPackageShipTo: (state, action: PayloadAction<IShipFrom | null>) => {
       state.packageShipTo = action.payload;
     },
+    
     setProductsList: (state, action: PayloadAction<Array<IProductDetail>>) => {
       console.log("Updating package details:", action.payload);
       state.packagesDetails = action.payload;
     },
-    setPackageBillTo: (state, action: PayloadAction<IShipFrom>) => {
+    setPackageBillTo: (state, action: PayloadAction<IShipFrom | null>) => {
       state.packageBillTo = action.payload;
     },
-    setPackageAddtionalInfo: (state, action: PayloadAction<AdditionalInfo>) => {
+    setPackageAddtionalInfo: (state, action: PayloadAction<AdditionalInfo | null>) => {
       state.packageAdditionalInfo = action.payload;
     },
     setPackagePickAndDropTimings: (
       state,
-      action: PayloadAction<FormValues>
+      action: PayloadAction<FormValues | null>
     ) => {
       state.packagePickAndDropTimings = action.payload;
     },
-    setPackageTax: (state, action: PayloadAction<IPackageTax>) => {
+    setPackageTax: (state, action: PayloadAction<IPackageTax | null>) => {
       state.packageTax = action.payload;
     },
+
+      setPackageShipFromState: (state, action: PayloadAction<IShipFrom | null>) => {
+      state.packageShipFrom = action.payload;
+    },
+    setPackageShipToState: (state, action: PayloadAction<IShipFrom | null>) => {
+      state.packageShipTo = action.payload;
+    },
+    setProductsListState: (state, action: PayloadAction<Array<IProductDetail>>) => {
+      state.packagesDetails = action.payload;
+    },
+    setPackageBillToState: (state, action: PayloadAction<IShipFrom | null>) => {
+      state.packageBillTo = action.payload;
+    },
+    
+    setPackageTaxState: (state, action: PayloadAction<IPackageTax | null>) => {
+      state.packageTax = action.payload;
+    },
+    setPackageAdditionalInfoState: (state, action: PayloadAction<IShipFrom | null>) => {
+      state.packageShipFrom = action.payload;
+    },
+    setPackagePickupDropState: (state, action: PayloadAction<IShipFrom | null>) => {
+      state.packageShipTo = action.payload;
+    },
+    
   },
 });
 
@@ -224,12 +282,21 @@ export const {
   setSelectedPackages,
   setCreateOrderDesination,
   setPackageShipFrom,
+  clearPackageShipFrom,
   setPackageShipTo,
   setProductsList,
   setPackageBillTo,
   setPackageAddtionalInfo,
   setPackagePickAndDropTimings,
   setPackageTax,
+   setPackageShipFromState,
+  setPackageShipToState,
+  setProductsListState,
+  setPackageBillToState,
+  setPackageTaxState,
+  setPackageAdditionalInfoState,
+  setPackagePickupDropState,
+  
 } = authSlice.actions;
 
 export const authReducer = authSlice.reducer;

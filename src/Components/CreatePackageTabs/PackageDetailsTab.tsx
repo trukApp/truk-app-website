@@ -5,12 +5,9 @@ import { Button, Grid, TextField, MenuItem, Tooltip } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { setProductsList } from "@/store/authSlice";
 import { useGetAllProductsQuery } from "@/api/apiSlice";
-import { Product } from "@/app/productmaster/page"; 
+import { Product } from "@/app/productmaster/page";  
 
-interface PackingDetailsTab {
-  onNext: (values: FormValues) => void;
-  onBack: () => void;
-}
+
 
 interface PackageDetails {
   productId: string;
@@ -27,7 +24,10 @@ interface FormValues {
   packageDetails: PackageDetails[];
 }
 
-
+interface PackingDetailsTab {
+  onNext: (values: FormValues) => void;
+  onBack: () => void;
+}
 
 const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
   const dispatch = useAppDispatch();
@@ -113,7 +113,7 @@ const validationSchema = Yup.object().shape({
                                 <TextField
                                   {...field}
                                   select
-                                  label="Package ID"
+                                  label="Product ID"
                                   fullWidth onChange={(event) => handleProductChange(event,index, setFieldValue)}
                                   size="small"
                                   error={meta.touched && Boolean(meta.error)}
