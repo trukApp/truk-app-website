@@ -51,12 +51,12 @@ const DeviceMaster: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editRow, setEditRow] = useState<DeviceMasterValues | null>(null);
-  const { data, error, isLoading } = useGetDeviceMasterQuery({page: paginationModel.page + 1, limit: paginationModel.pageSize});
-  const [postDevice, {isLoading:postDeviceLoading}] = usePostDeviceMasterMutation();
-  const [editDevice,{isLoading:editDeviceLoading}] = useEditDeviceMasterMutation();
-  const [deleteDevice, { isLoading: deleteDeviceLoading }] = useDeleteDeviceMasterMutation()
-  const { data: locationsData } = useGetLocationMasterQuery({});
-  const { data: carriersData } = useGetCarrierMasterQuery({});
+  const { data, error, isLoading , refetch } = useGetDeviceMasterQuery({page: paginationModel.page + 1, limit: paginationModel.pageSize});
+  const [postDevice, {isLoading:postDeviceLoading, isSuccess:postSuccess, }] = usePostDeviceMasterMutation();
+  const [editDevice,{isLoading:editDeviceLoading,isSuccess:editSuccess}] = useEditDeviceMasterMutation();
+  const [deleteDevice, { isLoading: deleteDeviceLoading, isSuccess:deleteSuccess }] = useDeleteDeviceMasterMutation()
+  const { data: locationsData , isLoading:isLocationLoading } = useGetLocationMasterQuery({});
+  const { data: carriersData, isLoading: isCarrierLoading } = useGetCarrierMasterQuery({});
   const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
   const getAllCarriers = carriersData?.carriers.length > 0 ? carriersData?.carriers : [];
   console.log("device data :", data)
@@ -64,9 +64,13 @@ const DeviceMaster: React.FC = () => {
     console.log("Loading devices...");
   }
 
+  useEffect(() => {
+  if (postSuccess || editSuccess || deleteSuccess) {
+    refetch();
+  }
+}, [postSuccess, editSuccess, deleteSuccess, refetch]);
   if (error) {
     console.error("Error fetching devices:", error);
-    // Handle the error case
   }
     const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
       setPaginationModel(newPaginationModel);
@@ -102,20 +106,24 @@ const DeviceMaster: React.FC = () => {
                 const deviceId = editRow.id
                 const response = await editDevice({ body: editBody, deviceId }).unwrap()
                 console.log("edit response is ", response)
-                formik.resetForm();
-                setIsEditing(false)
-                setSnackbarMessage("Device info updated successfully!");
-                setSnackbarSeverity("success");
-                setSnackbarOpen(true);
+                if (response?.updated_record) {
+                  setSnackbarMessage(`Device ID ${response.updated_record} updated successfully!`);
+                  formik.resetForm();
+                  setIsEditing(false)
+                  setSnackbarSeverity("success");
+                  setSnackbarOpen(true);
+                }
               }
               else {
-                console.log("post create devices ",body)
+                  // console.log("post create devices ",body)
                   const response = await postDevice(body).unwrap();
                   console.log('response in posting device:', response);
-                formik.resetForm();
-                setSnackbarMessage("Device info created successfully!");
-                setSnackbarSeverity("success");
-                setSnackbarOpen(true);
+                  if (response?.created_records) {
+                    setSnackbarMessage(`Device ID ${response.created_records[0]} created successfully!`);
+                    formik.resetForm();
+                    setSnackbarSeverity("success");
+                    setSnackbarOpen(true);
+                  }
               }
           
         } catch (error) {
@@ -152,9 +160,11 @@ const handleDelete = async (row: DeviceMasterValues) => {
     try {
         const response = await deleteDevice(deviceId);
         console.log("Delete response:", response);
-        setSnackbarMessage("Device deleted successfully!");
-        setSnackbarSeverity("success");
-        setSnackbarOpen(true);
+        if (response.data.deleted_record) {
+          setSnackbarMessage(`Device ID ${response.data.deleted_record} deleted successfully!`);
+          setSnackbarSeverity("info");
+          setSnackbarOpen(true);
+      }
     } catch (error) {
         console.error("Error deleting device:", error);
         setSnackbarMessage("Failed to delete device. Please try again.");
@@ -368,7 +378,7 @@ const handleDelete = async (row: DeviceMasterValues) => {
                   onChange={formik.handleChange}
                 />
               </Grid> */}
-                	<Grid item xs={12} sm={6} md={2.4}>
+                <Grid item xs={12} sm={6} md={2.4}>
 												<FormControl
 													fullWidth
 													size="small"
@@ -384,16 +394,24 @@ const handleDelete = async (row: DeviceMasterValues) => {
 														onChange={formik.handleChange}
 														onBlur={formik.handleBlur}
 													>
-					                  {getAllCarriers?.map((carrier: CarrierFormBE) => (
-                                        <MenuItem key={carrier?.carrier_ID} value={String(carrier.carrier_ID)}>
-                                          <Tooltip
-                                          title={`${carrier?.carrier_name}, ${carrier?.carrier_address}`}
-                                          placement="right"
-                                          >
-                                          <span style={{ flex: 1 }}>{carrier?.carrier_ID}</span>
-                                          </Tooltip>
-                                        </MenuItem>
-                                        ))}
+					            
+                          {isCarrierLoading ? (
+                            <MenuItem disabled>
+                              <CircularProgress size={20} color="inherit" />
+                              <span style={{ marginLeft: "10px" }}>Loading...</span>
+                            </MenuItem>
+                          ) : (
+                            getAllCarriers?.map((carrier: CarrierFormBE) => (
+                              <MenuItem key={carrier?.carrier_ID} value={String(carrier.carrier_ID)}>
+                                <Tooltip
+                                  title={`${carrier?.carrier_name}, ${carrier?.carrier_address}`}
+                                  placement="right"
+                                >
+                                  <span style={{ flex: 1 }}>{carrier?.carrier_ID}</span>
+                                </Tooltip>
+                              </MenuItem>
+                            ))
+                          )}
 													</Select>
 													{formik.touched.carrierId && formik.errors.carrierId && (
 														<FormHelperText>{formik.errors.carrierId}</FormHelperText>
@@ -428,16 +446,23 @@ const handleDelete = async (row: DeviceMasterValues) => {
 														onChange={formik.handleChange}
 														onBlur={formik.handleBlur}
 													>
-					                  {getAllLocations?.map((location: Location) => (
-                                        <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                                          <Tooltip
-                                          title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                          placement="right"
-                                          >
-                                          <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                                          </Tooltip>
-                                        </MenuItem>
-                            ))}
+					                {isLocationLoading ? (
+                                <MenuItem disabled>
+                                  <CircularProgress size={20} color="inherit" />
+                                  <span style={{ marginLeft: "10px" }}>Loading...</span>
+                                </MenuItem>
+                              ) : (
+                                getAllLocations?.map((location: Location) => (
+                                  <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                    <Tooltip
+                                      title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                      placement="right"
+                                    >
+                                      <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                    </Tooltip>
+                                  </MenuItem>
+                                ))
+                              )}
 													</Select>
 													{formik.touched.locationId && formik.errors.locationId && (
 														<FormHelperText>{formik.errors.locationId}</FormHelperText>

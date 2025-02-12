@@ -47,6 +47,12 @@ interface Location {
 //   address?: string; // Resolved address field
 // }
 
+interface DriverRegistrationResponse {
+  data: {
+    created_records: string[];
+    message: string;
+  };
+}
 const DriverMassUpload: React.FC<MassUploadProps> = ({ arrayKey }) => {
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -77,30 +83,6 @@ const DriverMassUpload: React.FC<MassUploadProps> = ({ arrayKey }) => {
     drivers:postDriverMaster,
   };
 
-// type NestedRecord = Record<string, string>;
-
-// const mapCsvToPayload = <T extends object>(
-//   data: ParsedRow[],
-//   columnMappings: ColumnMapping[]
-// ): T[] => {
-//   return data.map((row) => {
-//     return columnMappings.reduce<T>((acc, { displayName, key, nestedKey }) => {
-//       const value = row[displayName]?.trim();
-
-//       if (nestedKey) {
-//         const nestedAcc = acc as Record<string, NestedRecord>;
-//         if (!nestedAcc[nestedKey]) {
-//           nestedAcc[nestedKey] = {} as NestedRecord;
-//         }
-//         nestedAcc[nestedKey][key] = value;
-//       } else {
-//         (acc as Record<string, string>)[key] = value;
-//       }
-
-//       return acc;
-//     }, {} as T);
-//   });
-// };
 
   const mapCsvToPayload = (
   data: ParsedRow[],
@@ -215,11 +197,15 @@ const handleUpload = async () => {
     };
 
     console.log('Payload body:', body);
-    await postMapping[arrayKey](body);
-    setSnackbarMessage("Data uploaded successfully!");
-    setSnackbarSeverity("success");
-    setSnackbarOpen(true);
-    setIsModalOpen(false)
+    const response = (await postMapping[arrayKey](body)) as DriverRegistrationResponse;
+    console.log('response mass driver :', response.data.created_records);
+    if (response.data.created_records) {
+        setSnackbarMessage(`${response?.data?.created_records?.length} records uploaded successfully!`);
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
+        setIsModalOpen(false)
+    }
+    
   } catch (error) {
       setSnackbarMessage("Something went wrong! Please try again.");
       setSnackbarSeverity("error");

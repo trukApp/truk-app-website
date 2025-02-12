@@ -50,7 +50,8 @@ export interface Location {
   country: string;
   pincode: string;
   contact_name: string;
-  contact_number: string;
+  contact_phone_number: string;
+  contact_email: string;
 }
 
 // Define the type for each row in the DataGrid
@@ -74,6 +75,7 @@ interface DataGridRow {
   vehiclesNearBy: [],
   locationContactName: string;
   locationContactNumber: string;
+  locationContactEmail: string;
 }
 
 
@@ -89,6 +91,9 @@ const validationSchema = Yup.object({
   state: Yup.string().required('State  is required'),
   country: Yup.string().required('Country is required'),
   pincode: Yup.string().required('Pincode is required'),
+  locationContactName: Yup.string().required('Contact person name is required'),
+  locationContactNumber: Yup.string().required('Phone number is required'),
+  locationContactEmail: Yup.string().required('Email is required'),
   // vehiclesNearBy: Yup.array()
   // .min(1, 'Select at least one vehicle')
   // .required('Required'),
@@ -151,7 +156,8 @@ const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) =>
                       pincode: values.pincode,
                       loc_type: values.locationType,
                       gln_code: values.glnCode,
-                      iata_code: values.iataCode
+                    iata_code: values.iataCode,
+                    
                     }
                 ]
               }
@@ -176,23 +182,27 @@ const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) =>
                 const locationId = editRow.id
                 const response = await editLocation({body:editBody, locationId}).unwrap()
                 console.log("edit response is ", response)
-                formik.resetForm()
-                setShowForm(false)
-                setIsEditing(false)
-                     setSnackbarMessage("Locations updated successfully!");
-                    setSnackbarSeverity("success");
-                    setSnackbarOpen(true);
+                if (response?.updated_record) {
+                  setSnackbarMessage(`Location ID ${response.updated_record} updated successfully!`);
+                  formik.resetForm();
+                  setShowForm(false)
+                  setIsEditing(false)
+                  setSnackbarSeverity("success");
+                  setSnackbarOpen(true);
+                }
               }
               else {
                 console.log("post create location ",body)
                   const response = await postLocation(body).unwrap();
-                  console.log('response in post location:', response);
-                formik.resetForm();
+                console.log('response in post location:', response);
+                if (response?.created_records) {
+                    setSnackbarMessage(`Location ID ${response.created_records[0]} created successfully!`);
+                    formik.resetForm();
                 setShowForm(false)
                 setIsEditing(false)
-                     setSnackbarMessage("Locations created successfully!");
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
+                  }
 
               }
           
@@ -233,11 +243,11 @@ const handleDelete = async (row: DataGridRow) => {
     try {
         const response = await deleteLocation(locationId);
         console.log("Delete response:", response);
-
-        // Show success snackbar
-        setSnackbarMessage("Location deleted successfully!");
-        setSnackbarSeverity("success");
-        setSnackbarOpen(true);
+        if (response.data.deleted_record) {
+          setSnackbarMessage(`Location ID ${response.data.deleted_record} deleted successfully!`);
+          setSnackbarSeverity("info");
+          setSnackbarOpen(true);
+      }
     } catch (error) {
         console.error("Error deleting location:", error);
 
@@ -271,7 +281,8 @@ const handleDelete = async (row: DataGridRow) => {
       pincode: '',
       vehiclesNearBy: [],
       locationContactName: '',
-      locationContactNumber: ''
+      locationContactNumber: '',
+      locationContactEmail :''
     },
     validationSchema,
     onSubmit: handleFormSubmit
@@ -298,7 +309,8 @@ const handleDelete = async (row: DataGridRow) => {
         pincode: editRow.pincode,
         vehiclesNearBy: editRow.vehiclesNearBy,
         locationContactName: editRow.locationContactName,
-        locationContactNumber: editRow.locationContactNumber
+        locationContactNumber: editRow.locationContactNumber,
+        locationContactEmail: editRow.locationContactEmail,
       });
     }
   }, [editRow]);
@@ -323,7 +335,8 @@ const handleDelete = async (row: DataGridRow) => {
     country: location.country || "India",
     pincode: location.pincode || `5000${index}`,
     locationContactName: location.contact_name || 'null',
-    locationContactNumber: location.contact_number || 'null',
+    locationContactNumber: location.contact_phone_number || 'null',
+    locationContactEmail: location.contact_email || 'null',
   })) || [];
 
   const columns: GridColDef[] = [
@@ -758,9 +771,52 @@ const handleDelete = async (row: DataGridRow) => {
                 </Grid> */}
 
 
-
-            </Grid>
-
+                <Grid container spacing={2} ml={1} mt={2}>
+                  <Typography variant="h6" align="center" gutterBottom >
+                    3. Additional details
+                  </Typography>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={6} md={2.4}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        label="Contact person name*"
+                        name="locationContactName"
+                        value={values.locationContactName}
+                        onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.locationContactName && Boolean(errors.locationContactName)}
+                      helperText={touched.locationContactName && errors.locationContactName}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={2.4}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        label="Contact phone number*"
+                        name="locationContactNumber"
+                        value={values.locationContactNumber}
+                        onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.locationContactNumber && Boolean(errors.locationContactNumber)}
+                      helperText={touched.locationContactNumber && errors.locationContactNumber}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={2.4}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        label="Contact email*"
+                        name="locationEmail"
+                        value={values.locationContactEmail}
+                        onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.locationContactEmail && Boolean(errors.locationContactEmail)}
+                      helperText={touched.locationContactEmail && errors.locationContactEmail}
+                      />
+                    </Grid>
+                  </Grid>
+                </Grid>
             <Box sx={{ marginTop: '24px', textAlign: 'center' }}>
               <Button variant="contained" color="primary" type="submit">
                 {isEditing ? "Update location" : "Create location"}
@@ -775,7 +831,8 @@ const handleDelete = async (row: DataGridRow) => {
                     }}
                   style={{ marginLeft: "10px" }}>Reset
                 </Button>
-            </Box>
+              </Box>
+            </Grid>
           </Box>
         </Collapse>
 

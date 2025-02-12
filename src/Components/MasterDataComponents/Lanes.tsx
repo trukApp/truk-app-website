@@ -106,24 +106,18 @@ const TransportationLanes = () => {
   
     const [postLane, {isLoading:postLaneLoading}] = usePostLaneMasterMutation();
     const [editLane,{isLoading:editLaneLoading}] = useEditLaneMasterMutation();
-  const [deleteLane, { isLoading: deleteLaneLoading }] = useDeleteLaneMasterMutation()
-  const { data: locationsData } = useGetLocationMasterQuery({});
-    const getAllLocations =
-      locationsData?.locations.length > 0 ? locationsData?.locations : [];
+    const [deleteLane, { isLoading: deleteLaneLoading }] = useDeleteLaneMasterMutation()
+    const { data: locationsData,isLoading:isLocationLoading } = useGetLocationMasterQuery({});
+    const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
   
-  console.log("all lanes :", data?.lanes)
-
   if (error) {
     console.error("Error fetching lanes:", error);
-    // Handle the error case
   }
 
     const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
         setPaginationModel(newPaginationModel);
         };
   const handleFormSubmit = async (values: LaneDetails) => {
-    // console.log("form submitted lanes :", values)
-
         try {
           const body ={
             lanes: [
@@ -159,27 +153,32 @@ const TransportationLanes = () => {
                 const laneId = editRow.id
                 const response = await editLane({ body: editBody, laneId }).unwrap()
                 console.log("edit response is ", response)
-                formik.resetForm();
-                setIsEditing(false)
-                     setSnackbarMessage("Lanes updated successfully!");
+                if (response.updated_record) {
+                    formik.resetForm();
+                    setIsEditing(false)
+                    setSnackbarMessage(`Lane ID ${response.updated_record} updated successfully!`);
                     setSnackbarSeverity("success");
-                setSnackbarOpen(true);
-                setShowForm(false)
+                    setSnackbarOpen(true);
+                    setShowForm(false)
+                }
+                
               }
               else {
                 console.log("post create lane ",body)
                   const response = await postLane(body).unwrap();
-                  console.log('response in post lane:', response);
-                formik.resetForm();
-                     setSnackbarMessage("Lanes created successfully!");
+                console.log('response in post lane:', response);
+                if (response.created_records) {
+                    formik.resetForm(); 
+                    setSnackbarMessage(`Lane ID ${response.created_records[0]} created successfully!`);
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
                     setShowForm(false)
+                }
               }
           
         } catch (error) {
           console.error('API Error:', error);
-               setSnackbarMessage("Something went wrong! please try again.");
+               setSnackbarMessage(`Something went wrong! please try again, ${error}`);
                 setSnackbarSeverity("error");
                 setSnackbarOpen(true);
                 setShowForm(false)
@@ -212,16 +211,15 @@ const handleDelete = async (row: LaneDetails) => {
 
     try {
         const response = await deleteLane(laneId);
-        console.log("Delete response:", response);
-
-        // Show success snackbar
-        setSnackbarMessage("Lane deleted successfully!");
-        setSnackbarSeverity("success");
+      console.log("Delete response:", response);
+      if (response.data.deleted_record) {
+        setSnackbarMessage(`Lane ID ${response.data.deleted_record} deleted successfully!`);
+        setSnackbarSeverity("info");
         setSnackbarOpen(true);
+      }
+        
     } catch (error) {
         console.error("Error deleting lane:", error);
-
-        // Show error snackbar
         setSnackbarMessage("Failed to delete lane. Please try again.");
         setSnackbarSeverity("error");
         setSnackbarOpen(true);
@@ -263,8 +261,8 @@ const handleDelete = async (row: LaneDetails) => {
 
       // Transport Data
       vehicleType: Yup.string().required('Vehicle Type is required'),
-      transportStartDate: Yup.date().required('Start Date is required'),
-      transportEndDate: Yup.date().required('End Date is required'),
+      transportStartDate: Yup.string().required('Start Date is required'),
+      transportEndDate: Yup.string().required('End Date is required'),
       transportDistance: Yup.string().required('Transport Distance is required'),
       transportDuration: Yup.string().required('Transport Duration is required'),
       transportCost: Yup.string().required('Transport Cost is required'),
@@ -458,16 +456,23 @@ const rows = data?.lanes.map((lane:Lane) => ({
 																{location.loc_ID}
 															</MenuItem>
 														))} */}
-                            {getAllLocations?.map((location: Location) => (
-                                    <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                                      <Tooltip
-                                            title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                            placement="right"
-                                      >
-                                        <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                                      </Tooltip>
-                                    </MenuItem>
-                            ))}
+                      {isLocationLoading ? (
+                                <MenuItem disabled>
+                                  <CircularProgress size={20} color="inherit" />
+                                  <span style={{ marginLeft: "10px" }}>Loading...</span>
+                                </MenuItem>
+                              ) : (
+                                getAllLocations?.map((location: Location) => (
+                                  <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                    <Tooltip
+                                      title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                      placement="right"
+                                    >
+                                      <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                    </Tooltip>
+                                  </MenuItem>
+                                ))
+                              )}
 													</Select>
 													{formik.touched.sourceLocationId && formik.errors.sourceLocationId && (
 														<FormHelperText>{formik.errors.sourceLocationId}</FormHelperText>
@@ -490,16 +495,23 @@ const rows = data?.lanes.map((lane:Lane) => ({
 														onChange={formik.handleChange}
 														onBlur={formik.handleBlur}
 													>
-                            {getAllLocations?.map((location: Location) => (
-                                    <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                                      <Tooltip
-                                            title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                            placement="right"
-                                      >
-                                        <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                                      </Tooltip>
-                                    </MenuItem>
-                            ))}
+                          {isLocationLoading ? (
+                                <MenuItem disabled>
+                                  <CircularProgress size={20} color="inherit" />
+                                  <span style={{ marginLeft: "10px" }}>Loading...</span>
+                                </MenuItem>
+                              ) : (
+                                getAllLocations?.map((location: Location) => (
+                                  <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                    <Tooltip
+                                      title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                      placement="right"
+                                    >
+                                      <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                    </Tooltip>
+                                  </MenuItem>
+                                ))
+                              )}
 													</Select>
 													{formik.touched.destinationLocationId && formik.errors.destinationLocationId && (
 														<FormHelperText>{formik.errors.destinationLocationId}</FormHelperText>
@@ -544,7 +556,7 @@ const rows = data?.lanes.map((lane:Lane) => ({
                       <MenuItem value="Container">Container</MenuItem>
                     </TextField>
                   </Grid>
-                  <Grid item xs={12} sm={6} md={2.4}>
+                  {/* <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth 
                       id='transportStartDate'
@@ -565,7 +577,33 @@ const rows = data?.lanes.map((lane:Lane) => ({
                       helperText={formik.touched.transportStartDate && formik.errors.transportStartDate}
                       InputLabelProps={{ shrink: true }}
                           />
-                  </Grid>
+                  </Grid> */}
+      <Grid item xs={12} sm={6} md={2.4}>
+  <TextField
+    fullWidth
+    id="transportStartDate"
+    size="small"
+    label="Start Date*"
+    name="transportStartDate"
+    type="date"
+    value={
+      formik.values.transportStartDate
+        ? formik.values.transportStartDate.split("-").reverse().join("-") // Convert DD-MM-YYYY → YYYY-MM-DD for display
+        : ""
+    }
+    onChange={(e) => {
+      const selectedDate = e.target.value;
+      const formattedDate = selectedDate.split("-").reverse().join("-"); // Convert to DD-MM-YYYY
+      formik.setFieldValue("transportStartDate", formattedDate); // Store as DD-MM-YYYY
+    }}
+    onBlur={formik.handleBlur}
+    error={formik.touched.transportStartDate && Boolean(formik.errors.transportStartDate)}
+    helperText={formik.touched.transportStartDate && formik.errors.transportStartDate}
+    InputLabelProps={{ shrink: true }}
+  />
+</Grid>
+
+                
                   {/* <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth

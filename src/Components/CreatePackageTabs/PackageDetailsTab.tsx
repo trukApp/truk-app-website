@@ -1,7 +1,7 @@
 import React from "react";
 import { Formik, Form, Field, FieldArray, FieldProps, FormikHelpers } from "formik";
 import * as Yup from "yup";
-import { Button, Grid, TextField, MenuItem, Tooltip } from "@mui/material";
+import { Button, Grid, TextField, MenuItem, Tooltip, CircularProgress } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { setProductsList } from "@/store/authSlice";
 import { useGetAllProductsQuery } from "@/api/apiSlice";
@@ -32,7 +32,7 @@ interface PackingDetailsTab {
 const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
   const dispatch = useAppDispatch();
 	const productListFromRedux = useAppSelector((state) => state.auth.packagesDetails);
-  const { data: productsData } = useGetAllProductsQuery({})
+  const { data: productsData, isLoading:isProductsLoading } = useGetAllProductsQuery({})
   console.log('products data :', productsData?.products)
 	const productIdOptions = productsData?.products
 
@@ -119,16 +119,22 @@ const validationSchema = Yup.object().shape({
                                   error={meta.touched && Boolean(meta.error)}
                                   helperText={meta.touched && meta.error}
                                 >
-											  	  {productIdOptions?.map((product: Product) => (
-																<MenuItem key={product.product_ID} value={String(product.product_ID)}>
-															  <Tooltip
-																  title='dfghj'
-																  // title={`${product.address_1}, ${product.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-																	placement="right">
-																<span style={{ flex: 1 }}>{product.product_ID}</span>
-																							  </Tooltip>
-																						  </MenuItem>
-																					  ))}
+											  	    {isProductsLoading ? (
+                                  <MenuItem disabled>
+                                    <CircularProgress size={20} />
+                                  </MenuItem>
+                                ) : (
+                                  productIdOptions?.map((product: Product) => (
+                                    <MenuItem key={product.product_ID} value={String(product.product_ID)}>
+                                      <Tooltip
+                                        title={`${product.product_name}, ${product.product_desc}`}
+                                        placement="right"
+                                      >
+                                        <span style={{ flex: 1 }}>{product.product_ID}</span>
+                                      </Tooltip>
+                                    </MenuItem>
+                                  ))
+                                )}
                                 </TextField>
                               ) : (
                                 <TextField

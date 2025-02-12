@@ -51,15 +51,21 @@ interface MassUploadProps {
 interface ParsedRow {
   [key: string]: string;
 }
+interface ApiResponse {
+      data: {
+        created_records: string[];
+        message: string;
+      };
+    }
 
 const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-      const [snackbarOpen, setSnackbarOpen] = useState(false);
-      const [snackbarMessage, setSnackbarMessage] = useState("");
-      const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
 
   const theme = useTheme();
 
@@ -142,7 +148,7 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
 
 
   // Handle template download
-  
+
 const mapCsvToPayload = (
   data: ParsedRow[],
   columnMappings: ColumnMapping[]
@@ -173,8 +179,7 @@ const mapCsvToPayload = (
   });
 };
 
-
-  const handleDownloadTemplate = () => {
+const handleDownloadTemplate = () => {
     const columnMappings = getColumnMappings();
     const csvContent = `data:text/csv;charset=utf-8,${columnMappings
       .map((col) => col.displayName)
@@ -224,11 +229,15 @@ const mapCsvToPayload = (
       }),
     };
      console.log("payload body :", body)
-        await postMapping[arrayKey](body);
-        setSnackbarMessage("Data uploaded successfully!");
+      const response=(await postMapping[arrayKey](body)) as ApiResponse;
+      const uploadedRecords = response.data.created_records.length;
+      if (uploadedRecords) {
+        setSnackbarMessage(`${uploadedRecords} records uploaded successfully!`);
         setSnackbarSeverity("success");
         setSnackbarOpen(true);
-        setIsModalOpen(false)
+        setIsModalOpen(false);
+      }
+
     } catch (error) {
           setSnackbarMessage("Something went wrong! Please try again.");
           setSnackbarSeverity("error");

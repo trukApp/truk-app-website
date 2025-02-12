@@ -18,6 +18,7 @@ import {
     FormHelperText,
     IconButton,
     Tooltip,
+    CircularProgress,
 } from '@mui/material';
 import style from './productmaster.module.css';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
@@ -123,8 +124,8 @@ const ProductMasterPage = () => {
     const [updateRecordId, setUpdateRecordId] = useState(0)
     const { data: productsData, error: allProductsFectchingError , isLoading } = useGetAllProductsQuery({page: paginationModel.page + 1, limit: paginationModel.pageSize})
     const [showForm, setShowForm] = useState(false);
-    const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery({})
-    const { data: packagesData,  } = useGetPackageMasterQuery({})
+    const { data: locationsData, error: getLocationsError, isLoading:isLocationLoading } = useGetLocationMasterQuery({})
+    const { data: packagesData,isLoading:isPackageLoading  } = useGetPackageMasterQuery({})
     const [createNewProduct] = useCreateProductMutation();
     const [deleteProduct] = useDeleteProductMutation()
     const [updateProductDetails] = useEditProductMutation();
@@ -198,10 +199,11 @@ const handleDelete = async (row: Product) => {
         console.log("Delete clicked:", row);
         const productId = row?.id;
         const response = await deleteProduct(productId);
-        console.log("Delete response:", response);
-        setSnackbarMessage("Product deleted successfully!");
-        setSnackbarSeverity("success");
-        setSnackbarOpen(true);
+        if (response.data.deleted_record) {
+          setSnackbarMessage(`Product ID ${response.data.deleted_record} deleted successfully!`);
+          setSnackbarSeverity("info");
+          setSnackbarOpen(true);
+      } 
     } catch (error) {
         console.error("Delete error:", error);
         setSnackbarMessage("Failed to delete product. Please try again.");
@@ -350,28 +352,32 @@ const handleDelete = async (row: Product) => {
             console.log("I am going to update the existing record")
             const response = await updateProductDetails({ body: editProductBody, productId: updateRecordId }).unwrap();
             console.log('API Response:', response);
-            if (response) {
-                resetForm()
+            if (response?.updated_record) {
+                  setSnackbarMessage(`Product ID ${response.updated_record} updated successfully!`);
+                  resetForm()
                 setFormInitialValues(productFormInitialValues)
                 setShowForm(false)
                 setUpdateRecord(false)
                 setUpdateRecordId(0)
                 setUpdateRecordData({})
-                setSnackbarMessage("Product updated successfully! ");
-                setSnackbarSeverity("success");
-				setSnackbarOpen(true);
-        
-            }
+                  setSnackbarSeverity("success");
+                  setSnackbarOpen(true);
+                } 
         } else {
             console.log("I am going to create a record")
             console.log("createProductBody: ", createProductBody)
             const response = await createNewProduct(createProductBody).unwrap();
             console.log('API Response:', response)
-            resetForm()
-            setShowForm(false)
-            setSnackbarMessage("Product created successfully!");
-            setSnackbarSeverity("success");
-			setSnackbarOpen(true);
+            if (response?.created_records) {
+                    setSnackbarMessage(`Product ID ${response.created_records[0]} created successfully!`);
+                    resetForm()
+                    setShowForm(false)
+                    setUpdateRecord(false)
+                    setUpdateRecordId(0)
+                    setUpdateRecordData({})
+                    setSnackbarSeverity("success");
+                    setSnackbarOpen(true);
+                  } 
         }
         }
         catch (error) {
@@ -687,15 +693,23 @@ const handleDelete = async (row: Product) => {
                                                 onChange={(e) => setFieldValue('locationId', e.target.value)}
                                                 onBlur={handleBlur}
                                             >
-                                            {getAllLocations?.map((location: Location) => (
-                                                <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                                                        <Tooltip
-                                                            title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                                            placement="right">
-                                                            <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                                                        </Tooltip>
-                                                </MenuItem>
-                                            ))}
+                                            {isLocationLoading ? (
+                                                <MenuItem disabled>
+                                                                              <CircularProgress size={20} color="inherit" />
+                                                                              <span style={{ marginLeft: "10px" }}>Loading...</span>
+                                                                            </MenuItem>
+                                                                          ) : (
+                                                                            getAllLocations?.map((location: Location) => (
+                                                                              <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                                                                <Tooltip
+                                                                                  title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                                                                  placement="right"
+                                                                                >
+                                                                                  <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                                                                </Tooltip>
+                                                                              </MenuItem>
+                                                                            ))
+                                                                          )}
                                             </Select>
                                             {touched.locationId && errors.locationId && (
                                                 <FormHelperText>{errors.locationId}</FormHelperText>
@@ -722,15 +736,23 @@ const handleDelete = async (row: Product) => {
                                                 onChange={(e) => setFieldValue('packagingType', e.target.value)}
                                                 onBlur={handleBlur}
                                             >
-                                            {getAllPackages?.map((packages: Package) => (
-                                                <MenuItem key={packages.pac_ID} value={String(packages.pac_ID)}>
-                                                        <Tooltip
-                                                            title={`${packages.packaging_type_name}, ${packages.dimensions}, ${packages.dimensions_uom}`}
-                                                            placement="right">
-                                                            <span style={{ flex: 1 }}>{packages.pac_ID}</span>
-                                                        </Tooltip>
+                                        {isPackageLoading ? (
+                                                <MenuItem disabled>
+                                                <CircularProgress size={20} color="inherit" />
+                                                <span style={{ marginLeft: "10px" }}>Loading...</span>
                                                 </MenuItem>
-                                            ))}
+                                            ) : (
+                                                getAllPackages?.map((packages: Package) => (
+                                                <MenuItem key={packages.pac_ID} value={String(packages.pac_ID)}>
+                                                    <Tooltip
+                                                    title={`${packages.packaging_type_name}, ${packages.dimensions}, ${packages.dimensions_uom}`}
+                                                    placement="right"
+                                                    >
+                                                    <span style={{ flex: 1 }}>{packages.pac_ID}</span>
+                                                    </Tooltip>
+                                                </MenuItem>
+                                                ))
+                                            )}
                                             </Select>
                                             {touched.packagingType && errors.packagingType && (
                                                 <FormHelperText>{errors.packagingType}</FormHelperText>

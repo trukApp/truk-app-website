@@ -150,15 +150,9 @@ export interface IAuthState {
   packageAdditionalInfo: AdditionalInfo | null;
   packagePickAndDropTimings: FormValues | null;
   packageTax: IPackageTax | null;
-  shipFromState: IShipFrom | null;
-  shipToState: IShipTo | null;
-  packageDetailsState: IProductDetail | null;
-  billToState: IShipFrom | null;
-  additionalInfoState: AdditionalInfo | null;
-  pickupDropoffState: FormValues | null;
-  taxInfoState: IPackageTax | null;
-}
+  completedState : boolean[]
 
+}
 
 const initialState: IAuthState = {
   authState: false,
@@ -176,13 +170,8 @@ const initialState: IAuthState = {
   packageAdditionalInfo: null,
   packagePickAndDropTimings: null,
   packageTax: null,
-  shipFromState: null,
-  shipToState: null,
-  packageDetailsState: null,
-  billToState: null,
-  additionalInfoState: null,
-  pickupDropoffState: null,
-  taxInfoState: null,
+  completedState : [],
+
 };
 
 
@@ -246,28 +235,11 @@ export const authSlice = createSlice({
     setPackageTax: (state, action: PayloadAction<IPackageTax | null>) => {
       state.packageTax = action.payload;
     },
-
-      setPackageShipFromState: (state, action: PayloadAction<IShipFrom | null>) => {
-      state.packageShipFrom = action.payload;
+    setCompletedState: (state, action: PayloadAction<number>) => {
+      state.completedState[action.payload] = true
     },
-    setPackageShipToState: (state, action: PayloadAction<IShipFrom | null>) => {
-      state.packageShipTo = action.payload;
-    },
-    setProductsListState: (state, action: PayloadAction<Array<IProductDetail>>) => {
-      state.packagesDetails = action.payload;
-    },
-    setPackageBillToState: (state, action: PayloadAction<IShipFrom | null>) => {
-      state.packageBillTo = action.payload;
-    },
-    
-    setPackageTaxState: (state, action: PayloadAction<IPackageTax | null>) => {
-      state.packageTax = action.payload;
-    },
-    setPackageAdditionalInfoState: (state, action: PayloadAction<IShipFrom | null>) => {
-      state.packageShipFrom = action.payload;
-    },
-    setPackagePickupDropState: (state, action: PayloadAction<IShipFrom | null>) => {
-      state.packageShipTo = action.payload;
+    resetCompletedSteps: (state) => {
+      state.completedState = [];
     },
     
   },
@@ -290,13 +262,7 @@ export const {
   setPackageAddtionalInfo,
   setPackagePickAndDropTimings,
   setPackageTax,
-   setPackageShipFromState,
-  setPackageShipToState,
-  setProductsListState,
-  setPackageBillToState,
-  setPackageTaxState,
-  setPackageAdditionalInfoState,
-  setPackagePickupDropState,
+  setCompletedState,
   
 } = authSlice.actions;
 

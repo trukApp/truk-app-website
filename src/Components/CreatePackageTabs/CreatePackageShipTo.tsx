@@ -51,7 +51,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
     const shipFromReduxValues = useAppSelector((state) => state.auth.packageShipTo)
     console.log("shipFromReduxValues: ", shipFromReduxValues)
 
-    const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery([])
+    const { data: locationsData, error: getLocationsError,isLoading:isLocationLoading } = useGetLocationMasterQuery([])
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
     console.log("all locations :", getAllLocations)
 
@@ -237,24 +237,33 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                         <Grid container spacing={2}>
                             {!values.saveAsNewLocationId && (
                                 <Grid item xs={12} sm={6} md={2.4}>
-                                    <FormControl fullWidth size="small" error={touched?.locationId && Boolean(errors?.locationId)}>
-                                    <InputLabel>Location ID</InputLabel>
+                                    <FormControl fullWidth size='small'  error={touched?.locationId && Boolean(errors?.locationId)}>
+                                    <InputLabel shrink>Location ID</InputLabel>
                                     <Select
-                                        label="Location ID"
+                                    label="Location ID"
+                                        displayEmpty
                                         name="locationId"
                                         value={values?.locationId}
                                         onChange={(event) => handleLocationChange(event, setFieldValue)}
                                         onBlur={handleBlur}
                                     >
-                                        {getAllLocations?.map((location: Location) => (
-                                            <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                                                <Tooltip
-                                                    title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                                    placement="right">
-                                                    <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                                                </Tooltip>
-                                            </MenuItem>
-                                        ))}
+                            {isLocationLoading ? (
+                                <MenuItem disabled>
+                                  <CircularProgress size={20} color="inherit" />
+                                  <span style={{ marginLeft: "10px" }}>Loading...</span>
+                                </MenuItem>
+                              ) : (
+                                getAllLocations?.map((location: Location) => (
+                                  <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                    <Tooltip
+                                      title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                      placement="right"
+                                    >
+                                      <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                    </Tooltip>
+                                  </MenuItem>
+                                ))
+                              )}
                                     </Select>
                                     {touched?.locationId && errors?.locationId && (
                                         <FormHelperText>{errors?.locationId}</FormHelperText>
@@ -267,7 +276,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                     name="locationDescription"
                                     as={TextField}
                                     label="Location Description*"
-                                    fullWidth
+                                    InputLabelProps={{ shrink: true }} size = 'small' fullWidth
                                     
                                     error={touched?.locationDescription && Boolean(errors?.locationDescription)}
                                     helperText={touched?.locationDescription && errors?.locationDescription}
@@ -278,7 +287,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                     name="latitude"
                                     as={TextField}
                                     label="Latitude*"
-                                    fullWidth
+                                    InputLabelProps={{ shrink: true }} size = 'small' fullWidth
                                     error={touched?.latitude && Boolean(errors?.latitude)}
                                     helperText={touched?.latitude && errors?.latitude}
                                 />
@@ -288,7 +297,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                     name="longitude"
                                     as={TextField}
                                     label="Longitude*"
-                                    fullWidth
+                                    InputLabelProps={{ shrink: true }} size = 'small' fullWidth
                                     error={touched?.longitude && Boolean(errors?.longitude)}
                                     helperText={touched?.longitude && errors?.longitude}
                                 />
@@ -298,7 +307,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                     name="timeZone"
                                     as={TextField}
                                     label="Time zone*"
-                                    fullWidth
+                                    InputLabelProps={{ shrink: true }} size = 'small' fullWidth
                                     error={touched?.timeZone && Boolean(errors?.timeZone)}
                                     helperText={touched?.timeZone && errors?.timeZone}
                                 />
@@ -308,7 +317,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                     name="locationType"
                                     as={TextField}
                                     label="Location type*"
-                                    fullWidth
+                                    InputLabelProps={{ shrink: true }} size = 'small' fullWidth
                                     error={touched?.locationType && Boolean(errors?.locationType)}
                                     helperText={touched?.locationType && errors?.locationType}
                                 />
@@ -318,7 +327,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                     name="glnCode"
                                     as={TextField}
                                     label="GLN Code"
-                                    fullWidth
+                                    InputLabelProps={{ shrink: true }} size = 'small' fullWidth
                                     error={touched?.glnCode && Boolean(errors?.glnCode)}
                                     helperText={touched?.glnCode && errors?.glnCode}
                                 />
@@ -329,7 +338,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                     name="iataCode"
                                     as={TextField}
                                     label="IATA Code"
-                                    fullWidth
+                                    InputLabelProps={{ shrink: true }} size = 'small' fullWidth
                                     error={touched?.iataCode && Boolean(errors?.iataCode)}
                                     helperText={touched?.iataCode && errors?.iataCode}
                                 />
@@ -343,7 +352,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                     name="addressLine1"
                                     as={TextField}
                                     label="Address Line 1"
-                                    fullWidth
+                                    InputLabelProps={{ shrink: true }} size = 'small' fullWidth
                                     
                                     error={touched?.addressLine1 && Boolean(errors?.addressLine1)}
                                     helperText={touched?.addressLine1 && errors?.addressLine1}
@@ -354,7 +363,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                     name="addressLine2"
                                     as={TextField}
                                     label="Address Line 2"
-                                    fullWidth
+                                    InputLabelProps={{ shrink: true }} size = 'small' fullWidth
                                 />
                             </Grid>
                             <Grid item xs={12} md={2.4}>
@@ -362,7 +371,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                     name="city"
                                     as={TextField}
                                     label="City"
-                                    fullWidth
+                                    InputLabelProps={{ shrink: true }} size = 'small' fullWidth
                                      
                                     error={touched?.city && Boolean(errors?.city)}
                                     helperText={touched?.city && errors?.city}
@@ -373,7 +382,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                     name="state"
                                     as={TextField}
                                     label="State"
-                                    fullWidth
+                                    InputLabelProps={{ shrink: true }} size = 'small' fullWidth
                                      
                                     error={touched?.state && Boolean(errors?.state)}
                                     helperText={touched?.state && errors?.state}
@@ -384,7 +393,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                     name="country"
                                     as={TextField}
                                     label="Country"
-                                    fullWidth
+                                    InputLabelProps={{ shrink: true }} size = 'small' fullWidth
                                      
                                     error={touched?.country && Boolean(errors?.country)}
                                     helperText={touched?.country && errors?.country}
@@ -395,7 +404,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                     name="pincode"
                                     as={TextField}
                                     label="Pincode"
-                                    fullWidth
+                                    InputLabelProps={{ shrink: true }} size = 'small' fullWidth
                                     required
                                     error={touched?.pincode && Boolean(errors?.pincode)}
                                     helperText={touched?.pincode && errors?.pincode}
@@ -409,7 +418,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                     name="contactPerson"
                                     as={TextField}
                                     label="Contact Person"
-                                    fullWidth
+                                    InputLabelProps={{ shrink: true }} size = 'small' fullWidth
                                      
                                     error={touched?.contactPerson && Boolean(errors?.contactPerson)}
                                     helperText={touched?.contactPerson && errors?.contactPerson}
@@ -420,7 +429,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                     name="phoneNumber"
                                     as={TextField}
                                     label="Phone Number"
-                                    fullWidth
+                                    InputLabelProps={{ shrink: true }} size = 'small' fullWidth
                                     type='number'
                                     error={touched?.phoneNumber && Boolean(errors?.phoneNumber)}
                                     helperText={touched?.phoneNumber && errors?.phoneNumber}
@@ -431,7 +440,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                     name="email"
                                     as={TextField}
                                     label="Email Address"
-                                    fullWidth
+                                    InputLabelProps={{ shrink: true }} size = 'small' fullWidth
                                     
                                     error={touched?.email && Boolean(errors?.email)}
                                     helperText={touched?.email && errors?.email}
