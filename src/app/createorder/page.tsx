@@ -7,8 +7,6 @@ import RootOptimization from '@/Components/CreateOrderTables/RootOptimization';
 import LoadOptimization from '@/Components/CreateOrderTables/LoadOptimization';
 import { useAppSelector } from '@/store';
 import styles from './createorder.module.css';
-// import { MapComponent } from '@/Components/MapComponent';
-// import Header from '@/Components/Header';
 import { withAuthComponent } from '@/Components/WithAuthComponent';
 import { useGetAllPackagesForOrderQuery, useSelectTheProductsMutation } from '@/api/apiSlice';
 
@@ -20,6 +18,7 @@ const CreateOrder: React.FC = () => {
     const [selectTrucks, setSelectTrucks] = useState([])
     const [rootOptimization, setRouteOptimazition] = useState([])
     const sourceLocation = useAppSelector((state) => state.auth.createOrderDesination);
+    const filters = useAppSelector((state) => state.auth.filters);
     console.log("sourceLocation: ", sourceLocation)
     console.log(rootOptimization)
 
@@ -28,6 +27,7 @@ const CreateOrder: React.FC = () => {
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
     const selectedTrucks = useAppSelector((state) => state.auth.selectedTrucks || []);
     console.log("selectedPackages: ", selectedPackages)
+    console.log("selectTrucks: ", selectedTrucks)
 
     const { data: packagesData, error: allProductsFectchingError, isLoading: isPackagesLoading } = useGetAllPackagesForOrderQuery([]);
     if (allProductsFectchingError) {
@@ -47,17 +47,15 @@ const CreateOrder: React.FC = () => {
             console.log("next button is clicked")
             const packagesIDArray = selectedPackages.map((item) => item.pack_ID);
             const body = {
-                packages: packagesIDArray
+                packages: packagesIDArray,
+                filters
             }
-            console.log(packagesIDArray);
             const response = await selectTheTrucks(body).unwrap();
             if (response) {
-                console.log('API Response:', response);
-                setSelectTrucks(response?.allocations)
+                setSelectTrucks([response?.scenarioCost, response?.scenarioEta])
                 setRouteOptimazition(response?.routes)
                 setActiveStep((prev) => prev + 1)
             }
-
         } else {
             setActiveStep((prev) => prev + 1);
         }

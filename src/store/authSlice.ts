@@ -1,4 +1,3 @@
-// import { IPackage } from './authSlice';
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { AdditionalInfo } from "@/Components/CreatePackageTabs/AddtionalInformation";
@@ -22,54 +21,6 @@ export interface ITruck {
   leftoverWeight: string;
   leftoverVolume: string;
 }
-
-// interface PackagingType {
-//   pac_ID: string;
-//   location: string;
-// }
-
-// interface Product {
-//   productName: string;
-//   productCode: string;
-//   category: string;
-//   subCategory: string;
-//   price: number;
-//   stockQuantity: number;
-//   manufacturer: string;
-//   description: string;
-//   warehouseLocation: string;
-//   warehousePincode: string;
-//   warehouseState: string;
-//   warehouseCity: string;
-//   warehouseCountry: string;
-//   product_ID: string;
-//   product_desc: string;
-//   sales_uom: string;
-//   basic_uom: string;
-//   weight: string;
-//   volume: string;
-//   expiration: string;
-//   best_before: string;
-//   hsn_code: string;
-//   sku_num: string;
-//   fragile_goods: boolean;
-//   dangerous_goods: boolean;
-//   id: number;
-//   prod_id: number;
-//   loc_ID: string;
-//   specialInstructions: string;
-//   documents: string;
-//   stacking_factor: string;
-//   packaging_type: PackagingType[];
-//   temp_controlled: boolean;
-//   hazardous: boolean;
-//   product_name: string;
-//   packagingType: PackagingType[];
-//   packing_label: boolean;
-//   special_instructions: string;
-//   tempControl: boolean;
-//   packingLabel: boolean;
-// }
 
 export interface IShipFrom {
   addressLine1: string;
@@ -110,9 +61,7 @@ export interface IShipTo {
   timeZone: string;
   locationType: string;
   glnCode: string;
-iataCode: string;
-// saveAsNewLocationId: boolean,
-// saveAsDefaultShipFromLocation: boolean,
+  iataCode: string;
 }
 
 export interface IProductDetail {
@@ -125,7 +74,6 @@ export interface IProductDetail {
   rfid: string;
   weight: string;
 }
-
 
 export interface IPackageTax {
   senderGSTN: string;
@@ -157,8 +105,15 @@ export interface IAuthState {
   additionalInfoState: AdditionalInfo | null;
   pickupDropoffState: FormValues | null;
   taxInfoState: IPackageTax | null;
+  filters: {
+    checkValidity: boolean;
+    checkDowntime: boolean;
+    sortUnlimitedUsage: boolean;
+    sortOwnership: boolean;
+    sortByCost: boolean;
+    sortByCapacity: boolean;
+  };
 }
-
 
 const initialState: IAuthState = {
   authState: false,
@@ -183,15 +138,21 @@ const initialState: IAuthState = {
   additionalInfoState: null,
   pickupDropoffState: null,
   taxInfoState: null,
+  filters: {
+    checkValidity: false,
+    checkDowntime: false,
+    sortUnlimitedUsage: false,
+    sortOwnership: false,
+    sortByCost: false,
+    sortByCapacity: false,
+  },
 };
-
-
 
 export const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setAuthState: (state, action: PayloadAction<boolean >) => {
+    setAuthState: (state, action: PayloadAction<boolean>) => {
       state.authState = action.payload;
     },
     setBabluName: (state, action: PayloadAction<string>) => {
@@ -211,7 +172,7 @@ export const authSlice = createSlice({
     },
     setSelectedPackages: (state, action: PayloadAction<Array<Package>>) => {
       console.log("action.payload: ", action.payload);
-      state.selectedPackages = action.payload ; // Update selected packages
+      state.selectedPackages = action.payload; // Update selected packages
     },
     setCreateOrderDesination: (state, action: PayloadAction<string>) => {
       console.log("source location ", action.payload);
@@ -226,7 +187,7 @@ export const authSlice = createSlice({
     setPackageShipTo: (state, action: PayloadAction<IShipFrom | null>) => {
       state.packageShipTo = action.payload;
     },
-    
+
     setProductsList: (state, action: PayloadAction<Array<IProductDetail>>) => {
       console.log("Updating package details:", action.payload);
       state.packagesDetails = action.payload;
@@ -234,7 +195,10 @@ export const authSlice = createSlice({
     setPackageBillTo: (state, action: PayloadAction<IShipFrom | null>) => {
       state.packageBillTo = action.payload;
     },
-    setPackageAddtionalInfo: (state, action: PayloadAction<AdditionalInfo | null>) => {
+    setPackageAddtionalInfo: (
+      state,
+      action: PayloadAction<AdditionalInfo | null>
+    ) => {
       state.packageAdditionalInfo = action.payload;
     },
     setPackagePickAndDropTimings: (
@@ -247,29 +211,46 @@ export const authSlice = createSlice({
       state.packageTax = action.payload;
     },
 
-      setPackageShipFromState: (state, action: PayloadAction<IShipFrom | null>) => {
+    setPackageShipFromState: (
+      state,
+      action: PayloadAction<IShipFrom | null>
+    ) => {
       state.packageShipFrom = action.payload;
     },
     setPackageShipToState: (state, action: PayloadAction<IShipFrom | null>) => {
       state.packageShipTo = action.payload;
     },
-    setProductsListState: (state, action: PayloadAction<Array<IProductDetail>>) => {
+    setProductsListState: (
+      state,
+      action: PayloadAction<Array<IProductDetail>>
+    ) => {
       state.packagesDetails = action.payload;
     },
     setPackageBillToState: (state, action: PayloadAction<IShipFrom | null>) => {
       state.packageBillTo = action.payload;
     },
-    
+
     setPackageTaxState: (state, action: PayloadAction<IPackageTax | null>) => {
       state.packageTax = action.payload;
     },
-    setPackageAdditionalInfoState: (state, action: PayloadAction<IShipFrom | null>) => {
+    setPackageAdditionalInfoState: (
+      state,
+      action: PayloadAction<IShipFrom | null>
+    ) => {
       state.packageShipFrom = action.payload;
     },
-    setPackagePickupDropState: (state, action: PayloadAction<IShipFrom | null>) => {
+    setPackagePickupDropState: (
+      state,
+      action: PayloadAction<IShipFrom | null>
+    ) => {
       state.packageShipTo = action.payload;
     },
-    
+    setFilters: (
+      state,
+      action: PayloadAction<Partial<IAuthState["filters"]>>
+    ) => {
+      state.filters = { ...state.filters, ...action.payload };
+    },
   },
 });
 
@@ -290,14 +271,14 @@ export const {
   setPackageAddtionalInfo,
   setPackagePickAndDropTimings,
   setPackageTax,
-   setPackageShipFromState,
+  setPackageShipFromState,
   setPackageShipToState,
   setProductsListState,
   setPackageBillToState,
   setPackageTaxState,
   setPackageAdditionalInfoState,
   setPackagePickupDropState,
-  
+  setFilters,
 } = authSlice.actions;
 
 export const authReducer = authSlice.reducer;
