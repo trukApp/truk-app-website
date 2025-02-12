@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Stepper, Step, StepLabel, Button, Typography } from '@mui/material';
 import PackagesTable from '@/Components/CreateOrderTables/PackagesTable';
-import TrucksTable from '@/Components/CreateOrderTables/TrucksTable';
+import TrucksTable, { Truck } from '@/Components/CreateOrderTables/TrucksTable';
 import RootOptimization from '@/Components/CreateOrderTables/RootOptimization';
 import LoadOptimization from '@/Components/CreateOrderTables/LoadOptimization';
 import { useAppSelector } from '@/store';
@@ -15,7 +15,7 @@ import { useGetAllPackagesForOrderQuery, useSelectTheProductsMutation } from '@/
 const CreateOrder: React.FC = () => {
     const [activeStep, setActiveStep] = useState(0);
     const [selectTheTrucks] = useSelectTheProductsMutation();
-    const [selectTrucks, setSelectTrucks] = useState([])
+    const [selectTrucks, setSelectTrucks] = useState<Truck[]>([]);
     const [rootOptimization, setRouteOptimazition] = useState([])
     const sourceLocation = useAppSelector((state) => state.auth.createOrderDesination);
     const filters = useAppSelector((state) => state.auth.filters);
