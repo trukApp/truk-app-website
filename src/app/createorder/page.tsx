@@ -52,9 +52,9 @@ const CreateOrder: React.FC = () => {
             console.log(packagesIDArray);
             const response = await selectTheTrucks(body).unwrap();
             if (response) {
+                console.log('API Response:', response);
                 setSelectTrucks(response?.allocations)
                 setRouteOptimazition(response?.routes)
-                console.log('API Response:', response);
                 setActiveStep((prev) => prev + 1)
             }
 
@@ -92,7 +92,7 @@ const CreateOrder: React.FC = () => {
 
                 {activeStep === 2 && (
                     <div>
-                        <RootOptimization />
+                        <RootOptimization rootOptimization={rootOptimization} />
                     </div>
                 )}
 
