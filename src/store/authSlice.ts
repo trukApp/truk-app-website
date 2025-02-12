@@ -82,6 +82,7 @@ export interface IPackageTax {
   isSelfTransport: string;
 }
 
+
 export interface IAuthState {
   authState: boolean;
   bablu: string;
@@ -98,21 +99,17 @@ export interface IAuthState {
   packageAdditionalInfo: AdditionalInfo | null;
   packagePickAndDropTimings: FormValues | null;
   packageTax: IPackageTax | null;
-  shipFromState: IShipFrom | null;
-  shipToState: IShipTo | null;
-  packageDetailsState: IProductDetail | null;
-  billToState: IShipFrom | null;
-  additionalInfoState: AdditionalInfo | null;
-  pickupDropoffState: FormValues | null;
-  taxInfoState: IPackageTax | null;
+  completedState: boolean[];
   filters: {
-    checkValidity: boolean;
-    checkDowntime: boolean;
-    sortUnlimitedUsage: boolean;
-    sortOwnership: boolean;
-    sortByCost: boolean;
-    sortByCapacity: boolean;
-  };
+    checkValidity: false,
+    checkDowntime: false,
+    sortUnlimitedUsage: false,
+    sortOwnership: false,
+    sortByCost: false,
+    sortByCapacity: false,
+  },
+
+
 }
 
 const initialState: IAuthState = {
@@ -131,13 +128,7 @@ const initialState: IAuthState = {
   packageAdditionalInfo: null,
   packagePickAndDropTimings: null,
   packageTax: null,
-  shipFromState: null,
-  shipToState: null,
-  packageDetailsState: null,
-  billToState: null,
-  additionalInfoState: null,
-  pickupDropoffState: null,
-  taxInfoState: null,
+  completedState: [],
   filters: {
     checkValidity: false,
     checkDowntime: false,
@@ -146,7 +137,9 @@ const initialState: IAuthState = {
     sortByCost: false,
     sortByCapacity: false,
   },
+
 };
+
 
 export const authSlice = createSlice({
   name: "auth",
@@ -210,40 +203,11 @@ export const authSlice = createSlice({
     setPackageTax: (state, action: PayloadAction<IPackageTax | null>) => {
       state.packageTax = action.payload;
     },
-
-    setPackageShipFromState: (
-      state,
-      action: PayloadAction<IShipFrom | null>
-    ) => {
-      state.packageShipFrom = action.payload;
+    setCompletedState: (state, action: PayloadAction<number>) => {
+      state.completedState[action.payload] = true
     },
-    setPackageShipToState: (state, action: PayloadAction<IShipFrom | null>) => {
-      state.packageShipTo = action.payload;
-    },
-    setProductsListState: (
-      state,
-      action: PayloadAction<Array<IProductDetail>>
-    ) => {
-      state.packagesDetails = action.payload;
-    },
-    setPackageBillToState: (state, action: PayloadAction<IShipFrom | null>) => {
-      state.packageBillTo = action.payload;
-    },
-
-    setPackageTaxState: (state, action: PayloadAction<IPackageTax | null>) => {
-      state.packageTax = action.payload;
-    },
-    setPackageAdditionalInfoState: (
-      state,
-      action: PayloadAction<IShipFrom | null>
-    ) => {
-      state.packageShipFrom = action.payload;
-    },
-    setPackagePickupDropState: (
-      state,
-      action: PayloadAction<IShipFrom | null>
-    ) => {
-      state.packageShipTo = action.payload;
+    resetCompletedSteps: (state) => {
+      state.completedState = [];
     },
     setFilters: (
       state,
@@ -271,14 +235,8 @@ export const {
   setPackageAddtionalInfo,
   setPackagePickAndDropTimings,
   setPackageTax,
-  setPackageShipFromState,
-  setPackageShipToState,
-  setProductsListState,
-  setPackageBillToState,
-  setPackageTaxState,
-  setPackageAdditionalInfoState,
-  setPackagePickupDropState,
-  setFilters,
+  setCompletedState,
+  
 } = authSlice.actions;
 
 export const authReducer = authSlice.reducer;

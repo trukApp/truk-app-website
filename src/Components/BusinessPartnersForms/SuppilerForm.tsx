@@ -83,7 +83,7 @@ const SupplierForm: React.FC = () => {
     const { data, error, isLoading } = useGetAllVendorsDataQuery({
         partner_type: "vendor", page: paginationModel.page + 1, limit: paginationModel.pageSize
     })
-    const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery([])
+    const { data: locationsData, error: getLocationsError,isLoading:isLocationLoading } = useGetLocationMasterQuery([])
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
     console.log("all locations :", locationsData?.locations)
     console.log("getLocationsError: ", getLocationsError)
@@ -138,9 +138,11 @@ const handleDelete = async (rowData: Customer) => {
     const response = await deleteBusinessPartner(deleteId);
     console.log("Delete response:", response);
 
-    setSnackbarMessage("Partner deleted successfully!");
-    setSnackbarSeverity("success");
-    setSnackbarOpen(true);
+    if (response.data.deleted_record) {
+          setSnackbarMessage(`Supplier ID ${response.data.deleted_record} deleted successfully!`);
+          setSnackbarSeverity("info");
+          setSnackbarOpen(true);
+      }
   } catch (error) {
     console.error("Error deleting partner:", error);
     setSnackbarMessage("Failed to delete partner. Please try again.");
@@ -266,30 +268,30 @@ const handleDelete = async (rowData: Customer) => {
                 console.log("I am going update the record")
                 const response = await updatePartnerDetails({ body: editBody, partnerId: updateRecordId }).unwrap();
                 console.log('API Response:', response);
-                if (response) {
-                    setFormInitialValues(initialSupplierValues)
+                if (response?.updated_record) {
+                  setSnackbarMessage(`Supplier ID ${response.updated_record} updated successfully!`);
+                  setFormInitialValues(initialSupplierValues)
                     setShowForm(false)
                     setUpdateRecord(false)
                     setUpdateRecordId(0)
                     setUpdateRecordData({})
-                    setSnackbarMessage("Vendor updated successfully!");
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
-                }
+                } 
             } else {
                 console.log("I am going create the record")
                 const response = await customerRegistration(body).unwrap();
                 console.log('API Response:', response);
-                if (response) {
-                    setFormInitialValues(initialSupplierValues)
+                if (response?.created_records) {
+                    setSnackbarMessage(`Supplier ID ${response.created_records[0]} created successfully!`);
+                     setFormInitialValues(initialSupplierValues)
                     setShowForm(false)
                     setUpdateRecord(false)
                     setUpdateRecordId(0)
                     setUpdateRecordData({})
-                    setSnackbarMessage("Vendor created successfully!");
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
-                }
+                  } 
             }
         } catch (error) {
                 console.error('API Error:', error);
@@ -406,15 +408,23 @@ const handleDelete = async (rowData: Customer) => {
                                                 onChange={(event) => handleLocationChange(event, setFieldValue)}
                                                 onBlur={handleBlur}
                                             >
-                                            {getAllLocations?.map((location: Location) => (
-                                                    <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                                                        <Tooltip
-                                                            title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                                            placement="right">
-                                                            <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                                                        </Tooltip>
-                                                    </MenuItem>
-                                            ))}
+                            {isLocationLoading ? (
+                                <MenuItem disabled>
+                                  <CircularProgress size={20} color="inherit" />
+                                  <span style={{ marginLeft: "10px" }}>Loading...</span>
+                                </MenuItem>
+                              ) : (
+                                getAllLocations?.map((location: Location) => (
+                                  <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                    <Tooltip
+                                      title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                      placement="right"
+                                    >
+                                      <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                    </Tooltip>
+                                  </MenuItem>
+                                ))
+                              )}
                                             </Select>
                                             {touched.locationId && errors.locationId && (
                                                 <FormHelperText>{errors.locationId}</FormHelperText>
@@ -538,15 +548,23 @@ const handleDelete = async (rowData: Customer) => {
                                                 onChange={(e) => setFieldValue('locationOfSource', e.target.value)}
                                                 onBlur={handleBlur}
                                             >
-                                                        {getAllLocations?.map((location: Location) => (
-                                                            <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                                                                <Tooltip
-                                                                    title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                                                    placement="right">
-                                                                    <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                                                                </Tooltip>
-                                                            </MenuItem>
-                                                                                        ))}
+{isLocationLoading ? (
+                                <MenuItem disabled>
+                                  <CircularProgress size={20} color="inherit" />
+                                  <span style={{ marginLeft: "10px" }}>Loading...</span>
+                                </MenuItem>
+                              ) : (
+                                getAllLocations?.map((location: Location) => (
+                                  <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                    <Tooltip
+                                      title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                      placement="right"
+                                    >
+                                      <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                    </Tooltip>
+                                  </MenuItem>
+                                ))
+                              )}
                                             </Select>
                                             {touched.locationOfSource && errors.locationOfSource && (
                                                 <FormHelperText>{errors.locationOfSource}</FormHelperText>

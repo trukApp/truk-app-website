@@ -84,23 +84,28 @@ const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) =>
                 const packageId = editRow.id
                 const response = await editPackage({body:editBody, packageId}).unwrap()
                 console.log("edit response is ", response)
-                setShowForm(false)
-                formik.resetForm()
-                setIsEditing(false)
-                     setSnackbarMessage("Packaging info updated successfully!");
-                    setSnackbarSeverity("success");
-                    setSnackbarOpen(true);
+                 if (response?.updated_record) {
+                  setSnackbarMessage(`Package ID ${response.updated_record} updated successfully!`);
+                  formik.resetForm();
+                  setShowForm(false)
+                  setIsEditing(false)
+                  setSnackbarSeverity("success");
+                  setSnackbarOpen(true);
+                }
+
               }
               else {
                 console.log("post create location ",body)
                 const response = await postPackage(body).unwrap();
+                if (response?.created_records) {
+                    setSnackbarMessage(`Package ID ${response.created_records[0]} created successfully!`);
+                    formik.resetForm();
                 setShowForm(false)
-                formik.resetForm()
                 setIsEditing(false)
-                     setSnackbarMessage("Packaging info created successfully!");
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
-                console.log('response in post location:', response);
+                  }
+              
 
               }
           
@@ -176,11 +181,11 @@ const handleDelete = async (row: PackageInfo) => {
   try {
     const response = await deletePackage(packageId);
     console.log("Delete response:", response);
-
-    // Show success snackbar
-    setSnackbarMessage("Package deleted successfully!");
-    setSnackbarSeverity("success");
-    setSnackbarOpen(true);
+if (response.data.deleted_record) {
+          setSnackbarMessage(`Package ID ${response.data.deleted_record} deleted successfully!`);
+          setSnackbarSeverity("info");
+          setSnackbarOpen(true);
+      }
   } catch (error) {
     console.error("Error deleting vehicle:", error);
 

@@ -71,7 +71,7 @@ const CarrierForm: React.FC = () => {
       const [postCarrier,{isLoading:postCarrierLoading}] = usePostCarrierMasterMutation()
       const [editCarrier,{isLoading:editCarrierLoading}] = useEditCarrierMasterMutation()
     const [deleteCarrier,{isLoading:deleteCarrierLoading}] = useDeleteCarrierMasterMutation()
-    const { data: locationsData, } = useGetLocationMasterQuery({})
+    const { data: locationsData,isLoading:isLocationLoading } = useGetLocationMasterQuery({})
      const { data:lanesData } = useGetLanesMasterQuery([]);
     
     
@@ -114,9 +114,11 @@ const handleDelete = async (row: CarrierFormFE) => {
   try {
     const response = await deleteCarrier(packageId);
     console.log("Delete response:", response);
-    setSnackbarMessage("Vehicle deleted successfully!");
-    setSnackbarSeverity("success");
-    setSnackbarOpen(true);
+    if (response.data.deleted_record) {
+          setSnackbarMessage(`Carrier ID ${response.data.deleted_record} deleted successfully!`);
+          setSnackbarSeverity("info");
+          setSnackbarOpen(true);
+      }
   } catch (error) {
     console.error("Error deleting vehicle:", error);
     setSnackbarMessage("Failed to delete vehicle. Please try again.");
@@ -215,21 +217,26 @@ const handleDelete = async (row: CarrierFormFE) => {
                 const carrierId = editRow.id
                 const response = await editCarrier({body:editBody, carrierId}).unwrap()
                 console.log("edit response is ", response)
-                setShowForm(false)
-                setInitialValues(initialCarrierValues)
-                setSnackbarMessage("Carrier details updated successfully!");
-                setSnackbarSeverity("success");
-                setSnackbarOpen(true);
+                 if (response?.updated_record) {
+                  setSnackbarMessage(`Carrier ID ${response.updated_record} updated successfully!`);
+                  setInitialValues(initialCarrierValues)
+                  setShowForm(false)
+                  setIsEditing(false)
+                  setSnackbarSeverity("success");
+                  setSnackbarOpen(true);
+                }
             }
             else {
                 console.log("post create carrier ",body)
                 const response = await postCarrier(body).unwrap();
-                setShowForm(false)
-                setInitialValues(initialCarrierValues)
-                setSnackbarMessage("Carrier created successfully!");
-                setSnackbarSeverity("success");
-                setSnackbarOpen(true);
-                console.log('response in post carrier:', response);
+                if (response?.created_records) {
+                    setSnackbarMessage(`Carrier ID ${response.created_records[0]} created successfully!`);
+                    setInitialValues(initialCarrierValues)
+                    setShowForm(false)
+                    setIsEditing(false)
+                    setSnackbarSeverity("success");
+                    setSnackbarOpen(true);
+                  }
 
             }
         } catch (error) {
@@ -482,15 +489,23 @@ const handleDelete = async (row: CarrierFormFE) => {
                                             onBlur={handleBlur}
                                             renderValue={(selected) => (selected as string[]).join(', ')} // Display selected items as comma-separated
                                         >
-                                        {getAllLocations?.map((location: Location) => (
-                                            <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                                                    <Tooltip
-                                                        title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                                        placement="right">
-                                                        <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                                                    </Tooltip>
-                                            </MenuItem>
-                                        ))}
+                            {isLocationLoading ? (
+                                <MenuItem disabled>
+                                  <CircularProgress size={20} color="inherit" />
+                                  <span style={{ marginLeft: "10px" }}>Loading...</span>
+                                </MenuItem>
+                              ) : (
+                                getAllLocations?.map((location: Location) => (
+                                  <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                    <Tooltip
+                                      title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                      placement="right"
+                                    >
+                                      <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                    </Tooltip>
+                                  </MenuItem>
+                                ))
+                              )}
                                         </Select>
                                         {touched.locationIds && errors.locationIds && (
                                             <FormHelperText>{errors.locationIds}</FormHelperText>

@@ -102,12 +102,11 @@ const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
                 dispatch(setPackageAddtionalInfo(null));
                 dispatch(setSelectedPackages([]))
                 dispatch(setPackagePickAndDropTimings(null))
-                
-
-            setSnackbarMessage("Package created successfully!");
-            setSnackbarSeverity("success");
-            setSnackbarOpen(true);
-                
+                if (response?.created_records) {
+                    setSnackbarMessage(`Package ID ${response.created_records[0]} created successfully!`);
+                    setSnackbarSeverity("success");
+                    setSnackbarOpen(true);
+                  }
         }
         catch (error) {
             console.log("err :", error)

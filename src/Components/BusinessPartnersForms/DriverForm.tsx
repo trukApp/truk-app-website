@@ -103,7 +103,7 @@ const DriverForm: React.FC = () => {
   console.log("all drivers data :", data?.drivers)
   const driversData = data?.drivers.length > 0 ? data?.drivers : []
 
-  const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery({})
+  const { data: locationsData, error: getLocationsError, isLoading:isLocationLoading } = useGetLocationMasterQuery({})
   const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
   console.log("all locations :", locationsData?.locations)
   console.log("getLocationsError: ", getLocationsError)
@@ -185,10 +185,11 @@ const handleDelete = async (rowData: Driver) => {
   try {
     const response = await deleteDriver(deleteId);
     console.log("Delete response:", response);
-
-    setSnackbarMessage("Driver deleted successfully!");
-    setSnackbarSeverity("success");
-    setSnackbarOpen(true);
+if (response.data.deleted_record) {
+          setSnackbarMessage(`Driver ID ${response.data.deleted_record} deleted successfully!`);
+          setSnackbarSeverity("info");
+          setSnackbarOpen(true);
+      }
   } catch (error) {
     console.error("Error deleting driver:", error);
     setSnackbarMessage("Failed to delete driver. Please try again.");
@@ -296,24 +297,28 @@ const columns: GridColDef[] = [
         console.log("edit body :", editBody)
         const response = await editDriverDetails({ body: editBody, driverId: updateRecordId }).unwrap();
         console.log('API Response:', response);
-        setFormInitialValues(initialDriverValues);
-        setShowForm(false);
-        setUpdateRecord(false);
-        setUpdateRecordId(0);
-        setSnackbarMessage("Driver updated successfully!");
-        setSnackbarSeverity("success");
-        setSnackbarOpen(true);
+         if (response?.updated_record) {
+                  setSnackbarMessage(`Driver ID ${response.updated_record} updated successfully!`);
+                  setFormInitialValues(initialDriverValues);
+                  setShowForm(false);
+                  setUpdateRecord(false);
+                  setUpdateRecordId(0);
+                  setSnackbarSeverity("success");
+                  setSnackbarOpen(true);
+                } 
       } else {
         console.log("post body for drivers :", body)
         const response = await driverRegistration(body).unwrap();
         console.log('API Response:', response);
-        setFormInitialValues(initialDriverValues);
-        setShowForm(false);
-        setUpdateRecord(false);
-        setUpdateRecordId(0);
-        setSnackbarMessage("Driver created successfully!");
-        setSnackbarSeverity("success");
-        setSnackbarOpen(true);
+        if (response?.created_records) {
+                    setSnackbarMessage(`Driver ID ${response.created_records[0]} created successfully!`);
+                     setFormInitialValues(initialDriverValues)
+                    setShowForm(false)
+                    setUpdateRecord(false)
+                    setUpdateRecordId(0) 
+                    setSnackbarSeverity("success");
+                    setSnackbarOpen(true);
+                  }
       }
     } catch (error) {
         console.error('API Error:', error);
@@ -418,15 +423,23 @@ const columns: GridColDef[] = [
                       onChange={(event) => handleLocationChange(event, setFieldValue)}
                       onBlur={handleBlur}
                     >
-                    {getAllLocations?.map((location: Location) => (
-                          <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                              <Tooltip
-                                  title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                  placement="right">
-                                  <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                              </Tooltip>
-                            </MenuItem>
-                                                                ))}
+                    {isLocationLoading ? (
+                                <MenuItem disabled>
+                                  <CircularProgress size={20} color="inherit" />
+                                  <span style={{ marginLeft: "10px" }}>Loading...</span>
+                                </MenuItem>
+                              ) : (
+                                getAllLocations?.map((location: Location) => (
+                                  <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                    <Tooltip
+                                      title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                      placement="right"
+                                    >
+                                      <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                    </Tooltip>
+                                  </MenuItem>
+                                ))
+                              )}
                     </Select>
                     {touched.locations && errors.locations && (
                       <FormHelperText>{errors.locations}</FormHelperText>

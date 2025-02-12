@@ -235,14 +235,14 @@ const VehicleForm: React.FC = () => {
 	const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
 	const [isEditing, setIsEditing] = useState(false);
 	const [editRow, setEditRow] = useState<VehicleFormValues | null>(null);
-	const { data, error } = useGetVehicleMasterQuery({page: paginationModel.page + 1, limit: paginationModel.pageSize});
+	const { data, error ,isLoading } = useGetVehicleMasterQuery({page: paginationModel.page + 1, limit: paginationModel.pageSize});
 	const [postVehicle, { isLoading: postVehicleLoading }] = usePostVehicleMasterMutation();
 	const [editVehicle, { isLoading: editVehicleLoading }] = useEditVehicleMasterMutation();
 	const [deleteVehicle, { isLoading: deleteVehicleLoading }] = useDeleteVehicleMasterMutation();
 	if (error) {
 		console.log("err in loading vehicles data :", error);
 	}
-	const { data: locationsData, isLoading } = useGetLocationMasterQuery({});
+	const { data: locationsData, isLoading:isLocationLoading } = useGetLocationMasterQuery({});
 	const getAllLocations =
 		locationsData?.locations.length > 0 ? locationsData?.locations : [];
 	const vehiclesMaster = data?.vehicles;
@@ -586,22 +586,28 @@ const VehicleForm: React.FC = () => {
 					vehicleId,
 				}).unwrap();
 				console.log("edit response is ", response);
-				setShowForm(false);
-				setIsEditing(false);
-				resetForm();
-				setSnackbarMessage("Vehicle updated successfully!");
-            	setSnackbarSeverity("success");
-                setSnackbarOpen(true);
+				 if (response?.updated_record) {
+                  setSnackbarMessage(`Vehicle ID ${response.updated_record} updated successfully!`);
+                  resetForm();
+                  setShowForm(false)
+                  setIsEditing(false)
+                  setSnackbarSeverity("success");
+                  setSnackbarOpen(true);
+                }
+
 			} else {
 				console.log("post create vehicle ", body);
 				const response = await postVehicle(body).unwrap();
 				console.log("response in post vehicle:", response);
-				setShowForm(false);
-				resetForm();
-				setIsEditing(false)
-				setSnackbarMessage("Vehicle created successfully!");
-                setSnackbarSeverity("success");
-                setSnackbarOpen(true);
+				if (response?.created_records) {
+                    setSnackbarMessage(`Device ID ${response.created_records[0]} created successfully!`);
+                     resetForm();
+                setShowForm(false)
+                setIsEditing(false)
+                    setSnackbarSeverity("success");
+                    setSnackbarOpen(true);
+                  }
+				 
 			}
 		} catch (error) {
 			console.error("API Error:", error);
@@ -639,15 +645,13 @@ const VehicleForm: React.FC = () => {
   try {
     const response = await deleteVehicle(vehicleId);
     console.log("Delete response:", response);
-
-    // Show success snackbar
-    setSnackbarMessage("Vehicle deleted successfully!");
-    setSnackbarSeverity("success");
-    setSnackbarOpen(true);
+if (response.data.deleted_record) {
+          setSnackbarMessage(`Vehicle ID ${response.data.deleted_record} deleted successfully!`);
+          setSnackbarSeverity("info");
+          setSnackbarOpen(true);
+      }
   } catch (error) {
     console.error("Error deleting vehicle:", error);
-
-    // Show error snackbar
     setSnackbarMessage("Failed to delete vehicle. Please try again.");
     setSnackbarSeverity("error");
     setSnackbarOpen(true);
@@ -758,16 +762,23 @@ const VehicleForm: React.FC = () => {
 																onChange={(event) => handleLocationChange(event, setFieldValue)}
 																onBlur={handleBlur}
 																>
-															{getAllLocations?.map((location: Location) => (
-															<MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-																<Tooltip
-																title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-																placement="right"
-																>
-																<span style={{ flex: 1 }}>{location.loc_ID}</span>
-																</Tooltip>
-															</MenuItem>
-															))}
+							{isLocationLoading ? (
+								<MenuItem disabled>
+								  <CircularProgress size={20} color="inherit" />
+								  <span style={{ marginLeft: "10px" }}>Loading...</span>
+								</MenuItem>
+							  ) : (
+								getAllLocations?.map((location: Location) => (
+								  <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+									<Tooltip
+									  title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+									  placement="right"
+									>
+									  <span style={{ flex: 1 }}>{location.loc_ID}</span>
+									</Tooltip>
+								  </MenuItem>
+								))
+							  )}
 													</Select>
 																{touched.locationId && errors.locationId && (
 													<FormHelperText>{errors.locationId}</FormHelperText>
