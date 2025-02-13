@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { GoogleMap, useLoadScript, Marker, InfoWindow, DirectionsRenderer } from '@react-google-maps/api';
 
 const mapsKey: string = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? '';
@@ -11,70 +11,195 @@ type MarkerType = {
     position: { lat: number; lng: number };
 };
 
-const markers: MarkerType[] = [
-    { id: 1, name: "Hyderabad", position: { lat: 17.385044, lng: 78.486671 } },
-    { id: 2, name: "Bangalore", position: { lat: 12.971599, lng: 77.594566 } },
-    { id: 3, name: "Mumbai", position: { lat: 19.076090, lng: 72.877426 } },
-    { id: 4, name: "New Delhi", position: { lat: 28.613939, lng: 77.209023 } },
-    { id: 5, name: "Kolkata", position: { lat: 22.572645, lng: 88.363892 } }
-];
+type PackageID = string;
 
-const GoogleMapComponent: React.FC = () => {
+type LocationDetails = {
+    address: string;
+    latitude: number;
+    longitude: number;
+};
+
+type LoadArrangement = {
+    location: string;
+    packages: PackageID[];
+};
+
+type Allocation = {
+    route: any;
+    cost: number;
+    leftoverVolume: number;
+    leftoverWeight: number;
+    loadArrangement: LoadArrangement[];
+    stop: number;
+};
+
+type Route = {
+    start: LocationDetails;
+    end: LocationDetails;
+    distance: string;
+    duration: string;
+    loadAfterStop: number;
+};
+
+type RootOptimization = {
+    id: string;
+    isAllocation: boolean;
+    label: string;
+    totalCost: number;
+    totalVolumeCapacity: number;
+    totalWeightCapacity: number;
+    unallocatedPackages: PackageID[];
+    allocations: Allocation[];
+    route: Route[];
+    vehicle_ID: string;
+};
+
+interface RootOptimizationProps {
+    rootOptimization: RootOptimization[];
+}
+
+const routeColors = ['#FF0000', '#0000FF', '#0096FF', '#00FF00', '#FF00FF', '#FFA500'];
+
+const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization }) => {
     const { isLoaded } = useLoadScript({ googleMapsApiKey: mapsKey });
     const [activeMarker, setActiveMarker] = useState<number | null>(null);
-    const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
+    const [directionsResults, setDirectionsResults] = useState<google.maps.DirectionsResult[]>([]);
 
-    const handleActiveMarker = (markerId: number) => {
-        setActiveMarker((prev) => (prev === markerId ? null : markerId));
-    };
+    /** Memoized function to get unique markers */
+    const { startMarkers, endMarkers } = useMemo(() => {
+        const startSet = new Map();
+        const endSet = new Map();
 
-    useEffect(() => {
-        if (!isLoaded || typeof google === 'undefined') return;
+        rootOptimization.forEach((vehicle, truckIndex) => {
+            if (!vehicle.allocations || vehicle.allocations.length === 0) return;
+
+            vehicle.allocations.forEach((allocation, allocationIndex) => {
+                if (!allocation.route || allocation.route.length === 0) return;
+
+                allocation.route.forEach((r: any, routeIndex: any) => {
+                    if (!r.start || !r.end) return;
+
+                    const startKey = `${r.start.latitude},${r.start.longitude}`;
+                    const endKey = `${r.end.latitude},${r.end.longitude}`;
+
+                    if (!startSet.has(startKey)) {
+                        startSet.set(startKey, {
+                            id: truckIndex * 1000 + allocationIndex * 100 + routeIndex * 2 + 1,
+                            name: `Start Location`,
+                            position: { lat: r.start.latitude, lng: r.start.longitude },
+                        });
+                    }
+
+                    if (!endSet.has(endKey)) {
+                        endSet.set(endKey, {
+                            id: truckIndex * 1000 + allocationIndex * 100 + routeIndex * 2 + 2,
+                            name: `End Location`,
+                            position: { lat: r.end.latitude, lng: r.end.longitude },
+                        });
+                    }
+                });
+            });
+        });
+
+        return {
+            startMarkers: Array.from(startSet.values()),
+            endMarkers: Array.from(endSet.values()),
+        };
+    }, [rootOptimization]);
+
+    console.log('startMarkers', startMarkers);
+    console.log('endMarkers', endMarkers);
+    const fetchDirections = useCallback(async () => {
+        if (!isLoaded || typeof google === 'undefined' || !google.maps) return;
 
         const directionsService = new google.maps.DirectionsService();
+        const newDirectionsResults: google.maps.DirectionsResult[] = [];
 
-        directionsService.route(
-            {
-                origin: markers[0].position,
-                destination: markers[markers.length - 1].position,
-                travelMode: google.maps.TravelMode.DRIVING,
-                waypoints: markers.slice(1, markers.length - 1).map((marker) => ({
-                    location: marker.position,
-                    stopover: true
-                }))
-            },
-            (response, status) => {
-                if (status === google.maps.DirectionsStatus.OK && response) {
-                    setDirections(response);
-                } else {
-                    console.error('Directions request failed:', status);
+        for (const start of startMarkers) {
+            for (const end of endMarkers) {
+                try {
+                    const response = await new Promise<google.maps.DirectionsResult | null>((resolve) => {
+                        directionsService.route(
+                            {
+                                origin: start.position,
+                                destination: end.position,
+                                travelMode: google.maps.TravelMode.DRIVING,
+                                provideRouteAlternatives: true
+                            },
+                            (result, status) => {
+                                if (status === google.maps.DirectionsStatus.OK && result) {
+                                    resolve(result);
+                                } else {
+                                    console.warn('Directions request failed:', status);
+                                    resolve(null);
+                                }
+                            }
+                        );
+                    });
+
+                    if (response) newDirectionsResults.push(response);
+                } catch (error) {
+                    console.error('Error fetching directions:', error);
                 }
             }
-        );
-    }, [isLoaded]);
+        }
+        setDirectionsResults(newDirectionsResults);
+    }, [isLoaded, startMarkers, endMarkers]);
+
+    useEffect(() => {
+        if (startMarkers.length > 0 && endMarkers.length > 0) {
+            fetchDirections();
+        }
+    }, [fetchDirections]);
 
     if (!isLoaded) return <p>Loading Maps...</p>;
 
     return (
-        <GoogleMap
-            onClick={() => setActiveMarker(null)}
-            mapContainerStyle={{ width: '100%', height: '100vh' }}
-            center={markers[0].position}
-            zoom={5}
-        >
-            {markers.map(({ id, name, position }) => (
-                <Marker key={id} position={position} onClick={() => handleActiveMarker(id)}>
-                    {activeMarker === id && (
-                        <InfoWindow onCloseClick={() => setActiveMarker(null)}>
-                            <div>{name}</div>
-                        </InfoWindow>
-                    )}
-                </Marker>
-            ))}
+        <div style={{ width: '100%' }}>
+            <GoogleMap
+                onClick={() => setActiveMarker(null)}
+                mapContainerStyle={{ width: '100%', height: '30rem' }}
+                center={startMarkers[0]?.position || { lat: 0, lng: 0 }}
+                zoom={5}
+            >
+                {startMarkers.map(({ id, name, position }) => (
+                    <Marker key={id} position={position} onClick={() => setActiveMarker(id)}>
+                        {activeMarker === id && (
+                            <InfoWindow onCloseClick={() => setActiveMarker(null)}>
+                                <div>{name}</div>
+                            </InfoWindow>
+                        )}
+                    </Marker>
+                ))}
 
-            {directions && <DirectionsRenderer directions={directions} />}
-        </GoogleMap>
+                {endMarkers.map(({ id, name, position }) => (
+                    <Marker key={id} position={position} onClick={() => setActiveMarker(id)}>
+                        {activeMarker === id && (
+                            <InfoWindow onCloseClick={() => setActiveMarker(null)}>
+                                <div>{name}</div>
+                            </InfoWindow>
+                        )}
+                    </Marker>
+                ))}
+
+                {directionsResults.map((result, index) =>
+                    result.routes.map((route, routeIndex) => (
+                        <DirectionsRenderer
+                            key={`${index}-${routeIndex}`}
+                            directions={{ ...result, routes: [route] }}
+                            options={{
+                                polylineOptions: {
+                                    strokeColor: routeColors[(index + routeIndex) % routeColors.length],
+                                    strokeWeight: 5,
+                                },
+                                suppressMarkers: false,
+                            }}
+                        />
+                    ))
+                )}
+            </GoogleMap>
+        </div>
     );
 };
 
-export default GoogleMapComponent;
+export default RootOptimization;

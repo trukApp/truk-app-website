@@ -2,25 +2,8 @@ import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { AdditionalInfo } from "@/Components/CreatePackageTabs/AddtionalInformation";
 import { FormValues } from "@/Components/CreatePackageTabs/PickUpAndDropOffDetails";
+import { Truck } from "@/Components/CreateOrderTables/TrucksTable";
 import { Package } from "@/Components/CreateOrderTables/PackagesTable";
-export interface ITruck {
-  id: number;
-  ownerName: string;
-  truckNumber: string;
-  height: string;
-  width: string;
-  length: string;
-  volume: string;
-  capacity: string;
-  usage: string;
-  truckName: string;
-
-  allocatedVolume: number;
-  vehicle_ID: string;
-  allocatedWeight: number;
-  leftoverWeight: string;
-  leftoverVolume: string;
-}
 
 export interface IShipFrom {
   addressLine1: string;
@@ -82,13 +65,12 @@ export interface IPackageTax {
   isSelfTransport: string;
 }
 
-
 export interface IAuthState {
   authState: boolean;
   bablu: string;
   accessToken: string | null;
   refreshToken: string | null;
-  selectedTrucks: Array<ITruck> | null;
+  selectedTrucks: Array<Truck> | null;
   unitsofMeasurement: string[];
   selectedPackages: Array<Package>;
   createOrderDesination: string;
@@ -101,15 +83,13 @@ export interface IAuthState {
   packageTax: IPackageTax | null;
   completedState: boolean[];
   filters: {
-    checkValidity: false,
-    checkDowntime: false,
-    sortUnlimitedUsage: false,
-    sortOwnership: false,
-    sortByCost: false,
-    sortByCapacity: false,
-  },
-
-
+    checkValidity: false;
+    checkDowntime: false;
+    sortUnlimitedUsage: false;
+    sortOwnership: false;
+    sortByCost: false;
+    sortByCapacity: false;
+  };
 }
 
 const initialState: IAuthState = {
@@ -137,9 +117,7 @@ const initialState: IAuthState = {
     sortByCost: false,
     sortByCapacity: false,
   },
-
 };
-
 
 export const authSlice = createSlice({
   name: "auth",
@@ -157,7 +135,7 @@ export const authSlice = createSlice({
     setRefreshToken: (state, action: PayloadAction<string>) => {
       state.refreshToken = action.payload;
     },
-    setSelectedTrucks: (state, action: PayloadAction<Array<ITruck>>) => {
+    setSelectedTrucks: (state, action: PayloadAction<Array<Truck>>) => {
       state.selectedTrucks = action.payload;
     },
     setUnitsofMeasurement: (state, action: PayloadAction<string[]>) => {
@@ -204,7 +182,7 @@ export const authSlice = createSlice({
       state.packageTax = action.payload;
     },
     setCompletedState: (state, action: PayloadAction<number>) => {
-      state.completedState[action.payload] = true
+      state.completedState[action.payload] = true;
     },
     resetCompletedSteps: (state) => {
       state.completedState = [];
@@ -236,7 +214,7 @@ export const {
   setPackagePickAndDropTimings,
   setPackageTax,
   setCompletedState,
-  
+  setFilters,
 } = authSlice.actions;
 
 export const authReducer = authSlice.reducer;
