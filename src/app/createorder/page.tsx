@@ -53,8 +53,7 @@ const CreateOrder: React.FC = () => {
             const response = await selectTheTrucks(body).unwrap();
             if (response) {
                 setSelectTrucks([response?.scenarioCost, response?.scenarioEta])
-                setRouteOptimazition(response?.routes)
-                console.log('API Response:', response);
+                // setRouteOptimazition(response?.routes)
                 setActiveStep((prev) => prev + 1)
             }
         } else {
@@ -91,7 +90,7 @@ const CreateOrder: React.FC = () => {
 
                 {activeStep === 2 && (
                     <div>
-                        <RootOptimization />
+                        <RootOptimization rootOptimization={selectedTrucks} />
                     </div>
                 )}
 
