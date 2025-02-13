@@ -65,7 +65,6 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
     const [activeMarker, setActiveMarker] = useState<number | null>(null);
     const [directionsResults, setDirectionsResults] = useState<google.maps.DirectionsResult[]>([]);
 
-    /** Memoized function to get unique markers */
     const { startMarkers, endMarkers } = useMemo(() => {
         const startSet = new Map();
         const endSet = new Map();
