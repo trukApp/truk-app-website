@@ -4,7 +4,7 @@ import { Formik, Form, Field, FormikHelpers } from 'formik';
 import { Grid, TextField, Button, Backdrop, CircularProgress } from '@mui/material';
 import * as Yup from 'yup';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { setPackageAddtionalInfo, setPackageBillTo, setPackagePickAndDropTimings, setPackageShipFrom, setPackageShipTo, setPackageTax, setSelectedPackages } from '@/store/authSlice';
+import { setCompletedState, setPackageAddtionalInfo, setPackageBillTo, setPackagePickAndDropTimings, setPackageShipFrom, setPackageShipTo, setPackageTax, setSelectedPackages } from '@/store/authSlice';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 import { useCreatePackageForOrderMutation } from '@/api/apiSlice';
 
@@ -63,6 +63,7 @@ const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
     const handleSubmit = async (values: TaxInfoValues, actions: FormikHelpers<TaxInfoValues>, onSubmit: (values: TaxInfoValues) => void) => {
         console.log('Tax Info Submitted:', values);
         dispatch(setPackageTax(values.taxInfo))
+        dispatch(setCompletedState(6));
         actions.setSubmitting(false);
         onSubmit(values);
             try {

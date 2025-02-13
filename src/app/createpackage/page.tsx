@@ -1,10 +1,7 @@
-
-// 'use client'
-// import React, { useEffect, useState } from 'react';
+// 'use client';
+// import React, { useState, useEffect } from 'react';
+// import { useSelector,   } from 'react-redux';
 // import { Stepper, Step, StepLabel, Grid, useMediaQuery, useTheme, Box, Typography } from '@mui/material';
-// import { useSelector, useDispatch } from 'react-redux';
-// import { RootState } from '@/store';
-// import { setCompletedState } from '../../store/authSlice';
 // import ShipFrom from '@/Components/CreatePackageTabs/CreatePackageShipFrom';
 // import ShipTo from '@/Components/CreatePackageTabs/CreatePackageShipTo';
 // import AdditionalInformation from '@/Components/CreatePackageTabs/AddtionalInformation';
@@ -13,105 +10,83 @@
 // import PackageDetails from '@/Components/CreatePackageTabs/PackageDetailsTab';
 // import BillTo from '@/Components/CreatePackageTabs/CreatePackageBillTo';
 // import SnackbarAlert from '@/Components/ReusableComponents/SnackbarAlerts';
+// import { RootState } from '@/store';
 
-// const steps: string[] = [
-//   'Ship From',
-//   'Ship To',
-//   'Package Details',
-//   'Bill To',
-//   'Additional Info',
-//   'Pickup/Drop off',
-//   'Tax Info',
-// ];
+// const steps = ['Ship From', 'Ship To', 'Package Details', 'Bill To', 'Additional Info', 'Pickup/Drop off', 'Tax Info'];
 
-// const CreatePackage: React.FC = () => {
-//   const dispatch = useDispatch();
-//   const completedSteps = useSelector((state: RootState) => state.auth.completedState);
+// const CreatePackage = () => {
+//     const theme = useTheme();
+//     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-//   const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
-//   const [snackbarMessage, setSnackbarMessage] = useState<string>('');
-//   const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error' | 'warning' | 'info'>('success');
-//   const [activeStep, setActiveStep] = useState<number>(0);
-//   const theme = useTheme();
-//   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+//     // Get completed steps from Redux
+//     const completedSteps = useSelector((state: RootState) => state.auth.completedState);
+//   console.log("completed step :", completedSteps)
+//     const [snackbarOpen, setSnackbarOpen] = useState(false);
+//     const [snackbarMessage, setSnackbarMessage] = useState("");
+//     const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error' | 'warning' | 'info'>("success");
+//     const [activeStep, setActiveStep] = useState(0);
 
-// useEffect(() => {
-//     const firstUnfilledIndex = completedSteps.findIndex((step) => !step);
-//     if (firstUnfilledIndex !== -1) {
-//       setActiveStep(firstUnfilledIndex);
-//     }
-//   }, [completedSteps]);
-//   const handleNext = () => {
-//     dispatch(setCompletedState(activeStep));
-//     setActiveStep((prevStep) => prevStep + 1);
-//   };
+//    useEffect(() => {
+//         if (completedSteps.length > 0) {
+//             const firstUnfilledIndex = completedSteps.findIndex(step => !step);
+//             setActiveStep(firstUnfilledIndex !== -1 ? firstUnfilledIndex : completedSteps.length);
+//         }
+//     }, [completedSteps]);
 
-//   const handleBack = () => setActiveStep((prevStep) => prevStep - 1);
+//     // Mark a step as completed
+//     const handleNext = (stepIndex: number) => {
+//         const updatedSteps = [...completedSteps];
+//         updatedSteps[stepIndex] = true;
+        
+//         setActiveStep(stepIndex + 1);
+//     };
 
-//   const handleSubmit = () => {
-//     const firstUnfilledIndex = completedSteps.findIndex((step) => !step);
-//     if (firstUnfilledIndex !== -1) {
-//       setActiveStep(firstUnfilledIndex);
-//       setSnackbarMessage('Some steps are unfilled! Navigating to first unfilled step...');
-//       setSnackbarSeverity('warning');
-//       setSnackbarOpen(true);
-//     } else {
-//       console.log('✅ All steps are filled. Submitting package details...');
-//     }
-//   };
+//     const handleBack = () => setActiveStep((prevStep) => prevStep - 1);
 
-//   return (
-//     <Grid>
-//       <SnackbarAlert
-//         open={snackbarOpen}
-//         message={snackbarMessage}
-//         severity={snackbarSeverity}
-//         onClose={() => setSnackbarOpen(false)}
-//       />
-//       <Box sx={{ overflowX: isMobile ? 'auto' : 'visible', padding: '10px' }}>
-//         <Stepper
-//           activeStep={activeStep}
-//           alternativeLabel
-//           sx={{
-//             display: 'flex',
-//             flexDirection: 'row',
-//             justifyContent: 'space-between',
-//             minWidth: isMobile ? '650px' : '100%',
-//           }}
-//         >
-//           {steps.map((label, index) => (
-//             <Step key={index} sx={{ flex: 1 }} completed={completedSteps[index]}>
-//               <StepLabel
-//                 onClick={() => setActiveStep(index)}
-//                 style={{
-//                   cursor: 'pointer',
-//                   display: 'flex',
-//                   flexDirection: 'column',
-//                   alignItems: 'center',
-//                   color: 'white',
-//                   borderRadius: '10px',
-//                   padding: '5px 10px',
-//                 }}
-//               >
-//                 <Typography sx={{ fontSize: '14px', textAlign: 'center' }}>{label}</Typography>
-//               </StepLabel>
-//             </Step>
-//           ))}
-//         </Stepper>
-//       </Box>
+//     const handleStepClick = (stepIndex: number) => {
+//         setActiveStep(stepIndex);
+//     };
 
-//       {/* Form Content */}
-//       <Grid container spacing={2} sx={{ padding: isMobile ? '10px' : '20px' }}>
-//         {activeStep === 0 && <ShipFrom onNext={handleNext} />}
-//         {activeStep === 1 && <ShipTo onNext={handleNext} onBack={handleBack} />}
-//         {activeStep === 2 && <PackageDetails onNext={handleNext} onBack={handleBack} />}
-//         {activeStep === 3 && <BillTo onNext={handleNext} onBack={handleBack} />}
-//         {activeStep === 4 && <AdditionalInformation onNext={handleNext} onBack={handleBack} />}
-//         {activeStep === 5 && <PickupDropoff onNext={handleNext} onBack={handleBack} />}
-//         {activeStep === 6 && <TaxInfo onSubmit={handleSubmit} onBack={handleBack} />}
-//       </Grid>
-//     </Grid>
-//   );
+//     const handleSubmit = () => {
+//         const firstUnfilledIndex = completedSteps.findIndex((step) => !step);
+//         if (firstUnfilledIndex === -1) {
+//             console.log('✅ All steps are filled. Submitting package details...');
+//         } else {
+//             console.log('🚨 Some steps are unfilled! Navigating to first unfilled step...');
+//             setSnackbarMessage("Some steps are unfilled! Navigating to first unfilled step...");
+//             setSnackbarSeverity("warning");
+//             setSnackbarOpen(true);
+//             setActiveStep(firstUnfilledIndex);
+//         }
+//     };
+
+//     return (
+//         <Grid>
+//             <SnackbarAlert open={snackbarOpen} message={snackbarMessage} severity={snackbarSeverity} onClose={() => setSnackbarOpen(false)} />
+//             <Box sx={{ overflowX: isMobile ? 'auto' : 'visible', padding: '10px' }}>
+//                 <Stepper activeStep={activeStep} alternativeLabel>
+//                     {steps.map((label, index) => (
+//                         <Step key={index} completed={completedSteps[index]}>
+//                             <StepLabel onClick={() => handleStepClick(index)}>
+//                                 <Typography sx={{ fontSize: '14px', textAlign: 'center' }}>{label}</Typography>
+//                             </StepLabel>
+//                         </Step>
+//                     ))}
+//                 </Stepper>
+//             </Box>
+
+//             {/* Form Content */}
+//             <Grid container spacing={2} sx={{ padding: isMobile ? '10px' : '20px' }}>
+//                 {activeStep === 0 && <ShipFrom onNext={() => handleNext(0)} />}
+//                 {activeStep === 1 && <ShipTo onNext={() => handleNext(1)} onBack={handleBack} />}
+//                 {activeStep === 2 && <PackageDetails onNext={() => handleNext(2)} onBack={handleBack} />}
+//                 {activeStep === 3 && <BillTo onNext={() => handleNext(3)} onBack={handleBack} />}
+//                 {activeStep === 4 && <AdditionalInformation onNext={() => handleNext(4)} onBack={handleBack} />}
+//                 {activeStep === 5 && <PickupDropoff onNext={() => handleNext(5)} onBack={handleBack} />}
+//                 {activeStep === 6 && <TaxInfo onSubmit={handleSubmit} onBack={handleBack} />}
+//             </Grid>
+//         </Grid>
+//     );
 // };
 
 // export default CreatePackage;
@@ -120,12 +95,10 @@
 
 
 
-'use client'
+'use client';
 import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Stepper, Step, StepLabel, Grid, useMediaQuery, useTheme, Box, Typography } from '@mui/material';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '@/store';
-import { setCompletedState } from '../../store/authSlice';
 import ShipFrom from '@/Components/CreatePackageTabs/CreatePackageShipFrom';
 import ShipTo from '@/Components/CreatePackageTabs/CreatePackageShipTo';
 import AdditionalInformation from '@/Components/CreatePackageTabs/AddtionalInformation';
@@ -134,118 +107,91 @@ import PickupDropoff from '@/Components/CreatePackageTabs/PickUpAndDropOffDetail
 import PackageDetails from '@/Components/CreatePackageTabs/PackageDetailsTab';
 import BillTo from '@/Components/CreatePackageTabs/CreatePackageBillTo';
 import SnackbarAlert from '@/Components/ReusableComponents/SnackbarAlerts';
+import { RootState } from '@/store';
+import { setCompletedState } from '@/store/authSlice';
 
-const steps: string[] = [
-  'Ship From',
-  'Ship To',
-  'Package Details',
-  'Bill To',
-  'Additional Info',
-  'Pickup/Drop off',
-  'Tax Info',
-];
+const steps = ['Ship From', 'Ship To', 'Package Details', 'Bill To', 'Additional Info', 'Pickup/Drop off', 'Tax Info'];
 
-const CreatePackage: React.FC = () => {
-  const dispatch = useDispatch();
-  const completedSteps = useSelector((state: RootState) => state.auth.completedState);
+const CreatePackage = () => {
+    const dispatch=useDispatch()
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
-  const [snackbarMessage, setSnackbarMessage] = useState<string>('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error' | 'warning' | 'info'>('success');
-  const [activeStep, setActiveStep] = useState<number>(0);
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    // Get completed steps from Redux
+    const completedSteps = useSelector((state: RootState) => state.auth.completedState);
+    console.log("Completed Steps:", completedSteps);
 
- console.log('active step :', activeStep)
-  useEffect(() => {
-    const firstUnfilledIndex = completedSteps.findIndex((step) => !step);
-    setActiveStep(firstUnfilledIndex !== -1 ? firstUnfilledIndex : steps.length - 1);
-  }, [completedSteps]);
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error' | 'warning' | 'info'>("success");
+    const [activeStep, setActiveStep] = useState(0);
 
-  const handleNext = () => {
-    dispatch(setCompletedState(activeStep));
-    setActiveStep((prevStep) => prevStep + 1);
-  };
+    // Set the initial active step to the first unfilled step
+    useEffect(() => {
+        if (completedSteps.length > 0) {
+            const firstUnfilledIndex = completedSteps.findIndex(step => !step);
+            setActiveStep(firstUnfilledIndex !== -1 ? firstUnfilledIndex : completedSteps.length);
+        }
+    }, [completedSteps]);
 
-  const handleBack = () => setActiveStep((prevStep) => prevStep - 1);
+    // Navigate to the next step and mark only that step as completed
+    const handleNext = (stepIndex: number) => {
+    dispatch(setCompletedState(stepIndex)); // Update Redux state for the completed step
+    setActiveStep(stepIndex + 1); // Move to the next step
+};
 
-  const handleStepClick = (stepIndex: number) => {
-    setActiveStep(stepIndex);
-  };
+    // Go back one step
+    const handleBack = () => setActiveStep((prevStep) => prevStep - 1);
 
-  const handleSubmit = () => {
-    const firstUnfilledIndex = completedSteps.findIndex((step) => !step);
-    if (firstUnfilledIndex !== -1) {
-      setActiveStep(firstUnfilledIndex);
-      setSnackbarMessage('Some steps are unfilled! Navigating to first unfilled step...');
-      setSnackbarSeverity('warning');
-      setSnackbarOpen(true);
-    } else {
-      console.log('✅ All steps are filled. Submitting package details...');
-    }
-  };
+    // Handle direct step click without auto-filling intermediate steps
+    const handleStepClick = (stepIndex: number) => {
+        setActiveStep(stepIndex);
+    };
 
-  return (
-    <Grid>
-      <SnackbarAlert
-        open={snackbarOpen}
-        message={snackbarMessage}
-        severity={snackbarSeverity}
-        onClose={() => setSnackbarOpen(false)}
-      />
-      <Box sx={{ overflowX: isMobile ? 'auto' : 'visible', padding: '10px' }}>
-        <Stepper
-          activeStep={activeStep}
-          alternativeLabel
-          sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            minWidth: isMobile ? '650px' : '100%',
-          }}
-        >
-          {steps.map((label, index) => (
-            <Step key={index} sx={{ flex: 1 }} completed={completedSteps[index]}>
-              <StepLabel
-                onClick={() => handleStepClick(index)}
-                style={{
-                  cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  borderRadius: '10px',
-                  padding: '5px 10px',
-                  backgroundColor: activeStep === index ? '#ff69b4' : 'transparent', // Highlight active step in pink
-                  color: activeStep === index ? 'white' : 'inherit',
-                }}
-              >
-                <Typography
-                  sx={{
-                    fontSize: '14px',
-                    textAlign: 'center',
-                    fontWeight: activeStep === index ? 'bold' : 'normal',
-                  }}
-                >
-                  {label}
-                </Typography>
-              </StepLabel>
-            </Step>
-          ))}
-        </Stepper>
-      </Box>
+    // Handle form submission
+    const handleSubmit = () => {
+        const firstUnfilledIndex = completedSteps.findIndex((step) => !step);
+        if (firstUnfilledIndex === -1) {
+            console.log('✅ All steps are filled. Submitting package details...');
+        } else {
+            console.log('🚨 Some steps are unfilled! Navigating to first unfilled step...');
+            setSnackbarMessage("Some steps are unfilled! Navigating to first unfilled step...");
+            setSnackbarSeverity("warning");
+            setSnackbarOpen(true);
+            setActiveStep(firstUnfilledIndex);
+        }
+    };
 
-      {/* Form Content */}
-      <Grid container spacing={2} sx={{ padding: isMobile ? '10px' : '20px' }}>
-        {activeStep === 0 && <ShipFrom onNext={handleNext} />}
-        {activeStep === 1 && <ShipTo onNext={handleNext} onBack={handleBack} />}
-        {activeStep === 2 && <PackageDetails onNext={handleNext} onBack={handleBack} />}
-        {activeStep === 3 && <BillTo onNext={handleNext} onBack={handleBack} />}
-        {activeStep === 4 && <AdditionalInformation onNext={handleNext} onBack={handleBack} />}
-        {activeStep === 5 && <PickupDropoff onNext={handleNext} onBack={handleBack} />}
-        {activeStep === 6 && <TaxInfo onSubmit={handleSubmit} onBack={handleBack} />}
-      </Grid>
-    </Grid>
-  );
+    return (
+        <Grid>
+            <SnackbarAlert open={snackbarOpen} message={snackbarMessage} severity={snackbarSeverity} onClose={() => setSnackbarOpen(false)} />
+            <Box sx={{ overflowX: isMobile ? 'auto' : 'visible', padding: '10px' }}>
+                <Stepper activeStep={activeStep} alternativeLabel>
+                    {steps.map((label, index) => (
+                        <Step key={index} completed={!!completedSteps[index]}>
+                            <StepLabel onClick={() => handleStepClick(index)} sx={{
+                                cursor: 'pointer', backgroundColor: activeStep === index ? '#ffb3c1' : 'transparent',
+                             }}>
+                                <Typography sx={{ fontSize: '14px', textAlign: 'center' }}>{label}</Typography>
+                            </StepLabel>
+                        </Step>
+
+                    ))}
+                </Stepper>
+            </Box>
+
+            {/* Form Content */}
+            <Grid container spacing={2} sx={{ padding: isMobile ? '10px' : '20px' }}>
+                {activeStep === 0 && <ShipFrom onNext={() => handleNext(0)} />}
+                {activeStep === 1 && <ShipTo onNext={() => handleNext(1)} onBack={handleBack} />}
+                {activeStep === 2 && <PackageDetails onNext={() => handleNext(2)} onBack={handleBack} />}
+                {activeStep === 3 && <BillTo onNext={() => handleNext(3)} onBack={handleBack} />}
+                {activeStep === 4 && <AdditionalInformation onNext={() => handleNext(4)} onBack={handleBack} />}
+                {activeStep === 5 && <PickupDropoff onNext={() => handleNext(5)} onBack={handleBack} />}
+                {activeStep === 6 && <TaxInfo onSubmit={handleSubmit} onBack={handleBack} />}
+            </Grid>
+        </Grid>
+    );
 };
 
 export default CreatePackage;

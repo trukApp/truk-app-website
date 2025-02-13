@@ -4,7 +4,7 @@ import { Grid, TextField, Checkbox, FormControlLabel, Button, FormControl, Input
 import * as Yup from 'yup';
 import styles from './CreatePackage.module.css';
 import { useAppDispatch, useAppSelector } from '@/store';
-import {  setPackageShipTo } from '@/store/authSlice';
+import {  setCompletedState, setPackageShipTo } from '@/store/authSlice';
 import { useGetLocationMasterQuery, usePostLocationMasterMutation } from '@/api/apiSlice';
 import { Location } from '../MasterDataComponents/Locations';
 import { IShipFrom } from './CreatePackageShipFrom';
@@ -145,6 +145,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                 const { saveAsNewLocationId, saveAsDefaultShipFromLocation, ...shipFromData } = values;
                 console.log(saveAsNewLocationId,saveAsDefaultShipFromLocation)
                 dispatch(setPackageShipTo(shipFromData))
+                dispatch(setCompletedState(1));
                 
                 if (values.saveAsNewLocationId) {
                     try {

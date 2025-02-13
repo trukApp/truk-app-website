@@ -190,7 +190,7 @@ import { Grid, TextField, Checkbox, FormControlLabel, Button } from '@mui/materi
 import * as Yup from 'yup';
 import styles from './CreatePackage.module.css';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { setPackageAddtionalInfo } from '@/store/authSlice';
+import { setCompletedState, setPackageAddtionalInfo } from '@/store/authSlice';
 
 export interface AdditionalInfo {
     referenceId: string;
@@ -255,6 +255,7 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
     const handleFormSubmit = (values: FormValues, actions: FormikHelpers<FormValues>) => {
         console.log('Form Submitted:', values);
         dispatch(setPackageAddtionalInfo(values.additionalInfo));
+        dispatch(setCompletedState(4));
         onNext(values);
         actions.setSubmitting(false);
     };
