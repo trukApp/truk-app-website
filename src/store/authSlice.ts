@@ -214,6 +214,7 @@ export const {
   setPackagePickAndDropTimings,
   setPackageTax,
   setCompletedState,
+  setFilters,
 } = authSlice.actions;
 
 export const authReducer = authSlice.reducer;
