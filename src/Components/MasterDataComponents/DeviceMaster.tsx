@@ -240,7 +240,7 @@ const DeviceMaster: React.FC = () => {
 
       });
     }
-  }, [editRow]);
+  }, [editRow, formik]);
 
   return (
     <>

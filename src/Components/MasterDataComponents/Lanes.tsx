@@ -301,7 +301,7 @@ const TransportationLanes = () => {
         carrierCost: editRow.carrierCost || '',
       });
     }
-  }, [editRow]);
+  }, [editRow, formik]);
 
   const rows = data?.lanes.map((lane: Lane) => ({
     id: lane?.ln_id,

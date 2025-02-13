@@ -237,6 +237,7 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
         setIsModalOpen(false);
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       setSnackbarMessage("Something went wrong! Please try again.");
       setSnackbarSeverity("error");

@@ -4,6 +4,7 @@ import { TextField, Button, IconButton, InputAdornment } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import Image from "next/image";
 
 const Profile = () => {
   const initialProfileData = {
@@ -83,13 +84,24 @@ const Profile = () => {
       {/* <h1>Profile</h1> */}
       <div style={{ textAlign: "center", marginBottom: "20px" }}>
         <div style={{ position: "relative", display: "inline-block" }}>
-          <img
+          {/* <img
             src={tempData.profileImage}
             alt="Profile"
             style={{
               borderRadius: "50%",
               width: "150px",
               height: "150px",
+              objectFit: "cover",
+              border: "2px solid #ccc",
+            }}
+          /> */}
+          <Image
+            src={tempData.profileImage}
+            alt="Profile"
+            width={150}
+            height={150}
+            style={{
+              borderRadius: "50%",
               objectFit: "cover",
               border: "2px solid #ccc",
             }}

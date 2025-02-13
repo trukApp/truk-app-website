@@ -287,7 +287,7 @@ const Locations: React.FC = () => {
         locationContactEmail: editRow.locationContactEmail,
       });
     }
-  }, [editRow]);
+  }, [editRow, formik]);
   const { values, errors, touched, handleChange, handleBlur, handleSubmit } = formik;
 
 
