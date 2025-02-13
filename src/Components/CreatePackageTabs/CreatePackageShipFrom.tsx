@@ -452,7 +452,11 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                                 <Field
                                     name="phoneNumber"
                                     as={TextField}
-                                    label="Phone Number"
+                                        label="Phone Number"
+                                        inputProps={{
+                                            maxLength: 10, 
+                                            pattern: "[0-9]*",
+                                        }}
                                     InputLabelProps={{ shrink: true }} size = 'small' fullWidth
                                     type='number'
                                     error={touched?.phoneNumber && Boolean(errors?.phoneNumber)}

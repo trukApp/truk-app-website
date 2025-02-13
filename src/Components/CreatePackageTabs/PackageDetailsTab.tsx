@@ -113,7 +113,7 @@ const validationSchema = Yup.object().shape({
                               fieldName === "productId" ? (
                                 <TextField
                                   {...field}
-                                  select
+                                  select InputLabelProps={{ shrink: true }}
                                   label="Product ID"
                                   fullWidth onChange={(event) => handleProductChange(event,index, setFieldValue)}
                                   size="small"
@@ -139,7 +139,7 @@ const validationSchema = Yup.object().shape({
                                 </TextField>
                               ) : (
                                 <TextField
-                                  {...field}
+                                  {...field} InputLabelProps={{ shrink: true }}
                                   label={fieldName.replace(/([A-Z])/g, " $1").trim()}
                                   fullWidth
                                     size="small"

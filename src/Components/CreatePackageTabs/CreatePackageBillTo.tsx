@@ -430,7 +430,11 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                             <Grid item xs={12} md={2.4}>
                                 <Field
                                     name="phoneNumber"
-                                    as={TextField}
+                                        as={TextField}  
+                                        inputProps={{
+                                            maxLength: 10, 
+                                            pattern: "[0-9]*",
+                                        }}
                                     label="Phone Number"
                                     InputLabelProps={{ shrink: true }} size = 'small' fullWidth
                                     type='number'

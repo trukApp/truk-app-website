@@ -220,7 +220,7 @@ const validationSchema = Yup.object().shape({
         salesOrderNumber: Yup.string().required('Sales Order # is required'),
         department: Yup.string().required('Department is required'),
         returnLabel: Yup.boolean(),
-        file: Yup.mixed().nullable().required('File is required'),
+        // file: Yup.mixed().nullable().required('File is required'),
     }),
 });
 
@@ -361,8 +361,8 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
                                                         </Button>
                                                     ),
                                                 }}
-                                                error={touched.additionalInfo?.file && Boolean(errors.additionalInfo?.file)}
-                                                helperText={touched.additionalInfo?.file && errors.additionalInfo?.file}
+                                                // error={touched.additionalInfo?.file && Boolean(errors.additionalInfo?.file)}
+                                                // helperText={touched.additionalInfo?.file && errors.additionalInfo?.file}
                                             />
                                             {/* {selectedFile && <p>Selected File: {selectedFile.name}</p>} */}
                                         </>

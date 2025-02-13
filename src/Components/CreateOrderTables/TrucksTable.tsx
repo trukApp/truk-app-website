@@ -29,6 +29,7 @@ const TrucksTable: React.FC<TrucksTableProps> = ({ trucks }) => {
     const [expandedRow, setExpandedRow] = useState<string | null>(null);
     const [selectedTruck, setSelectedTruck] = useState<Truck | null>(null);
     const dispatch = useAppDispatch();
+    
 
     const toggleExpandRow = (label: string) => {
         setExpandedRow(expandedRow === label ? null : label);

@@ -1,12 +1,13 @@
 'use client';
 import React, { useState } from 'react';
 import { Formik, Form, Field, FormikHelpers } from 'formik';
-import { Grid, TextField, Button, Backdrop, CircularProgress } from '@mui/material';
+import { Grid, TextField, Button, Backdrop, CircularProgress,Dialog, DialogTitle, DialogContent, DialogActions, Typography, } from '@mui/material';
 import * as Yup from 'yup';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { setCompletedState, setPackageAddtionalInfo, setPackageBillTo, setPackagePickAndDropTimings, setPackageShipFrom, setPackageShipTo, setPackageTax, setSelectedPackages } from '@/store/authSlice';
+import { setCompletedState,resetCompletedSteps, setPackageAddtionalInfo, setPackageBillTo, setPackagePickAndDropTimings, setPackageShipFrom, setPackageShipTo, setPackageTax, setProductsList } from '@/store/authSlice';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 import { useCreatePackageForOrderMutation } from '@/api/apiSlice';
+import { useRouter } from "next/navigation";
 
 interface TaxInfoValues {
     taxInfo: {
@@ -36,9 +37,11 @@ const validationSchema = Yup.object().shape({
 });
 
 const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
+    const router = useRouter();
         const [snackbarOpen, setSnackbarOpen] = useState(false);
         const [snackbarMessage, setSnackbarMessage] = useState("");
-        const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
+    const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
+   const [modalOpen, setModalOpen] = useState(false);
     const dispatch = useAppDispatch()
     const packageTaxFromRedux = useAppSelector((state) => state.auth.packageTax)
     console.log("packageTaxFromRedux: ", packageTaxFromRedux)
@@ -96,17 +99,30 @@ const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
             console.log("createPackageBody: ", createPackageBody)
             const response = await createPackageOrder(createPackageBody).unwrap();
             console.log('API Response:', response)
-            dispatch(setPackageShipFrom(null));
-            dispatch(setPackageShipTo(null));
-                dispatch(setPackageBillTo(null));
-                dispatch(setPackageTax(null))
-                dispatch(setPackageAddtionalInfo(null));
-                dispatch(setSelectedPackages([]))
-                dispatch(setPackagePickAndDropTimings(null))
+            // dispatch(setPackageShipFrom(null));
+            // dispatch(setPackageShipTo(null));
+            // dispatch(setPackageBillTo(null));
+            // dispatch(setPackageTax(null))
+            // dispatch(setPackageAddtionalInfo(null));
+            // dispatch(setProductsList([]));
+            // dispatch(setPackagePickAndDropTimings(null))
+            // dispatch(setCompletedState(0))
+            // dispatch(resetCompletedSteps())
+                
                 if (response?.created_records) {
+                    setModalOpen(true)
                     setSnackbarMessage(`Package ID ${response.created_records[0]} created successfully!`);
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
+                    dispatch(setPackageShipFrom(null));
+                    dispatch(setPackageShipTo(null));
+                    dispatch(setPackageBillTo(null));
+                    dispatch(setPackageTax(null))
+                    dispatch(setPackageAddtionalInfo(null));
+                    dispatch(setProductsList([]));
+                    dispatch(setPackagePickAndDropTimings(null))
+                    dispatch(setCompletedState(0))
+                    dispatch(resetCompletedSteps())
                   }
         }
         catch (error) {
@@ -116,6 +132,25 @@ const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
 			setSnackbarOpen(true);
         }
     };
+    const handleCreateAnother = () => {
+        setModalOpen(false);
+        dispatch(setPackageShipFrom(null));
+            dispatch(setPackageShipTo(null));
+            dispatch(setPackageBillTo(null));
+            dispatch(setPackageTax(null))
+            dispatch(setPackageAddtionalInfo(null));
+            dispatch(setProductsList([]));
+            dispatch(setPackagePickAndDropTimings(null))
+            dispatch(setCompletedState(0))
+            dispatch(resetCompletedSteps())
+    };
+
+    const handleGoToOrder = () => {
+        setModalOpen(false);
+        router.push("/createorder");
+    };
+
+
     return (
         <>
             <Backdrop
@@ -133,6 +168,22 @@ const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
                 severity={snackbarSeverity}
                 onClose={() => setSnackbarOpen(false)}
             />
+            {modalOpen && (
+                    <Dialog open={modalOpen} onClose={() => setModalOpen(false)} >
+                    <DialogTitle>Package Created Successfully</DialogTitle>
+                    <DialogContent>
+                        <Typography>Your package has been created successfully. What would you like to do next?</Typography>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button variant="outlined" onClick={handleCreateAnother} color="primary">
+                        Create Another Package
+                        </Button>
+                        <Button variant="outlined" onClick={handleGoToOrder} color="secondary">
+                        Go to Create Order
+                        </Button>
+                    </DialogActions>
+                    </Dialog>
+            )}
         <Formik
             initialValues={initialValues}
             validationSchema={validationSchema}
@@ -202,6 +253,7 @@ const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
                 </Form>
             )}
             </Formik>
+            
             </>
     );
 };
