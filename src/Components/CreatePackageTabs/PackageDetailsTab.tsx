@@ -5,7 +5,7 @@ import { Button, Grid, TextField, MenuItem, Tooltip, CircularProgress, Typograph
 import { useAppDispatch, useAppSelector } from "@/store";
 import { setCompletedState, setProductsList } from "@/store/authSlice";
 import { useGetAllProductsQuery } from "@/api/apiSlice";
-import { Product } from "@/app/productmaster/page";  
+import { Product } from "@/app/productmaster/page";
 
 
 
@@ -31,75 +31,74 @@ interface PackingDetailsTab {
 
 const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
   const dispatch = useAppDispatch();
-	const productListFromRedux = useAppSelector((state) => state.auth.packagesDetails);
-  const { data: productsData, isLoading:isProductsLoading } = useGetAllProductsQuery({})
-  console.log('products data :', productsData?.products)
-	const productIdOptions = productsData?.products
+  const productListFromRedux = useAppSelector((state) => state.auth.packagesDetails);
+  const { data: productsData, isLoading: isProductsLoading } = useGetAllProductsQuery({})
+  const productIdOptions = productsData?.products
 
-const validationSchema = Yup.object().shape({
-  packageDetails: Yup.array().of(
-    Yup.object().shape({
-      productId: Yup.string().required("Required"),
-      productName: Yup.string().required("Required"),
-      hsnCode: Yup.string().required("Required"),
-      rfid: Yup.string().required("Required"),
-      dimensions: Yup.string().required("Required"),
-      quantity: Yup.string().required("Required"),
-      weight: Yup.string().required("Required"),
-      packagingType: Yup.string().required("Required"),
-    })
-  ),
-});
+  const validationSchema = Yup.object().shape({
+    packageDetails: Yup.array().of(
+      Yup.object().shape({
+        productId: Yup.string().required("Required"),
+        productName: Yup.string().required("Required"),
+        hsnCode: Yup.string().required("Required"),
+        rfid: Yup.string().required("Required"),
+        dimensions: Yup.string().required("Required"),
+        quantity: Yup.string().required("Required"),
+        weight: Yup.string().required("Required"),
+        packagingType: Yup.string().required("Required"),
+      })
+    ),
+  });
 
   const initialValues: FormValues = {
     packageDetails:
       productListFromRedux.length > 0
         ? productListFromRedux
         : [
-            {
-              productId: "",
-              productName: "",
-              hsnCode: "",
-              rfid: "",
-              dimensions: "",
-              quantity: "",
-              weight: "",
-              packagingType: "",
-            },
-          ],
+          {
+            productId: "",
+            productName: "",
+            hsnCode: "",
+            rfid: "",
+            dimensions: "",
+            quantity: "",
+            weight: "",
+            packagingType: "",
+          },
+        ],
   };
 
-  const handleFormSubmit = (values: FormValues, ) => {
+  const handleFormSubmit = (values: FormValues,) => {
     dispatch(setProductsList(values.packageDetails));
     dispatch(setCompletedState(2));
     onNext(values);
   };
-  
+
   const handleProductChange = (
-  event: React.ChangeEvent<{ value: unknown }>,
-  index: number,
-  setFieldValue: FormikHelpers<FormValues>["setFieldValue"]
-) => {
-  const selectedProductId = event.target.value as string;
-  const selectedProduct = productIdOptions.find(
-    (product:Product) => product.product_ID === selectedProductId
-  );
+    event: React.ChangeEvent<{ value: unknown }>,
+    index: number,
+    setFieldValue: FormikHelpers<FormValues>["setFieldValue"]
+  ) => {
+    const selectedProductId = event.target.value as string;
+    const selectedProduct = productIdOptions.find(
+      (product: Product) => product.product_ID === selectedProductId
+    );
 
-  setFieldValue(`packageDetails.${index}.productId`, selectedProductId);
+    setFieldValue(`packageDetails.${index}.productId`, selectedProductId);
 
-  if (selectedProduct) {
-    setFieldValue(`packageDetails.${index}.productName`, selectedProduct.product_name);
-    setFieldValue(`packageDetails.${index}.hsnCode`, selectedProduct.hsn_code);
-    setFieldValue(`packageDetails.${index}.weight`, `${selectedProduct.weight} ${selectedProduct.weight_uom}`);
-    setFieldValue(`packageDetails.${index}.dimensions`, `${selectedProduct.volume} ${selectedProduct.volume_uom}`);
-    setFieldValue(`packageDetails.${index}.packagingType`, selectedProduct.packaging_type?.pac_ID);
-  }
-};
+    if (selectedProduct) {
+      setFieldValue(`packageDetails.${index}.productName`, selectedProduct.product_name);
+      setFieldValue(`packageDetails.${index}.hsnCode`, selectedProduct.hsn_code);
+      setFieldValue(`packageDetails.${index}.weight`, `${selectedProduct.weight} ${selectedProduct.weight_uom}`);
+      setFieldValue(`packageDetails.${index}.dimensions`, `${selectedProduct.volume} ${selectedProduct.volume_uom}`);
+      setFieldValue(`packageDetails.${index}.packagingType`, selectedProduct.packaging_type?.pac_ID);
+    }
+  };
 
   return (
     <Grid>
       <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleFormSubmit}>
-        {({ values, handleSubmit,setFieldValue }) => (
+        {({ values, handleSubmit, setFieldValue }) => (
           <Form onSubmit={handleSubmit}>
             <Typography variant="h6" sx={{fontWeight:'bold', textAlign:'center' , marginTop:3}}>Package Details</Typography>
             <FieldArray  name="packageDetails">
@@ -116,35 +115,35 @@ const validationSchema = Yup.object().shape({
                                   {...field}
                                   select InputLabelProps={{ shrink: true }}
                                   label="Product ID"
-                                  fullWidth onChange={(event) => handleProductChange(event,index, setFieldValue)}
+                                  fullWidth onChange={(event) => handleProductChange(event, index, setFieldValue)}
                                   size="small"
                                   error={meta.touched && Boolean(meta.error)}
                                   helperText={meta.touched && meta.error}
                                 >
-											  	    {isProductsLoading ? (
-                                  <MenuItem disabled>
-                                    <CircularProgress size={20} />
-                                  </MenuItem>
-                                ) : (
-                                  productIdOptions?.map((product: Product) => (
-                                    <MenuItem key={product.product_ID} value={String(product.product_ID)}>
-                                      <Tooltip
-                                        title={`${product.product_name}, ${product.product_desc}`}
-                                        placement="right"
-                                      >
-                                        <span style={{ flex: 1 }}>{product.product_ID}</span>
-                                      </Tooltip>
+                                  {isProductsLoading ? (
+                                    <MenuItem disabled>
+                                      <CircularProgress size={20} />
                                     </MenuItem>
-                                  ))
-                                )}
+                                  ) : (
+                                    productIdOptions?.map((product: Product) => (
+                                      <MenuItem key={product.product_ID} value={String(product.product_ID)}>
+                                        <Tooltip
+                                          title={`${product.product_name}, ${product.product_desc}`}
+                                          placement="right"
+                                        >
+                                          <span style={{ flex: 1 }}>{product.product_ID}</span>
+                                        </Tooltip>
+                                      </MenuItem>
+                                    ))
+                                  )}
                                 </TextField>
                               ) : (
                                 <TextField
                                   {...field} InputLabelProps={{ shrink: true }}
                                   label={fieldName.replace(/([A-Z])/g, " $1").trim()}
                                   fullWidth
-                                    size="small"
-                                    type={fieldName === "quantity" ? "number" : "text"}
+                                  size="small"
+                                  type={fieldName === "quantity" ? "number" : "text"}
                                   error={meta.touched && Boolean(meta.error)}
                                   helperText={meta.touched && meta.error}
                                 />

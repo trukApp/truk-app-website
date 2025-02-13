@@ -12,7 +12,6 @@ export const GoogleMaps = ({
     locations: ReadonlyArray<google.maps.LatLngLiteral>;
 }) => {
     const ref = useRef<HTMLDivElement | null>(null);
-    console.log("locations: ", locations)
     useEffect(() => {
         if (ref.current) {
             const map = new window.google.maps.Map(ref.current, {

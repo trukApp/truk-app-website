@@ -87,40 +87,32 @@ const initialDriverValues = {
 };
 
 const DriverForm: React.FC = () => {
-  const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
-      const [snackbarOpen, setSnackbarOpen] = useState(false);
-      const [snackbarMessage, setSnackbarMessage] = useState("");
-      const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
-  const [driverRegistration,{isLoading:postDriverLoading}] = useDriverRegistrationMutation();
-  const [editDriverDetails, {isLoading:editDriverLoading}] = useEditDriverMutation()
-  const [deleteDriver, {isLoading:deleteDriverLoading}] = useDeleteDriverMutation()
+  const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10, });
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
+  const [driverRegistration, { isLoading: postDriverLoading }] = useDriverRegistrationMutation();
+  const [editDriverDetails, { isLoading: editDriverLoading }] = useEditDriverMutation()
+  const [deleteDriver, { isLoading: deleteDriverLoading }] = useDeleteDriverMutation()
   const [showForm, setShowForm] = useState(false);
   const [updateRecord, setUpdateRecord] = useState(false);
   const [formInitialValues, setFormInitialValues] = useState(initialDriverValues);
-  // const [updateRecordData, setUpdateRecordData] = useState({});
   const [updateRecordId, setUpdateRecordId] = useState(0)
-  const { data, error, isLoading } = useGetAllDriversDataQuery({page: paginationModel.page + 1, limit: paginationModel.pageSize})
-  console.log("all drivers data :", data?.drivers)
+  const { data, error, isLoading } = useGetAllDriversDataQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize })
   const driversData = data?.drivers.length > 0 ? data?.drivers : []
-
-  const { data: locationsData, error: getLocationsError, isLoading:isLocationLoading } = useGetLocationMasterQuery({})
+  const { data: locationsData, error: getLocationsError, isLoading: isLocationLoading } = useGetLocationMasterQuery({})
   const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
   console.log("all locations :", locationsData?.locations)
   console.log("getLocationsError: ", getLocationsError)
 
-  if (isLoading) {
-    console.log("Loading All drivers Data...");
-  }
-
   if (error) {
     console.error("getting error while fetching the drivers data:", error);
   }
-  console.log("drivers", driversData)
 
 
-const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
+  const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
     setPaginationModel(newPaginationModel);
-    };
+  };
   const driverValidationSchema = Yup.object({
     driverName: Yup.string().required('Driver Name is required'),
     locations: Yup.array().of(Yup.string()).min(1, 'Location id is required'),
@@ -131,34 +123,31 @@ const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) =>
   });
 
 
-const mapRowToInitialValues = (rowData: Driver) => {
-  console.log('Row Data:', rowData);
-  const matchedLocation = getAllLocations.find((loc: Location) => loc.loc_ID === rowData?.locations[0]);
+  const mapRowToInitialValues = (rowData: Driver) => {
+    const matchedLocation = getAllLocations.find((loc: Location) => loc.loc_ID === rowData?.locations[0]);
 
-  return {
-    driverName: rowData?.driverName || '',
-    locations: rowData?.locations ? [...rowData.locations] : [],
-    drivingLicense: rowData?.drivingLicense || '',
-    driverContactNumber: rowData?.driverContactNumber || '',
-    expiryDate: rowData?.expiryDate || '',
-    emailID: rowData?.emailID || '',
-    vehicleTypes: rowData?.vehicleTypes ? [...rowData.vehicleTypes] : [],
-    loggedIntoApp: rowData?.loggedIntoApp,
-    address1: matchedLocation?.address_1 || '',
-    address2: matchedLocation?.address_2 || '',
-    city: matchedLocation?.city || '',
-    state: matchedLocation?.state || '',
-    country: matchedLocation?.country || '',
-    pincode: matchedLocation?.pincode || '',
+    return {
+      driverName: rowData?.driverName || '',
+      locations: rowData?.locations ? [...rowData.locations] : [],
+      drivingLicense: rowData?.drivingLicense || '',
+      driverContactNumber: rowData?.driverContactNumber || '',
+      expiryDate: rowData?.expiryDate || '',
+      emailID: rowData?.emailID || '',
+      vehicleTypes: rowData?.vehicleTypes ? [...rowData.vehicleTypes] : [],
+      loggedIntoApp: rowData?.loggedIntoApp,
+      address1: matchedLocation?.address_1 || '',
+      address2: matchedLocation?.address_2 || '',
+      city: matchedLocation?.city || '',
+      state: matchedLocation?.state || '',
+      country: matchedLocation?.country || '',
+      pincode: matchedLocation?.pincode || '',
+    };
   };
-};
 
 
   const handleEdit = async (rowData: Driver) => {
-    console.log('Edit clicked for:', rowData);
     setShowForm(true)
     setUpdateRecord(true)
-    // setUpdateRecordData(rowData)
     const updatedInitialValues = await mapRowToInitialValues(rowData);
 
     setUpdateRecordId(rowData?.id)
@@ -166,72 +155,70 @@ const mapRowToInitialValues = (rowData: Driver) => {
     setFormInitialValues(updatedInitialValues);
   };
 
-const handleDelete = async (rowData: Driver) => {
-  const deleteId = rowData?.id;
-  if (!deleteId) {
-    console.error("Row ID is missing");
-    setSnackbarMessage("Error: Driver ID is missing!");
-    setSnackbarSeverity("error");
-    setSnackbarOpen(true);
-    return;
-  }
+  const handleDelete = async (rowData: Driver) => {
+    const deleteId = rowData?.id;
+    if (!deleteId) {
+      console.error("Row ID is missing");
+      setSnackbarMessage("Error: Driver ID is missing!");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      return;
+    }
 
-  const confirmed = window.confirm("Are you sure you want to delete this driver?");
-  if (!confirmed) {
-    console.log("Delete canceled by user.");
-    return;
-  }
+    const confirmed = window.confirm("Are you sure you want to delete this driver?");
+    if (!confirmed) {
+      return;
+    }
 
-  try {
-    const response = await deleteDriver(deleteId);
-    console.log("Delete response:", response);
-if (response.data.deleted_record) {
-          setSnackbarMessage(`Driver ID ${response.data.deleted_record} deleted successfully!`);
-          setSnackbarSeverity("info");
-          setSnackbarOpen(true);
+    try {
+      const response = await deleteDriver(deleteId);
+      if (response.data.deleted_record) {
+        setSnackbarMessage(`Driver ID ${response.data.deleted_record} deleted successfully!`);
+        setSnackbarSeverity("info");
+        setSnackbarOpen(true);
       }
-  } catch (error) {
-    console.error("Error deleting driver:", error);
-    setSnackbarMessage("Failed to delete driver. Please try again.");
-    setSnackbarSeverity("error");
-    setSnackbarOpen(true);
-  }
-};
+    } catch (error) {
+      console.error("Error deleting driver:", error);
+      setSnackbarMessage("Failed to delete driver. Please try again.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    }
+  };
 
 
-const columns: GridColDef[] = [
-  { field: 'driverID', headerName: 'Driver ID', width: 150 },
-  { field: 'driverName', headerName: 'Name', width: 200 },
-  { field: 'locations', headerName: 'Location ID', width: 200 },
-  { field: 'address', headerName: 'Address', width: 300 },
-  { field: 'drivingLicense', headerName: 'Driving License', width: 200 },
-  {
-    field: 'expiryDate',
-    headerName: 'Expiry Date',
-    width: 150,
-// Format the date or show 'N/A' if missing
-  },
-  { field: 'driverContactNumber', headerName: 'Contact Number', width: 150 },
-  { field: 'emailID', headerName: 'Email ID', width: 200 },
-  { field: 'vehicleTypes', headerName: 'Vehicle Types', width: 200 },
-  // { field: 'loggedIntoApp', headerName: 'Logged In', width: 100 },
+  const columns: GridColDef[] = [
+    { field: 'driverID', headerName: 'Driver ID', width: 150 },
+    { field: 'driverName', headerName: 'Name', width: 200 },
+    { field: 'locations', headerName: 'Location ID', width: 200 },
+    { field: 'address', headerName: 'Address', width: 300 },
+    { field: 'drivingLicense', headerName: 'Driving License', width: 200 },
+    {
+      field: 'expiryDate',
+      headerName: 'Expiry Date',
+      width: 150,
+      // Format the date or show 'N/A' if missing
+    },
+    { field: 'driverContactNumber', headerName: 'Contact Number', width: 150 },
+    { field: 'emailID', headerName: 'Email ID', width: 200 },
+    { field: 'vehicleTypes', headerName: 'Vehicle Types', width: 200 },
+    // { field: 'loggedIntoApp', headerName: 'Logged In', width: 100 },
 
-  {
-    field: 'actions',
-    headerName: 'Actions',
-    width: 150,
-    renderCell: (params) => (
-      <>
-        <IconButton color="primary" onClick={() => handleEdit(params.row)}>
-          <EditIcon />
-        </IconButton>
-        <IconButton color="secondary" onClick={() => handleDelete(params.row)}>
-          <DeleteIcon />
-        </IconButton>
-      </>
-    ),
-  },
-];
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 150,
+      renderCell: (params) => (
+        <>
+          <IconButton color="primary" onClick={() => handleEdit(params.row)}>
+            <EditIcon />
+          </IconButton>
+          <IconButton color="secondary" onClick={() => handleDelete(params.row)}>
+            <DeleteIcon />
+          </IconButton>
+        </>
+      ),
+    },
+  ];
 
 
   const rows = driversData.map((driver: Driver) => ({
@@ -252,19 +239,18 @@ const columns: GridColDef[] = [
     driverContactNumber: driver?.driver_correspondence?.phone,
     emailID: driver?.driver_correspondence?.email,
     vehicleTypes: driver?.vehicle_types,
-    loggedIntoApp: driver?.logged_in  ,
+    loggedIntoApp: driver?.logged_in,
     address: driver?.address,
   })) || [];
 
   const handleDriverSubmit: (values: DriverFormValues) => Promise<void> = async (values) => {
-    console.log('Driver Form Submitted:', values);
     try {
       const body = {
         drivers: [
           {
             locations: values?.locations,
             driver_name: values?.driverName,
-            address: [values?.address1,values?.address2,values?.city,values?.state,values?.country,values?.pincode,].filter((part) => part).join(', ') ,
+            address: [values?.address1, values?.address2, values?.city, values?.state, values?.country, values?.pincode,].filter((part) => part).join(', '),
             driver_correspondence: {
               driving_license: values?.drivingLicense,
               expiry_date: values?.expiryDate,
@@ -281,7 +267,7 @@ const columns: GridColDef[] = [
         // ...updateRecordData,
         locations: values?.locations,
         driver_name: values?.driverName,
-        address: [values?.address1,values?.address2,values?.city,values?.state,values?.country,values?.pincode,].filter((part) => part).join(', ') ,
+        address: [values?.address1, values?.address2, values?.city, values?.state, values?.country, values?.pincode,].filter((part) => part).join(', '),
         driver_correspondence: {
           driving_license: values?.drivingLicense,
           expiry_date: values?.expiryDate,
@@ -291,92 +277,86 @@ const columns: GridColDef[] = [
         vehicle_types: values?.vehicleTypes,
         logged_in: values?.loggedIntoApp,
       };
-
-      console.log('body: ', body);
       if (updateRecord) {
-        console.log("edit body :", editBody)
         const response = await editDriverDetails({ body: editBody, driverId: updateRecordId }).unwrap();
-        console.log('API Response:', response);
-         if (response?.updated_record) {
-                  setSnackbarMessage(`Driver ID ${response.updated_record} updated successfully!`);
-                  setFormInitialValues(initialDriverValues);
-                  setShowForm(false);
-                  setUpdateRecord(false);
-                  setUpdateRecordId(0);
-                  setSnackbarSeverity("success");
-                  setSnackbarOpen(true);
-                } 
+        if (response?.updated_record) {
+          setSnackbarMessage(`Driver ID ${response.updated_record} updated successfully!`);
+          setFormInitialValues(initialDriverValues);
+          setShowForm(false);
+          setUpdateRecord(false);
+          setUpdateRecordId(0);
+          setSnackbarSeverity("success");
+          setSnackbarOpen(true);
+        }
       } else {
-        console.log("post body for drivers :", body)
         const response = await driverRegistration(body).unwrap();
-        console.log('API Response:', response);
         if (response?.created_records) {
-                    setSnackbarMessage(`Driver ID ${response.created_records[0]} created successfully!`);
-                     setFormInitialValues(initialDriverValues)
-                    setShowForm(false)
-                    setUpdateRecord(false)
-                    setUpdateRecordId(0) 
-                    setSnackbarSeverity("success");
-                    setSnackbarOpen(true);
-                  }
+          setSnackbarMessage(`Driver ID ${response.created_records[0]} created successfully!`);
+          setFormInitialValues(initialDriverValues)
+          setShowForm(false)
+          setUpdateRecord(false)
+          setUpdateRecordId(0)
+          setSnackbarSeverity("success");
+          setSnackbarOpen(true);
+        }
       }
     } catch (error) {
-        console.error('API Error:', error);
-        setSnackbarMessage("Something went wrong! Please try again");
-        setSnackbarSeverity("error");
-        setSnackbarOpen(true);
+      console.error('API Error:', error);
+      setSnackbarMessage("Something went wrong! Please try again");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
   };
 
   const handleLocationChange = (
-  event: SelectChangeEvent<string>,
-  setFieldValue: FormikProps<DriverFormValues>['setFieldValue']
-) => {
-  const selectedLocation = event.target.value;
+    event: SelectChangeEvent<string>,
+    setFieldValue: FormikProps<DriverFormValues>['setFieldValue']
+  ) => {
+    const selectedLocation = event.target.value;
 
-  // Update the locations field as an array with a single selected value
-  setFieldValue('locations', [selectedLocation]);
+    // Update the locations field as an array with a single selected value
+    setFieldValue('locations', [selectedLocation]);
 
-  // Find the selected location object
-  const matchedLocation = getAllLocations.find((loc: Location) => loc.loc_ID === selectedLocation);
+    // Find the selected location object
+    const matchedLocation = getAllLocations.find((loc: Location) => loc.loc_ID === selectedLocation);
 
-  if (matchedLocation) {
-    // Set corresponding fields from the matched location
-    setFieldValue('address1', matchedLocation.address_1 || '');
-    setFieldValue('address2', matchedLocation.address_2 || '');
-    setFieldValue('city', matchedLocation.city || '');
-    setFieldValue('district', matchedLocation.district || '');
-    setFieldValue('state', matchedLocation.state || '');
-    setFieldValue('country', matchedLocation.country || '');
-    setFieldValue('pincode', matchedLocation.pincode || '');
-  } else {
-    // Clear fields if no matching location is found
-    setFieldValue('city', '');
-    setFieldValue('district', '');
-    setFieldValue('state', '');
-    setFieldValue('country', '');
-    setFieldValue('pincode', '');
-  }
-};
+    if (matchedLocation) {
+      // Set corresponding fields from the matched location
+      setFieldValue('address1', matchedLocation.address_1 || '');
+      setFieldValue('address2', matchedLocation.address_2 || '');
+      setFieldValue('city', matchedLocation.city || '');
+      setFieldValue('district', matchedLocation.district || '');
+      setFieldValue('state', matchedLocation.state || '');
+      setFieldValue('country', matchedLocation.country || '');
+      setFieldValue('pincode', matchedLocation.pincode || '');
+    } else {
+      // Clear fields if no matching location is found
+      setFieldValue('city', '');
+      setFieldValue('district', '');
+      setFieldValue('state', '');
+      setFieldValue('country', '');
+      setFieldValue('pincode', '');
+    }
+  };
 
 
   return (
     <div className={styles.formsMainContainer}>
-        <Backdrop
-          sx={{
-            color: "#ffffff",
-            zIndex: (theme) => theme.zIndex.drawer + 1,
-          }}
-          open={postDriverLoading || editDriverLoading || deleteDriverLoading}
-        >
-          <CircularProgress color="inherit" />
+      <Backdrop
+        sx={{
+          color: "#ffffff",
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+        }}
+        open={postDriverLoading || editDriverLoading || deleteDriverLoading}
+      >
+        <CircularProgress color="inherit" />
       </Backdrop>
       <SnackbarAlert
-                open={snackbarOpen}
-                message={snackbarMessage}
-                severity={snackbarSeverity}
-                onClose={() => setSnackbarOpen(false)}
-            />
+        open={snackbarOpen}
+        message={snackbarMessage}
+        severity={snackbarSeverity}
+        onClose={() => setSnackbarOpen(false)}
+      />
       <Box display="flex" justifyContent="flex-end" gap={2}>
         <Button
           variant="contained"
@@ -386,7 +366,7 @@ const columns: GridColDef[] = [
           Create Driver
           {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 4 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 4 }} />}
         </Button>
-        <DriverMassUpload arrayKey='drivers'/>
+        <DriverMassUpload arrayKey='drivers' />
       </Box>
 
       <Collapse in={showForm}>
@@ -415,36 +395,36 @@ const columns: GridColDef[] = [
                   </Grid>
                   <Grid item xs={12} sm={6} md={2.4}>
                     <FormControl fullWidth size="small" error={touched.locations && Boolean(errors.locations)}>
-                    <InputLabel>Location ID</InputLabel>
-                    <Select
-                      label="Location ID"
-                      name="locations"
-                      value={values.locations[0] || ''}
-                      onChange={(event) => handleLocationChange(event, setFieldValue)}
-                      onBlur={handleBlur}
-                    >
-                    {isLocationLoading ? (
-                                <MenuItem disabled>
-                                  <CircularProgress size={20} color="inherit" />
-                                  <span style={{ marginLeft: "10px" }}>Loading...</span>
-                                </MenuItem>
-                              ) : (
-                                getAllLocations?.map((location: Location) => (
-                                  <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                                    <Tooltip
-                                      title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                      placement="right"
-                                    >
-                                      <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                                    </Tooltip>
-                                  </MenuItem>
-                                ))
-                              )}
-                    </Select>
-                    {touched.locations && errors.locations && (
-                      <FormHelperText>{errors.locations}</FormHelperText>
-                    )}
-                  </FormControl>
+                      <InputLabel>Location ID</InputLabel>
+                      <Select
+                        label="Location ID"
+                        name="locations"
+                        value={values.locations[0] || ''}
+                        onChange={(event) => handleLocationChange(event, setFieldValue)}
+                        onBlur={handleBlur}
+                      >
+                        {isLocationLoading ? (
+                          <MenuItem disabled>
+                            <CircularProgress size={20} color="inherit" />
+                            <span style={{ marginLeft: "10px" }}>Loading...</span>
+                          </MenuItem>
+                        ) : (
+                          getAllLocations?.map((location: Location) => (
+                            <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                              <Tooltip
+                                title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                placement="right"
+                              >
+                                <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                              </Tooltip>
+                            </MenuItem>
+                          ))
+                        )}
+                      </Select>
+                      {touched.locations && errors.locations && (
+                        <FormHelperText>{errors.locations}</FormHelperText>
+                      )}
+                    </FormControl>
 
                   </Grid>
 
@@ -472,7 +452,7 @@ const columns: GridColDef[] = [
                       helperText={touched.address1 && errors.address1}
                     />
                   </Grid>
-                      <Grid item xs={12} sm={6} md={2.4}>
+                  <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth size='small'
                       label="Address2" disabled
@@ -537,7 +517,7 @@ const columns: GridColDef[] = [
                       helperText={touched.drivingLicense && errors.drivingLicense}
                     />
                   </Grid>
-      
+
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth
@@ -609,7 +589,7 @@ const columns: GridColDef[] = [
                         multiple: true,
                       }}
                     >
-                      {['Truck', 'Mini Auto', 'Lorry','Container','Van',"Trailer","Car"].map((type) => (
+                      {['Truck', 'Mini Auto', 'Lorry', 'Container', 'Van', "Trailer", "Car"].map((type) => (
                         <MenuItem key={type} value={type}>
                           {type}
                         </MenuItem>
@@ -629,38 +609,38 @@ const columns: GridColDef[] = [
                   </Grid>
                 </Grid>
 
-                  <Box marginTop={3} textAlign="center">
-                    <Button type="submit" variant="contained" color="primary">
-                      {updateRecord ? "Update driver" : "Create driver"}
+                <Box marginTop={3} textAlign="center">
+                  <Button type="submit" variant="contained" color="primary">
+                    {updateRecord ? "Update driver" : "Create driver"}
                   </Button>
-                          <Button variant="outlined" color="secondary"
-                                    onClick={() => {
-                                    setFormInitialValues(initialDriverValues);
-                                    setUpdateRecord(false)
-                                  }}
-                              style={{ marginLeft: "10px" }}>Reset
-                              </Button>
-                  </Box>
+                  <Button variant="outlined" color="secondary"
+                    onClick={() => {
+                      setFormInitialValues(initialDriverValues);
+                      setUpdateRecord(false)
+                    }}
+                    style={{ marginLeft: "10px" }}>Reset
+                  </Button>
+                </Box>
               </Form>
             )}
           </Formik>
         </Box>
       </Collapse>
 
-        <div style={{ marginTop: "40px" }}>
+      <div style={{ marginTop: "40px" }}>
         {isLoading ? (
           <DataGridSkeletonLoader columns={columns} />
         ) : (
-              <DataGridComponent
-                          columns={columns}
-                          rows={rows}
-                          isLoading={isLoading}
-                          paginationModel={paginationModel}
-                          activeEntity='drivers'
-                          onPaginationModelChange={handlePaginationModelChange}
-              />
+          <DataGridComponent
+            columns={columns}
+            rows={rows}
+            isLoading={isLoading}
+            paginationModel={paginationModel}
+            activeEntity='drivers'
+            onPaginationModelChange={handlePaginationModelChange}
+          />
         )}
-        </div>
+      </div>
 
     </div>
   );

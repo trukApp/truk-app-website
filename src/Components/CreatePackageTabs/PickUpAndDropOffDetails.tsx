@@ -28,7 +28,6 @@ const validationSchema = Yup.object({
 const PickupDropoff: React.FC<PickupDropTab> = ({ onNext, onBack }) => {
     const dispatch = useAppDispatch()
     const packagePickUpAndDropTimingsFromRedux = useAppSelector((state) => state.auth.packagePickAndDropTimings)
-    console.log("packagePickUpAndDropTimingsFromRedux: ", packagePickUpAndDropTimingsFromRedux)
 
     const initialValues: FormValues = packagePickUpAndDropTimingsFromRedux ? packagePickUpAndDropTimingsFromRedux : {
         pickupDateTime: '',
@@ -39,7 +38,6 @@ const PickupDropoff: React.FC<PickupDropTab> = ({ onNext, onBack }) => {
     const handleFormSubmit = (values: FormValues, actions: FormikHelpers<FormValues>, onNext: (values: FormValues) => void) => {
         dispatch(setPackagePickAndDropTimings(values))
         dispatch(setCompletedState(5));
-        console.log('Form Submitted:', values);
         onNext(values);
         actions.setSubmitting(false);
     };

@@ -77,29 +77,24 @@ const SupplierForm: React.FC = () => {
     const [formInitialValues, setFormInitialValues] = useState(initialSupplierValues);
     const [updateRecordData, setUpdateRecordData] = useState({});
     const [updateRecordId, setUpdateRecordId] = useState(0)
-    const [updatePartnerDetails,{isLoading:postVendorLoading}] = useEditBusinessPartnerMutation();
-    const [customerRegistration,{isLoading:editVendorLoading}] = useCustomerRegistrationMutation();
-    const [deleteBusinessPartner,{isLoading:deleteVendorLoading}] = useDeleteBusinessPartnerMutation()
+    const [updatePartnerDetails, { isLoading: postVendorLoading }] = useEditBusinessPartnerMutation();
+    const [customerRegistration, { isLoading: editVendorLoading }] = useCustomerRegistrationMutation();
+    const [deleteBusinessPartner, { isLoading: deleteVendorLoading }] = useDeleteBusinessPartnerMutation()
     const { data, error, isLoading } = useGetAllVendorsDataQuery({
         partner_type: "vendor", page: paginationModel.page + 1, limit: paginationModel.pageSize
     })
-    const { data: locationsData, error: getLocationsError,isLoading:isLocationLoading } = useGetLocationMasterQuery([])
+    const { data: locationsData, error: getLocationsError, isLoading: isLocationLoading } = useGetLocationMasterQuery([])
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
-    console.log("all locations :", locationsData?.locations)
     console.log("getLocationsError: ", getLocationsError)
-    console.log("all Vendors data :", data?.partners)
     const vendorsData = data?.partners.length > 0 ? data?.partners : []
 
-    if (isLoading) {
-        console.log("Loading All customers Data...");
-    }
 
     if (error) {
         console.error("getting error while fetching the customers data:", error);
     }
     const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
-            setPaginationModel(newPaginationModel);
-        };
+        setPaginationModel(newPaginationModel);
+    };
     const mapRowToInitialValues = (rowData: Customer) => ({
         name: rowData.name || '',
         locationId: rowData.loc_ID || '',
@@ -118,49 +113,43 @@ const SupplierForm: React.FC = () => {
         orderingAddress: rowData?.partner_functions?.ordering_address || '',
     });
 
-const handleDelete = async (rowData: Customer) => {
-  const deleteId = rowData?.partner_id;
-  if (!deleteId) {
-    console.error("Row ID is missing");
-    setSnackbarMessage("Error: Partner ID is missing!");
-    setSnackbarSeverity("error");
-    setSnackbarOpen(true);
-    return;
-  }
+    const handleDelete = async (rowData: Customer) => {
+        const deleteId = rowData?.partner_id;
+        if (!deleteId) {
+            console.error("Row ID is missing");
+            setSnackbarMessage("Error: Partner ID is missing!");
+            setSnackbarSeverity("error");
+            setSnackbarOpen(true);
+            return;
+        }
 
-  const confirmed = window.confirm("Are you sure you want to delete this partner?");
-  if (!confirmed) {
-    console.log("Delete canceled by user.");
-    return;
-  }
+        const confirmed = window.confirm("Are you sure you want to delete this partner?");
+        if (!confirmed) {
+            return;
+        }
 
-  try {
-    const response = await deleteBusinessPartner(deleteId);
-    console.log("Delete response:", response);
-
-    if (response.data.deleted_record) {
-          setSnackbarMessage(`Supplier ID ${response.data.deleted_record} deleted successfully!`);
-          setSnackbarSeverity("info");
-          setSnackbarOpen(true);
-      }
-  } catch (error) {
-    console.error("Error deleting partner:", error);
-    setSnackbarMessage("Failed to delete partner. Please try again.");
-    setSnackbarSeverity("error");
-    setSnackbarOpen(true);
-  }
-};
+        try {
+            const response = await deleteBusinessPartner(deleteId);
+            if (response.data.deleted_record) {
+                setSnackbarMessage(`Supplier ID ${response.data.deleted_record} deleted successfully!`);
+                setSnackbarSeverity("info");
+                setSnackbarOpen(true);
+            }
+        } catch (error) {
+            console.error("Error deleting partner:", error);
+            setSnackbarMessage("Failed to delete partner. Please try again.");
+            setSnackbarSeverity("error");
+            setSnackbarOpen(true);
+        }
+    };
 
 
     const handleEdit = async (rowData: Customer) => {
-        console.log('Edit clicked for:', rowData);
         setShowForm(true)
         setUpdateRecord(true)
         setUpdateRecordData(rowData)
         setUpdateRecordId(rowData?.partner_id)
         const updatedInitialValues = await mapRowToInitialValues(rowData);
-        console.log('Updated Initial Values:', updatedInitialValues);
-
         setFormInitialValues(updatedInitialValues);
     };
 
@@ -215,7 +204,7 @@ const handleDelete = async (rowData: Customer) => {
         contactPerson: Yup.string().required('Contact Person is required'),
         contactNumber: Yup.string().required('Contact Number is required'),
         emailId: Yup.string().email('Invalid email format').required('Email ID is required'),
-        locationOfSource: Yup.string().required( 'Location is required'),
+        locationOfSource: Yup.string().required('Location is required'),
         orderingAddress: Yup.string().required('Ship To Party is required'),
         goodsSupplier: Yup.string().required('Sold To Party is required'),
         forwardingAgent: Yup.string().required('Bill To Party is required')
@@ -223,7 +212,6 @@ const handleDelete = async (rowData: Customer) => {
 
     const handleSupplierSubmit = async (values: typeof initialSupplierValues) => {
         try {
-            console.log('Vendor Form Submitted:', values);
             const body = {
                 partners: [
                     {
@@ -245,7 +233,6 @@ const handleDelete = async (rowData: Customer) => {
                     }
                 ]
             }
-            console.log("body: ", body)
             const editBody = {
                 ...updateRecordData,
                 name: values?.name,
@@ -265,39 +252,35 @@ const handleDelete = async (rowData: Customer) => {
                 }
             }
             if (updateRecord) {
-                console.log("I am going update the record")
                 const response = await updatePartnerDetails({ body: editBody, partnerId: updateRecordId }).unwrap();
-                console.log('API Response:', response);
                 if (response?.updated_record) {
-                  setSnackbarMessage(`Supplier ID ${response.updated_record} updated successfully!`);
-                  setFormInitialValues(initialSupplierValues)
+                    setSnackbarMessage(`Supplier ID ${response.updated_record} updated successfully!`);
+                    setFormInitialValues(initialSupplierValues)
                     setShowForm(false)
                     setUpdateRecord(false)
                     setUpdateRecordId(0)
                     setUpdateRecordData({})
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
-                } 
+                }
             } else {
-                console.log("I am going create the record")
                 const response = await customerRegistration(body).unwrap();
-                console.log('API Response:', response);
                 if (response?.created_records) {
                     setSnackbarMessage(`Supplier ID ${response.created_records[0]} created successfully!`);
-                     setFormInitialValues(initialSupplierValues)
+                    setFormInitialValues(initialSupplierValues)
                     setShowForm(false)
                     setUpdateRecord(false)
                     setUpdateRecordId(0)
                     setUpdateRecordData({})
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
-                  } 
+                }
             }
         } catch (error) {
-                console.error('API Error:', error);
-                setSnackbarMessage("Something went wrong! Please try again");
-                setSnackbarSeverity("error");
-                setSnackbarOpen(true);
+            console.error('API Error:', error);
+            setSnackbarMessage("Something went wrong! Please try again");
+            setSnackbarSeverity("error");
+            setSnackbarOpen(true);
         }
     };
 
@@ -308,9 +291,6 @@ const handleDelete = async (rowData: Customer) => {
         const selectedLocationId = event.target.value;
         setFieldValue('locationId', selectedLocationId);
         const selectedLocation = getAllLocations.find((loc: Location) => loc.loc_ID === (selectedLocationId));
-        console.log(selectedLocationId)
-        // Check if the selectedLocation exists before calling setFieldValue
-
         if (selectedLocation) {
 
             setFieldValue('city', selectedLocation?.city || '');
@@ -333,8 +313,8 @@ const handleDelete = async (rowData: Customer) => {
         <div className={styles.formsMainContainer}>
             <Backdrop
                 sx={{
-                color: "#ffffff",
-                zIndex: (theme) => theme.zIndex.drawer + 1,
+                    color: "#ffffff",
+                    zIndex: (theme) => theme.zIndex.drawer + 1,
                 }}
                 open={postVendorLoading || editVendorLoading || deleteVendorLoading}
             >
@@ -355,7 +335,7 @@ const handleDelete = async (rowData: Customer) => {
                     Create Vendor
                     {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 4 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 4 }} />}
                 </Button>
-                <MassUpload arrayKey='partners' partnerType="vendor"/>
+                <MassUpload arrayKey='partners' partnerType="vendor" />
             </Box>
 
             <Collapse in={showForm}>
@@ -408,23 +388,23 @@ const handleDelete = async (rowData: Customer) => {
                                                 onChange={(event) => handleLocationChange(event, setFieldValue)}
                                                 onBlur={handleBlur}
                                             >
-                            {isLocationLoading ? (
-                                <MenuItem disabled>
-                                  <CircularProgress size={20} color="inherit" />
-                                  <span style={{ marginLeft: "10px" }}>Loading...</span>
-                                </MenuItem>
-                              ) : (
-                                getAllLocations?.map((location: Location) => (
-                                  <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                                    <Tooltip
-                                      title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                      placement="right"
-                                    >
-                                      <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                                    </Tooltip>
-                                  </MenuItem>
-                                ))
-                              )}
+                                                {isLocationLoading ? (
+                                                    <MenuItem disabled>
+                                                        <CircularProgress size={20} color="inherit" />
+                                                        <span style={{ marginLeft: "10px" }}>Loading...</span>
+                                                    </MenuItem>
+                                                ) : (
+                                                    getAllLocations?.map((location: Location) => (
+                                                        <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                                            <Tooltip
+                                                                title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                                                placement="right"
+                                                            >
+                                                                <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                                            </Tooltip>
+                                                        </MenuItem>
+                                                    ))
+                                                )}
                                             </Select>
                                             {touched.locationId && errors.locationId && (
                                                 <FormHelperText>{errors.locationId}</FormHelperText>
@@ -548,23 +528,23 @@ const handleDelete = async (rowData: Customer) => {
                                                 onChange={(e) => setFieldValue('locationOfSource', e.target.value)}
                                                 onBlur={handleBlur}
                                             >
-{isLocationLoading ? (
-                                <MenuItem disabled>
-                                  <CircularProgress size={20} color="inherit" />
-                                  <span style={{ marginLeft: "10px" }}>Loading...</span>
-                                </MenuItem>
-                              ) : (
-                                getAllLocations?.map((location: Location) => (
-                                  <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                                    <Tooltip
-                                      title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                      placement="right"
-                                    >
-                                      <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                                    </Tooltip>
-                                  </MenuItem>
-                                ))
-                              )}
+                                                {isLocationLoading ? (
+                                                    <MenuItem disabled>
+                                                        <CircularProgress size={20} color="inherit" />
+                                                        <span style={{ marginLeft: "10px" }}>Loading...</span>
+                                                    </MenuItem>
+                                                ) : (
+                                                    getAllLocations?.map((location: Location) => (
+                                                        <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                                            <Tooltip
+                                                                title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                                                placement="right"
+                                                            >
+                                                                <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                                            </Tooltip>
+                                                        </MenuItem>
+                                                    ))
+                                                )}
                                             </Select>
                                             {touched.locationOfSource && errors.locationOfSource && (
                                                 <FormHelperText>{errors.locationOfSource}</FormHelperText>
@@ -625,19 +605,19 @@ const handleDelete = async (rowData: Customer) => {
                                         />
                                     </Grid>
                                 </Grid>
-                        
-                                    <Box marginTop={3} textAlign="center">
-                                        <Button type="submit" variant="contained" color="primary">
-                                            {updateRecord ?  "Update" : "Create" }
+
+                                <Box marginTop={3} textAlign="center">
+                                    <Button type="submit" variant="contained" color="primary">
+                                        {updateRecord ? "Update" : "Create"}
                                     </Button>
-                                       <Button variant="outlined" color="secondary"
-                                                onClick={() => {
-                                                setFormInitialValues(initialSupplierValues)
-                                                setUpdateRecord(false)
-                                            }}
+                                    <Button variant="outlined" color="secondary"
+                                        onClick={() => {
+                                            setFormInitialValues(initialSupplierValues)
+                                            setUpdateRecord(false)
+                                        }}
                                         style={{ marginLeft: "10px" }}>Reset
                                     </Button>
-                                    
+
                                 </Box>
                             </Form>
                         )}
@@ -647,15 +627,15 @@ const handleDelete = async (rowData: Customer) => {
 
             <div style={{ marginTop: "40px" }}>
                 {isLoading ? (
-                <DataGridSkeletonLoader columns={columns} />
+                    <DataGridSkeletonLoader columns={columns} />
                 ) : (
-                <DataGridComponent
-                    columns={columns}
-                    rows={rows}
-                    isLoading={isLoading}
-                    paginationModel={paginationModel}
-                    activeEntity='vendors'
-                    onPaginationModelChange={handlePaginationModelChange}
+                    <DataGridComponent
+                        columns={columns}
+                        rows={rows}
+                        isLoading={isLoading}
+                        paginationModel={paginationModel}
+                        activeEntity='vendors'
+                        onPaginationModelChange={handlePaginationModelChange}
                     />
                 )}
             </div>

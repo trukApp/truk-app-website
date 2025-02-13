@@ -30,7 +30,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MassUpload from '../MassUpload/MassUpload';
 import { useSelector } from 'react-redux';
-import { RootState } from '@/store'; 
+import { RootState } from '@/store';
 import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 import { Location } from './Locations';
@@ -89,148 +89,140 @@ export interface Lane {
     end_time: string;
     start_time: string;
     vehcle_type: string;
-    
+
   }
-  
+
 }
 const TransportationLanes = () => {
-    const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
-      const [snackbarOpen, setSnackbarOpen] = useState(false);
-      const [snackbarMessage, setSnackbarMessage] = useState("");
-      const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
-    const [showForm, setShowForm] = useState(false);
-    const [isEditing, setIsEditing] = useState(false);
-    const [editRow, setEditRow] = useState<LaneDetails | null>(null);
-    const { data, error, isLoading } = useGetLanesMasterQuery({page: paginationModel.page + 1, limit: paginationModel.pageSize});
-    const unitsofMeasurement = useSelector((state: RootState) => state.auth.unitsofMeasurement);
-  
-    const [postLane, {isLoading:postLaneLoading}] = usePostLaneMasterMutation();
-    const [editLane,{isLoading:editLaneLoading}] = useEditLaneMasterMutation();
-    const [deleteLane, { isLoading: deleteLaneLoading }] = useDeleteLaneMasterMutation()
-    const { data: locationsData,isLoading:isLocationLoading } = useGetLocationMasterQuery({});
-    const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
-  
+  const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10, });
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
+  const [showForm, setShowForm] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editRow, setEditRow] = useState<LaneDetails | null>(null);
+  const { data, error, isLoading } = useGetLanesMasterQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize });
+  const unitsofMeasurement = useSelector((state: RootState) => state.auth.unitsofMeasurement);
+
+  const [postLane, { isLoading: postLaneLoading }] = usePostLaneMasterMutation();
+  const [editLane, { isLoading: editLaneLoading }] = useEditLaneMasterMutation();
+  const [deleteLane, { isLoading: deleteLaneLoading }] = useDeleteLaneMasterMutation()
+  const { data: locationsData, isLoading: isLocationLoading } = useGetLocationMasterQuery({});
+  const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
+
   if (error) {
     console.error("Error fetching lanes:", error);
   }
 
-    const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
-        setPaginationModel(newPaginationModel);
-        };
+  const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
+    setPaginationModel(newPaginationModel);
+  };
   const handleFormSubmit = async (values: LaneDetails) => {
-        try {
-          const body ={
-            lanes: [
-                      {
-                          src_loc_ID: values.sourceLocationId,
-                          des_loc_ID: values.destinationLocationId,
-                          lane_transport_data: {
-                              vehcle_type: values.vehicleType,
-                              start_time: values.transportStartDate,
-                              end_time: values.transportEndDate,
-                              transport_distance: `${values.transportDistance} ${values.transportDistanceUnits}` ,
-                              transport_duration: `${values.transportDuration} ${values.transportDurationUnits}`  ,
-                              transport_cost: `${values.transportCost} ${values.transportCostUnits}`
-                          }
-                      },
-                  ]
-              }
-              const editBody =   {
-                          src_loc_ID: values.sourceLocationId,
-                          des_loc_ID: values.destinationLocationId,
-                          lane_transport_data: {
-                              vehcle_type: values.vehicleType,
-                              start_time: values.transportStartDate,
-                              end_time: values.transportEndDate,
-                              transport_distance: `${values.transportDistance} ${values.transportDistanceUnits}` ,
-                              transport_duration: `${values.transportDuration} ${values.transportDurationUnits}`  ,
-                              transport_cost: `${values.transportCost} ${values.transportCostUnits}`
-                          }
-                      }
-              console.log("lanes body: ", body)
-              if (isEditing && editRow) {
-                console.log('edit lane body is :', editBody)
-                const laneId = editRow.id
-                const response = await editLane({ body: editBody, laneId }).unwrap()
-                console.log("edit response is ", response)
-                if (response.updated_record) {
-                    formik.resetForm();
-                    setIsEditing(false)
-                    setSnackbarMessage(`Lane ID ${response.updated_record} updated successfully!`);
-                    setSnackbarSeverity("success");
-                    setSnackbarOpen(true);
-                    setShowForm(false)
-                }
-                
-              }
-              else {
-                console.log("post create lane ",body)
-                  const response = await postLane(body).unwrap();
-                console.log('response in post lane:', response);
-                if (response.created_records) {
-                    formik.resetForm(); 
-                    setSnackbarMessage(`Lane ID ${response.created_records[0]} created successfully!`);
-                    setSnackbarSeverity("success");
-                    setSnackbarOpen(true);
-                    setShowForm(false)
-                }
-              }
-          
-        } catch (error) {
-          console.error('API Error:', error);
-               setSnackbarMessage(`Something went wrong! please try again, ${error}`);
-                setSnackbarSeverity("error");
-                setSnackbarOpen(true);
-                setShowForm(false)
+    try {
+      const body = {
+        lanes: [
+          {
+            src_loc_ID: values.sourceLocationId,
+            des_loc_ID: values.destinationLocationId,
+            lane_transport_data: {
+              vehcle_type: values.vehicleType,
+              start_time: values.transportStartDate,
+              end_time: values.transportEndDate,
+              transport_distance: `${values.transportDistance} ${values.transportDistanceUnits}`,
+              transport_duration: `${values.transportDuration} ${values.transportDurationUnits}`,
+              transport_cost: `${values.transportCost} ${values.transportCostUnits}`
+            }
+          },
+        ]
+      }
+      const editBody = {
+        src_loc_ID: values.sourceLocationId,
+        des_loc_ID: values.destinationLocationId,
+        lane_transport_data: {
+          vehcle_type: values.vehicleType,
+          start_time: values.transportStartDate,
+          end_time: values.transportEndDate,
+          transport_distance: `${values.transportDistance} ${values.transportDistanceUnits}`,
+          transport_duration: `${values.transportDuration} ${values.transportDurationUnits}`,
+          transport_cost: `${values.transportCost} ${values.transportCostUnits}`
         }
+      }
+      if (isEditing && editRow) {
+        const laneId = editRow.id
+        const response = await editLane({ body: editBody, laneId }).unwrap()
+        if (response.updated_record) {
+          formik.resetForm();
+          setIsEditing(false)
+          setSnackbarMessage(`Lane ID ${response.updated_record} updated successfully!`);
+          setSnackbarSeverity("success");
+          setSnackbarOpen(true);
+          setShowForm(false)
+        }
+
+      }
+      else {
+        const response = await postLane(body).unwrap();
+        if (response.created_records) {
+          formik.resetForm();
+          setSnackbarMessage(`Lane ID ${response.created_records[0]} created successfully!`);
+          setSnackbarSeverity("success");
+          setSnackbarOpen(true);
+          setShowForm(false)
+        }
+      }
+
+    } catch (error) {
+      console.error('API Error:', error);
+      setSnackbarMessage(`Something went wrong! please try again, ${error}`);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      setShowForm(false)
+    }
 
   }
 
   const handleEdit = (row: LaneDetails) => {
-    console.log("Edit row:", row);
     setShowForm(true)
     setIsEditing(true)
     setEditRow(row)
-    };
+  };
 
-const handleDelete = async (row: LaneDetails) => {
+  const handleDelete = async (row: LaneDetails) => {
     const laneId = row?.id;
     if (!laneId) {
-        console.error("Row ID is missing");
-        setSnackbarMessage("Error: Lane ID is missing!");
-        setSnackbarSeverity("error");
-        setSnackbarOpen(true);
-        return;
+      console.error("Row ID is missing");
+      setSnackbarMessage("Error: Lane ID is missing!");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      return;
     }
 
     const confirmed = window.confirm("Are you sure you want to delete this item?");
     if (!confirmed) {
-        console.log("Delete canceled by user.");
-        return;
+      return;
     }
 
     try {
-        const response = await deleteLane(laneId);
-      console.log("Delete response:", response);
+      const response = await deleteLane(laneId);
       if (response.data.deleted_record) {
         setSnackbarMessage(`Lane ID ${response.data.deleted_record} deleted successfully!`);
         setSnackbarSeverity("info");
         setSnackbarOpen(true);
       }
-        
+
     } catch (error) {
-        console.error("Error deleting lane:", error);
-        setSnackbarMessage("Failed to delete lane. Please try again.");
-        setSnackbarSeverity("error");
-        setSnackbarOpen(true);
+      console.error("Error deleting lane:", error);
+      setSnackbarMessage("Failed to delete lane. Please try again.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
-};
+  };
 
 
   const formik = useFormik({
     initialValues: {
       // General Data
-      id:'',
+      id: '',
       laneId: '', // Auto-generated
       sourceLocationId: '',
       destinationLocationId: '',
@@ -242,9 +234,9 @@ const handleDelete = async (row: LaneDetails) => {
       transportDistance: '',
       transportDistanceUnits: unitsofMeasurement[0],
       transportDuration: '',
-      transportDurationUnits : unitsofMeasurement[0],
+      transportDurationUnits: unitsofMeasurement[0],
       transportCost: '',
-      transportCostUnits : unitsofMeasurement[0],
+      transportCostUnits: unitsofMeasurement[0],
 
       // Carrier Data
       carrierId: '',
@@ -278,63 +270,63 @@ const handleDelete = async (row: LaneDetails) => {
     onSubmit: handleFormSubmit
   });
 
-useEffect(() => {
-  if (editRow) {
-          const editDistance = editRow.transportDistance.split(" ")
+  useEffect(() => {
+    if (editRow) {
+      const editDistance = editRow.transportDistance.split(" ")
       const editDuration = editRow?.transportDuration.split(" ")
       const editCost = editRow.transportCost.split(" ");
-    formik.setValues({
-      id: editRow.id || '',
-      laneId: editRow.laneId || '',
-      sourceLocationId: editRow.sourceLocationId || '',
-      destinationLocationId: editRow.destinationLocationId || '',
+      formik.setValues({
+        id: editRow.id || '',
+        laneId: editRow.laneId || '',
+        sourceLocationId: editRow.sourceLocationId || '',
+        destinationLocationId: editRow.destinationLocationId || '',
 
-      // Transport Data
-      vehicleType: editRow.vehicleType || '',
-      transportStartDate: editRow.transportStartDate || '',
-      transportEndDate: editRow.transportEndDate || '',
-      transportDistance: editDistance[0] ,
-      transportDistanceUnits: editDistance[1],
-      transportDuration: editDuration[0] || '',
-      transportDurationUnits: editDuration[1] ,
-      transportCost: editCost[0] || '',
-      transportCostUnits: editCost[1],
+        // Transport Data
+        vehicleType: editRow.vehicleType || '',
+        transportStartDate: editRow.transportStartDate || '',
+        transportEndDate: editRow.transportEndDate || '',
+        transportDistance: editDistance[0],
+        transportDistanceUnits: editDistance[1],
+        transportDuration: editDuration[0] || '',
+        transportDurationUnits: editDuration[1],
+        transportCost: editCost[0] || '',
+        transportCostUnits: editCost[1],
 
-      // Carrier Data
-      carrierId: editRow.carrierId || '',
-      carrierName: editRow.carrierName || '',
-      carrierVehicleType: editRow.carrierVehicleType || '',
-      carrierStartDate: editRow.carrierStartDate || '',
-      carrierEndDate: editRow.carrierEndDate || '',
-      carrierCost: editRow.carrierCost || '',
-    });
-  }
-}, [editRow]);
+        // Carrier Data
+        carrierId: editRow.carrierId || '',
+        carrierName: editRow.carrierName || '',
+        carrierVehicleType: editRow.carrierVehicleType || '',
+        carrierStartDate: editRow.carrierStartDate || '',
+        carrierEndDate: editRow.carrierEndDate || '',
+        carrierCost: editRow.carrierCost || '',
+      });
+    }
+  }, [editRow]);
 
-const rows = data?.lanes.map((lane:Lane) => ({
-  id: lane?.ln_id,
-  laneId: lane?.lane_ID,
-  // sourceLocationId: lane?.src_loc_ID,
-  // destinationLocationId: lane?.des_loc_ID,
-  sourceLocationId: lane?.src_loc_ID,
-  destinationLocationId: lane?.des_loc_ID,
-  vehicleType: lane.lane_transport_data?.vehcle_type || "Unknown",
-  transportStartDate: lane?.lane_transport_data?.start_time || "N/A",
-  transportEndDate: lane?.lane_transport_data?.end_time || "N/A",
-  transportDistance: lane?.lane_transport_data?.transport_distance
-    ? `${lane.lane_transport_data.transport_distance}`
-    : "N/A",
-  transportDuration: lane?.lane_transport_data?.transport_duration || "N/A",
-  transportCost: lane?.lane_transport_data?.transport_cost
-    ? `${lane?.lane_transport_data?.transport_cost}`
-    : "N/A",
-  // carrierId: `CARRIER-${id + 1}`,
-  // carrierName: `Carrier ${id + 1}`,
-  // carrierVehicleType: lane.lane_transport_data?.vehcle_type || "N/A",
-  // carrierStartDate: lane.lane_transport_data?.start_time || "N/A",
-  // carrierEndDate: lane.lane_transport_data?.end_time || "N/A",
-  // carrierCost: `$${800 + id * 40}`,
-}));
+  const rows = data?.lanes.map((lane: Lane) => ({
+    id: lane?.ln_id,
+    laneId: lane?.lane_ID,
+    // sourceLocationId: lane?.src_loc_ID,
+    // destinationLocationId: lane?.des_loc_ID,
+    sourceLocationId: lane?.src_loc_ID,
+    destinationLocationId: lane?.des_loc_ID,
+    vehicleType: lane.lane_transport_data?.vehcle_type || "Unknown",
+    transportStartDate: lane?.lane_transport_data?.start_time || "N/A",
+    transportEndDate: lane?.lane_transport_data?.end_time || "N/A",
+    transportDistance: lane?.lane_transport_data?.transport_distance
+      ? `${lane.lane_transport_data.transport_distance}`
+      : "N/A",
+    transportDuration: lane?.lane_transport_data?.transport_duration || "N/A",
+    transportCost: lane?.lane_transport_data?.transport_cost
+      ? `${lane?.lane_transport_data?.transport_cost}`
+      : "N/A",
+    // carrierId: `CARRIER-${id + 1}`,
+    // carrierName: `Carrier ${id + 1}`,
+    // carrierVehicleType: lane.lane_transport_data?.vehcle_type || "N/A",
+    // carrierStartDate: lane.lane_transport_data?.start_time || "N/A",
+    // carrierEndDate: lane.lane_transport_data?.end_time || "N/A",
+    // carrierCost: `$${800 + id * 40}`,
+  }));
 
 
   const columns: GridColDef[] = [
@@ -388,26 +380,26 @@ const rows = data?.lanes.map((lane:Lane) => ({
         <CircularProgress color="inherit" />
       </Backdrop>
       <SnackbarAlert
-                open={snackbarOpen}
-                message={snackbarMessage}
-                severity={snackbarSeverity}
-                onClose={() => setSnackbarOpen(false)}
-            />
-      <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md:'24px' } }} align="center" gutterBottom>
-          Transportation lanes master
+        open={snackbarOpen}
+        message={snackbarMessage}
+        severity={snackbarSeverity}
+        onClose={() => setSnackbarOpen(false)}
+      />
+      <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md: '24px' } }} align="center" gutterBottom>
+        Transportation lanes master
       </Typography>
       <Box display="flex" justifyContent="flex-end">
-          <Box  >
-        <Button
-          variant="contained"
-          onClick={() => setShowForm((prev) => !prev)}
-          className={styles.createButton}
-        >
-          Create Lane
-          {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 4 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 4 }} />}
-        </Button>
-      </Box>
-      <MassUpload arrayKey="lanes"/>
+        <Box  >
+          <Button
+            variant="contained"
+            onClick={() => setShowForm((prev) => !prev)}
+            className={styles.createButton}
+          >
+            Create Lane
+            {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 4 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 4 }} />}
+          </Button>
+        </Box>
+        <MassUpload arrayKey="lanes" />
       </Box>
 
 
@@ -415,40 +407,40 @@ const rows = data?.lanes.map((lane:Lane) => ({
       <Collapse in={showForm}>
         <Box marginBottom={4} padding={2} border="1px solid #ccc" borderRadius={2}>
           <form onSubmit={formik.handleSubmit}>
-              {/* General Data */}
-              <Box sx={{ marginBottom: 3 }}>
-                <h3>1. General Data</h3>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth
-                      id="laneId" disabled
-                      name="laneId"
-                      label="Lane ID (Auto-generated)"
-                      value={formik.values.laneId}
-                      onChange={formik.handleChange}
-                      InputProps={{ readOnly: true }}
-                      size="small"
-                    />
-                  </Grid>
+            {/* General Data */}
+            <Box sx={{ marginBottom: 3 }}>
+              <h3>1. General Data</h3>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6} md={2.4}>
+                  <TextField
+                    fullWidth
+                    id="laneId" disabled
+                    name="laneId"
+                    label="Lane ID (Auto-generated)"
+                    value={formik.values.laneId}
+                    onChange={formik.handleChange}
+                    InputProps={{ readOnly: true }}
+                    size="small"
+                  />
+                </Grid>
 
-                	<Grid item xs={12} sm={6} md={2.4}>
-												<FormControl
-													fullWidth id='sourceLocationId'
-													size="small"
-													error={
-														formik.touched.sourceLocationId && Boolean(formik.errors.sourceLocationId)
-													}
-												>
-													<InputLabel>Source Location ID</InputLabel>
-													<Select
-														label="Source Location ID*"
-														name="sourceLocationId"
-														value={formik.values.sourceLocationId}
-														onChange={formik.handleChange}
-														onBlur={formik.handleBlur}
-													>
-														{/* {getAllLocations.map((location: Location) => (
+                <Grid item xs={12} sm={6} md={2.4}>
+                  <FormControl
+                    fullWidth id='sourceLocationId'
+                    size="small"
+                    error={
+                      formik.touched.sourceLocationId && Boolean(formik.errors.sourceLocationId)
+                    }
+                  >
+                    <InputLabel>Source Location ID</InputLabel>
+                    <Select
+                      label="Source Location ID*"
+                      name="sourceLocationId"
+                      value={formik.values.sourceLocationId}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                    >
+                      {/* {getAllLocations.map((location: Location) => (
 															<MenuItem
 																key={location.loc_ID}
 																value={location.loc_ID}
@@ -457,75 +449,75 @@ const rows = data?.lanes.map((lane:Lane) => ({
 															</MenuItem>
 														))} */}
                       {isLocationLoading ? (
-                                <MenuItem disabled>
-                                  <CircularProgress size={20} color="inherit" />
-                                  <span style={{ marginLeft: "10px" }}>Loading...</span>
-                                </MenuItem>
-                              ) : (
-                                getAllLocations?.map((location: Location) => (
-                                  <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                                    <Tooltip
-                                      title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                      placement="right"
-                                    >
-                                      <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                                    </Tooltip>
-                                  </MenuItem>
-                                ))
-                              )}
-													</Select>
-													{formik.touched.sourceLocationId && formik.errors.sourceLocationId && (
-														<FormHelperText>{formik.errors.sourceLocationId}</FormHelperText>
-													)}
-												</FormControl>
-									</Grid>
-                	<Grid item xs={12} sm={6} md={2.4}>
-												<FormControl
-													fullWidth id='destinationLocationId'
-													size="small"
-													error={
-														formik.touched.destinationLocationId && Boolean(formik.errors.destinationLocationId)
-													}
-												>
-													<InputLabel>Destination Location ID</InputLabel>
-													<Select
-														label="Destination Location ID*"
-														name="destinationLocationId"
-														value={formik.values.destinationLocationId}
-														onChange={formik.handleChange}
-														onBlur={formik.handleBlur}
-													>
-                          {isLocationLoading ? (
-                                <MenuItem disabled>
-                                  <CircularProgress size={20} color="inherit" />
-                                  <span style={{ marginLeft: "10px" }}>Loading...</span>
-                                </MenuItem>
-                              ) : (
-                                getAllLocations?.map((location: Location) => (
-                                  <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                                    <Tooltip
-                                      title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                      placement="right"
-                                    >
-                                      <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                                    </Tooltip>
-                                  </MenuItem>
-                                ))
-                              )}
-													</Select>
-													{formik.touched.destinationLocationId && formik.errors.destinationLocationId && (
-														<FormHelperText>{formik.errors.destinationLocationId}</FormHelperText>
-													)}
-												</FormControl>
-									</Grid>
+                        <MenuItem disabled>
+                          <CircularProgress size={20} color="inherit" />
+                          <span style={{ marginLeft: "10px" }}>Loading...</span>
+                        </MenuItem>
+                      ) : (
+                        getAllLocations?.map((location: Location) => (
+                          <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                            <Tooltip
+                              title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                              placement="right"
+                            >
+                              <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                            </Tooltip>
+                          </MenuItem>
+                        ))
+                      )}
+                    </Select>
+                    {formik.touched.sourceLocationId && formik.errors.sourceLocationId && (
+                      <FormHelperText>{formik.errors.sourceLocationId}</FormHelperText>
+                    )}
+                  </FormControl>
                 </Grid>
-              </Box>
+                <Grid item xs={12} sm={6} md={2.4}>
+                  <FormControl
+                    fullWidth id='destinationLocationId'
+                    size="small"
+                    error={
+                      formik.touched.destinationLocationId && Boolean(formik.errors.destinationLocationId)
+                    }
+                  >
+                    <InputLabel>Destination Location ID</InputLabel>
+                    <Select
+                      label="Destination Location ID*"
+                      name="destinationLocationId"
+                      value={formik.values.destinationLocationId}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                    >
+                      {isLocationLoading ? (
+                        <MenuItem disabled>
+                          <CircularProgress size={20} color="inherit" />
+                          <span style={{ marginLeft: "10px" }}>Loading...</span>
+                        </MenuItem>
+                      ) : (
+                        getAllLocations?.map((location: Location) => (
+                          <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                            <Tooltip
+                              title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                              placement="right"
+                            >
+                              <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                            </Tooltip>
+                          </MenuItem>
+                        ))
+                      )}
+                    </Select>
+                    {formik.touched.destinationLocationId && formik.errors.destinationLocationId && (
+                      <FormHelperText>{formik.errors.destinationLocationId}</FormHelperText>
+                    )}
+                  </FormControl>
+                </Grid>
+              </Grid>
+            </Box>
 
-              {/* Transport Data */}
-              <Box sx={{ marginBottom: 3 }}>
-                <h3>2. Transport Data</h3>
-                <Grid container spacing={2}>
-                  {/* <Grid item xs={12} sm={6} md={2.4}>
+            {/* Transport Data */}
+            <Box sx={{ marginBottom: 3 }}>
+              <h3>2. Transport Data</h3>
+              <Grid container spacing={2}>
+                {/* <Grid item xs={12} sm={6} md={2.4}>
               <TextField
                 fullWidth
                 id="vehicleType"
@@ -538,25 +530,25 @@ const rows = data?.lanes.map((lane:Lane) => ({
                 size="small"
               />
             </Grid> */}
-                  <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      select
-                      fullWidth
-                      label="Vehicle Type"
-                      name="vehicleType"
-                      value={formik.values.vehicleType}
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      error={formik.touched.vehicleType && Boolean(formik.errors.vehicleType)}
-                      helperText={formik.touched.vehicleType && formik.errors.vehicleType}
-                      size="small"
-                    >
-                      <MenuItem value="Truck">Truck</MenuItem>
-                      <MenuItem value="Trailer">Trailer</MenuItem>
-                      <MenuItem value="Container">Container</MenuItem>
-                    </TextField>
-                  </Grid>
-                  {/* <Grid item xs={12} sm={6} md={2.4}>
+                <Grid item xs={12} sm={6} md={2.4}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Vehicle Type"
+                    name="vehicleType"
+                    value={formik.values.vehicleType}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    error={formik.touched.vehicleType && Boolean(formik.errors.vehicleType)}
+                    helperText={formik.touched.vehicleType && formik.errors.vehicleType}
+                    size="small"
+                  >
+                    <MenuItem value="Truck">Truck</MenuItem>
+                    <MenuItem value="Trailer">Trailer</MenuItem>
+                    <MenuItem value="Container">Container</MenuItem>
+                  </TextField>
+                </Grid>
+                {/* <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth 
                       id='transportStartDate'
@@ -578,33 +570,33 @@ const rows = data?.lanes.map((lane:Lane) => ({
                       InputLabelProps={{ shrink: true }}
                           />
                   </Grid> */}
-      <Grid item xs={12} sm={6} md={2.4}>
-  <TextField
-    fullWidth
-    id="transportStartDate"
-    size="small"
-    label="Start Date*"
-    name="transportStartDate"
-    type="date"
-    value={
-      formik.values.transportStartDate
-        ? formik.values.transportStartDate.split("-").reverse().join("-") // Convert DD-MM-YYYY → YYYY-MM-DD for display
-        : ""
-    }
-    onChange={(e) => {
-      const selectedDate = e.target.value;
-      const formattedDate = selectedDate.split("-").reverse().join("-"); // Convert to DD-MM-YYYY
-      formik.setFieldValue("transportStartDate", formattedDate); // Store as DD-MM-YYYY
-    }}
-    onBlur={formik.handleBlur}
-    error={formik.touched.transportStartDate && Boolean(formik.errors.transportStartDate)}
-    helperText={formik.touched.transportStartDate && formik.errors.transportStartDate}
-    InputLabelProps={{ shrink: true }}
-  />
-</Grid>
+                <Grid item xs={12} sm={6} md={2.4}>
+                  <TextField
+                    fullWidth
+                    id="transportStartDate"
+                    size="small"
+                    label="Start Date*"
+                    name="transportStartDate"
+                    type="date"
+                    value={
+                      formik.values.transportStartDate
+                        ? formik.values.transportStartDate.split("-").reverse().join("-") // Convert DD-MM-YYYY → YYYY-MM-DD for display
+                        : ""
+                    }
+                    onChange={(e) => {
+                      const selectedDate = e.target.value;
+                      const formattedDate = selectedDate.split("-").reverse().join("-"); // Convert to DD-MM-YYYY
+                      formik.setFieldValue("transportStartDate", formattedDate); // Store as DD-MM-YYYY
+                    }}
+                    onBlur={formik.handleBlur}
+                    error={formik.touched.transportStartDate && Boolean(formik.errors.transportStartDate)}
+                    helperText={formik.touched.transportStartDate && formik.errors.transportStartDate}
+                    InputLabelProps={{ shrink: true }}
+                  />
+                </Grid>
 
-                
-                  {/* <Grid item xs={12} sm={6} md={2.4}>
+
+                {/* <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth
                       id="transportEndDate"
@@ -619,29 +611,30 @@ const rows = data?.lanes.map((lane:Lane) => ({
                       InputLabelProps={{ shrink: true }}
                     />
                   </Grid> */}
-                    <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth 
-                      id='transportEndDate'
-                      size="small"
-                      label="End Date*"
-                      name="transportEndDate"
-                      type="date"
-                      value={formik.values.transportEndDate
-                              ? formik.values.transportEndDate.split('-').reverse().join('-'): ''}
-                      onChange={(e) => {const selectedDate = e.target.value;
-                                        const formattedDate = selectedDate.split('-')
-                                          .reverse()
-                                          .join('-');
-                                        formik.handleChange({ target: { name: 'transportEndDate', value: formattedDate } });
-                                  }}
-                      onBlur={formik.handleBlur}
-                      error={formik.touched.transportEndDate && Boolean(formik.errors.transportEndDate)}
-                      helperText={formik.touched.transportEndDate && formik.errors.transportEndDate}
-                      InputLabelProps={{ shrink: true }}
-                          />
-                  </Grid>
-                  {/* <Grid item xs={12} sm={6} md={2.4}>
+                <Grid item xs={12} sm={6} md={2.4}>
+                  <TextField
+                    fullWidth
+                    id='transportEndDate'
+                    size="small"
+                    label="End Date*"
+                    name="transportEndDate"
+                    type="date"
+                    value={formik.values.transportEndDate
+                      ? formik.values.transportEndDate.split('-').reverse().join('-') : ''}
+                    onChange={(e) => {
+                      const selectedDate = e.target.value;
+                      const formattedDate = selectedDate.split('-')
+                        .reverse()
+                        .join('-');
+                      formik.handleChange({ target: { name: 'transportEndDate', value: formattedDate } });
+                    }}
+                    onBlur={formik.handleBlur}
+                    error={formik.touched.transportEndDate && Boolean(formik.errors.transportEndDate)}
+                    helperText={formik.touched.transportEndDate && formik.errors.transportEndDate}
+                    InputLabelProps={{ shrink: true }}
+                  />
+                </Grid>
+                {/* <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth
                       id="transportDistance"
@@ -654,70 +647,70 @@ const rows = data?.lanes.map((lane:Lane) => ({
                       size="small"
                     />
                   </Grid> */}
-                  <Grid item xs={12} sm={6} md={1.6}>
-                                          <TextField
-                                            fullWidth
-                                            id="transportDistance"
-                                            name="transportDistance"
-                                            label="Transport Distance* "
-                                            type="number"
-                                            value={formik.values.transportDistance}
-                                            onChange={formik.handleChange}
-                                            onBlur={formik.handleBlur}
-                                            error={formik.touched.transportDistance && Boolean(formik.errors.transportDistance)}
-                                            helperText={formik.touched.transportDistance && formik.errors.transportDistance}
-                                            size="small"
-                                          />
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={0.8}>
-                                          <TextField
-                                            fullWidth name="transportDistanceUnits"
-                                            select onChange={formik.handleChange}
-                                            onBlur={formik.handleBlur}
-                                            value={formik.values.transportDistanceUnits}
-                                            size="small"
-                                          >
-                                            {unitsofMeasurement.map((unit:string) => (
-                                              <MenuItem key={unit} value={unit}>
-                                                {unit}
-                                              </MenuItem>
-                                            ))}
-                                          </TextField>
-                  </Grid>
+                <Grid item xs={12} sm={6} md={1.6}>
+                  <TextField
+                    fullWidth
+                    id="transportDistance"
+                    name="transportDistance"
+                    label="Transport Distance* "
+                    type="number"
+                    value={formik.values.transportDistance}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    error={formik.touched.transportDistance && Boolean(formik.errors.transportDistance)}
+                    helperText={formik.touched.transportDistance && formik.errors.transportDistance}
+                    size="small"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={0.8}>
+                  <TextField
+                    fullWidth name="transportDistanceUnits"
+                    select onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    value={formik.values.transportDistanceUnits}
+                    size="small"
+                  >
+                    {unitsofMeasurement.map((unit: string) => (
+                      <MenuItem key={unit} value={unit}>
+                        {unit}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
 
 
-                    <Grid item xs={12} sm={6} md={1.6}>
-                                          <TextField
-                                            fullWidth
-                                            id="transportDuration"
-                                            name="transportDuration"
-                                            label="Transport Duration* "
-                                            type="number"
-                                            value={formik.values.transportDuration}
-                                            onChange={formik.handleChange}
-                                            onBlur={formik.handleBlur}
-                                            error={formik.touched.transportDuration && Boolean(formik.errors.transportDuration)}
-                                            helperText={formik.touched.transportDuration && formik.errors.transportDuration}
-                                            size="small"
-                                          />
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={0.8}>
-                                          <TextField
-                                            fullWidth name="transportDurationUnits"
-                                            select onChange={formik.handleChange}
-                                            onBlur={formik.handleBlur}
-                                            value={formik.values.transportDurationUnits}
-                                            size="small"
-                                          >
-                                            {unitsofMeasurement.map((unit:string) => (
-                                              <MenuItem key={unit} value={unit}>
-                                                {unit}
-                                              </MenuItem>
-                                            ))}
-                                          </TextField>
-                    </Grid>
+                <Grid item xs={12} sm={6} md={1.6}>
+                  <TextField
+                    fullWidth
+                    id="transportDuration"
+                    name="transportDuration"
+                    label="Transport Duration* "
+                    type="number"
+                    value={formik.values.transportDuration}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    error={formik.touched.transportDuration && Boolean(formik.errors.transportDuration)}
+                    helperText={formik.touched.transportDuration && formik.errors.transportDuration}
+                    size="small"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={0.8}>
+                  <TextField
+                    fullWidth name="transportDurationUnits"
+                    select onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    value={formik.values.transportDurationUnits}
+                    size="small"
+                  >
+                    {unitsofMeasurement.map((unit: string) => (
+                      <MenuItem key={unit} value={unit}>
+                        {unit}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
 
-                  {/* <Grid item xs={12} sm={6} md={2.4}>
+                {/* <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth
                       id="transportCost"
@@ -731,43 +724,43 @@ const rows = data?.lanes.map((lane:Lane) => ({
                     />
                   </Grid> */}
 
-                    <Grid item xs={12} sm={6} md={1.6}>
-                                          <TextField
-                                            fullWidth
-                                            id="transportCost"
-                                            name="transportCost"
-                                            label="Transport Cost* "
-                                            type="number"
-                                            value={formik.values.transportCost}
-                                            onChange={formik.handleChange}
-                                            onBlur={formik.handleBlur}
-                                            error={formik.touched.transportCost && Boolean(formik.errors.transportCost)}
-                                            helperText={formik.touched.transportCost && formik.errors.transportCost}
-                                            size="small"
-                                          />
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={0.8}>
-                                          <TextField
-                                            fullWidth name="transportCostUnits"
-                                            select onChange={formik.handleChange}
-                                            onBlur={formik.handleBlur}
-                                            value={formik.values.transportCostUnits}
-                                            size="small"
-                                          >
-                                            {unitsofMeasurement.map((unit:string) => (
-                                              <MenuItem key={unit} value={unit}>
-                                                {unit}
-                                              </MenuItem>
-                                            ))}
-                                          </TextField>
-                    </Grid>
-
+                <Grid item xs={12} sm={6} md={1.6}>
+                  <TextField
+                    fullWidth
+                    id="transportCost"
+                    name="transportCost"
+                    label="Transport Cost* "
+                    type="number"
+                    value={formik.values.transportCost}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    error={formik.touched.transportCost && Boolean(formik.errors.transportCost)}
+                    helperText={formik.touched.transportCost && formik.errors.transportCost}
+                    size="small"
+                  />
                 </Grid>
-              </Box>
+                <Grid item xs={12} sm={6} md={0.8}>
+                  <TextField
+                    fullWidth name="transportCostUnits"
+                    select onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    value={formik.values.transportCostUnits}
+                    size="small"
+                  >
+                    {unitsofMeasurement.map((unit: string) => (
+                      <MenuItem key={unit} value={unit}>
+                        {unit}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
 
-              {/* Carrier Data */}
+              </Grid>
+            </Box>
 
-              {/* <Box sx={{ marginBottom: 3 }}>
+            {/* Carrier Data */}
+
+            {/* <Box sx={{ marginBottom: 3 }}>
                 <h3>3. Carrier Data</h3>
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6} md={2.4}>
@@ -857,25 +850,25 @@ const rows = data?.lanes.map((lane:Lane) => ({
                 </Grid>
               </Box> */}
 
-              {/* Submit Button */}
-              <Box sx={{ textAlign: 'center', marginTop: 3 }}>
-                <Button type="submit" variant="contained" color="primary">
-                   {isEditing ? "Update lane": "Create lane"}
+            {/* Submit Button */}
+            <Box sx={{ textAlign: 'center', marginTop: 3 }}>
+              <Button type="submit" variant="contained" color="primary">
+                {isEditing ? "Update lane" : "Create lane"}
               </Button>
               <Button
-                    variant="outlined"
-                    color="secondary"
-                    onClick={() => {
-                    formik.resetForm()
-                    setIsEditing(false);
-                    setEditRow(null);
-                    }}
+                variant="outlined"
+                color="secondary"
+                onClick={() => {
+                  formik.resetForm()
+                  setIsEditing(false);
+                  setEditRow(null);
+                }}
                 style={{ marginLeft: "10px" }}
-                                                >
-                  Reset
-                </Button>
-              </Box>
-      
+              >
+                Reset
+              </Button>
+            </Box>
+
           </form>
         </Box>
       </Collapse>
@@ -896,13 +889,13 @@ const rows = data?.lanes.map((lane:Lane) => ({
           <DataGridSkeletonLoader columns={columns} />
         ) : (
           <DataGridComponent
-                          columns={columns}
-                          rows={rows}
-                          isLoading={isLoading}
-                          paginationModel={paginationModel}
-                          activeEntity='lanes'
-                          onPaginationModelChange={handlePaginationModelChange}
-                        />
+            columns={columns}
+            rows={rows}
+            isLoading={isLoading}
+            paginationModel={paginationModel}
+            activeEntity='lanes'
+            onPaginationModelChange={handlePaginationModelChange}
+          />
         )}
       </div>
     </>

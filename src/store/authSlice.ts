@@ -142,11 +142,9 @@ export const authSlice = createSlice({
       state.unitsofMeasurement = action.payload;
     },
     setSelectedPackages: (state, action: PayloadAction<Array<Package>>) => {
-      console.log("action.payload: ", action.payload);
-      state.selectedPackages = action.payload; // Update selected packages
+      state.selectedPackages = action.payload;
     },
     setCreateOrderDesination: (state, action: PayloadAction<string>) => {
-      console.log("source location ", action.payload);
       state.createOrderDesination = action.payload;
     },
     setPackageShipFrom: (state, action: PayloadAction<IShipFrom | null>) => {
@@ -160,7 +158,6 @@ export const authSlice = createSlice({
     },
 
     setProductsList: (state, action: PayloadAction<Array<IProductDetail>>) => {
-      console.log("Updating package details:", action.payload);
       state.packagesDetails = action.payload;
     },
     setPackageBillTo: (state, action: PayloadAction<IShipFrom | null>) => {

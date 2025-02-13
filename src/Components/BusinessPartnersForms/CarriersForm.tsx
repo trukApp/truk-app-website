@@ -20,7 +20,7 @@ import { DataGridComponent } from '../GridComponent';
 import { GridColDef, GridPaginationModel } from '@mui/x-data-grid';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { useGetCarrierMasterQuery,usePostCarrierMasterMutation,useEditCarrierMasterMutation,useDeleteCarrierMasterMutation, useGetLocationMasterQuery, useGetLanesMasterQuery } from '@/api/apiSlice';
+import { useGetCarrierMasterQuery, usePostCarrierMasterMutation, useEditCarrierMasterMutation, useDeleteCarrierMasterMutation, useGetLocationMasterQuery, useGetLanesMasterQuery } from '@/api/apiSlice';
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MassUpload from '../MassUpload/MassUpload';
@@ -28,20 +28,20 @@ import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 import { Location } from '../MasterDataComponents/Locations';
 import { Lane } from '../MasterDataComponents/Lanes';
-interface CarrierFormFE  {
+interface CarrierFormFE {
     id: string;
-        carrierId: string,
-        name: string,
-        address: string,
-        contactPerson: string,
-        contactNumber: string,
-        emailId: string,
-        vehicleTypes: string[],
-        locationIds: string[],
-        laneIds: string[],
-        deviceDetails: string,
-        enrollSpotAuction: boolean,
-        preferredCarrier: boolean,
+    carrierId: string,
+    name: string,
+    address: string,
+    contactPerson: string,
+    contactNumber: string,
+    emailId: string,
+    vehicleTypes: string[],
+    locationIds: string[],
+    laneIds: string[],
+    deviceDetails: string,
+    enrollSpotAuction: boolean,
+    preferredCarrier: boolean,
 };
 export interface CarrierFormBE {
     carrier_loc_of_operation: string[];
@@ -57,78 +57,73 @@ export interface CarrierFormBE {
     carrier_ID: string;
     cr_id: string;
     carrier_network_portal: number;
-    }
+}
 
 const CarrierForm: React.FC = () => {
-    const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
-        const [snackbarOpen, setSnackbarOpen] = useState(false);
-        const [snackbarMessage, setSnackbarMessage] = useState("");
-        const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
+    const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10, });
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const [showForm, setShowForm] = useState(false);
-          const [isEditing, setIsEditing] = useState(false);
-      const [editRow,setEditRow] = useState<CarrierFormFE | null>(null); ;
-      const { data, error,isLoading } = useGetCarrierMasterQuery({page: paginationModel.page + 1, limit: paginationModel.pageSize})
-      const [postCarrier,{isLoading:postCarrierLoading}] = usePostCarrierMasterMutation()
-      const [editCarrier,{isLoading:editCarrierLoading}] = useEditCarrierMasterMutation()
-    const [deleteCarrier,{isLoading:deleteCarrierLoading}] = useDeleteCarrierMasterMutation()
-    const { data: locationsData,isLoading:isLocationLoading } = useGetLocationMasterQuery({})
-     const { data:lanesData } = useGetLanesMasterQuery([]);
-    
-    
+    const [isEditing, setIsEditing] = useState(false);
+    const [editRow, setEditRow] = useState<CarrierFormFE | null>(null);;
+    const { data, error, isLoading } = useGetCarrierMasterQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize })
+    const [postCarrier, { isLoading: postCarrierLoading }] = usePostCarrierMasterMutation()
+    const [editCarrier, { isLoading: editCarrierLoading }] = useEditCarrierMasterMutation()
+    const [deleteCarrier, { isLoading: deleteCarrierLoading }] = useDeleteCarrierMasterMutation()
+    const { data: locationsData, isLoading: isLocationLoading } = useGetLocationMasterQuery({})
+    const { data: lanesData } = useGetLanesMasterQuery([]);
+
+
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
     const getAllLanes = lanesData?.lanes.length > 0 ? lanesData?.lanes : []
-    console.log("get all lanes :", getAllLanes)
-     console.log('carrier data :', data?.carriers)
-  if (error) {
-    console.log("err while getting carrier info :", error)
+    if (error) {
+        console.log("err while getting carrier info :", error)
     }
 
 
-const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
-    setPaginationModel(newPaginationModel);
+    const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
+        setPaginationModel(newPaginationModel);
     };
-const vehicleTypeOptions = ['Truck', 'Van', 'Container', 'Trailer'];
-  const handleEdit = (row: CarrierFormFE) => {
-    console.log("Edit row:", row);
-    setShowForm(true)
-    setIsEditing(true)
-    setEditRow(row)
+    const vehicleTypeOptions = ['Truck', 'Van', 'Container', 'Trailer'];
+    const handleEdit = (row: CarrierFormFE) => {
+        setShowForm(true)
+        setIsEditing(true)
+        setEditRow(row)
     };
 
-const handleDelete = async (row: CarrierFormFE) => {
-  const packageId = row?.id;
-  if (!packageId) {
-    console.error("Row ID is missing");
-    setSnackbarMessage("Error: Vehicle ID is missing!");
-    setSnackbarSeverity("error");
-    setSnackbarOpen(true);
-    return;
-  }
+    const handleDelete = async (row: CarrierFormFE) => {
+        const packageId = row?.id;
+        if (!packageId) {
+            console.error("Row ID is missing");
+            setSnackbarMessage("Error: Vehicle ID is missing!");
+            setSnackbarSeverity("error");
+            setSnackbarOpen(true);
+            return;
+        }
 
-  const confirmed = window.confirm("Are you sure you want to delete this vehicle? This action canot be undone.");
-  if (!confirmed) {
-    console.log("Delete canceled by user.");
-    return;
-  }
+        const confirmed = window.confirm("Are you sure you want to delete this vehicle? This action canot be undone.");
+        if (!confirmed) {
+            return;
+        }
 
-  try {
-    const response = await deleteCarrier(packageId);
-    console.log("Delete response:", response);
-    if (response.data.deleted_record) {
-          setSnackbarMessage(`Carrier ID ${response.data.deleted_record} deleted successfully!`);
-          setSnackbarSeverity("info");
-          setSnackbarOpen(true);
-      }
-  } catch (error) {
-    console.error("Error deleting vehicle:", error);
-    setSnackbarMessage("Failed to delete vehicle. Please try again.");
-    setSnackbarSeverity("error");
-    setSnackbarOpen(true);
-  }
-};
+        try {
+            const response = await deleteCarrier(packageId);
+            if (response.data.deleted_record) {
+                setSnackbarMessage(`Carrier ID ${response.data.deleted_record} deleted successfully!`);
+                setSnackbarSeverity("info");
+                setSnackbarOpen(true);
+            }
+        } catch (error) {
+            console.error("Error deleting vehicle:", error);
+            setSnackbarMessage("Failed to delete vehicle. Please try again.");
+            setSnackbarSeverity("error");
+            setSnackbarOpen(true);
+        }
+    };
 
     const initialCarrierValues = {
-        id:'',
+        id: '',
         carrierId: '',
         name: '',
         address: '',
@@ -144,25 +139,25 @@ const handleDelete = async (row: CarrierFormFE) => {
     };
     const [initialValues, setInitialValues] = useState(initialCarrierValues)
 
-        useEffect(() => {
-            if (editRow) {
-                setInitialValues(() => ({
-                    id: editRow?.id || '',
-                    carrierId: editRow?.carrierId || '',
-                    name: editRow?.name || '',
-                    address: editRow?.address || '',
-                    contactPerson: editRow?.contactPerson || '',
-                    contactNumber: editRow?.contactNumber || '',
-                    emailId: editRow?.emailId || '',
-                    vehicleTypes: editRow?.vehicleTypes || [],
-                    locationIds: editRow?.locationIds || [],
-                    laneIds: editRow?.laneIds || [],
-                    deviceDetails: editRow?.deviceDetails || '',
-                    enrollSpotAuction: editRow?.enrollSpotAuction || false,
-                    preferredCarrier: editRow?.preferredCarrier || false ,
-                }))
-    }
-}, [editRow]);
+    useEffect(() => {
+        if (editRow) {
+            setInitialValues(() => ({
+                id: editRow?.id || '',
+                carrierId: editRow?.carrierId || '',
+                name: editRow?.name || '',
+                address: editRow?.address || '',
+                contactPerson: editRow?.contactPerson || '',
+                contactNumber: editRow?.contactNumber || '',
+                emailId: editRow?.emailId || '',
+                vehicleTypes: editRow?.vehicleTypes || [],
+                locationIds: editRow?.locationIds || [],
+                laneIds: editRow?.laneIds || [],
+                deviceDetails: editRow?.deviceDetails || '',
+                enrollSpotAuction: editRow?.enrollSpotAuction || false,
+                preferredCarrier: editRow?.preferredCarrier || false,
+            }))
+        }
+    }, [editRow]);
 
     const carrierValidationSchema = Yup.object({
         name: Yup.string().required('Name is required'),
@@ -179,7 +174,6 @@ const handleDelete = async (row: CarrierFormFE) => {
     });
 
     const handleCarrierSubmit = async (values: CarrierFormFE) => {
-        console.log('Carrier Form Submitted:', values);
         try {
             const body = {
                 carriers: [
@@ -193,41 +187,37 @@ const handleDelete = async (row: CarrierFormFE) => {
                         },
                         carrier_network_portal: `${values.preferredCarrier ? 1 : 0}`,
                         vehicle_types_handling: values.vehicleTypes,
-                        carrier_loc_of_operation:values.locationIds,
+                        carrier_loc_of_operation: values.locationIds,
                         carrier_lanes: values.laneIds
                     },
                 ]
-                    }
-                    const editBody=                 {
-                        carrier_name: values.name,
-                        carrier_address: values.address,
-                        carrier_correspondence: {
-                            name: values.contactPerson,
-                            email: values.emailId,
-                            phone: values.contactNumber
-                        },
-                        carrier_network_portal: `${values.preferredCarrier ? 1 : 0}`,
-                        vehicle_types_handling: values.vehicleTypes,
-                        carrier_loc_of_operation:values.locationIds,
-                        carrier_lanes: values.laneIds
-                    }
-            console.log("carrier body: ", body)
+            }
+            const editBody = {
+                carrier_name: values.name,
+                carrier_address: values.address,
+                carrier_correspondence: {
+                    name: values.contactPerson,
+                    email: values.emailId,
+                    phone: values.contactNumber
+                },
+                carrier_network_portal: `${values.preferredCarrier ? 1 : 0}`,
+                vehicle_types_handling: values.vehicleTypes,
+                carrier_loc_of_operation: values.locationIds,
+                carrier_lanes: values.laneIds
+            }
             if (isEditing && editRow) {
-                console.log('edit body is :', editBody)
                 const carrierId = editRow.id
-                const response = await editCarrier({body:editBody, carrierId}).unwrap()
-                console.log("edit response is ", response)
-                 if (response?.updated_record) {
-                  setSnackbarMessage(`Carrier ID ${response.updated_record} updated successfully!`);
-                  setInitialValues(initialCarrierValues)
-                  setShowForm(false)
-                  setIsEditing(false)
-                  setSnackbarSeverity("success");
-                  setSnackbarOpen(true);
+                const response = await editCarrier({ body: editBody, carrierId }).unwrap()
+                if (response?.updated_record) {
+                    setSnackbarMessage(`Carrier ID ${response.updated_record} updated successfully!`);
+                    setInitialValues(initialCarrierValues)
+                    setShowForm(false)
+                    setIsEditing(false)
+                    setSnackbarSeverity("success");
+                    setSnackbarOpen(true);
                 }
             }
             else {
-                console.log("post create carrier ",body)
                 const response = await postCarrier(body).unwrap();
                 if (response?.created_records) {
                     setSnackbarMessage(`Carrier ID ${response.created_records[0]} created successfully!`);
@@ -236,17 +226,17 @@ const handleDelete = async (row: CarrierFormFE) => {
                     setIsEditing(false)
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
-                  }
+                }
 
             }
         } catch (error) {
             console.error('API Error:', error);
-                setSnackbarMessage("Something went wrong! Please try again");
-                setSnackbarSeverity("error");
-                setSnackbarOpen(true);
+            setSnackbarMessage("Something went wrong! Please try again");
+            setSnackbarSeverity("error");
+            setSnackbarOpen(true);
         }
     };
-    const rows = data?.carriers.map((carrier:CarrierFormBE) => ({
+    const rows = data?.carriers.map((carrier: CarrierFormBE) => ({
         id: carrier.cr_id,
         carrierId: carrier.carrier_ID,
         name: carrier.carrier_name,
@@ -261,59 +251,59 @@ const handleDelete = async (row: CarrierFormFE) => {
         // enrollSpotAuction: carrier.enrollSpotAuction,
         preferredCarrier: carrier.carrier_network_portal,
     }));
-    
+
     const columns: GridColDef[] = [
-    { field: 'carrierId', headerName: 'Carrier ID', width:150 },
-    { field: 'name', headerName: 'Name', width:150 },
-    { field: 'address', headerName: 'Address', width:150 },
-    { field: 'contactPerson', headerName: 'Contact Person', width:150 },
-    { field: 'contactNumber', headerName: 'Contact Number', width:150 },
-    { field: 'emailId', headerName: 'Email ID', width:150 },
-    { field: 'vehicleTypes', headerName: 'Vehicle Types', width:150 },
-    { field: 'locationIds', headerName: 'Locations', width:150 },
-    { field: 'laneIds', headerName: 'Lane IDs', width:150 },
-    // { field: 'deviceDetails', headerName: 'Device Details', flex: 2 },
-    // {
-    //     field: 'enrollSpotAuction',
-    //     headerName: 'Spot Auction',
-    //     flex: 1,
-    //     renderCell: (params) => params.value ? 'Yes' : 'No'
-    // },
-    {
-        field: 'preferredCarrier',
-        headerName: 'Is enrolled on carrier network portal',
-        flex: 1,
-        renderCell: (params) => params.value ? 'Yes' : 'No'
-    },
-    {
-      field: "actions",
-      headerName: "Actions",
-      width: 100,
-      renderCell: (params) => (
-        <div>
-          <IconButton
-            color="primary"
-            onClick={() => handleEdit(params.row)}
-          >
-            <EditIcon />
-          </IconButton>
-          <IconButton
-            color="error"
-            onClick={() => handleDelete(params.row)}
-          >
-            <DeleteIcon />
-          </IconButton>
-        </div>
-      ),
-    },
-];
+        { field: 'carrierId', headerName: 'Carrier ID', width: 150 },
+        { field: 'name', headerName: 'Name', width: 150 },
+        { field: 'address', headerName: 'Address', width: 150 },
+        { field: 'contactPerson', headerName: 'Contact Person', width: 150 },
+        { field: 'contactNumber', headerName: 'Contact Number', width: 150 },
+        { field: 'emailId', headerName: 'Email ID', width: 150 },
+        { field: 'vehicleTypes', headerName: 'Vehicle Types', width: 150 },
+        { field: 'locationIds', headerName: 'Locations', width: 150 },
+        { field: 'laneIds', headerName: 'Lane IDs', width: 150 },
+        // { field: 'deviceDetails', headerName: 'Device Details', flex: 2 },
+        // {
+        //     field: 'enrollSpotAuction',
+        //     headerName: 'Spot Auction',
+        //     flex: 1,
+        //     renderCell: (params) => params.value ? 'Yes' : 'No'
+        // },
+        {
+            field: 'preferredCarrier',
+            headerName: 'Is enrolled on carrier network portal',
+            flex: 1,
+            renderCell: (params) => params.value ? 'Yes' : 'No'
+        },
+        {
+            field: "actions",
+            headerName: "Actions",
+            width: 100,
+            renderCell: (params) => (
+                <div>
+                    <IconButton
+                        color="primary"
+                        onClick={() => handleEdit(params.row)}
+                    >
+                        <EditIcon />
+                    </IconButton>
+                    <IconButton
+                        color="error"
+                        onClick={() => handleDelete(params.row)}
+                    >
+                        <DeleteIcon />
+                    </IconButton>
+                </div>
+            ),
+        },
+    ];
 
     return (
         <div className={styles.formsMainContainer}>
             <Backdrop
                 sx={{
-                color: "#ffffff",
-                zIndex: (theme) => theme.zIndex.drawer + 1,
+                    color: "#ffffff",
+                    zIndex: (theme) => theme.zIndex.drawer + 1,
                 }}
                 open={postCarrierLoading || editCarrierLoading || deleteCarrierLoading}
             >
@@ -334,7 +324,7 @@ const handleDelete = async (row: CarrierFormFE) => {
                     Create Carrier
                     {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 4 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 4 }} />}
                 </Button>
-                <MassUpload arrayKey='carriers'/>
+                <MassUpload arrayKey='carriers' />
             </Box>
 
             <Collapse in={showForm}>
@@ -445,27 +435,27 @@ const handleDelete = async (row: CarrierFormFE) => {
                                         />
                                     </Grid> */}
                                     <Grid item xs={12} sm={6} md={4}>
-                                    <FormControl fullWidth size="small" error={touched.vehicleTypes && Boolean(errors.vehicleTypes)}>
-                                        <InputLabel>Vehicle Types Handling</InputLabel>
-                                        <Select
-                                            multiple
-                                            label="Vehicle Types Handling"
-                                            name="vehicleTypes"
-                                            value={values.vehicleTypes}
-                                            onChange={handleChange} // Formik's change handler
-                                            onBlur={handleBlur}     // Formik's blur handler
-                                            renderValue={(selected) => (selected as string[]).join(', ')} // Display selected items as comma-separated list
-                                        >
-                                            {vehicleTypeOptions.map((type) => (
-                                                <MenuItem key={type} value={type}>
-                                                    {type}
-                                                </MenuItem>
-                                            ))}
-                                        </Select>
-                                        {touched.vehicleTypes && errors.vehicleTypes && (
-                                            <FormHelperText>{errors.vehicleTypes}</FormHelperText>
-                                        )}
-                                    </FormControl>
+                                        <FormControl fullWidth size="small" error={touched.vehicleTypes && Boolean(errors.vehicleTypes)}>
+                                            <InputLabel>Vehicle Types Handling</InputLabel>
+                                            <Select
+                                                multiple
+                                                label="Vehicle Types Handling"
+                                                name="vehicleTypes"
+                                                value={values.vehicleTypes}
+                                                onChange={handleChange} // Formik's change handler
+                                                onBlur={handleBlur}     // Formik's blur handler
+                                                renderValue={(selected) => (selected as string[]).join(', ')} // Display selected items as comma-separated list
+                                            >
+                                                {vehicleTypeOptions.map((type) => (
+                                                    <MenuItem key={type} value={type}>
+                                                        {type}
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                            {touched.vehicleTypes && errors.vehicleTypes && (
+                                                <FormHelperText>{errors.vehicleTypes}</FormHelperText>
+                                            )}
+                                        </FormControl>
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={4}>
                                         {/* <TextField
@@ -479,38 +469,38 @@ const handleDelete = async (row: CarrierFormFE) => {
                                             helperText={touched.locationIds && errors.locationIds}
                                         /> */}
                                         <FormControl fullWidth size="small" error={touched.locationIds && Boolean(errors.locationIds)}>
-                                        <InputLabel>Locations of Operation (Location IDs)</InputLabel>
-                                        <Select
-                                            multiple
-                                            label="Locations of Operation (Location IDs)"
-                                            name="locationIds"
-                                            value={values.locationIds}
-                                            onChange={handleChange} // Handles updates to the selected values
-                                            onBlur={handleBlur}
-                                            renderValue={(selected) => (selected as string[]).join(', ')} // Display selected items as comma-separated
-                                        >
-                            {isLocationLoading ? (
-                                <MenuItem disabled>
-                                  <CircularProgress size={20} color="inherit" />
-                                  <span style={{ marginLeft: "10px" }}>Loading...</span>
-                                </MenuItem>
-                              ) : (
-                                getAllLocations?.map((location: Location) => (
-                                  <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                                    <Tooltip
-                                      title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                      placement="right"
-                                    >
-                                      <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                                    </Tooltip>
-                                  </MenuItem>
-                                ))
-                              )}
-                                        </Select>
-                                        {touched.locationIds && errors.locationIds && (
-                                            <FormHelperText>{errors.locationIds}</FormHelperText>
-                                        )}
-                                    </FormControl>
+                                            <InputLabel>Locations of Operation (Location IDs)</InputLabel>
+                                            <Select
+                                                multiple
+                                                label="Locations of Operation (Location IDs)"
+                                                name="locationIds"
+                                                value={values.locationIds}
+                                                onChange={handleChange} // Handles updates to the selected values
+                                                onBlur={handleBlur}
+                                                renderValue={(selected) => (selected as string[]).join(', ')} // Display selected items as comma-separated
+                                            >
+                                                {isLocationLoading ? (
+                                                    <MenuItem disabled>
+                                                        <CircularProgress size={20} color="inherit" />
+                                                        <span style={{ marginLeft: "10px" }}>Loading...</span>
+                                                    </MenuItem>
+                                                ) : (
+                                                    getAllLocations?.map((location: Location) => (
+                                                        <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                                            <Tooltip
+                                                                title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                                                placement="right"
+                                                            >
+                                                                <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                                            </Tooltip>
+                                                        </MenuItem>
+                                                    ))
+                                                )}
+                                            </Select>
+                                            {touched.locationIds && errors.locationIds && (
+                                                <FormHelperText>{errors.locationIds}</FormHelperText>
+                                            )}
+                                        </FormControl>
 
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={4}>
@@ -524,50 +514,50 @@ const handleDelete = async (row: CarrierFormFE) => {
                                             error={touched.laneIds && Boolean(errors.laneIds)}
                                             helperText={touched.laneIds && errors.laneIds}
                                         /> */}
-                                    <FormControl fullWidth size="small" error={touched.laneIds && Boolean(errors.laneIds)}>
-                                    <InputLabel>Lane IDs</InputLabel>
-                                    <Select
-                                        multiple
-                                        label="Lane IDs"
-                                        name="laneIds"
-                                        value={values.laneIds}
-                                        onChange={handleChange} // Formik's handler for field change
-                                        onBlur={handleBlur}     // Formik's handler for field blur
-                                        renderValue={(selected) => (selected as string[]).join(', ')} // Display selected lanes as comma-separated
-                                    >
-                                        {/* {getAllLanes.map((lane: { lane_ID: string }) => (
+                                        <FormControl fullWidth size="small" error={touched.laneIds && Boolean(errors.laneIds)}>
+                                            <InputLabel>Lane IDs</InputLabel>
+                                            <Select
+                                                multiple
+                                                label="Lane IDs"
+                                                name="laneIds"
+                                                value={values.laneIds}
+                                                onChange={handleChange} // Formik's handler for field change
+                                                onBlur={handleBlur}     // Formik's handler for field blur
+                                                renderValue={(selected) => (selected as string[]).join(', ')} // Display selected lanes as comma-separated
+                                            >
+                                                {/* {getAllLanes.map((lane: { lane_ID: string }) => (
                                             <MenuItem key={lane.lane_ID} value={lane.lane_ID}>
                                                 {lane.lane_ID}
                                             </MenuItem>
                                         ))} */}
-                                        {getAllLanes?.map((lane: Lane) => (
-                                            <MenuItem key={lane.lane_ID} value={String(lane.lane_ID)}>
-                                                <Tooltip
-                                                    title={`${lane.src_loc_desc}, ${lane.src_city}, ${lane.src_state} to ${lane.des_loc_desc}, ${lane.des_city}, ${lane.des_state} `}
-                                                    placement="right">
-                                                    <span style={{ flex: 1 }}>{lane.lane_ID}</span>
-                                                </Tooltip>
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                    {touched.laneIds && errors.laneIds && (
-                                        <FormHelperText>{errors.laneIds}</FormHelperText>
-                                    )}
-                                </FormControl>
+                                                {getAllLanes?.map((lane: Lane) => (
+                                                    <MenuItem key={lane.lane_ID} value={String(lane.lane_ID)}>
+                                                        <Tooltip
+                                                            title={`${lane.src_loc_desc}, ${lane.src_city}, ${lane.src_state} to ${lane.des_loc_desc}, ${lane.des_city}, ${lane.des_state} `}
+                                                            placement="right">
+                                                            <span style={{ flex: 1 }}>{lane.lane_ID}</span>
+                                                        </Tooltip>
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                            {touched.laneIds && errors.laneIds && (
+                                                <FormHelperText>{errors.laneIds}</FormHelperText>
+                                            )}
+                                        </FormControl>
 
                                     </Grid>
                                 </Grid>
-                                             <Grid item xs={12} sm={6} md={4}>
-                                        <FormControlLabel
-                                            control={
-                                                <Checkbox
-                                                    checked={values.preferredCarrier}
-                                                    onChange={(e) => setFieldValue('preferredCarrier', e.target.checked)}
-                                                />
-                                            }
-                                            label="Is enrolled on carrier network portal"
-                                        />
-                                    </Grid>
+                                <Grid item xs={12} sm={6} md={4}>
+                                    <FormControlLabel
+                                        control={
+                                            <Checkbox
+                                                checked={values.preferredCarrier}
+                                                onChange={(e) => setFieldValue('preferredCarrier', e.target.checked)}
+                                            />
+                                        }
+                                        label="Is enrolled on carrier network portal"
+                                    />
+                                </Grid>
 
                                 {/* <h3 className={styles.mainHeading}>Devices</h3>
                                 <Grid container spacing={2}>
@@ -615,13 +605,13 @@ const handleDelete = async (row: CarrierFormFE) => {
                                     <Button type="submit" variant="contained" color="primary">
                                         {isEditing ? "Update carrier" : "Create carrier"}
                                     </Button>
-                                        <Button variant="outlined" color="secondary"
-                                                onClick={() => {
-                                                setInitialValues(initialCarrierValues)
+                                    <Button variant="outlined" color="secondary"
+                                        onClick={() => {
+                                            setInitialValues(initialCarrierValues)
                                             setIsEditing(false)
-                                            }}
-                                            style={{ marginLeft: "10px" }}>Reset
-                                        </Button>
+                                        }}
+                                        style={{ marginLeft: "10px" }}>Reset
+                                    </Button>
                                 </Box>
                             </Form>
                         )}
@@ -630,16 +620,16 @@ const handleDelete = async (row: CarrierFormFE) => {
             </Collapse>
             <div style={{ marginTop: "40px" }}>
                 {isLoading ? (
-                <DataGridSkeletonLoader columns={columns} />
+                    <DataGridSkeletonLoader columns={columns} />
                 ) : (
                     <DataGridComponent
-                                        columns={columns}
-                                        rows={rows}
-                                        isLoading={isLoading}
-                                        paginationModel={paginationModel}
-                                        activeEntity='carriers'
-                                        onPaginationModelChange={handlePaginationModelChange}
-                                    />
+                        columns={columns}
+                        rows={rows}
+                        isLoading={isLoading}
+                        paginationModel={paginationModel}
+                        activeEntity='carriers'
+                        onPaginationModelChange={handlePaginationModelChange}
+                    />
                 )}
             </div>
         </div>

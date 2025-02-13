@@ -16,7 +16,7 @@ import {
 } from '@/api/apiSlice';
 import {
   driversColumnNames
-} from './CSVColumnNames'; 
+} from './CSVColumnNames';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 
 type EntityKey = 'drivers';
@@ -66,7 +66,7 @@ const DriverMassUpload: React.FC<MassUploadProps> = ({ arrayKey }) => {
 
   const theme = useTheme();
 
-  const [postDriverMaster, {isLoading:driverLoading}] = useDriverRegistrationMutation()
+  const [postDriverMaster, { isLoading: driverLoading }] = useDriverRegistrationMutation()
 
   // Column mappings for CSV files
   const getColumnMappings = (): ColumnMapping[] => {
@@ -80,39 +80,39 @@ const DriverMassUpload: React.FC<MassUploadProps> = ({ arrayKey }) => {
 
   // Post mapping for API calls
   const postMapping: Record<EntityKey, (data: object) => Promise<unknown>> = {
-    drivers:postDriverMaster,
+    drivers: postDriverMaster,
   };
 
 
   const mapCsvToPayload = (
-  data: ParsedRow[],
-  columnMappings: ColumnMapping[]
-): Record<string, unknown>[] => {
-  return data.map((row) => {
-    const transformedRow: Record<string, unknown> = {};
+    data: ParsedRow[],
+    columnMappings: ColumnMapping[]
+  ): Record<string, unknown>[] => {
+    return data.map((row) => {
+      const transformedRow: Record<string, unknown> = {};
 
-    columnMappings.forEach(({ displayName, key, nestedKey }) => {
-      let value: string | string[] | undefined = row[displayName]?.trim();
+      columnMappings.forEach(({ displayName, key, nestedKey }) => {
+        let value: string | string[] | undefined = row[displayName]?.trim();
 
-      // Convert specific fields into arrays
-      const arrayFields: string[] = ['vehicle_types'];
-      if (arrayFields.includes(key) && value) {
-        value = value.split(',').map((item) => item.trim());
-      }
-
-      if (nestedKey) {
-        if (typeof transformedRow[nestedKey] !== 'object' || transformedRow[nestedKey] === null) {
-          transformedRow[nestedKey] = {};
+        // Convert specific fields into arrays
+        const arrayFields: string[] = ['vehicle_types'];
+        if (arrayFields.includes(key) && value) {
+          value = value.split(',').map((item) => item.trim());
         }
-        (transformedRow[nestedKey] as Record<string, string | string[]>)[key] = value;
-      } else {
-        transformedRow[key] = value;
-      }
-    });
 
-    return transformedRow;
-  });
-};
+        if (nestedKey) {
+          if (typeof transformedRow[nestedKey] !== 'object' || transformedRow[nestedKey] === null) {
+            transformedRow[nestedKey] = {};
+          }
+          (transformedRow[nestedKey] as Record<string, string | string[]>)[key] = value;
+        } else {
+          transformedRow[key] = value;
+        }
+      });
+
+      return transformedRow;
+    });
+  };
 
   // Handle template download
   const handleDownloadTemplate = () => {
@@ -128,94 +128,92 @@ const DriverMassUpload: React.FC<MassUploadProps> = ({ arrayKey }) => {
   };
 
 
-const handleUpload = async () => {
-  if (!file) {
-    setMessage('Please select a file.');
-    return;
-  }
-
-  setIsUploading(true);
-
-  try {
-    const columnMappings = getColumnMappings();
-
-    // Fetch locations using the query
-
-
-    if (!locationMasterData || !Array.isArray(locationMasterData)) {
-      throw new Error('Failed to fetch or invalid location master data.');
+  const handleUpload = async () => {
+    if (!file) {
+      setMessage('Please select a file.');
+      return;
     }
 
-    // Parse the CSV data
-    const parsedData = await new Promise<ParsedRow[]>((resolve, reject) => {
-      Papa.parse(file, {
-        header: true,
-        skipEmptyLines: true,
-        complete: (result) => {
-          if (result.errors.length) {
-            reject(new Error(result.errors[0].message));
-          } else {
-            resolve(result.data as ParsedRow[]);
-          }
-        },
-        error: reject,
+    setIsUploading(true);
+
+    try {
+      const columnMappings = getColumnMappings();
+
+      // Fetch locations using the query
+
+
+      if (!locationMasterData || !Array.isArray(locationMasterData)) {
+        throw new Error('Failed to fetch or invalid location master data.');
+      }
+
+      // Parse the CSV data
+      const parsedData = await new Promise<ParsedRow[]>((resolve, reject) => {
+        Papa.parse(file, {
+          header: true,
+          skipEmptyLines: true,
+          complete: (result) => {
+            if (result.errors.length) {
+              reject(new Error(result.errors[0].message));
+            } else {
+              resolve(result.data as ParsedRow[]);
+            }
+          },
+          error: reject,
+        });
       });
-    });
 
-    const transformedData = mapCsvToPayload(parsedData, columnMappings);
+      const transformedData = mapCsvToPayload(parsedData, columnMappings);
 
-    // Map CSV data to payload with address resolution for drivers
-    const body = {
-      [arrayKey]: transformedData.map((item) => {
-        if (arrayKey === 'drivers') {
-          const locationId = item['locations'];
-          const matchingLocation = locationMasterData.find(
-            (location: Location) => location.loc_ID === locationId
-          );
+      // Map CSV data to payload with address resolution for drivers
+      const body = {
+        [arrayKey]: transformedData.map((item) => {
+          if (arrayKey === 'drivers') {
+            const locationId = item['locations'];
+            const matchingLocation = locationMasterData.find(
+              (location: Location) => location.loc_ID === locationId
+            );
 
-          const addressParts = [
-          matchingLocation.address_1,
-          matchingLocation.address_2,
-          matchingLocation.city,
-          matchingLocation.state,
-          matchingLocation.country,
-        ].filter(Boolean);
+            const addressParts = [
+              matchingLocation.address_1,
+              matchingLocation.address_2,
+              matchingLocation.city,
+              matchingLocation.state,
+              matchingLocation.country,
+            ].filter(Boolean);
 
-        const address = addressParts.length > 0
-          ? addressParts.join(', ')
-          : '';
+            const address = addressParts.length > 0
+              ? addressParts.join(', ')
+              : '';
 
-          return {
-            ...item,
-            locations: [locationId],
-            address,
-          };
-        }
+            return {
+              ...item,
+              locations: [locationId],
+              address,
+            };
+          }
 
-        return item;
-      }),
-    };
+          return item;
+        }),
+      };
 
-    console.log('Payload body:', body);
-    const response = (await postMapping[arrayKey](body)) as DriverRegistrationResponse;
-    console.log('response mass driver :', response.data.created_records);
-    if (response.data.created_records) {
+      const response = (await postMapping[arrayKey](body)) as DriverRegistrationResponse;
+      if (response.data.created_records) {
         setSnackbarMessage(`${response?.data?.created_records?.length} records uploaded successfully!`);
         setSnackbarSeverity("success");
         setSnackbarOpen(true);
         setIsModalOpen(false)
-    }
-    
-  } catch (error) {
+      }
+
+    } catch (error) {
       setSnackbarMessage("Something went wrong! Please try again.");
       setSnackbarSeverity("error");
-    setSnackbarOpen(true);
-    setIsModalOpen(false)
-    console.log(error)
-  } finally {
-    setIsUploading(false);
-  }
-};
+      setSnackbarOpen(true);
+      setIsModalOpen(false)
+      console.log(error)
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   return (
     <Box>
@@ -224,15 +222,15 @@ const handleUpload = async () => {
           color: "#ffffff",
           zIndex: (theme) => theme.zIndex.drawer + 1,
         }}
-        open={driverLoading }
+        open={driverLoading}
       >
         <CircularProgress color="inherit" />
       </Backdrop>
-            <SnackbarAlert
-            open={snackbarOpen}
-            message={snackbarMessage}
-            severity={snackbarSeverity}
-            onClose={() => setSnackbarOpen(false)}
+      <SnackbarAlert
+        open={snackbarOpen}
+        message={snackbarMessage}
+        severity={snackbarSeverity}
+        onClose={() => setSnackbarOpen(false)}
       />
       <Button variant="contained" onClick={() => setIsModalOpen(true)}>
         Upload CSV

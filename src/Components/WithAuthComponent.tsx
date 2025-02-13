@@ -17,8 +17,7 @@ export const withAuthComponent = (WrappedComponent: React.FC): React.FC => {
 
   const AuthCheck: React.FC = (props) => {
     const { data: session, status } = useSession();
-      const router = useRouter();
-      console.log("session from withAuth :", session)
+    const router = useRouter();
     useEffect(() => {
       if (status === 'unauthenticated') {
         router.push(`/login?callbackUrl=${encodeURIComponent(location.pathname)}`);

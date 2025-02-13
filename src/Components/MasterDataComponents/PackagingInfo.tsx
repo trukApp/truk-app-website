@@ -10,7 +10,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import styles from './MasterData.module.css';
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { useGetPackageMasterQuery,usePostPackageMasterMutation,useEditPackageMasterMutation,useDeletePackageMasterMutation } from '@/api/apiSlice';
+import { useGetPackageMasterQuery, usePostPackageMasterMutation, useEditPackageMasterMutation, useDeletePackageMasterMutation } from '@/api/apiSlice';
 import MassUpload from '../MassUpload/MassUpload';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
@@ -24,7 +24,7 @@ export interface Package {
   packaging_type_name: string;
   pac_ID: string;
   package_id: string;
-  
+
 }
 interface PackageInfo {
   id: string;
@@ -33,95 +33,87 @@ interface PackageInfo {
   packagingDimensionsUoM: string;
   packagingTypeName: string;
   packagingTypeId: string;
-  
+
 }
 
 const PackagingForm = () => {
-  const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
+  const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10, });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
   const [isEditing, setIsEditing] = useState(false);
-  const [editRow,setEditRow] = useState<PackageInfo | null>(null); ;
+  const [editRow, setEditRow] = useState<PackageInfo | null>(null);;
   const [showForm, setShowForm] = useState(false);
-  const { data, error, isLoading } = useGetPackageMasterQuery({page: paginationModel.page + 1, limit: paginationModel.pageSize})
-  const { data: allData} = useGetPackageMasterQuery({});
-  const [postPackage, {isLoading:postPackageLoading}] = usePostPackageMasterMutation()
-  const [editPackage,{isLoading:editPackageLoading}] = useEditPackageMasterMutation()
-  const [deletePackage,{isLoading:deletePackageLoading}] = useDeletePackageMasterMutation()
+  const { data, error, isLoading } = useGetPackageMasterQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize })
+  const { data: allData } = useGetPackageMasterQuery({});
+  const [postPackage, { isLoading: postPackageLoading }] = usePostPackageMasterMutation()
+  const [editPackage, { isLoading: editPackageLoading }] = useEditPackageMasterMutation()
+  const [deletePackage, { isLoading: deletePackageLoading }] = useDeletePackageMasterMutation()
   const unitsofMeasurement = useSelector((state: RootState) => state.auth.unitsofMeasurement);
-  
-  console.log('package data :', data?.packages)
   if (error) {
     console.log("err while getting package info :", error)
   }
-const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
-        setPaginationModel(newPaginationModel);
-        };
+  const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
+    setPaginationModel(newPaginationModel);
+  };
   const handleFormSubmit = async (values: PackageInfo) => {
-    console.log("form submitted locations :", values)
-
-        try {
-            const body = {
-                packages: [
-                    {
-                    packaging_type_name:values.packagingTypeName,
-                    dimensions_uom: values.packagingDimensionsUoM,
-                    dimensions: values.packagingDimensions,
-                    handling_unit_type: values.handlingUnitType
-                }
-                ]
-              }
-              const editBody = {
-                    packaging_type_name:values.packagingTypeName,
-                    dimensions_uom: values.packagingDimensionsUoM,
-                    dimensions: values.packagingDimensions,
-                    handling_unit_type: values.handlingUnitType
-                }
-              console.log("location body: ", body)
-              if (isEditing && editRow) {
-                console.log('edit body is :', editBody)
-                const packageId = editRow.id
-                const response = await editPackage({body:editBody, packageId}).unwrap()
-                console.log("edit response is ", response)
-                 if (response?.updated_record) {
-                  setSnackbarMessage(`Package ID ${response.updated_record} updated successfully!`);
-                  formik.resetForm();
-                  setShowForm(false)
-                  setIsEditing(false)
-                  setSnackbarSeverity("success");
-                  setSnackbarOpen(true);
-                }
-
-              }
-              else {
-                console.log("post create location ",body)
-                const response = await postPackage(body).unwrap();
-                if (response?.created_records) {
-                    setSnackbarMessage(`Package ID ${response.created_records[0]} created successfully!`);
-                    formik.resetForm();
-                setShowForm(false)
-                setIsEditing(false)
-                    setSnackbarSeverity("success");
-                    setSnackbarOpen(true);
-                  }
-              
-
-              }
-          
-        } catch (error) {
-          console.error('API Error:', error);
-          setIsEditing(false)
+    try {
+      const body = {
+        packages: [
+          {
+            packaging_type_name: values.packagingTypeName,
+            dimensions_uom: values.packagingDimensionsUoM,
+            dimensions: values.packagingDimensions,
+            handling_unit_type: values.handlingUnitType
+          }
+        ]
+      }
+      const editBody = {
+        packaging_type_name: values.packagingTypeName,
+        dimensions_uom: values.packagingDimensionsUoM,
+        dimensions: values.packagingDimensions,
+        handling_unit_type: values.handlingUnitType
+      }
+      if (isEditing && editRow) {
+        const packageId = editRow.id
+        const response = await editPackage({ body: editBody, packageId }).unwrap()
+        if (response?.updated_record) {
+          setSnackbarMessage(`Package ID ${response.updated_record} updated successfully!`);
+          formik.resetForm();
           setShowForm(false)
-               setSnackbarMessage("Something went wrong! please try again");
-                    setSnackbarSeverity("error");
-                    setSnackbarOpen(true);
+          setIsEditing(false)
+          setSnackbarSeverity("success");
+          setSnackbarOpen(true);
         }
+
+      }
+      else {
+        const response = await postPackage(body).unwrap();
+        if (response?.created_records) {
+          setSnackbarMessage(`Package ID ${response.created_records[0]} created successfully!`);
+          formik.resetForm();
+          setShowForm(false)
+          setIsEditing(false)
+          setSnackbarSeverity("success");
+          setSnackbarOpen(true);
+        }
+
+
+      }
+
+    } catch (error) {
+      console.error('API Error:', error);
+      setIsEditing(false)
+      setShowForm(false)
+      setSnackbarMessage("Something went wrong! please try again");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    }
 
   }
   const formik = useFormik({
     initialValues: {
-      id:'',
+      id: '',
       packagingTypeId: '', // Auto-generated, read-only
       packagingTypeName: '',
       packagingDimensionsUoM: unitsofMeasurement[0],
@@ -139,72 +131,69 @@ const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) =>
     onSubmit: handleFormSubmit
   });
 
-    useEffect(() => {
-      if (editRow) {
-        formik.setValues({
-          id : editRow?.id,
-          packagingTypeId: editRow?.packagingTypeId,
-          packagingTypeName: editRow?.packagingTypeName,
-          packagingDimensionsUoM: editRow?.packagingDimensionsUoM,
-          packagingDimensions: editRow?.packagingDimensions,
-          handlingUnitType: editRow?.handlingUnitType,
-          
-       
-        });
-      }
-    }, [editRow]);
+  useEffect(() => {
+    if (editRow) {
+      formik.setValues({
+        id: editRow?.id,
+        packagingTypeId: editRow?.packagingTypeId,
+        packagingTypeName: editRow?.packagingTypeName,
+        packagingDimensionsUoM: editRow?.packagingDimensionsUoM,
+        packagingDimensions: editRow?.packagingDimensions,
+        handlingUnitType: editRow?.handlingUnitType,
+
+
+      });
+    }
+  }, [editRow]);
   const handlingUnitOptions = ['Pallet', 'Container', 'Crate', 'Box', 'Drum', 'Bag', 'Sack'];
 
   const handleEdit = (row: PackageInfo) => {
-    console.log("Edit row:", row);
     setShowForm(true)
     setIsEditing(true)
     setEditRow(row)
-    };
+  };
 
-const handleDelete = async (row: PackageInfo) => {
-  const packageId = row?.id;
-  if (!packageId) {
-    console.error("Row ID is missing");
-    setSnackbarMessage("Error: Package ID is missing!");
-    setSnackbarSeverity("error");
-    setSnackbarOpen(true);
-    return;
-  }
+  const handleDelete = async (row: PackageInfo) => {
+    const packageId = row?.id;
+    if (!packageId) {
+      console.error("Row ID is missing");
+      setSnackbarMessage("Error: Package ID is missing!");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      return;
+    }
 
-  const confirmed = window.confirm("Are you sure you want to delete this vehicle?");
-  if (!confirmed) {
-    console.log("Delete canceled by user.");
-    return;
-  }
+    const confirmed = window.confirm("Are you sure you want to delete this vehicle?");
+    if (!confirmed) {
+      return;
+    }
 
-  try {
-    const response = await deletePackage(packageId);
-    console.log("Delete response:", response);
-if (response.data.deleted_record) {
-          setSnackbarMessage(`Package ID ${response.data.deleted_record} deleted successfully!`);
-          setSnackbarSeverity("info");
-          setSnackbarOpen(true);
+    try {
+      const response = await deletePackage(packageId);
+      if (response.data.deleted_record) {
+        setSnackbarMessage(`Package ID ${response.data.deleted_record} deleted successfully!`);
+        setSnackbarSeverity("info");
+        setSnackbarOpen(true);
       }
-  } catch (error) {
-    console.error("Error deleting vehicle:", error);
+    } catch (error) {
+      console.error("Error deleting vehicle:", error);
 
-    // Show error snackbar
-    setSnackbarMessage("Failed to delete package. Please try again.");
-    setSnackbarSeverity("error");
-    setSnackbarOpen(true);
-  }
-};
+      // Show error snackbar
+      setSnackbarMessage("Failed to delete package. Please try again.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    }
+  };
 
 
-const rows = data?.packages.map((packageItem :Package) => ({
-  id: packageItem?.package_id,
-  packagingTypeId: packageItem.pac_ID ,
-  packagingTypeName: packageItem?.packaging_type_name,
-  packagingDimensionsUoM: packageItem.dimensions_uom  ,
-  packagingDimensions: packageItem.dimensions ,
-  handlingUnitType: packageItem.handling_unit_type,
-}));
+  const rows = data?.packages.map((packageItem: Package) => ({
+    id: packageItem?.package_id,
+    packagingTypeId: packageItem.pac_ID,
+    packagingTypeName: packageItem?.packaging_type_name,
+    packagingDimensionsUoM: packageItem.dimensions_uom,
+    packagingDimensions: packageItem.dimensions,
+    handlingUnitType: packageItem.handling_unit_type,
+  }));
 
 
   const columns: GridColDef[] = [
@@ -248,11 +237,11 @@ const rows = data?.packages.map((packageItem :Package) => ({
         <CircularProgress color="inherit" />
       </Backdrop>
       <SnackbarAlert
-                open={snackbarOpen}
-                message={snackbarMessage}
-                severity={snackbarSeverity}
-                onClose={() => setSnackbarOpen(false)}
-            />
+        open={snackbarOpen}
+        message={snackbarMessage}
+        severity={snackbarSeverity}
+        onClose={() => setSnackbarOpen(false)}
+      />
       <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
         <Button
           variant="contained"
@@ -319,7 +308,7 @@ const rows = data?.packages.map((packageItem :Package) => ({
                 />
               </Grid>
 
-              
+
               {/* Packaging Dimensions UoM */}
               <Grid item xs={2.4}>
                 {/* <TextField
@@ -334,23 +323,23 @@ const rows = data?.packages.map((packageItem :Package) => ({
                   size="small"
                 /> */}
 
-                  <TextField
-                        fullWidth
-                        select
-                        onBlur={formik.handleBlur}
-                        name="packagingDimensionsUoM" 
-                        value={formik.values.packagingDimensionsUoM || ""}
-                        onChange={formik.handleChange}
-                        error={formik.touched.packagingDimensionsUoM && Boolean(formik.errors.packagingDimensionsUoM)}
-                        helperText={formik.touched.packagingDimensionsUoM && formik.errors.packagingDimensionsUoM}
-                        size="small"
-                  >
-                      {unitsofMeasurement.map((unit) => (
-                          <MenuItem key={unit} value={unit}>
-                              {unit}
-                          </MenuItem>
-                      ))}
-                    </TextField>
+                <TextField
+                  fullWidth
+                  select
+                  onBlur={formik.handleBlur}
+                  name="packagingDimensionsUoM"
+                  value={formik.values.packagingDimensionsUoM || ""}
+                  onChange={formik.handleChange}
+                  error={formik.touched.packagingDimensionsUoM && Boolean(formik.errors.packagingDimensionsUoM)}
+                  helperText={formik.touched.packagingDimensionsUoM && formik.errors.packagingDimensionsUoM}
+                  size="small"
+                >
+                  {unitsofMeasurement.map((unit) => (
+                    <MenuItem key={unit} value={unit}>
+                      {unit}
+                    </MenuItem>
+                  ))}
+                </TextField>
               </Grid>
 
               {/* Handling Unit Type Dropdown */}
@@ -387,14 +376,14 @@ const rows = data?.packages.map((packageItem :Package) => ({
                 {isEditing ? "Update package" : "Create pacakage"}
               </Button>
               <Button
-                  variant="outlined"
-                  color="secondary"
-                  onClick={() => {
-                        formik.resetForm()
-                        setIsEditing(false);
-                        setEditRow(null);
-                      }}
-                  style={{ marginLeft: "10px" }}>Reset
+                variant="outlined"
+                color="secondary"
+                onClick={() => {
+                  formik.resetForm()
+                  setIsEditing(false);
+                  setEditRow(null);
+                }}
+                style={{ marginLeft: "10px" }}>Reset
               </Button>
             </Box>
           </form>
@@ -407,17 +396,17 @@ const rows = data?.packages.map((packageItem :Package) => ({
         {isLoading ? (
           <DataGridSkeletonLoader columns={columns} />
         ) : (
-         <DataGridComponent
-              columns={columns}
-              rows={rows}
-              rowCount={allData && allData?.length}
-              isLoading={isLoading}
-              paginationModel={paginationModel}
-              activeEntity='packages'
-              onPaginationModelChange={handlePaginationModelChange}
+          <DataGridComponent
+            columns={columns}
+            rows={rows}
+            rowCount={allData && allData?.length}
+            isLoading={isLoading}
+            paginationModel={paginationModel}
+            activeEntity='packages'
+            onPaginationModelChange={handlePaginationModelChange}
           />
         )}
-        </div>
+      </div>
     </>
   );
 };

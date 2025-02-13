@@ -27,7 +27,6 @@ const Header = () => {
   const router = useRouter();
   const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
 
-  console.log("currentPath: ", currentPath)
   const user = {
     name: "Teja Bandaru", // Replace with actual user data
     profileImage: "https://cdn.pixabay.com/photo/2024/02/28/15/14/ai-generated-8602228_640.jpg",
@@ -54,9 +53,6 @@ const Header = () => {
     if (isConfirmed) {
       await signOut({ redirect: false });
       localStorage.clear()
-
-      const local = localStorage.getItem("accessToken")
-      console.log("Logout successfully", local)
       router.push("/login");
     }
   };

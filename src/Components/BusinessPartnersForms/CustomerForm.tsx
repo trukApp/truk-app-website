@@ -105,17 +105,11 @@ const CustomerForm: React.FC = () => {
         partner_type: "customer", page: paginationModel.page + 1, limit: paginationModel.pageSize
     })
 
-    const { data: locationsData, error: getLocationsError,isLoading:isLocationLoading } = useGetLocationMasterQuery([])
+    const { data: locationsData, error: getLocationsError, isLoading: isLocationLoading } = useGetLocationMasterQuery([])
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
-    console.log("all locations :", locationsData?.locations)
-    console.log("all customers data :", data?.partners)
     console.log("getLocationsError: ", getLocationsError)
-    console.log("form intials :", formInitialValues)
     const customersData = data?.partners.length > 0 ? data?.partners : []
 
-    if (isLoading) {
-        console.log("Loading All customers Data...");
-    }
 
     if (error) {
         console.error("getting error while fetching the customers data:", error);
@@ -181,14 +175,10 @@ const CustomerForm: React.FC = () => {
     ];
 
     const handleEdit = async (rowData: Customer) => {
-        console.log('Edit clicked for:', rowData);
         setShowForm(true)
         setUpdateRecord(true)
         setUpdateRecordData(rowData)
         const updatedInitialValues = await mapRowToInitialValues(rowData);
-        console.log('Updated Initial Values:', updatedInitialValues);
-
-
         setFormInitialValues(updatedInitialValues);
         setUpdateRecordId(rowData?.partner_id)
     };
@@ -199,7 +189,6 @@ const CustomerForm: React.FC = () => {
         if (!confirmDelete) return;
 
         try {
-            console.log("Delete clicked for:", rowData);
             const deleteId = rowData?.partner_id;
             const response = await deleteBusinessPartner(deleteId);
             if (response.data.deleted_record) {
@@ -219,7 +208,6 @@ const CustomerForm: React.FC = () => {
 
     const handleCustomerSubmit = async (values: typeof initialCustomerValues, { resetForm }: { resetForm: () => void }) => {
         try {
-            console.log('Customer Form Submitted:', values);
             const body = {
                 partners: [
                     {
@@ -260,37 +248,31 @@ const CustomerForm: React.FC = () => {
                     bill_to_party: values?.billToParty
                 }
             }
-
-            console.log("editBody: ", editBody)
             if (updateRecord) {
-                console.log("I am going update the record")
                 const response = await updatePartnerDetails({ body: editBody, partnerId: updateRecordId }).unwrap();
-                console.log('API Response:', response);
-                 if (response?.updated_record) {
-                  setSnackbarMessage(`Customer ID ${response.updated_record} updated successfully!`);
-                  resetForm();
-                  setShowForm(false)
-                     setUpdateRecord(false)
-                     setFormInitialValues(initialCustomerValues)
-                     setUpdateRecordId(0)
-                     setUpdateRecordData({})
-                  setSnackbarSeverity("success");
-                  setSnackbarOpen(true);
+                if (response?.updated_record) {
+                    setSnackbarMessage(`Customer ID ${response.updated_record} updated successfully!`);
+                    resetForm();
+                    setShowForm(false)
+                    setUpdateRecord(false)
+                    setFormInitialValues(initialCustomerValues)
+                    setUpdateRecordId(0)
+                    setUpdateRecordData({})
+                    setSnackbarSeverity("success");
+                    setSnackbarOpen(true);
                 }
             } else {
-                console.log("I am going create the record")
                 const response = await customerRegistration(body).unwrap();
-                console.log('API Response:', response);
                 if (response?.created_records) {
                     setSnackbarMessage(`Customer ID ${response.created_records[0]} created successfully!`);
-                     setFormInitialValues(initialCustomerValues)
+                    setFormInitialValues(initialCustomerValues)
                     setShowForm(false)
                     setUpdateRecord(false)
                     setUpdateRecordId(0)
                     setUpdateRecordData({})
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
-                  }
+                }
             }
 
 
@@ -309,8 +291,6 @@ const CustomerForm: React.FC = () => {
         const selectedLocationId = event.target.value;
         setFieldValue('locationId', selectedLocationId);
         const selectedLocation = getAllLocations.find((loc: Location) => loc.loc_ID === (selectedLocationId));
-        console.log(selectedLocation)
-        // Check if the selectedLocation exists before calling setFieldValue
 
         if (selectedLocation) {
 
@@ -395,23 +375,23 @@ const CustomerForm: React.FC = () => {
                                                 onChange={(event) => handleLocationChange(event, setFieldValue)}
                                                 onBlur={handleBlur}
                                             >
-{isLocationLoading ? (
-                                <MenuItem disabled>
-                                  <CircularProgress size={20} color="inherit" />
-                                  <span style={{ marginLeft: "10px" }}>Loading...</span>
-                                </MenuItem>
-                              ) : (
-                                getAllLocations?.map((location: Location) => (
-                                  <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                                    <Tooltip
-                                      title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                      placement="right"
-                                    >
-                                      <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                                    </Tooltip>
-                                  </MenuItem>
-                                ))
-                              )}
+                                                {isLocationLoading ? (
+                                                    <MenuItem disabled>
+                                                        <CircularProgress size={20} color="inherit" />
+                                                        <span style={{ marginLeft: "10px" }}>Loading...</span>
+                                                    </MenuItem>
+                                                ) : (
+                                                    getAllLocations?.map((location: Location) => (
+                                                        <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                                            <Tooltip
+                                                                title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                                                placement="right"
+                                                            >
+                                                                <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                                            </Tooltip>
+                                                        </MenuItem>
+                                                    ))
+                                                )}
                                             </Select>
                                             {touched.locationId && errors.locationId && (
                                                 <FormHelperText>{errors.locationId}</FormHelperText>
@@ -520,23 +500,23 @@ const CustomerForm: React.FC = () => {
                                                 onChange={(e) => setFieldValue('locationOfSource', e.target.value)}
                                                 onBlur={handleBlur}
                                             >
-{isLocationLoading ? (
-                                <MenuItem disabled>
-                                  <CircularProgress size={20} color="inherit" />
-                                  <span style={{ marginLeft: "10px" }}>Loading...</span>
-                                </MenuItem>
-                              ) : (
-                                getAllLocations?.map((location: Location) => (
-                                  <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                                    <Tooltip
-                                      title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                      placement="right"
-                                    >
-                                      <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                                    </Tooltip>
-                                  </MenuItem>
-                                ))
-                              )}
+                                                {isLocationLoading ? (
+                                                    <MenuItem disabled>
+                                                        <CircularProgress size={20} color="inherit" />
+                                                        <span style={{ marginLeft: "10px" }}>Loading...</span>
+                                                    </MenuItem>
+                                                ) : (
+                                                    getAllLocations?.map((location: Location) => (
+                                                        <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                                            <Tooltip
+                                                                title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                                                placement="right"
+                                                            >
+                                                                <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                                            </Tooltip>
+                                                        </MenuItem>
+                                                    ))
+                                                )}
                                             </Select>
                                             {touched.locationOfSource && errors.locationOfSource && (
                                                 <FormHelperText>{errors.locationOfSource}</FormHelperText>
