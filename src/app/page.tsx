@@ -21,7 +21,7 @@ export default function Home() {
   useEffect(() => {
     if (uom && uom.uomList) {
       const unitsofMeasure = uom.uomList.map((item: { unit_name: string }) => item.unit_name);
-      dispatch(setUnitsofMeasurement(unitsofMeasure));
+      dispatch(setUnitsofMeasurement(unitsofMeasure)); //qwerty
     }
 
     if (uomErr) {
