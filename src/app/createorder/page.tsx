@@ -9,8 +9,7 @@ import { useAppSelector } from '@/store';
 import styles from './createorder.module.css';
 import { withAuthComponent } from '@/Components/WithAuthComponent';
 import { useGetAllPackagesForOrderQuery, useSelectTheProductsMutation } from '@/api/apiSlice';
-
-
+import ReviewCreateOrder from '@/Components/CreateOrderTables/ReviewOrder';
 
 const CreateOrder: React.FC = () => {
     const [activeStep, setActiveStep] = useState(0);
@@ -26,8 +25,6 @@ const CreateOrder: React.FC = () => {
 
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
     const selectedTrucks = useAppSelector((state) => state.auth.selectedTrucks || []);
-    console.log("selectedPackages: ", selectedPackages)
-    console.log("selectTrucks: ", selectedTrucks)
 
     const { data: packagesData, error: allProductsFectchingError, isLoading: isPackagesLoading } = useGetAllPackagesForOrderQuery([]);
     if (allProductsFectchingError) {
@@ -102,20 +99,7 @@ const CreateOrder: React.FC = () => {
 
                 {activeStep === 4 && (
                     <div>
-                        <Typography variant="h6">Review Your Order</Typography>
-                        <div>
-                            <strong>Selected Packages:</strong>
-                            {selectedPackages.map((pkg, index: number) => (
-                                <div key={index}>{pkg.pac_id}</div>
-                            ))}
-                        </div>
-
-                        <div>
-                            <strong>Selected Truck:</strong>
-                            {selectedTrucks.map((pkg, index: number) => (
-                                <div key={index}>{pkg.truckNumber}</div>
-                            ))}
-                        </div>
+                        <ReviewCreateOrder />
                     </div>
                 )}
             </div>
