@@ -5,7 +5,7 @@ import * as Yup from 'yup';
 import { Checkbox, FormControlLabel, Grid, TextField, Button, FormControl, InputLabel, Select, MenuItem, Tooltip, FormHelperText, SelectChangeEvent, Backdrop, CircularProgress } from '@mui/material';
 import styles from './CreatePackage.module.css';
 import { useAppDispatch, useAppSelector } from '@/store';
-import {  clearPackageShipFrom, setPackageShipFrom } from '@/store/authSlice';
+import {  clearPackageShipFrom, setCompletedState, setPackageShipFrom } from '@/store/authSlice';
 import { useGetLocationMasterQuery, usePostLocationMasterMutation } from '@/api/apiSlice';
 import { Location } from '../MasterDataComponents/Locations';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
@@ -169,6 +169,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                 const { saveAsNewLocationId, saveAsDefaultShipFromLocation, ...shipFromData } = values;
                 console.log(saveAsNewLocationId,saveAsDefaultShipFromLocation)
                 dispatch(setPackageShipFrom(shipFromData))
+                dispatch(setCompletedState(0));
                 
                 if (values.saveAsNewLocationId) {
                     try {

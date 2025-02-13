@@ -3,7 +3,7 @@ import { Formik, Form, Field, FieldArray, FieldProps, FormikHelpers } from "form
 import * as Yup from "yup";
 import { Button, Grid, TextField, MenuItem, Tooltip, CircularProgress } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "@/store";
-import { setProductsList } from "@/store/authSlice";
+import { setCompletedState, setProductsList } from "@/store/authSlice";
 import { useGetAllProductsQuery } from "@/api/apiSlice";
 import { Product } from "@/app/productmaster/page";  
 
@@ -71,6 +71,7 @@ const validationSchema = Yup.object().shape({
 
   const handleFormSubmit = (values: FormValues, ) => {
     dispatch(setProductsList(values.packageDetails));
+    dispatch(setCompletedState(2));
     onNext(values);
   };
   

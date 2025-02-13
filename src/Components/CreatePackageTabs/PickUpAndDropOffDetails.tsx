@@ -4,7 +4,7 @@ import { Formik, Form, Field, FormikHelpers } from 'formik';
 import { Grid, TextField, Button } from '@mui/material';
 import * as Yup from 'yup';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { setPackagePickAndDropTimings } from '@/store/authSlice';
+import { setCompletedState, setPackagePickAndDropTimings } from '@/store/authSlice';
 
 interface PickupDropTab {
     onNext: (values: FormValues) => void;
@@ -38,6 +38,7 @@ const PickupDropoff: React.FC<PickupDropTab> = ({ onNext, onBack }) => {
 
     const handleFormSubmit = (values: FormValues, actions: FormikHelpers<FormValues>, onNext: (values: FormValues) => void) => {
         dispatch(setPackagePickAndDropTimings(values))
+        dispatch(setCompletedState(5));
         console.log('Form Submitted:', values);
         onNext(values);
         actions.setSubmitting(false);

@@ -5,7 +5,7 @@ import * as Yup from 'yup';
 import { Checkbox, FormControlLabel, Grid, TextField, Button, SelectChangeEvent, FormControl, InputLabel, Select, MenuItem, Tooltip, FormHelperText, Backdrop, CircularProgress } from '@mui/material';
 import styles from './CreatePackage.module.css';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { setPackageBillTo } from '@/store/authSlice';
+import { setCompletedState, setPackageBillTo } from '@/store/authSlice';
 // import { IShipFrom } from '@/store/authSlice';
 import { useGetLocationMasterQuery, usePostLocationMasterMutation } from '@/api/apiSlice';
 import { Location } from '../MasterDataComponents/Locations';
@@ -149,6 +149,7 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                 const { saveAsNewLocationId, saveAsDefaultShipFromLocation, ...shipFromData } = values;
                 console.log(saveAsNewLocationId,saveAsDefaultShipFromLocation)
                 dispatch(setPackageBillTo(shipFromData))
+                dispatch(setCompletedState(3));
                 
                 if (values.saveAsNewLocationId) {
                     try {
