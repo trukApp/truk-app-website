@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import { Formik, Form, Field, FormikHelpers } from 'formik';
-import { Grid, TextField, Button } from '@mui/material';
+import { Grid, TextField, Button, Typography } from '@mui/material';
 import * as Yup from 'yup';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setCompletedState, setPackagePickAndDropTimings } from '@/store/authSlice';
@@ -45,22 +45,29 @@ const PickupDropoff: React.FC<PickupDropTab> = ({ onNext, onBack }) => {
     };
 
     return (
-        <Formik
+        <Grid  sx={{width: '100%'}}>
+              <Formik
             initialValues={initialValues}
             validationSchema={validationSchema}
             onSubmit={(values, actions) => handleFormSubmit(values, actions, onNext)}
         >
             {({ errors, touched }) => (
-                <Form>
-                    <Grid container spacing={2}>
-                        {/* Pickup Date & Time */}
-                        <Grid item xs={12} sm={6}>
+                    <Form style={{ width: '100%' }}>
+                          <Typography variant="h6" sx={{fontWeight:'bold', textAlign:'center' , marginTop:3}}>Pickup and dropoff Details</Typography>
+                        <Grid container spacing={2}
+                            sx={{ 
+                        marginTop: 3, 
+                        width: '100%', 
+                        m: 0 
+                            }}  >
+                          
+                        <Grid item  xs={12} md={3}>
                             <Field
                                 as={TextField}
                                 type="datetime-local"
                                 name="pickupDateTime"
                                 label="Pick up Date & Time (Estimated)"
-                                fullWidth
+                                fullWidth size='small'
                                 InputLabelProps={{ shrink: true }}
                                 error={touched.pickupDateTime && Boolean(errors.pickupDateTime)}
                                 helperText={touched.pickupDateTime && errors.pickupDateTime}
@@ -68,13 +75,13 @@ const PickupDropoff: React.FC<PickupDropTab> = ({ onNext, onBack }) => {
                         </Grid>
 
                         {/* Drop off Date & Time */}
-                        <Grid item xs={12} sm={6}>
+                        <Grid  item xs={12} md={3}>
                             <Field
                                 as={TextField}
                                 type="datetime-local"
                                 name="dropoffDateTime"
                                 label="Drop off Date & Time (Estimated)"
-                                fullWidth
+                                fullWidth size='small'
                                 InputLabelProps={{ shrink: true }}
                                 error={touched.dropoffDateTime && Boolean(errors.dropoffDateTime)}
                                 helperText={touched.dropoffDateTime && errors.dropoffDateTime}
@@ -82,14 +89,14 @@ const PickupDropoff: React.FC<PickupDropTab> = ({ onNext, onBack }) => {
                         </Grid>
 
                         {/* Optional Notes */}
-                        <Grid item xs={12}>
+                        <Grid item xs={12} md={6}>
                             <Field
                                 as={TextField}
                                 name="notes"
                                 label="Notes (Optional)"
-                                fullWidth
-                                multiline
-                                rows={3}
+                                fullWidth size='small'
+                                // multiline
+                                // rows={3}
                             />
                         </Grid>
 
@@ -114,6 +121,8 @@ const PickupDropoff: React.FC<PickupDropTab> = ({ onNext, onBack }) => {
                 </Form>
             )}
         </Formik>
+        </Grid>
+      
     );
 };
 

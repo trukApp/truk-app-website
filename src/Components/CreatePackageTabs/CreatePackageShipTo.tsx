@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import { Formik, Form, Field, FormikProps } from 'formik';
-import { Grid, TextField, Checkbox, FormControlLabel, Button, FormControl, InputLabel, Select, MenuItem, Tooltip, FormHelperText, SelectChangeEvent, Backdrop, CircularProgress } from '@mui/material';
+import { Grid, TextField, Checkbox, FormControlLabel, Button, FormControl, InputLabel, Select, MenuItem, Tooltip, FormHelperText, SelectChangeEvent, Backdrop, CircularProgress, Typography } from '@mui/material';
 import * as Yup from 'yup';
 import styles from './CreatePackage.module.css';
 import { useAppDispatch, useAppSelector } from '@/store';
@@ -196,7 +196,8 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
             }}
         >
             {({ values, touched, errors, handleSubmit, setFieldValue, handleBlur }) => (
-                <Form  >
+                    <Form>
+                        <Typography variant="h6" sx={{fontWeight:'bold', textAlign:'center' , marginTop:3}}>Ship To Details</Typography>
                         <Grid item xs={12}  sx={{display:'flex',flexDirection:"row", gap:'20px'}}>
                             <FormControlLabel
                                 control={<Field name="saveAsNewLocationId" type="checkbox" as={Checkbox} />}

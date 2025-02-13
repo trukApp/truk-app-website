@@ -190,47 +190,48 @@ const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
             onSubmit={(values, actions) => handleSubmit(values, actions, onSubmit)}
         >
             {({ touched, errors }) => (
-                <Form>
-                    <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6}>
+                    <Form style={{ width: '100%' }}>
+                        <Typography variant="h6" sx={{fontWeight:'bold', textAlign:'center' , marginTop:3}}>Tax info</Typography>
+                    <Grid container spacing={2} sx={{marginTop:3}}>
+                        <Grid item xs={12} md={3}>
                             <Field
                                 as={TextField}
                                 name="taxInfo.senderGSTN"
                                 label="GSTN of the Sender"
-                                fullWidth
+                                fullWidth size='small'
                                 error={touched.taxInfo?.senderGSTN && Boolean(errors.taxInfo?.senderGSTN)}
                                 helperText={touched.taxInfo?.senderGSTN && errors.taxInfo?.senderGSTN}
                             />
                         </Grid>
 
-                        <Grid item xs={12} sm={6}>
+                        <Grid item xs={12} md={3}>
                             <Field
                                 as={TextField}
                                 name="taxInfo.receiverGSTN"
                                 label="GSTN of the Receiver"
-                                fullWidth 
+                                fullWidth size='small' 
                                 error={touched.taxInfo?.receiverGSTN && Boolean(errors.taxInfo?.receiverGSTN)}
                                 helperText={touched.taxInfo?.receiverGSTN && errors.taxInfo?.receiverGSTN}
                             />
                         </Grid>
 
-                        <Grid item xs={12} sm={6}>
+                        <Grid item xs={12} md={3}>
                             <Field
                                 as={TextField}
                                 name="taxInfo.carrierGSTN"
                                 label="GSTN of the Carrier"
-                                fullWidth
+                                fullWidth size='small'
                                 error={touched.taxInfo?.carrierGSTN && Boolean(errors.taxInfo?.carrierGSTN)}
                                 helperText={touched.taxInfo?.carrierGSTN && errors.taxInfo?.carrierGSTN}
                             />
                         </Grid>
 
-                        <Grid item xs={12} sm={6}>
+                        <Grid item xs={12} md={3}>
                             <Field
                                 as={TextField}
                                 name="taxInfo.isSelfTransport"
                                 label="Self Transport (Yes/No)"
-                                fullWidth
+                                fullWidth size='small'
                                 error={touched.taxInfo?.isSelfTransport && Boolean(errors.taxInfo?.isSelfTransport)}
                                 helperText={touched.taxInfo?.isSelfTransport && errors.taxInfo?.isSelfTransport}
                             />

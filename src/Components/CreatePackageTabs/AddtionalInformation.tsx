@@ -186,7 +186,7 @@
 'use client';
 import React, { useState } from 'react';
 import { Formik, Form, Field, FormikHelpers } from 'formik';
-import { Grid, TextField, Checkbox, FormControlLabel, Button } from '@mui/material';
+import { Grid, TextField, Checkbox, FormControlLabel, Button, Typography } from '@mui/material';
 import * as Yup from 'yup';
 import styles from './CreatePackage.module.css';
 import { useAppDispatch, useAppSelector } from '@/store';
@@ -268,6 +268,7 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
         >
             {({ touched, errors, setFieldValue }) => (
                 <Form>
+                    <Typography variant="h6" sx={{fontWeight:'bold', textAlign:'center' , marginTop:3}}>Additional Details</Typography>
                     <Grid>
                         <h3 className={styles.mainHeading}>Additional Information</h3>
                         <Grid container spacing={2} className={styles.formsBgContainer}>

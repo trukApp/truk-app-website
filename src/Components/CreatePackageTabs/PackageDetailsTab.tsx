@@ -1,7 +1,7 @@
 import React from "react";
 import { Formik, Form, Field, FieldArray, FieldProps, FormikHelpers } from "formik";
 import * as Yup from "yup";
-import { Button, Grid, TextField, MenuItem, Tooltip, CircularProgress } from "@mui/material";
+import { Button, Grid, TextField, MenuItem, Tooltip, CircularProgress, Typography } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { setCompletedState, setProductsList } from "@/store/authSlice";
 import { useGetAllProductsQuery } from "@/api/apiSlice";
@@ -101,11 +101,12 @@ const validationSchema = Yup.object().shape({
       <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleFormSubmit}>
         {({ values, handleSubmit,setFieldValue }) => (
           <Form onSubmit={handleSubmit}>
-            <FieldArray name="packageDetails">
+            <Typography variant="h6" sx={{fontWeight:'bold', textAlign:'center' , marginTop:3}}>Package Details</Typography>
+            <FieldArray  name="packageDetails">
               {({ push, remove }) => (
                 <>
                   {values.packageDetails.map((_, index) => (
-                    <Grid container spacing={2} key={index}>
+                    <Grid container spacing={2} sx={{marginTop:3}} key={index}>
                       {Object.keys(initialValues.packageDetails[0]).map((fieldName) => (
                         <Grid item xs={12} md={2.4} key={fieldName}>
                           <Field name={`packageDetails.${index}.${fieldName}`}>

@@ -2,7 +2,7 @@
 import React, {useState} from 'react';
 import { Formik, Form, Field, FormikProps } from 'formik';
 import * as Yup from 'yup';
-import { Checkbox, FormControlLabel, Grid, TextField, Button, SelectChangeEvent, FormControl, InputLabel, Select, MenuItem, Tooltip, FormHelperText, Backdrop, CircularProgress } from '@mui/material';
+import { Checkbox, FormControlLabel, Grid, TextField, Button, SelectChangeEvent, FormControl, InputLabel, Select, MenuItem, Tooltip, FormHelperText, Backdrop, CircularProgress, Typography } from '@mui/material';
 import styles from './CreatePackage.module.css';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setCompletedState, setPackageBillTo } from '@/store/authSlice';
@@ -199,7 +199,8 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
             }}
         >
             {({ values, touched, errors, handleSubmit, setFieldValue, handleBlur }) => (
-                <Form  >
+                    <Form  >
+                        <Typography variant="h6" sx={{fontWeight:'bold', textAlign:'center' , marginTop:3}}>Bill to Details</Typography>
                         <Grid item xs={12}  sx={{display:'flex',flexDirection:"row", gap:'20px'}}>
                             <FormControlLabel
                                 control={<Field name="saveAsNewLocationId" type="checkbox" as={Checkbox} />}
@@ -430,11 +431,7 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                             <Grid item xs={12} md={2.4}>
                                 <Field
                                     name="phoneNumber"
-                                        as={TextField}  
-                                        inputProps={{
-                                            maxLength: 10, 
-                                            pattern: "[0-9]*",
-                                        }}
+                                    as={TextField}
                                     label="Phone Number"
                                     InputLabelProps={{ shrink: true }} size = 'small' fullWidth
                                     type='number'

@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Formik, Form, Field, FormikProps } from 'formik';
 import * as Yup from 'yup';
-import { Checkbox, FormControlLabel, Grid, TextField, Button, FormControl, InputLabel, Select, MenuItem, Tooltip, FormHelperText, SelectChangeEvent, Backdrop, CircularProgress } from '@mui/material';
+import { Checkbox, FormControlLabel, Grid, TextField, Button, FormControl, InputLabel, Select, MenuItem, Tooltip, FormHelperText, SelectChangeEvent, Backdrop, CircularProgress, Typography } from '@mui/material';
 import styles from './CreatePackage.module.css';
 import { useAppDispatch, useAppSelector } from '@/store';
 import {  clearPackageShipFrom, setCompletedState, setPackageShipFrom } from '@/store/authSlice';
@@ -219,7 +219,8 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
             }}
         >
             {({ values, touched, errors, handleSubmit, setFieldValue, handleBlur }) => (
-                <Form  >
+                    <Form >
+                        <Typography variant="h6" sx={{fontWeight:'bold', textAlign:'center' , marginTop:3}}>Ship from Details</Typography>
                         <Grid item xs={12}  sx={{display:'flex',flexDirection:"row", gap:'20px'}}>
                             <FormControlLabel
                                 control={<Field name="saveAsNewLocationId" type="checkbox" as={Checkbox} />}
