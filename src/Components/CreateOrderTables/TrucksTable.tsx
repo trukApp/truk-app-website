@@ -129,6 +129,7 @@ const TrucksTable: React.FC<TrucksTableProps> = ({ trucks }) => {
     };
 
     const handleSelectTruck = (truck: Truck) => {
+        console.log("truck: ", truck)
         const isSelected = selectedTruck?.label === truck.label;
         const newSelectedTruck = isSelected ? null : truck; // Toggle selection
 
@@ -326,10 +327,11 @@ const TrucksTable: React.FC<TrucksTableProps> = ({ trucks }) => {
     const rows = trucks.flatMap((truck) => [
         {
             id: truck.label,
-            label: truck.label,
-            totalCost: truck.totalCost,
-            unallocatedPackages: truck.unallocatedPackages, // Display as a comma-separated list
-            isAllocation: false, // Parent row
+            // label: truck.label,
+            // totalCost: truck.totalCost,
+            // unallocatedPackages: truck.unallocatedPackages,
+            // isAllocation: false,
+            ...truck
         },
         ...(expandedRow === truck.label
             ? [
