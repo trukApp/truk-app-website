@@ -42,7 +42,7 @@ const TrucksTable: React.FC<TrucksTableProps> = ({ trucks }) => {
         setSelectedTruck(newSelectedTruck);
         dispatch(setSelectedTrucks(newSelectedTruck ? [newSelectedTruck] : []));
     };
-    
+
     const columns: GridColDef[] = [
         {
             field: "select",
@@ -75,7 +75,7 @@ const TrucksTable: React.FC<TrucksTableProps> = ({ trucks }) => {
             ),
         },
         { field: "totalCost", headerName: "Total Weight Capacity", width: 180 },
-        { field: "unallocatedPackages", headerName: "Total Volume Capacity", width: 180 },
+        { field: "unallocatedPackages", headerName: "UnLocated Packages", width: 180 },
 
         // Hide cost-related headers in parent rows
         {
