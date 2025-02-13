@@ -1,6 +1,6 @@
 import { useAppSelector } from '@/store';
 import React from 'react';
-import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Grid } from '@mui/material';
 import { DataGrid, } from '@mui/x-data-grid';
 
 // Define types
@@ -29,34 +29,8 @@ const ReviewCreateOrder = () => {
 
     return (
         <Box sx={{ p: 3 }}>
-            {/* Selected Packages Section */}
-            {/* <Paper sx={{ mb: 3, p: 2, borderRadius: 2, boxShadow: 3 }}>
-                <Typography variant="h6" gutterBottom>Selected Packages</Typography>
-                <TableContainer>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Package ID</TableCell>
-                                <TableCell>Ship From</TableCell>
-                                <TableCell>Ship To</TableCell>
-                                <TableCell>Products</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {selectedPackages.map((pkg) => (
-                                <TableRow key={pkg.pac_id}>
-                                    <TableCell>{pkg.pack_ID}</TableCell>
-                                    <TableCell>{pkg.ship_from}</TableCell>
-                                    <TableCell>{pkg.ship_to}</TableCell>
-                                    <TableCell>{pkg.product_ID.join(', ')}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            </Paper> */}
             <Paper sx={{ mb: 3, p: 2, borderRadius: 2, boxShadow: 3 }}>
-                <Typography variant="h6" gutterBottom>Selected Packages</Typography>
+                <Typography variant="h6" gutterBottom sx={{color:'#83214F'}}>Selected Packages</Typography>
                 <TableContainer>
                     <Table>
                         <TableHead>
@@ -99,64 +73,112 @@ const ReviewCreateOrder = () => {
                 </TableContainer>
             </Paper>
 
-            {/* Selected Truck Details Section */}
-            {selectedTrucks.length > 0 && (
+       {/* Selected Truck Details Section */}
+            <Grid>
+                {selectedTrucks.length > 0 && (
                 <Paper sx={{ mb: 3, p: 2, borderRadius: 2, boxShadow: 3 }}>
-                    <Typography variant="h6" gutterBottom>Selected Truck Details</Typography>
-                    <Typography><strong>Label:</strong> {selectedTrucks[0].label}</Typography>
-                    <Typography><strong>Total Cost:</strong> ₹{selectedTrucks[0].totalCost}</Typography>
+                    <Typography variant="h6" gutterBottom sx={{color:'#83214F'}}>Selected Truck Details</Typography>
+                    <Typography>Label: <strong>{selectedTrucks[0].label}</strong> </Typography>
+                    <Typography>Total Cost: <strong> ₹{selectedTrucks[0].totalCost}</strong></Typography>
                 </Paper>
-            )}
+                    )}
+                </Grid>
+                {/* <Paper sx={{ mb: 3, p: 2, borderRadius: 2, boxShadow: 3 }}>
+                <Typography variant="h6" gutterBottom>Route Optimization (Number of stops: {selectedTrucks[0]?.allocations.length}) </Typography>
+                    {selectedTrucks[0]?.allocations?.map((allocation: Allocation, index: number) => (
+                        <Grid key={index} sx={{display:'flex' , flexDirection:'row'}}>
+                            <Typography sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Stop {index + 1} : </Typography>
+                            <Typography  sx={{ ml: 1, flex: 1, display: "inline-block", wordBreak: "break-word" }}>
+                                {allocation.loadArrangement?.map((stop) => stop.location).join(', ') || "N/A"}
+                            </Typography>
+                        </Grid>
+                ))}
+            </Paper> */}
+          
+            <Grid>
+   
 
-            {/* Route Optimization Section */}
-            <Paper sx={{ mb: 3, p: 2, borderRadius: 2, boxShadow: 3 }}>
-                <Typography variant="h6" gutterBottom>Route Optimization</Typography>
-                {selectedTrucks[0]?.allocations?.map((allocation: Allocation, index: number) => (
-                    <Typography key={index}>
-                        Stop {index + 1}: {allocation.loadArrangement?.map((stop) => stop.location).join(', ') || "N/A"}
+            {/* Load  and route Optimization Section */}
+          <Paper sx={{ mb: 3, p: 2, borderRadius: 2, boxShadow: 3 }}>
+    <Typography variant="h6" gutterBottom sx={{color:'#83214F'}}>
+        Load and Route Optimised vehicles : {selectedTrucks[0]?.allocations?.length}
+    </Typography>
+
+    <Grid container spacing={2}>
+        {selectedTrucks[0]?.allocations?.map((vehicle: Allocation, index: number) => (
+            <Grid item xs={12} md={6} key={index}>
+                <Box
+                    sx={{
+                        p: 2,
+                        borderRadius: 2,
+                        boxShadow: 2,
+                        backgroundColor: "white",
+                        marginTop:3
+                    }}
+                >
+                    <Typography variant="subtitle1" gutterBottom>
+                        Vehicle ID: <strong>{vehicle.vehicle_ID}</strong> 
                     </Typography>
-                ))}
-            </Paper>
+                    <Typography>
+                        Total Weight Capacity: <strong>{vehicle.totalWeightCapacity} kg</strong>
+                    </Typography>
+                    <Typography>
+                        Leftover Weight: <strong>{vehicle.leftoverWeight} kg</strong>
+                    </Typography>
+                    <Typography>
+                        Total Volume Capacity: <strong>{vehicle.totalVolumeCapacity} m³</strong>
+                    </Typography>
+                    <Typography>
+                        Leftover Volume: <strong>{vehicle.leftoverVolume} m³</strong>
+                    </Typography>
+                    <Typography>
+                        Cost: <strong>₹{vehicle.cost}</strong>
+                    </Typography>
 
-            {/* Load Optimization Section */}
-            <Paper sx={{ mb: 3, p: 2, borderRadius: 2, boxShadow: 3 }}>
-                <Typography variant="h6" gutterBottom>Load Optimization</Typography>
-                {selectedTrucks[0]?.allocations?.map((vehicle: Allocation, index: number) => (
-                    <Box key={index} sx={{ mb: 3 }}>
-                        <Typography variant="subtitle1" gutterBottom><strong>Vehicle ID:</strong> {vehicle.vehicle_ID}</Typography>
-                        <Typography>Total Weight Capacity: {vehicle.totalWeightCapacity} kg</Typography>
-                        <Typography>Leftover Weight: {vehicle.leftoverWeight} kg</Typography>
-                        <Typography>Total Volume Capacity: {vehicle.totalVolumeCapacity} m³</Typography>
-                        <Typography>Leftover Volume: {vehicle.leftoverVolume} m³</Typography>
-                        <Typography>Cost: ₹{vehicle.cost}</Typography>
+                    {/* Data Grid for Load Arrangement */}
+                    {vehicle.loadArrangement && vehicle.loadArrangement.length > 0 ? (
+                        <Box sx={{ mt: 2, height: 300, backgroundColor: "white", borderRadius: 1, overflow: "hidden" }}>
+                            <DataGrid
+                                rows={vehicle.loadArrangement.map((item, i) => ({
+                                    id: item.stop || i + 1,
+                                    location: item.location || "N/A",
+                                    packages: item.packages ? item.packages.join(", ") : "N/A",
+                                }))}
+                                columns={[
+                                    { field: "id", headerName: "Stop No", width: 100 },
+                                    { field: "location", headerName: "Load Address", width: 300 },
+                                    { field: "packages", headerName: "Packages", width: 200 },
+                                ]}
+                                pageSizeOptions={[5, 10]}
+                                disableRowSelectionOnClick
+                                sx={{
+                                    "& .MuiDataGrid-columnHeaders": {
+                                        backgroundColor: "#f5f5f5",
+                                        fontWeight: "bold",
+                                    },
+                                    "& .MuiDataGrid-cell": {
+                                        padding: "8px",
+                                    },
+                                    "& .MuiDataGrid-footerContainer": {
+                                        display: "none",
+                                    },
+                                }}
+                            />
+                        </Box>
+                    ) : (
+                        <Typography sx={{ mt: 1, fontStyle: "italic", color: "gray" }}>
+                            No load arrangement data available.
+                        </Typography>
+                    )}
+                </Box>
+            </Grid>
+        ))}
+    </Grid>
+</Paper>
 
-                        {/* Data Grid for Load Arrangement */}
-                        {vehicle.loadArrangement && vehicle.loadArrangement.length > 0 ? (
-                            <Box sx={{ mt: 2, height: 300, backgroundColor: 'white' }}>
-                                <DataGrid
-                                    rows={vehicle.loadArrangement.map((item, i) => ({
-                                        id: item.stop || i + 1,
-                                        location: item.location || 'N/A',
-                                        packages: item.packages ? item.packages.join(', ') : 'N/A',
-                                    }))}
-                                    columns={[
-                                        { field: 'id', headerName: 'Stop No', width: 100 },
-                                        { field: 'location', headerName: 'Load Address', width: 400 },
-                                        { field: 'packages', headerName: 'Packages', width: 250 },
-                                    ]}
-                                    pageSizeOptions={[5, 10]}
-                                    initialState={{
-                                        pagination: { paginationModel: { pageSize: 5 } },
-                                    }}
-                                    disableRowSelectionOnClick
-                                />
-                            </Box>
-                        ) : (
-                            <Typography>No load arrangement data available.</Typography>
-                        )}
-                    </Box>
-                ))}
-            </Paper>
+          </Grid>
+
+
         </Box>
     );
 };

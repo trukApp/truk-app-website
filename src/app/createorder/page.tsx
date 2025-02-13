@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { Stepper, Step, StepLabel, Button, Typography } from '@mui/material';
+import { Stepper, Step, StepLabel, Button, Typography, DialogActions, DialogContent, Dialog, DialogTitle } from '@mui/material';
 import PackagesTable from '@/Components/CreateOrderTables/PackagesTable';
 import TrucksTable, { Truck } from '@/Components/CreateOrderTables/TrucksTable';
 import RootOptimization from '@/Components/CreateOrderTables/RootOptimization';
@@ -17,6 +17,7 @@ const CreateOrder: React.FC = () => {
     const [selectTrucks, setSelectTrucks] = useState<Truck[]>([]);
     const [rootOptimization, setRouteOptimazition] = useState([])
     const sourceLocation = useAppSelector((state) => state.auth.createOrderDesination);
+    const [modalOpen, setModalOpen] = useState(false);
     const filters = useAppSelector((state) => state.auth.filters);
     console.log("sourceLocation: ", sourceLocation)
     console.log(rootOptimization)
@@ -37,6 +38,7 @@ const CreateOrder: React.FC = () => {
     const handleCreateOrder = () => {
         console.log("Final Packages are: ", selectedPackages);
         console.log("Final Trucks Selections are: ", selectedTrucks);
+
     };
 
     const handleSelectTruck = async () => {
@@ -62,6 +64,22 @@ const CreateOrder: React.FC = () => {
 
     return (
         <div>
+            {modalOpen && (
+                    <Dialog open={modalOpen} onClose={() => setModalOpen(false)} >
+                    <DialogTitle>Proceed for order </DialogTitle>
+                    <DialogContent>
+                        <Typography>Are you sure you want to create the order ?</Typography>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button variant="outlined" onClick={() => setModalOpen(false)} color="secondary">
+                            Cancel
+                        </Button>
+                        <Button variant="outlined" onClick={handleCreateOrder} color="primary">
+                            Create order
+                        </Button>
+                    </DialogActions>
+                    </Dialog>
+            )}
             <Stepper activeStep={activeStep} alternativeLabel>
                 {steps.map((label) => (
                     <Step key={label}>
@@ -115,7 +133,7 @@ const CreateOrder: React.FC = () => {
                     <Button
                         variant='contained' color='primary'
                         className={styles.nextButton}
-                        onClick={handleCreateOrder}
+                        onClick={()=> setModalOpen(true)}
                     >
                         Submit
                     </Button>
