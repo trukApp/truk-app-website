@@ -44,6 +44,7 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
     const [selectionModel, setSelectionModel] = useState<number[]>([]);
     const filters = useAppSelector((state) => state.auth.filters);
+    window.scrollTo(0, 0)
 
     useEffect(() => {
         const selectedIds = selectedPackages.map((pkg) => pkg.pac_id);

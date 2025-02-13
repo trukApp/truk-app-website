@@ -16,20 +16,16 @@ import { setCompletedState } from '@/store/authSlice';
 const steps = ['Ship From', 'Ship To', 'Package Details', 'Bill To', 'Additional Info', 'Pickup/Drop off', 'Tax Info'];
 
 const CreatePackage = () => {
-    const dispatch=useDispatch()
+    const dispatch = useDispatch()
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
-    // Get completed steps from Redux
     const completedSteps = useSelector((state: RootState) => state.auth.completedState);
-    console.log("Completed Steps:", completedSteps);
 
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error' | 'warning' | 'info'>("success");
     const [activeStep, setActiveStep] = useState(0);
 
-    // Set the initial active step to the first unfilled step
     useEffect(() => {
         if (completedSteps.length > 0) {
             const firstUnfilledIndex = completedSteps.findIndex(step => !step);
@@ -38,9 +34,9 @@ const CreatePackage = () => {
     }, [completedSteps]);
 
     const handleNext = (stepIndex: number) => {
-    dispatch(setCompletedState(stepIndex));
-    setActiveStep(stepIndex + 1);
-};
+        dispatch(setCompletedState(stepIndex));
+        setActiveStep(stepIndex + 1);
+    };
 
     const handleBack = () => setActiveStep((prevStep) => prevStep - 1);
 
@@ -51,10 +47,8 @@ const CreatePackage = () => {
     const handleSubmit = () => {
         const firstUnfilledIndex = completedSteps.findIndex((step) => !step);
         if (firstUnfilledIndex === -1) {
-            console.log('✅ All steps are filled. Submitting package details...');
             dispatch(setCompletedState(0))
         } else {
-            console.log('🚨 Some steps are unfilled! Navigating to first unfilled step...');
             setSnackbarMessage("Some steps are unfilled! Navigating to first unfilled step...");
             setSnackbarSeverity("warning");
             setSnackbarOpen(true);
@@ -72,7 +66,7 @@ const CreatePackage = () => {
                             <StepLabel onClick={() => handleStepClick(index)} sx={{
                                 cursor: 'pointer',
                             }}>
-                                <Typography sx={{ fontSize: '14px', textAlign: 'center', color:activeStep === index ? "#83214F" : '#333', fontWeight:activeStep === index ? 'bold' : '400'   }}>{label}</Typography>
+                                <Typography sx={{ fontSize: '14px', textAlign: 'center', color: activeStep === index ? "#83214F" : '#333', fontWeight: activeStep === index ? 'bold' : '400' }}>{label}</Typography>
                             </StepLabel>
                         </Step>
 

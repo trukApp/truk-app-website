@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Formik, Form,FormikProps } from "formik";
+import { Formik, Form, FormikProps } from "formik";
 import * as Yup from "yup";
 import {
 	TextField,
@@ -189,14 +189,14 @@ const downtimeReasons = ["Maintenance", "Breakdown", "Inspection", "Other"];
 const validationSchema = Yup.object({
 	locationId: Yup.string().required("Location ID is required"),
 	timeZone: Yup.string().required("Time Zone is required"),
-  unlimitedUsage: Yup.boolean(),
-  individualResources: Yup.number()
-    .typeError("Must be a number")
-    .when("unlimitedUsage", {
-      is: false,
-      then: (schema) => schema.required("Individual Resources is required"),
-      otherwise: (schema) => schema.notRequired().nullable(),
-    }),
+	unlimitedUsage: Yup.boolean(),
+	individualResources: Yup.number()
+		.typeError("Must be a number")
+		.when("unlimitedUsage", {
+			is: false,
+			then: (schema) => schema.required("Individual Resources is required"),
+			otherwise: (schema) => schema.notRequired().nullable(),
+		}),
 	validityFrom: Yup.string().required("Validity start date is required"),
 	validityTo: Yup.string().required("Validity end date is required"),
 	vehicleType: Yup.string().required("Vehicle Type is required"),
@@ -229,30 +229,29 @@ const validationSchema = Yup.object({
 });
 
 const VehicleForm: React.FC = () => {
-	const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
+	const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10, });
 	const [snackbarOpen, setSnackbarOpen] = useState(false);
 	const [snackbarMessage, setSnackbarMessage] = useState("");
 	const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
 	const [isEditing, setIsEditing] = useState(false);
 	const [editRow, setEditRow] = useState<VehicleFormValues | null>(null);
-	const { data, error ,isLoading } = useGetVehicleMasterQuery({page: paginationModel.page + 1, limit: paginationModel.pageSize});
+	const { data, error, isLoading } = useGetVehicleMasterQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize });
 	const [postVehicle, { isLoading: postVehicleLoading }] = usePostVehicleMasterMutation();
 	const [editVehicle, { isLoading: editVehicleLoading }] = useEditVehicleMasterMutation();
 	const [deleteVehicle, { isLoading: deleteVehicleLoading }] = useDeleteVehicleMasterMutation();
 	if (error) {
 		console.log("err in loading vehicles data :", error);
 	}
-	const { data: locationsData, isLoading:isLocationLoading } = useGetLocationMasterQuery({});
+	const { data: locationsData, isLoading: isLocationLoading } = useGetLocationMasterQuery({});
 	const getAllLocations =
 		locationsData?.locations.length > 0 ? locationsData?.locations : [];
 	const vehiclesMaster = data?.vehicles;
-	console.log("all vehicles :", vehiclesMaster);
 	const unitsofMeasurement = useSelector(
 		(state: RootState) => state.auth.unitsofMeasurement
 	);
 	const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
-    setPaginationModel(newPaginationModel);
-    };
+		setPaginationModel(newPaginationModel);
+	};
 	const [showForm, setShowForm] = useState(false);
 	const initialFormValues = {
 		id: "",
@@ -308,7 +307,6 @@ const VehicleForm: React.FC = () => {
 
 	const [initialValues, setInitialValues] = useState(initialFormValues);
 	useEffect(() => {
-		console.log("edit row iii: ", editRow);
 		if (editRow) {
 			const editPayloadWeight = editRow.payloadWeight.split(" ");
 			const editCubicCapacity = editRow?.cubicCapacity.split(" ");
@@ -484,14 +482,12 @@ const VehicleForm: React.FC = () => {
 		values: VehicleFormValues,
 		{ resetForm }: { resetForm: () => void }
 	) => {
-		console.log("Form submitted with values:", values);
-
 		try {
 			const body = {
 				vehicles: [
 					{
 						loc_ID: values.locationId,
-						unlimited_usage: `${values.unlimitedUsage ? 1 : 0}` ,
+						unlimited_usage: `${values.unlimitedUsage ? 1 : 0}`,
 						individual_resource: values.individualResources,
 						transportation_details: {
 							validity_from: values.validityFrom,
@@ -578,41 +574,36 @@ const VehicleForm: React.FC = () => {
 				},
 			};
 			if (isEditing && editRow) {
-				console.log("edit body is :", editBody);
 				const vehicleId = editRow.id;
-				console.log("vehicle id :", vehicleId);
 				const response = await editVehicle({
 					body: editBody,
 					vehicleId,
 				}).unwrap();
-				console.log("edit response is ", response);
-				 if (response?.updated_record) {
-                  setSnackbarMessage(`Vehicle ID ${response.updated_record} updated successfully!`);
-                  resetForm();
-                  setShowForm(false)
-                  setIsEditing(false)
-                  setSnackbarSeverity("success");
-                  setSnackbarOpen(true);
-                }
+				if (response?.updated_record) {
+					setSnackbarMessage(`Vehicle ID ${response.updated_record} updated successfully!`);
+					resetForm();
+					setShowForm(false)
+					setIsEditing(false)
+					setSnackbarSeverity("success");
+					setSnackbarOpen(true);
+				}
 
 			} else {
-				console.log("post create vehicle ", body);
 				const response = await postVehicle(body).unwrap();
-				console.log("response in post vehicle:", response);
 				if (response?.created_records) {
-                    setSnackbarMessage(`Device ID ${response.created_records[0]} created successfully!`);
-                     resetForm();
-                setShowForm(false)
-                setIsEditing(false)
-                    setSnackbarSeverity("success");
-                    setSnackbarOpen(true);
-                  }
-				 
+					setSnackbarMessage(`Device ID ${response.created_records[0]} created successfully!`);
+					resetForm();
+					setShowForm(false)
+					setIsEditing(false)
+					setSnackbarSeverity("success");
+					setSnackbarOpen(true);
+				}
+
 			}
 		} catch (error) {
 			console.error("API Error:", error);
 			setSnackbarMessage("Something went wrong! please try again");
-            setSnackbarSeverity("error");
+			setSnackbarSeverity("error");
 			setSnackbarOpen(true);
 			setShowForm(false);
 			resetForm();
@@ -621,47 +612,44 @@ const VehicleForm: React.FC = () => {
 	};
 
 	const handleEdit = (row: VehicleFormValues) => {
-		console.log("Edit row:", row);
 		setShowForm(true);
 		setIsEditing(true);
 		setEditRow(row);
 	};
 	const handleDelete = async (row: VehicleDetails) => {
-  const vehicleId = row?.id;
-  if (!vehicleId) {
-    console.error("Row ID is missing");
-    setSnackbarMessage("Error: Vehicle ID is missing!");
-    setSnackbarSeverity("error");
-    setSnackbarOpen(true);
-    return;
-  }
+		const vehicleId = row?.id;
+		if (!vehicleId) {
+			console.error("Row ID is missing");
+			setSnackbarMessage("Error: Vehicle ID is missing!");
+			setSnackbarSeverity("error");
+			setSnackbarOpen(true);
+			return;
+		}
 
-  const confirmed = window.confirm("Are you sure you want to delete this vehicle?");
-  if (!confirmed) {
-    console.log("Delete canceled by user.");
-    return;
-  }
+		const confirmed = window.confirm("Are you sure you want to delete this vehicle?");
+		if (!confirmed) {
+			return;
+		}
 
-  try {
-    const response = await deleteVehicle(vehicleId);
-    console.log("Delete response:", response);
-if (response.data.deleted_record) {
-          setSnackbarMessage(`Vehicle ID ${response.data.deleted_record} deleted successfully!`);
-          setSnackbarSeverity("info");
-          setSnackbarOpen(true);
-      }
-  } catch (error) {
-    console.error("Error deleting vehicle:", error);
-    setSnackbarMessage("Failed to delete vehicle. Please try again.");
-    setSnackbarSeverity("error");
-    setSnackbarOpen(true);
-  }
-};
+		try {
+			const response = await deleteVehicle(vehicleId);
+			if (response.data.deleted_record) {
+				setSnackbarMessage(`Vehicle ID ${response.data.deleted_record} deleted successfully!`);
+				setSnackbarSeverity("info");
+				setSnackbarOpen(true);
+			}
+		} catch (error) {
+			console.error("Error deleting vehicle:", error);
+			setSnackbarMessage("Failed to delete vehicle. Please try again.");
+			setSnackbarSeverity("error");
+			setSnackbarOpen(true);
+		}
+	};
 
-  	const handleLocationChange = (
+	const handleLocationChange = (
 		event: SelectChangeEvent<string>,
 		setFieldValue: FormikProps<{ locationId: string; timeZone: string }>['setFieldValue']
-		) => {
+	) => {
 		const selectedLocation = event.target.value;
 		setFieldValue('locationId', selectedLocation);
 		const matchedLocation = getAllLocations?.find((loc: Location) => loc.loc_ID === selectedLocation);
@@ -678,14 +666,14 @@ if (response.data.deleted_record) {
 				open={postVehicleLoading || editVehicleLoading || deleteVehicleLoading}
 			>
 				<CircularProgress color="inherit" />
-				     
+
 			</Backdrop>
 			<SnackbarAlert
-                open={snackbarOpen}
-                message={snackbarMessage}
-                severity={snackbarSeverity}
-                onClose={() => setSnackbarOpen(false)}
-            />
+				open={snackbarOpen}
+				message={snackbarMessage}
+				severity={snackbarSeverity}
+				onClose={() => setSnackbarOpen(false)}
+			/>
 
 			<Box>
 				<Typography
@@ -752,36 +740,36 @@ if (response.data.deleted_record) {
 													disabled
 												/>
 											</Grid>
-												<Grid item xs={12} sm={6} md={2.4}>
-																<FormControl fullWidth size="small" error={touched.locationId && Boolean(errors.locationId)}>
-																<InputLabel>Location ID</InputLabel>
-																<Select
-																label="Location ID"
-																name="locations"
-																value={values.locationId || ''}
-																onChange={(event) => handleLocationChange(event, setFieldValue)}
-																onBlur={handleBlur}
-																>
-							{isLocationLoading ? (
-								<MenuItem disabled>
-								  <CircularProgress size={20} color="inherit" />
-								  <span style={{ marginLeft: "10px" }}>Loading...</span>
-								</MenuItem>
-							  ) : (
-								getAllLocations?.map((location: Location) => (
-								  <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-									<Tooltip
-									  title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-									  placement="right"
-									>
-									  <span style={{ flex: 1 }}>{location.loc_ID}</span>
-									</Tooltip>
-								  </MenuItem>
-								))
-							  )}
+											<Grid item xs={12} sm={6} md={2.4}>
+												<FormControl fullWidth size="small" error={touched.locationId && Boolean(errors.locationId)}>
+													<InputLabel>Location ID</InputLabel>
+													<Select
+														label="Location ID"
+														name="locations"
+														value={values.locationId || ''}
+														onChange={(event) => handleLocationChange(event, setFieldValue)}
+														onBlur={handleBlur}
+													>
+														{isLocationLoading ? (
+															<MenuItem disabled>
+																<CircularProgress size={20} color="inherit" />
+																<span style={{ marginLeft: "10px" }}>Loading...</span>
+															</MenuItem>
+														) : (
+															getAllLocations?.map((location: Location) => (
+																<MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+																	<Tooltip
+																		title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+																		placement="right"
+																	>
+																		<span style={{ flex: 1 }}>{location.loc_ID}</span>
+																	</Tooltip>
+																</MenuItem>
+															))
+														)}
 													</Select>
-																{touched.locationId && errors.locationId && (
-													<FormHelperText>{errors.locationId}</FormHelperText>
+													{touched.locationId && errors.locationId && (
+														<FormHelperText>{errors.locationId}</FormHelperText>
 													)}
 												</FormControl>
 											</Grid>
@@ -831,40 +819,40 @@ if (response.data.deleted_record) {
 													/>
 												</Grid>
 											)} */}
-								<Grid item xs={12}>
-									<FormControlLabel
-									control={
-    <Checkbox
-      checked={values.unlimitedUsage}
-      onChange={(e) => {
-        const checked = e.target.checked;
-        setFieldValue("unlimitedUsage", checked);
-        if (checked) {
-          setFieldValue("individualResources", ""); // Ensures controlled input
-        }
-      }}
-    />
-  }
-  label="Unlimited Usage"
+											<Grid item xs={12}>
+												<FormControlLabel
+													control={
+														<Checkbox
+															checked={values.unlimitedUsage}
+															onChange={(e) => {
+																const checked = e.target.checked;
+																setFieldValue("unlimitedUsage", checked);
+																if (checked) {
+																	setFieldValue("individualResources", ""); // Ensures controlled input
+																}
+															}}
+														/>
+													}
+													label="Unlimited Usage"
 												/>
-								</Grid>
+											</Grid>
 
-								{!values.unlimitedUsage && (
-								<Grid item xs={12} sm={6} md={2.4}>
-									<TextField
-									fullWidth
-									label="Individual Resources"
-									name="individualResources"
-									type="number"
-									value={values.individualResources ?? ""} // Ensures controlled component
-									onChange={handleChange}
-									onBlur={handleBlur}
-									size="small"
-									error={touched.individualResources && Boolean(errors.individualResources)}
-									helperText={touched.individualResources && errors.individualResources}
-									/>
-								</Grid>
-								)}
+											{!values.unlimitedUsage && (
+												<Grid item xs={12} sm={6} md={2.4}>
+													<TextField
+														fullWidth
+														label="Individual Resources"
+														name="individualResources"
+														type="number"
+														value={values.individualResources ?? ""} // Ensures controlled component
+														onChange={handleChange}
+														onBlur={handleBlur}
+														size="small"
+														error={touched.individualResources && Boolean(errors.individualResources)}
+														helperText={touched.individualResources && errors.individualResources}
+													/>
+												</Grid>
+											)}
 
 
 										</Grid>
@@ -884,9 +872,9 @@ if (response.data.deleted_record) {
 													value={
 														values.validityFrom
 															? values.validityFrom
-																	.split("-")
-																	.reverse()
-																	.join("-")
+																.split("-")
+																.reverse()
+																.join("-")
 															: ""
 													}
 													onChange={(e) => {
@@ -923,9 +911,9 @@ if (response.data.deleted_record) {
 													value={
 														values.validityTo
 															? values.validityTo
-																	.split("-")
-																	.reverse()
-																	.join("-")
+																.split("-")
+																.reverse()
+																.join("-")
 															: ""
 													}
 													onChange={(e) => {
@@ -1432,9 +1420,9 @@ if (response.data.deleted_record) {
 													value={
 														values.downtimeStart
 															? values.downtimeStart
-																	.split("-")
-																	.reverse()
-																	.join("-")
+																.split("-")
+																.reverse()
+																.join("-")
 															: ""
 													}
 													onChange={(e) => {
@@ -1462,7 +1450,7 @@ if (response.data.deleted_record) {
 												/>
 											</Grid>
 
-												<Grid item xs={12} sm={6} md={2.4}>
+											<Grid item xs={12} sm={6} md={2.4}>
 												<TextField
 													fullWidth
 													size="small"
@@ -1472,9 +1460,9 @@ if (response.data.deleted_record) {
 													value={
 														values.downtimeEnd
 															? values.downtimeEnd
-																	.split("-")
-																	.reverse()
-																	.join("-")
+																.split("-")
+																.reverse()
+																.join("-")
 															: ""
 													}
 													onChange={(e) => {
@@ -1619,14 +1607,14 @@ if (response.data.deleted_record) {
 				{isLoading ? (
 					<DataGridSkeletonLoader columns={columns} />
 				) : (
-						<DataGridComponent
-							columns={columns}
-							rows={rows}
-							isLoading={isLoading}
-							paginationModel={paginationModel}
-							activeEntity="vehicles"
-							onPaginationModelChange={handlePaginationModelChange}
-						/>
+					<DataGridComponent
+						columns={columns}
+						rows={rows}
+						isLoading={isLoading}
+						paginationModel={paginationModel}
+						activeEntity="vehicles"
+						onPaginationModelChange={handlePaginationModelChange}
+					/>
 				)}
 			</div>
 		</>

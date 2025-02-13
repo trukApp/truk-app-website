@@ -26,10 +26,6 @@ declare module "next-auth" {
   }
 }
 const refreshAccessToken = async (refreshToken: string) => {
-  console.log(
-    "Attempting to refresh access token with refresh token:",
-    refreshToken
-  );
   try {
     const response = await fetch(
       `https://dev-api.trukapp.com/truk/log/refresh-token`,
@@ -44,14 +40,11 @@ const refreshAccessToken = async (refreshToken: string) => {
       }
     );
 
-    console.log("Refresh token API response status:", response.status);
-
     if (!response.ok) {
       throw new Error(`Failed to refresh access token: ${response.statusText}`);
     }
 
     const data = await response.json();
-    console.log("Token data received from refresh API:", data);
     return {
       accessToken: data.accessToken,
       // refreshToken: data.refreshToken || refreshToken,
@@ -87,7 +80,6 @@ export const options: NextAuthOptions = {
         }
 
         try {
-          console.log("qwerty");
           const response = await fetch(
             `https://dev-api.trukapp.com/truk/log/login`,
             // `http://192.168.10.28:8088/truk/log/login`,   // teja ofc
@@ -103,15 +95,11 @@ export const options: NextAuthOptions = {
               }),
             }
           );
-          console.log("Signin response status:", response.status);
-
           if (!response.ok) {
-            console.log("invalid phone number");
             throw new Error("Invalid phone number or password");
           }
 
           const user = await response.json();
-          console.log("User details received from login API:", user);
           if (user && user.accessToken) {
             return {
               id: user.profile_id,
@@ -133,7 +121,6 @@ export const options: NextAuthOptions = {
 
   callbacks: {
     async jwt({ token, user }) {
-      console.log("token :", token);
       // Initial sign-in
       if (user) {
         return {

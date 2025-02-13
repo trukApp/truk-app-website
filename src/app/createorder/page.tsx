@@ -15,13 +15,8 @@ const CreateOrder: React.FC = () => {
     const [activeStep, setActiveStep] = useState(0);
     const [selectTheTrucks] = useSelectTheProductsMutation();
     const [selectTrucks, setSelectTrucks] = useState<Truck[]>([]);
-    const [rootOptimization, setRouteOptimazition] = useState<RootOptimizationType[]>([])
-    const sourceLocation = useAppSelector((state) => state.auth.createOrderDesination);
     const [modalOpen, setModalOpen] = useState(false);
     const filters = useAppSelector((state) => state.auth.filters);
-    console.log("sourceLocation: ", sourceLocation)
-    console.log(rootOptimization)
-
 
 
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
@@ -36,14 +31,12 @@ const CreateOrder: React.FC = () => {
 
 
     const handleCreateOrder = () => {
-        console.log("Final Packages are: ", selectedPackages);
-        console.log("Final Trucks Selections are: ", selectedTrucks);
+        console.log(selectedPackages);
 
     };
 
     const handleSelectTruck = async () => {
         if (activeStep === 0) {
-            console.log("next button is clicked")
             const packagesIDArray = selectedPackages.map((item) => item.pack_ID);
             const body = {
                 packages: packagesIDArray,
@@ -52,7 +45,6 @@ const CreateOrder: React.FC = () => {
             const response = await selectTheTrucks(body).unwrap();
             if (response) {
                 setSelectTrucks([response?.scenarioCost, response?.scenarioEta])
-                setRouteOptimazition([response?.scenarioCost, response?.scenarioEta])
                 setActiveStep((prev) => prev + 1)
             }
         } else {
@@ -65,7 +57,7 @@ const CreateOrder: React.FC = () => {
     return (
         <div>
             {modalOpen && (
-                    <Dialog open={modalOpen} onClose={() => setModalOpen(false)} >
+                <Dialog open={modalOpen} onClose={() => setModalOpen(false)} >
                     <DialogTitle>Proceed for order </DialogTitle>
                     <DialogContent>
                         <Typography>Are you sure you want to create the order ?</Typography>
@@ -78,7 +70,7 @@ const CreateOrder: React.FC = () => {
                             Create order
                         </Button>
                     </DialogActions>
-                    </Dialog>
+                </Dialog>
             )}
             <Stepper activeStep={activeStep} alternativeLabel>
                 {steps.map((label) => (
@@ -133,7 +125,7 @@ const CreateOrder: React.FC = () => {
                     <Button
                         variant='contained' color='primary'
                         className={styles.nextButton}
-                        onClick={()=> setModalOpen(true)}
+                        onClick={() => setModalOpen(true)}
                     >
                         Submit
                     </Button>

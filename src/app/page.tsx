@@ -18,11 +18,10 @@ export default function Home() {
   if (uomErr) {
     console.log("uom err:", uomErr)
   }
-    useEffect(() => {
+  useEffect(() => {
     if (uom && uom.uomList) {
       const unitsofMeasure = uom.uomList.map((item: { unit_name: string }) => item.unit_name);
       dispatch(setUnitsofMeasurement(unitsofMeasure));
-      console.log("uom ", unitsofMeasure)
     }
 
     if (uomErr) {
@@ -31,8 +30,8 @@ export default function Home() {
   }, [uom, uomErr, dispatch]);
 
   return (
-    <Grid sx={{marginLeft:{xs:0,md:'30px'}}}>
-      
+    <Grid sx={{ marginLeft: { xs: 0, md: '30px' } }}>
+
       <SettingsComponent />
       <TransportManagement />
       <TransportPlanning />

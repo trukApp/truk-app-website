@@ -12,17 +12,15 @@ const LoginPage: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
 
-  console.log('callbackUrl', callbackUrl)
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const callbackUrlFromQuery = urlParams.get('callbackUrl');
     if (callbackUrlFromQuery) {
-      setCallbackUrl(callbackUrlFromQuery); // Set callbackUrl if it exists in the query params
+      setCallbackUrl(callbackUrlFromQuery);
     }
   }, []);
 
   const handleLogin = async () => {
-    console.log('werty')
     setError('');
     setLoading(true);
 
@@ -46,7 +44,6 @@ const LoginPage: React.FC = () => {
       setLoading(false);
     }
   };
-  console.log("")
   const handlePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
   };

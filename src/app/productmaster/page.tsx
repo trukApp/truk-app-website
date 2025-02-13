@@ -88,7 +88,7 @@ export interface Product {
 }
 
 const ProductMasterPage = () => {
-     const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
+    const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10, });
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
@@ -122,10 +122,10 @@ const ProductMasterPage = () => {
     const [formInitialValues, setFormInitialValues] = useState(productFormInitialValues);
     const [updateRecordData, setUpdateRecordData] = useState({});
     const [updateRecordId, setUpdateRecordId] = useState(0)
-    const { data: productsData, error: allProductsFectchingError , isLoading } = useGetAllProductsQuery({page: paginationModel.page + 1, limit: paginationModel.pageSize})
+    const { data: productsData, error: allProductsFectchingError, isLoading } = useGetAllProductsQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize })
     const [showForm, setShowForm] = useState(false);
-    const { data: locationsData, error: getLocationsError, isLoading:isLocationLoading } = useGetLocationMasterQuery({})
-    const { data: packagesData,isLoading:isPackageLoading  } = useGetPackageMasterQuery({})
+    const { data: locationsData, error: getLocationsError, isLoading: isLocationLoading } = useGetLocationMasterQuery({})
+    const { data: packagesData, isLoading: isPackageLoading } = useGetPackageMasterQuery({})
     const [createNewProduct] = useCreateProductMutation();
     const [deleteProduct] = useDeleteProductMutation()
     const [updateProductDetails] = useEditProductMutation();
@@ -133,16 +133,11 @@ const ProductMasterPage = () => {
     const getAllPackages = packagesData?.packages.length > 0 ? packagesData?.packages : []
     const allProductsData = productsData?.products || [];
 
-    console.log("updateRecord: ", updateRecordData)
-    console.log("updateRecordId: ", updateRecordId)
-    console.log("productsData: ", allProductsData)
     console.log("Getting all product errors: ", allProductsFectchingError)
     console.log("getLocationsError: ", getLocationsError)
-    console.log("initialValues: ", formInitialValues)
-
     const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
-            setPaginationModel(newPaginationModel);
-            };
+        setPaginationModel(newPaginationModel);
+    };
     const validationSchema = Yup.object({
         productName: Yup.string().required('Product name is required'),
         productDescription: Yup.string().required('Product Description is required'),
@@ -178,39 +173,35 @@ const ProductMasterPage = () => {
     });
 
     const handleEdit = async (rowData: Product) => {
-        console.log('Edit clicked for:', rowData);
-        console.log("rowData: ", rowData?.packagingType)
         setShowForm(true)
         setUpdateRecord(true)
         setUpdateRecordData(rowData)
         const updatedInitialValues = await mapRowToInitialValues(rowData);
-        console.log('Updated Initial Values:', updatedInitialValues);
         setUpdateRecordId(rowData?.id)
 
         setFormInitialValues(updatedInitialValues);
     };
 
-const handleDelete = async (row: Product) => {
-    const confirmDelete = window.confirm(`Are you sure you want to delete ? This action cannot be undone.`);
+    const handleDelete = async (row: Product) => {
+        const confirmDelete = window.confirm(`Are you sure you want to delete ? This action cannot be undone.`);
 
-    if (!confirmDelete) return;
+        if (!confirmDelete) return;
 
-    try {
-        console.log("Delete clicked:", row);
-        const productId = row?.id;
-        const response = await deleteProduct(productId);
-        if (response.data.deleted_record) {
-          setSnackbarMessage(`Product ID ${response.data.deleted_record} deleted successfully!`);
-          setSnackbarSeverity("info");
-          setSnackbarOpen(true);
-      } 
-    } catch (error) {
-        console.error("Delete error:", error);
-        setSnackbarMessage("Failed to delete product. Please try again.");
-        setSnackbarSeverity("error");
-        setSnackbarOpen(true);
-    }
-};
+        try {
+            const productId = row?.id;
+            const response = await deleteProduct(productId);
+            if (response.data.deleted_record) {
+                setSnackbarMessage(`Product ID ${response.data.deleted_record} deleted successfully!`);
+                setSnackbarSeverity("info");
+                setSnackbarOpen(true);
+            }
+        } catch (error) {
+            console.error("Delete error:", error);
+            setSnackbarMessage("Failed to delete product. Please try again.");
+            setSnackbarSeverity("error");
+            setSnackbarOpen(true);
+        }
+    };
 
 
     const columns = [
@@ -279,96 +270,90 @@ const handleDelete = async (row: Product) => {
     }));
 
 
-    const handleSubmit = async (values: typeof productFormInitialValues,{resetForm} :{resetForm :()=> void}) => {
-        console.log('Form Submitted', values);
+    const handleSubmit = async (values: typeof productFormInitialValues, { resetForm }: { resetForm: () => void }) => {
         try {
-                    const createProductBody = {
-            products: [
-                {
-                    product_name: values?.productName,
-                    product_desc: values?.productDescription,
-                    basic_uom: values?.basicUoM,
-                    sales_uom: values?.salesUoM,
-                    weight: values?.weightUoM,
-                    weight_uom: values?.weightUnit,
-                    volume: values?.volumeUoM,
-                    volume_uom: values?.volumeUnit,
-                    expiration: values?.expirationDate,
-                    best_before: values?.bestBeforeDate,
-                    stacking_factor: values?.stackingFactor,
-                    sku_num: values?.skuNumber,
-                    hsn_code: values?.hsncode,
-                    documents: values?.documents,
-                    loc_ID: values?.locationId,
-                    packaging_type: [
-                        {
-                            pac_ID: values?.packagingType,
-                            location: values?.locationId
-                        }
-                    ],
-                    special_instructions: values?.specialInstructions,
-                    packing_label: values?.generatePackagingLabel,
-                    fragile_goods: values?.fragileGoods,
-                    dangerous_goods: values?.dangerousGoods,
-                    hazardous: values?.hazardousStorage,
-                    temp_controlled: values?.temperatureControl
+            const createProductBody = {
+                products: [
+                    {
+                        product_name: values?.productName,
+                        product_desc: values?.productDescription,
+                        basic_uom: values?.basicUoM,
+                        sales_uom: values?.salesUoM,
+                        weight: values?.weightUoM,
+                        weight_uom: values?.weightUnit,
+                        volume: values?.volumeUoM,
+                        volume_uom: values?.volumeUnit,
+                        expiration: values?.expirationDate,
+                        best_before: values?.bestBeforeDate,
+                        stacking_factor: values?.stackingFactor,
+                        sku_num: values?.skuNumber,
+                        hsn_code: values?.hsncode,
+                        documents: values?.documents,
+                        loc_ID: values?.locationId,
+                        packaging_type: [
+                            {
+                                pac_ID: values?.packagingType,
+                                location: values?.locationId
+                            }
+                        ],
+                        special_instructions: values?.specialInstructions,
+                        packing_label: values?.generatePackagingLabel,
+                        fragile_goods: values?.fragileGoods,
+                        dangerous_goods: values?.dangerousGoods,
+                        hazardous: values?.hazardousStorage,
+                        temp_controlled: values?.temperatureControl
 
+                    }
+                ]
+            }
+
+            const editProductBody = {
+                ...updateRecordData,
+                product_name: values?.productName,
+                product_desc: values?.productDescription,
+                basic_uom: values?.basicUoM,
+                sales_uom: values?.salesUoM,
+                weight: values?.weightUoM,
+                weight_uom: values?.weightUnit,
+                volume: values?.volumeUoM,
+                volume_uom: values?.volumeUnit,
+                expiration: values?.expirationDate,
+                best_before: values?.bestBeforeDate,
+                stacking_factor: values?.stackingFactor,
+                sku_num: values?.skuNumber,
+                hsn_code: values?.hsncode,
+                documents: values?.documents,
+                loc_ID: values?.locationId,
+                packaging_type: [
+                    {
+                        pac_ID: values?.packagingType,
+                        location: values?.locationId
+                    }
+                ],
+                special_instructions: values?.specialInstructions,
+                packing_label: values?.generatePackagingLabel,
+                fragile_goods: values?.fragileGoods,
+                dangerous_goods: values?.dangerousGoods,
+                hazardous: values?.hazardousStorage,
+                temp_controlled: values?.temperatureControl
+            }
+
+            if (updateRecord) {
+                const response = await updateProductDetails({ body: editProductBody, productId: updateRecordId }).unwrap();
+                if (response?.updated_record) {
+                    setSnackbarMessage(`Product ID ${response.updated_record} updated successfully!`);
+                    resetForm()
+                    setFormInitialValues(productFormInitialValues)
+                    setShowForm(false)
+                    setUpdateRecord(false)
+                    setUpdateRecordId(0)
+                    setUpdateRecordData({})
+                    setSnackbarSeverity("success");
+                    setSnackbarOpen(true);
                 }
-            ]
-        }
-
-        const editProductBody = {
-            ...updateRecordData,
-            product_name: values?.productName,
-            product_desc: values?.productDescription,
-            basic_uom: values?.basicUoM,
-            sales_uom: values?.salesUoM,
-            weight: values?.weightUoM,
-            weight_uom: values?.weightUnit,
-            volume: values?.volumeUoM,
-            volume_uom: values?.volumeUnit,
-            expiration: values?.expirationDate,
-            best_before: values?.bestBeforeDate,
-            stacking_factor: values?.stackingFactor,
-            sku_num: values?.skuNumber,
-            hsn_code: values?.hsncode,
-            documents: values?.documents,
-            loc_ID: values?.locationId,
-            packaging_type: [
-                {
-                    pac_ID: values?.packagingType,
-                    location: values?.locationId
-                }
-            ],
-            special_instructions: values?.specialInstructions,
-            packing_label: values?.generatePackagingLabel,
-            fragile_goods: values?.fragileGoods,
-            dangerous_goods: values?.dangerousGoods,
-            hazardous: values?.hazardousStorage,
-            temp_controlled: values?.temperatureControl
-        }
-
-        if (updateRecord) {
-            console.log("I am going to update the existing record")
-            const response = await updateProductDetails({ body: editProductBody, productId: updateRecordId }).unwrap();
-            console.log('API Response:', response);
-            if (response?.updated_record) {
-                  setSnackbarMessage(`Product ID ${response.updated_record} updated successfully!`);
-                  resetForm()
-                setFormInitialValues(productFormInitialValues)
-                setShowForm(false)
-                setUpdateRecord(false)
-                setUpdateRecordId(0)
-                setUpdateRecordData({})
-                  setSnackbarSeverity("success");
-                  setSnackbarOpen(true);
-                } 
-        } else {
-            console.log("I am going to create a record")
-            console.log("createProductBody: ", createProductBody)
-            const response = await createNewProduct(createProductBody).unwrap();
-            console.log('API Response:', response)
-            if (response?.created_records) {
+            } else {
+                const response = await createNewProduct(createProductBody).unwrap();
+                if (response?.created_records) {
                     setSnackbarMessage(`Product ID ${response.created_records[0]} created successfully!`);
                     resetForm()
                     setShowForm(false)
@@ -377,8 +362,8 @@ const handleDelete = async (row: Product) => {
                     setUpdateRecordData({})
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
-                  } 
-        }
+                }
+            }
         }
         catch (error) {
             console.log("err :", error)
@@ -386,7 +371,7 @@ const handleDelete = async (row: Product) => {
             setShowForm(false)
             setSnackbarMessage("Something went wrong! please try again.");
             setSnackbarSeverity("error");
-			setSnackbarOpen(true);
+            setSnackbarOpen(true);
         }
 
 
@@ -485,7 +470,7 @@ const handleDelete = async (row: Product) => {
                                             helperText={touched.salesUoM && errors.salesUoM}
                                         />
                                     </Grid> */}
-                                      <Grid item xs={12} sm={6} md={2.4}   >
+                                    <Grid item xs={12} sm={6} md={2.4}   >
                                         <TextField
                                             fullWidth size='small'
                                             select
@@ -587,18 +572,18 @@ const handleDelete = async (row: Product) => {
                                             type="date"
                                             value={
                                                 values.expirationDate
-                                                ? values.expirationDate.split('-').reverse().join('-')
-                                                : ''
+                                                    ? values.expirationDate.split('-').reverse().join('-')
+                                                    : ''
                                             }
                                             onChange={(e) => {
                                                 const selectedDate = e.target.value;
                                                 const formattedDate = selectedDate
                                                     .split('-').reverse().join('-');
-                                            handleChange({ target: { name: 'expiryDate', value: formattedDate } });
-                                                    }}
+                                                handleChange({ target: { name: 'expiryDate', value: formattedDate } });
+                                            }}
                                             onBlur={handleBlur}
                                             InputLabelProps={{ shrink: true }}
-                                            />
+                                        />
                                     </Grid>
                                     {/* <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
@@ -621,18 +606,18 @@ const handleDelete = async (row: Product) => {
                                             type="date"
                                             value={
                                                 values.bestBeforeDate
-                                                ? values.bestBeforeDate.split('-').reverse().join('-')
-                                                : ''
+                                                    ? values.bestBeforeDate.split('-').reverse().join('-')
+                                                    : ''
                                             }
                                             onChange={(e) => {
                                                 const selectedDate = e.target.value;
                                                 const formattedDate = selectedDate
                                                     .split('-').reverse().join('-');
-                                            handleChange({ target: { name: 'expiryDate', value: formattedDate } });
-                                                    }}
+                                                handleChange({ target: { name: 'expiryDate', value: formattedDate } });
+                                            }}
                                             onBlur={handleBlur}
                                             InputLabelProps={{ shrink: true }}
-                                            />
+                                        />
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
@@ -693,23 +678,23 @@ const handleDelete = async (row: Product) => {
                                                 onChange={(e) => setFieldValue('locationId', e.target.value)}
                                                 onBlur={handleBlur}
                                             >
-                                            {isLocationLoading ? (
-                                                <MenuItem disabled>
-                                                                              <CircularProgress size={20} color="inherit" />
-                                                                              <span style={{ marginLeft: "10px" }}>Loading...</span>
-                                                                            </MenuItem>
-                                                                          ) : (
-                                                                            getAllLocations?.map((location: Location) => (
-                                                                              <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                                                                                <Tooltip
-                                                                                  title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                                                                  placement="right"
-                                                                                >
-                                                                                  <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                                                                                </Tooltip>
-                                                                              </MenuItem>
-                                                                            ))
-                                                                          )}
+                                                {isLocationLoading ? (
+                                                    <MenuItem disabled>
+                                                        <CircularProgress size={20} color="inherit" />
+                                                        <span style={{ marginLeft: "10px" }}>Loading...</span>
+                                                    </MenuItem>
+                                                ) : (
+                                                    getAllLocations?.map((location: Location) => (
+                                                        <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                                            <Tooltip
+                                                                title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                                                placement="right"
+                                                            >
+                                                                <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                                            </Tooltip>
+                                                        </MenuItem>
+                                                    ))
+                                                )}
                                             </Select>
                                             {touched.locationId && errors.locationId && (
                                                 <FormHelperText>{errors.locationId}</FormHelperText>
@@ -736,23 +721,23 @@ const handleDelete = async (row: Product) => {
                                                 onChange={(e) => setFieldValue('packagingType', e.target.value)}
                                                 onBlur={handleBlur}
                                             >
-                                        {isPackageLoading ? (
-                                                <MenuItem disabled>
-                                                <CircularProgress size={20} color="inherit" />
-                                                <span style={{ marginLeft: "10px" }}>Loading...</span>
-                                                </MenuItem>
-                                            ) : (
-                                                getAllPackages?.map((packages: Package) => (
-                                                <MenuItem key={packages.pac_ID} value={String(packages.pac_ID)}>
-                                                    <Tooltip
-                                                    title={`${packages.packaging_type_name}, ${packages.dimensions}, ${packages.dimensions_uom}`}
-                                                    placement="right"
-                                                    >
-                                                    <span style={{ flex: 1 }}>{packages.pac_ID}</span>
-                                                    </Tooltip>
-                                                </MenuItem>
-                                                ))
-                                            )}
+                                                {isPackageLoading ? (
+                                                    <MenuItem disabled>
+                                                        <CircularProgress size={20} color="inherit" />
+                                                        <span style={{ marginLeft: "10px" }}>Loading...</span>
+                                                    </MenuItem>
+                                                ) : (
+                                                    getAllPackages?.map((packages: Package) => (
+                                                        <MenuItem key={packages.pac_ID} value={String(packages.pac_ID)}>
+                                                            <Tooltip
+                                                                title={`${packages.packaging_type_name}, ${packages.dimensions}, ${packages.dimensions_uom}`}
+                                                                placement="right"
+                                                            >
+                                                                <span style={{ flex: 1 }}>{packages.pac_ID}</span>
+                                                            </Tooltip>
+                                                        </MenuItem>
+                                                    ))
+                                                )}
                                             </Select>
                                             {touched.packagingType && errors.packagingType && (
                                                 <FormHelperText>{errors.packagingType}</FormHelperText>
@@ -840,8 +825,8 @@ const handleDelete = async (row: Product) => {
                                 </Grid>
 
                                 <Box marginTop={2} textAlign="center">
-                                   <Button type="submit" variant="contained" color="primary">
-                                            {updateRecord ? "Update product" : "Create product"}
+                                    <Button type="submit" variant="contained" color="primary">
+                                        {updateRecord ? "Update product" : "Create product"}
                                     </Button>
                                     <Button
                                         variant="outlined"
@@ -861,7 +846,7 @@ const handleDelete = async (row: Product) => {
             </Collapse>
             <div style={{ marginTop: "40px" }}>
                 {isLoading ? (
-                <DataGridSkeletonLoader columns={columns} />
+                    <DataGridSkeletonLoader columns={columns} />
                 ) : (
                     <DataGridComponent
                         columns={columns}
@@ -870,7 +855,7 @@ const handleDelete = async (row: Product) => {
                         paginationModel={paginationModel}
                         onPaginationModelChange={handlePaginationModelChange}
                         activeEntity='products'
-                        />
+                    />
                 )}
             </div>
         </Grid>

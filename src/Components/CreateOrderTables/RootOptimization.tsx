@@ -350,11 +350,11 @@ interface RootOptimizationProps {
 const routeColors = ['#FF0000', '#0000FF', '#0096FF', '#00FF00', '#FF00FF', '#FFA500'];
 
 const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization }) => {
-    console.log('rootOptimization screen', rootOptimization);
     const { isLoaded } = useLoadScript({ googleMapsApiKey: mapsKey });
     const [activeMarker, setActiveMarker] = useState<number | null>(null);
     const [directionsResults, setDirectionsResults] = useState<google.maps.DirectionsResult[]>([]);
     const [selectedRouteIndex, setSelectedRouteIndex] = useState<number | null>(null);
+    window.scrollTo(0, 0)
 
     const { startMarkers, endMarkers } = useMemo(() => {
         const startSet = new Map();
@@ -396,9 +396,7 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
             endMarkers: Array.from(endSet.values()),
         };
     }, [rootOptimization]);
-    console.log('selectedRouteIndex', selectedRouteIndex);
-    console.log('startMarkers', startMarkers);
-    console.log('endMarkers', endMarkers);
+
     const fetchDirections = useCallback(async () => {
         if (!isLoaded || typeof google === 'undefined' || !google.maps) return;
 

@@ -13,7 +13,6 @@ const baseQuery = fetchBaseQuery({
     try {
       const session = await getSession();
       const token = session?.user?.accessToken;
-      console.log("token from apislice :", token);
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
       }
@@ -440,8 +439,6 @@ export const apiSlice = createApi({
     //Crearte order
     selectTheProducts: builder.mutation({
       query: (body) => {
-        // console.log("RTK Query Payload", JSON.stringify(body, null, 2));
-        // console.log("RTK Query Payload:", body);
         return {
           url: "createOrder/create-order",
           method: "POST",

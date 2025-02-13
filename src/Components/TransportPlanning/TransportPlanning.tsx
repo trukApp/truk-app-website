@@ -13,7 +13,6 @@ const TransportPlanning = () => {
       title: 'Transport Order Planning',
       icon: <LocalShippingIcon sx={{ fontSize: { xs: 40, sm: 50, md: 60 } }} />,
       onClick: () => {
-        console.log('Navigating to Transport Order Planning');
         router.push('/createorder');
       },
     },
@@ -21,7 +20,6 @@ const TransportPlanning = () => {
       title: 'Spot Auction',
       icon: <GavelIcon sx={{ fontSize: { xs: 40, sm: 50, md: 60 } }} />,
       onClick: () => {
-        console.log('Navigating to Spot Auction');
         router.push('/spotauction');
       },
     },

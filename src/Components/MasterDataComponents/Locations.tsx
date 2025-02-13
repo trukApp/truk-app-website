@@ -25,7 +25,7 @@ import { GridColDef, GridPaginationModel } from '@mui/x-data-grid';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import styles from './MasterData.module.css';
-import { useGetLocationMasterQuery, usePostLocationMasterMutation,useEditLocationMasterMutation ,useDeleteLocationMasterMutation } from '@/api/apiSlice';
+import { useGetLocationMasterQuery, usePostLocationMasterMutation, useEditLocationMasterMutation, useDeleteLocationMasterMutation } from '@/api/apiSlice';
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MassUpload from '../MassUpload/MassUpload';
@@ -101,169 +101,143 @@ const validationSchema = Yup.object({
 });
 
 const Locations: React.FC = () => {
-      const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({page: 0,pageSize: 10,});
-      const [snackbarOpen, setSnackbarOpen] = useState(false);
-      const [snackbarMessage, setSnackbarMessage] = useState("");
-      const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
+  const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10, });
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
   const [showForm, setShowForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editRow,setEditRow] = useState<DataGridRow | null>(null); ;
-  const { data, error, isLoading } = useGetLocationMasterQuery({page: paginationModel.page + 1, limit: paginationModel.pageSize});
-  const [postLocation,{isLoading:postLocationLoading}] = usePostLocationMasterMutation();
-  const [editLocation,{isLoading:editLocationLoading}] = useEditLocationMasterMutation();
-  const [deleteLocation,{isLoading:deleteLocationLoading}] = useDeleteLocationMasterMutation()
+  const [editRow, setEditRow] = useState<DataGridRow | null>(null);;
+  const { data, error, isLoading } = useGetLocationMasterQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize });
+  const [postLocation, { isLoading: postLocationLoading }] = usePostLocationMasterMutation();
+  const [editLocation, { isLoading: editLocationLoading }] = useEditLocationMasterMutation();
+  const [deleteLocation, { isLoading: deleteLocationLoading }] = useDeleteLocationMasterMutation()
 
 
-  console.log("all locations :", data?.locations)
-  if (isLoading) {
-    console.log("Loading locations...");
-  }
 
   if (error) {
     console.error("Error fetching locations:", error);
-    // Handle the error case
   }
 
   const locationsMaster = data?.locations
-  // Static data for vehicle options
-  // const vehicleOptions = [
-  //   { id: '1', name: 'Truck - 001' },
-  //   { id: '2', name: 'Trailer - 002' },
-  //   { id: '3', name: 'Container - 003' },
-  //   { id: '4', name: 'Truck - 004' },
-  //   { id: '5', name: 'Trailer - 005' },
-  // ];
 
-const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
-        setPaginationModel(newPaginationModel);
-        };
+
+  const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
+    setPaginationModel(newPaginationModel);
+  };
   const handleFormSubmit = async (values: DataGridRow) => {
-    console.log("form submitted locations :", values)
+    try {
+      const body = {
+        locations: [
+          {
+            loc_desc: values.locationDescription,
+            longitude: values.longitude,
+            latitude: values.latitude,
+            time_zone: values.timeZone,
+            address_1: values.addressLine1,
+            address_2: values.addressLine2,
+            city: values.city,
+            state: values.state,
+            country: values.country,
+            pincode: values.pincode,
+            loc_type: values.locationType,
+            gln_code: values.glnCode,
+            iata_code: values.iataCode,
 
-        try {
-            const body = {
-                locations: [
-                    {
-                      loc_desc: values.locationDescription ,
-                      longitude: values.longitude,
-                      latitude: values.latitude,
-                      time_zone: values.timeZone,
-                      address_1 : values.addressLine1,
-                      address_2:values.addressLine2,
-                      city: values.city,
-                      state: values.state,
-                      country: values.country,
-                      pincode: values.pincode,
-                      loc_type: values.locationType,
-                      gln_code: values.glnCode,
-                    iata_code: values.iataCode,
-                    
-                    }
-                ]
-              }
-              const editBody =    {
-                      loc_desc: values.locationDescription ,
-                      longitude: values.longitude,
-                      latitude: values.latitude,
-                      time_zone: values.timeZone,
-                      address_1 : values.addressLine1,
-                      address_2 : values.addressLine2,
-                      city: values.city,
-                      state: values.state,
-                      country: values.country,
-                      pincode: values.pincode,
-                      loc_type: values.locationType,
-                      gln_code: values.glnCode,
-                      iata_code: values.iataCode
-                    }
-              console.log("location body: ", body)
-              if (isEditing && editRow) {
-                console.log('edit body is :', editBody)
-                const locationId = editRow.id
-                const response = await editLocation({body:editBody, locationId}).unwrap()
-                console.log("edit response is ", response)
-                if (response?.updated_record) {
-                  setSnackbarMessage(`Location ID ${response.updated_record} updated successfully!`);
-                  formik.resetForm();
-                  setShowForm(false)
-                  setIsEditing(false)
-                  setSnackbarSeverity("success");
-                  setSnackbarOpen(true);
-                }
-              }
-              else {
-                console.log("post create location ",body)
-                  const response = await postLocation(body).unwrap();
-                console.log('response in post location:', response);
-                if (response?.created_records) {
-                    setSnackbarMessage(`Location ID ${response.created_records[0]} created successfully!`);
-                    formik.resetForm();
-                setShowForm(false)
-                setIsEditing(false)
-                    setSnackbarSeverity("success");
-                    setSnackbarOpen(true);
-                  }
-
-              }
-          
-        } catch (error) {
-          console.error('API Error:', error);
-               setSnackbarMessage("Something went wrong! please try again");
-                    setSnackbarSeverity("error");
-                    setSnackbarOpen(true);
-                    setShowForm(false)
+          }
+        ]
+      }
+      const editBody = {
+        loc_desc: values.locationDescription,
+        longitude: values.longitude,
+        latitude: values.latitude,
+        time_zone: values.timeZone,
+        address_1: values.addressLine1,
+        address_2: values.addressLine2,
+        city: values.city,
+        state: values.state,
+        country: values.country,
+        pincode: values.pincode,
+        loc_type: values.locationType,
+        gln_code: values.glnCode,
+        iata_code: values.iataCode
+      }
+      if (isEditing && editRow) {
+        const locationId = editRow.id
+        const response = await editLocation({ body: editBody, locationId }).unwrap()
+        if (response?.updated_record) {
+          setSnackbarMessage(`Location ID ${response.updated_record} updated successfully!`);
+          formik.resetForm();
+          setShowForm(false)
+          setIsEditing(false)
+          setSnackbarSeverity("success");
+          setSnackbarOpen(true);
         }
+      }
+      else {
+        const response = await postLocation(body).unwrap();
+        if (response?.created_records) {
+          setSnackbarMessage(`Location ID ${response.created_records[0]} created successfully!`);
+          formik.resetForm();
+          setShowForm(false)
+          setIsEditing(false)
+          setSnackbarSeverity("success");
+          setSnackbarOpen(true);
+        }
+
+      }
+
+    } catch (error) {
+      console.error('API Error:', error);
+      setSnackbarMessage("Something went wrong! please try again");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      setShowForm(false)
+    }
 
   }
 
 
-    const handleEdit = (row: DataGridRow) => {
-    console.log("Edit row:", row);
+  const handleEdit = (row: DataGridRow) => {
     setShowForm(true)
     setIsEditing(true)
     setEditRow(row)
-    };
+  };
 
-const handleDelete = async (row: DataGridRow) => {
+  const handleDelete = async (row: DataGridRow) => {
     const locationId = row?.id;
     if (!locationId) {
-        console.error("Row ID is missing");
-        setSnackbarMessage("Error: Location ID is missing!");
-        setSnackbarSeverity("error");
-        setSnackbarOpen(true);
-        return;
+      setSnackbarMessage("Error: Location ID is missing!");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      return;
     }
 
     const confirmed = window.confirm("Are you sure you want to delete this item?");
     if (!confirmed) {
-        console.log("Delete canceled by user.");
-        return;
+      return;
     }
 
     try {
-        const response = await deleteLocation(locationId);
-        console.log("Delete response:", response);
-        if (response.data.deleted_record) {
-          setSnackbarMessage(`Location ID ${response.data.deleted_record} deleted successfully!`);
-          setSnackbarSeverity("info");
-          setSnackbarOpen(true);
+      const response = await deleteLocation(locationId);
+      if (response.data.deleted_record) {
+        setSnackbarMessage(`Location ID ${response.data.deleted_record} deleted successfully!`);
+        setSnackbarSeverity("info");
+        setSnackbarOpen(true);
       }
     } catch (error) {
-        console.error("Error deleting location:", error);
+      console.error("Error deleting location:", error);
 
-        // Show error snackbar
-        setSnackbarMessage("Failed to delete location. Please try again.");
-        setSnackbarSeverity("error");
-        setSnackbarOpen(true);
+      // Show error snackbar
+      setSnackbarMessage("Failed to delete location. Please try again.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
-};
+  };
 
-
-
-  console.log("edit :",isEditing, editRow)
   const formik = useFormik({
     initialValues: {
-      id :'',
+      id: '',
       locationId: '',
       locationDescription: editRow ? editRow?.locationDescription : '',
       locationType: '',
@@ -273,7 +247,7 @@ const handleDelete = async (row: DataGridRow) => {
       latitude: '',
       timeZone: '',
       addressLine1: '',
-      addressLine2 :'',
+      addressLine2: '',
       city: '',
       district: '',
       state: '',
@@ -282,7 +256,7 @@ const handleDelete = async (row: DataGridRow) => {
       vehiclesNearBy: [],
       locationContactName: '',
       locationContactNumber: '',
-      locationContactEmail :''
+      locationContactEmail: ''
     },
     validationSchema,
     onSubmit: handleFormSubmit
@@ -291,7 +265,7 @@ const handleDelete = async (row: DataGridRow) => {
   useEffect(() => {
     if (editRow) {
       formik.setValues({
-        id:editRow.id,
+        id: editRow.id,
         locationId: editRow.locationId,
         locationDescription: editRow.locationDescription,
         locationType: editRow.locationType,
@@ -302,7 +276,7 @@ const handleDelete = async (row: DataGridRow) => {
         timeZone: editRow.timeZone,
         city: editRow.city,
         addressLine1: editRow?.addressLine1,
-        addressLine2 : editRow?.addressLine2,
+        addressLine2: editRow?.addressLine2,
         district: editRow.district,
         state: editRow.state,
         country: editRow.country,
@@ -317,7 +291,7 @@ const handleDelete = async (row: DataGridRow) => {
   const { values, errors, touched, handleChange, handleBlur, handleSubmit } = formik;
 
 
-  const rows= locationsMaster?.map((location: Location, index: number) => ({
+  const rows = locationsMaster?.map((location: Location, index: number) => ({
     id: location.location_id,
     locationId: location.loc_ID,
     locationDescription: location.loc_desc,
@@ -329,7 +303,7 @@ const handleDelete = async (row: DataGridRow) => {
     timeZone: location.time_zone || "UTC+05:30",
     city: location.city || `City-${index + 1}`,
     addressLine1: location.address_1,
-    addressLine2:location.address_2,
+    addressLine2: location.address_2,
     // district: location.district || `District-${index + 1}`,
     state: location.state || `State-${index + 1}`,
     country: location.country || "India",
@@ -394,11 +368,11 @@ const handleDelete = async (row: DataGridRow) => {
         <CircularProgress color="inherit" />
       </Backdrop>
       <SnackbarAlert
-                open={snackbarOpen}
-                message={snackbarMessage}
-                severity={snackbarSeverity}
-                onClose={() => setSnackbarOpen(false)}
-            />
+        open={snackbarOpen}
+        message={snackbarMessage}
+        severity={snackbarSeverity}
+        onClose={() => setSnackbarOpen(false)}
+      />
       <Box
         component="form"
         onSubmit={handleSubmit}
@@ -412,17 +386,17 @@ const handleDelete = async (row: DataGridRow) => {
           Location master
         </Typography>
         <Box display="flex" justifyContent="flex-end">
-          <Box  gap={2}>
-          <Button
-            variant="contained"
-            onClick={() => setShowForm((prev) => !prev)}
-            className={styles.createButton}
-          >
-            Create Location
-            {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 4 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 4 }} />}
-          </Button>
-        </Box>
-          <MassUpload arrayKey="locations"/>
+          <Box gap={2}>
+            <Button
+              variant="contained"
+              onClick={() => setShowForm((prev) => !prev)}
+              className={styles.createButton}
+            >
+              Create Location
+              {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 4 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 4 }} />}
+            </Button>
+          </Box>
+          <MassUpload arrayKey="locations" />
         </Box>
 
 
@@ -450,20 +424,20 @@ const handleDelete = async (row: DataGridRow) => {
                       }}
                     />
                   </Grid> */}
-                  <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth
-                      size="small"
-                      label="Location Description*"
-                      name="locationDescription"
-                      value={values.locationDescription}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      error={touched.locationDescription && Boolean(errors.locationDescription)}
-                      helperText={touched.locationDescription && errors.locationDescription}
-                    />
-                  </Grid>
-                  {/* <Grid item xs={12} sm={6} md={2.4}>
+                <Grid item xs={12} sm={6} md={2.4}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="Location Description*"
+                    name="locationDescription"
+                    value={values.locationDescription}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={touched.locationDescription && Boolean(errors.locationDescription)}
+                    helperText={touched.locationDescription && errors.locationDescription}
+                  />
+                </Grid>
+                {/* <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth
                     size="small"
@@ -503,7 +477,7 @@ const handleDelete = async (row: DataGridRow) => {
                       <option value="border cross point">Border Cross Point</option>
                     </TextField>
                   </Grid> */}
-                
+
                 <Grid item xs={12} sm={6} md={2.4}>
                   <TextField
                     fullWidth
@@ -590,50 +564,50 @@ const handleDelete = async (row: DataGridRow) => {
                 </Grid>
               </Grid>
 
-                <Grid container spacing={2} ml={1} mt={2}>
-                  <Typography variant="h6" align="center" gutterBottom >
-                    2. Address
-                  </Typography>
+              <Grid container spacing={2} ml={1} mt={2}>
+                <Typography variant="h6" align="center" gutterBottom >
+                  2. Address
+                </Typography>
                 <Grid container spacing={2}>
-                   <Grid item xs={12} sm={6} md={2.4}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        label="Address line 1*"
-                        name="addressLine1"
-                        value={values.addressLine1}
-                        onChange={handleChange}
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      label="Address line 1*"
+                      name="addressLine1"
+                      value={values.addressLine1}
+                      onChange={handleChange}
                       onBlur={handleBlur}
                       error={touched.addressLine1 && Boolean(errors.addressLine1)}
                       helperText={touched.addressLine1 && errors.addressLine1}
-                      // InputLabelProps={{ shrink: true }}
-                      />
+                    // InputLabelProps={{ shrink: true }}
+                    />
                   </Grid>
-                    <Grid item xs={12} sm={6} md={2.4}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        label="Address line 2"
-                        name="addressLine2"
-                        value={values.addressLine2}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={2.4}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        label="City*"
-                        name="city"
-                        value={values.city}
-                        onChange={handleChange}
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      label="Address line 2"
+                      name="addressLine2"
+                      value={values.addressLine2}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      label="City*"
+                      name="city"
+                      value={values.city}
+                      onChange={handleChange}
                       onBlur={handleBlur}
                       error={touched.city && Boolean(errors.city)}
                       helperText={touched.city && errors.city}
-                      />
-                    </Grid>
-                    {/* <Grid item xs={12} sm={6} md={2.4}>
+                    />
+                  </Grid>
+                  {/* <Grid item xs={12} sm={6} md={2.4}>
                       <TextField
                         fullWidth
                         size="small"
@@ -644,47 +618,47 @@ const handleDelete = async (row: DataGridRow) => {
                         onBlur={handleBlur}
                       />
                     </Grid> */}
-                    <Grid item xs={12} sm={6} md={2.4}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        label="State*"
-                        name="state"
-                        value={values.state}
-                        onChange={handleChange}
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      label="State*"
+                      name="state"
+                      value={values.state}
+                      onChange={handleChange}
                       onBlur={handleBlur}
                       error={touched.state && Boolean(errors.state)}
-                      helperText={touched.state && errors.state}                      
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={2.4}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        label="Country*"
-                        name="country"
-                        value={values.country}
-                        onChange={handleChange}
+                      helperText={touched.state && errors.state}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      label="Country*"
+                      name="country"
+                      value={values.country}
+                      onChange={handleChange}
                       onBlur={handleBlur}
                       error={touched.country && Boolean(errors.country)}
-                      helperText={touched.country && errors.country}                      
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={2.4}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        label="Pincode*"
-                        name="pincode"
-                        value={values.pincode}
-                        onChange={handleChange}
+                      helperText={touched.country && errors.country}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      label="Pincode*"
+                      name="pincode"
+                      value={values.pincode}
+                      onChange={handleChange}
                       onBlur={handleBlur}
                       error={touched.pincode && Boolean(errors.pincode)}
                       helperText={touched.pincode && errors.pincode}
-                      />
-                    </Grid>
+                    />
                   </Grid>
                 </Grid>
+              </Grid>
 
               {/* <Grid spacing={4} mt={2} ml={1}>
                   <Typography variant="h6" mb={1}  >
@@ -771,64 +745,64 @@ const handleDelete = async (row: DataGridRow) => {
                 </Grid> */}
 
 
-                <Grid container spacing={2} ml={1} mt={2}>
-                  <Typography variant="h6" align="center" gutterBottom >
-                    3. Additional details
-                  </Typography>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} sm={6} md={2.4}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        label="Contact person name*"
-                        name="locationContactName"
-                        value={values.locationContactName}
-                        onChange={handleChange}
+              <Grid container spacing={2} ml={1} mt={2}>
+                <Typography variant="h6" align="center" gutterBottom >
+                  3. Additional details
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      label="Contact person name*"
+                      name="locationContactName"
+                      value={values.locationContactName}
+                      onChange={handleChange}
                       onBlur={handleBlur}
                       error={touched.locationContactName && Boolean(errors.locationContactName)}
                       helperText={touched.locationContactName && errors.locationContactName}
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={2.4}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        label="Contact phone number*"
-                        name="locationContactNumber"
-                        value={values.locationContactNumber}
-                        onChange={handleChange}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      label="Contact phone number*"
+                      name="locationContactNumber"
+                      value={values.locationContactNumber}
+                      onChange={handleChange}
                       onBlur={handleBlur}
                       error={touched.locationContactNumber && Boolean(errors.locationContactNumber)}
                       helperText={touched.locationContactNumber && errors.locationContactNumber}
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={2.4}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        label="Contact email*"
-                        name="locationEmail"
-                        value={values.locationContactEmail}
-                        onChange={handleChange}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      label="Contact email*"
+                      name="locationEmail"
+                      value={values.locationContactEmail}
+                      onChange={handleChange}
                       onBlur={handleBlur}
                       error={touched.locationContactEmail && Boolean(errors.locationContactEmail)}
                       helperText={touched.locationContactEmail && errors.locationContactEmail}
-                      />
-                    </Grid>
+                    />
                   </Grid>
                 </Grid>
-            <Box sx={{ marginTop: '24px', textAlign: 'center' }}>
-              <Button variant="contained" color="primary" type="submit">
-                {isEditing ? "Update location" : "Create location"}
-              </Button>
-              <Button
+              </Grid>
+              <Box sx={{ marginTop: '24px', textAlign: 'center' }}>
+                <Button variant="contained" color="primary" type="submit">
+                  {isEditing ? "Update location" : "Create location"}
+                </Button>
+                <Button
                   variant='outlined'
                   color="secondary"
                   onClick={() => {
-                  formik.resetForm()
-                  setIsEditing(false);
-                  setEditRow(null);
-                    }}
+                    formik.resetForm()
+                    setIsEditing(false);
+                    setEditRow(null);
+                  }}
                   style={{ marginLeft: "10px" }}>Reset
                 </Button>
               </Box>
@@ -849,18 +823,18 @@ const handleDelete = async (row: DataGridRow) => {
           initialPageSize={10}
         />
       </div> */}
-            <div style={{ marginTop: "40px" }}>
+      <div style={{ marginTop: "40px" }}>
         {isLoading ? (
           <DataGridSkeletonLoader columns={columns} />
         ) : (
-             <DataGridComponent
-                  columns={columns}
-                  rows={rows}
-                  isLoading={isLoading}
-                  paginationModel={paginationModel}
-                  activeEntity='locations'
-                  onPaginationModelChange={handlePaginationModelChange}
-              />
+          <DataGridComponent
+            columns={columns}
+            rows={rows}
+            isLoading={isLoading}
+            paginationModel={paginationModel}
+            activeEntity='locations'
+            onPaginationModelChange={handlePaginationModelChange}
+          />
         )}
       </div>
 

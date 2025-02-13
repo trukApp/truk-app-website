@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Box, IconButton, Typography, Checkbox } from "@mui/material";
 import { ExpandMore, ExpandLess } from "@mui/icons-material";
@@ -28,6 +28,7 @@ interface TrucksTableProps {
 const TrucksTable: React.FC<TrucksTableProps> = ({ trucks }) => {
     const [expandedRow, setExpandedRow] = useState<string | null>(null);
     const [selectedTruck, setSelectedTruck] = useState<Truck | null>(null);
+    window.scrollTo(0, 0)
     const dispatch = useAppDispatch();
     const selectedTrucks = useAppSelector((state) => state.auth.selectedTrucks || []);
     const toggleExpandRow = (label: string) => {
