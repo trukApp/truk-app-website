@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Stepper, Step, StepLabel, Button, Typography } from '@mui/material';
 import PackagesTable from '@/Components/CreateOrderTables/PackagesTable';
 import TrucksTable, { Truck } from '@/Components/CreateOrderTables/TrucksTable';
-import RootOptimization from '@/Components/CreateOrderTables/RootOptimization';
+import RootOptimization, { RootOptimizationType } from '@/Components/CreateOrderTables/RootOptimization';
 import LoadOptimization from '@/Components/CreateOrderTables/LoadOptimization';
 import { useAppSelector } from '@/store';
 import styles from './createorder.module.css';
@@ -15,7 +15,7 @@ const CreateOrder: React.FC = () => {
     const [activeStep, setActiveStep] = useState(0);
     const [selectTheTrucks] = useSelectTheProductsMutation();
     const [selectTrucks, setSelectTrucks] = useState<Truck[]>([]);
-    const [rootOptimization, setRouteOptimazition] = useState([])
+    const [rootOptimization, setRouteOptimazition] = useState<RootOptimizationType[]>([])
     const sourceLocation = useAppSelector((state) => state.auth.createOrderDesination);
     const filters = useAppSelector((state) => state.auth.filters);
     console.log("sourceLocation: ", sourceLocation)
@@ -50,7 +50,7 @@ const CreateOrder: React.FC = () => {
             const response = await selectTheTrucks(body).unwrap();
             if (response) {
                 setSelectTrucks([response?.scenarioCost, response?.scenarioEta])
-                // setRouteOptimazition(response?.routes)
+                setRouteOptimazition([response?.scenarioCost, response?.scenarioEta])
                 setActiveStep((prev) => prev + 1)
             }
         } else {
@@ -87,7 +87,7 @@ const CreateOrder: React.FC = () => {
 
                 {activeStep === 2 && (
                     <div>
-                        <RootOptimization rootOptimization={selectedTrucks} />
+                        <RootOptimization rootOptimization={selectedTrucks as unknown as RootOptimizationType[]} />
                     </div>
                 )}
 
