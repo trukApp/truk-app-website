@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, {useState} from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Box, IconButton, Typography, Checkbox } from "@mui/material";
 import { ExpandMore, ExpandLess } from "@mui/icons-material";
-import { useAppDispatch } from "@/store";
+import { useAppDispatch, useAppSelector } from "@/store";
 import { setSelectedTrucks } from "@/store/authSlice";
 
 export interface Allocation {
@@ -29,17 +29,14 @@ const TrucksTable: React.FC<TrucksTableProps> = ({ trucks }) => {
     const [expandedRow, setExpandedRow] = useState<string | null>(null);
     const [selectedTruck, setSelectedTruck] = useState<Truck | null>(null);
     const dispatch = useAppDispatch();
-    
-
+    const selectedTrucks = useAppSelector((state) => state.auth.selectedTrucks || []);
     const toggleExpandRow = (label: string) => {
         setExpandedRow(expandedRow === label ? null : label);
     };
 
     const handleSelectTruck = (truck: Truck) => {
-        console.log("truck: ", truck)
         const isSelected = selectedTruck?.label === truck.label;
-        const newSelectedTruck = isSelected ? null : truck; // Toggle selection
-
+        const newSelectedTruck = isSelected ? null : truck;
         setSelectedTruck(newSelectedTruck);
         dispatch(setSelectedTrucks(newSelectedTruck ? [newSelectedTruck] : []));
     };
@@ -50,9 +47,9 @@ const TrucksTable: React.FC<TrucksTableProps> = ({ trucks }) => {
             headerName: "Select",
             width: 80,
             renderCell: (params) =>
-                !params.row.isAllocation && ( // Show only for parent rows
+                !params.row.isAllocation && (
                     <Checkbox
-                        checked={selectedTruck?.label === params.row.label}
+                        checked={selectedTrucks[0]?.label === params.row.label}
                         onChange={() => handleSelectTruck(params.row)}
                     />
                 ),
@@ -150,7 +147,7 @@ const TrucksTable: React.FC<TrucksTableProps> = ({ trucks }) => {
                         "&.Mui-selected": { backgroundColor: "transparent !important" },
                     },
                 }}
-                getRowClassName={(params) => (params.row.isAllocation ? "child-row" : "")} // Style child rows differently
+                getRowClassName={(params) => (params.row.isAllocation ? "child-row" : "")}
             />
         </Box>
     );

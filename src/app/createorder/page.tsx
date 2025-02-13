@@ -27,7 +27,7 @@ const CreateOrder: React.FC = () => {
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
     const selectedTrucks = useAppSelector((state) => state.auth.selectedTrucks || []);
     console.log("selectedPackages: ", selectedPackages)
-    console.log("selectTrucks: ", selectedTrucks)
+    console.log("selectTrucks from order page: ", selectedTrucks)
 
     const { data: packagesData, error: allProductsFectchingError, isLoading: isPackagesLoading } = useGetAllPackagesForOrderQuery([]);
     if (allProductsFectchingError) {
