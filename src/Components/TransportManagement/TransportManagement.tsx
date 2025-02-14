@@ -52,6 +52,7 @@ const TransportManagement = () => {
       >
         {tiles.map((tile, index) => (
           <Card
+            onClick={tile.onClick}
             key={index}
             sx={{
               p: 2,

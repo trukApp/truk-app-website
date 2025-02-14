@@ -35,22 +35,59 @@ const CreateOrder: React.FC = () => {
 
     };
 
+    // const handleSelectTruck = async () => {
+    //     if (activeStep === 0) {
+    //         const packagesIDArray = selectedPackages.map((item) => item.pack_ID);
+    //         const body = {
+    //             packages: packagesIDArray,
+    //             filters
+    //         }
+    //         const response = await selectTheTrucks(body).unwrap();
+    //         if (response) {
+    //             setSelectTrucks([response?.scenarioCost, response?.scenarioEta])
+    //             setActiveStep((prev) => prev + 1)
+    //         }
+    //     } else {
+    //         setActiveStep((prev) => prev + 1);
+    //     }
+    // };
+
     const handleSelectTruck = async () => {
         if (activeStep === 0) {
             const packagesIDArray = selectedPackages.map((item) => item.pack_ID);
             const body = {
                 packages: packagesIDArray,
                 filters
-            }
+            };
+
             const response = await selectTheTrucks(body).unwrap();
             if (response) {
-                setSelectTrucks([response?.scenarioCost, response?.scenarioEta])
-                setActiveStep((prev) => prev + 1)
+                let transportCounter = 1;
+                const updatedScenarioCost = {
+                    ...response.scenarioCost,
+                    allocations: response.scenarioCost.allocations.map((vehicle: Truck) => ({
+                        ...vehicle,
+                        transportNumber: `Transport ${transportCounter++}`
+                    }))
+                };
+
+                transportCounter = 1;
+                const updatedScenarioEta = {
+                    ...response.scenarioEta,
+                    allocations: response.scenarioEta.allocations.map((vehicle: Truck) => ({
+                        ...vehicle,
+                        transportNumber: `Transport ${transportCounter++}`
+                    }))
+                };
+
+                setSelectTrucks([updatedScenarioCost, updatedScenarioEta]);
+                setActiveStep((prev) => prev + 1);
             }
         } else {
             setActiveStep((prev) => prev + 1);
         }
     };
+
 
 
 

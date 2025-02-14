@@ -2,11 +2,18 @@
 import React from 'react';
 import { Box, Typography, Card } from '@mui/material';
 import { Settings, Build, Notifications, Link } from '@mui/icons-material';
+import { useRouter } from 'next/navigation';
+
 
 const SettingsComponent = () => {
+  const router = useRouter();
   const tiles = [
     { title: 'User Settings', icon: <Settings sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} /> },
-    { title: 'Config Settings', icon: <Build sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} /> },
+    {
+      title: 'Config Settings',
+      icon: <Build sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
+      onClick: () => router.push('/configsettings'),
+    },
     { title: 'Notification Settings', icon: <Notifications sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} /> },
     { title: 'System Connections', icon: <Link sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} /> },
   ];
@@ -47,6 +54,7 @@ const SettingsComponent = () => {
                 backgroundColor: '#FAF1F8',
               },
             }}
+            onClick={tile.onClick}
           >
             <Box sx={{ mb: 2 }}>{tile.icon}</Box>
             <Typography variant="h6" sx={{ fontSize: { xs: '14px', sm: '16px', md: '18px' }, fontWeight: 'bold' }}>

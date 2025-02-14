@@ -23,7 +23,7 @@ interface Allocation {
 
 const LoadOptimization = () => {
     const selectedTrucks = useAppSelector((state) => state.auth.selectedTrucks || []);
-    window.scrollTo(0, 0)
+
 
     if (!selectedTrucks.length || !selectedTrucks[0].allocations) {
         return <Typography variant="h6">No vehicle data available.</Typography>;

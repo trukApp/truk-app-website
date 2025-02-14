@@ -23,7 +23,7 @@ interface LoadArrangement {
 const ReviewCreateOrder = () => {
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
     const selectedTrucks = useAppSelector((state) => state.auth.selectedTrucks || []);
-    window.scrollTo(0, 0)
+
 
     return (
         <Box sx={{ p: 3 }}>

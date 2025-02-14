@@ -354,7 +354,7 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
     const [activeMarker, setActiveMarker] = useState<number | null>(null);
     const [directionsResults, setDirectionsResults] = useState<google.maps.DirectionsResult[]>([]);
     const [selectedRouteIndex, setSelectedRouteIndex] = useState<number | null>(null);
-    window.scrollTo(0, 0)
+
 
     const { startMarkers, endMarkers } = useMemo(() => {
         const startSet = new Map();

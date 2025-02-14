@@ -28,12 +28,13 @@ interface TrucksTableProps {
 const TrucksTable: React.FC<TrucksTableProps> = ({ trucks }) => {
     const [expandedRow, setExpandedRow] = useState<string | null>(null);
     const [selectedTruck, setSelectedTruck] = useState<Truck | null>(null);
-    window.scrollTo(0, 0)
+
     const dispatch = useAppDispatch();
     const selectedTrucks = useAppSelector((state) => state.auth.selectedTrucks || []);
     const toggleExpandRow = (label: string) => {
         setExpandedRow(expandedRow === label ? null : label);
     };
+    // console.log("trucks: ", trucks)
 
     const handleSelectTruck = (truck: Truck) => {
         const isSelected = selectedTruck?.label === truck.label;
