@@ -69,7 +69,7 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
     useEffect(() => {
         if (rootOptimization?.[0]?.allocations?.length > 0) {
             const transports = rootOptimization[0].allocations
-                .map((allocation) => allocation.transportNumber)
+                .map((allocation) => allocation.vehicle_ID)
                 .filter((t): t is string => t !== undefined);
 
             setTransportOptions(transports);
@@ -81,7 +81,7 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
         if (!selectedTransport) return [];
         return rootOptimization.flatMap(vehicle =>
             vehicle.allocations
-                .filter(allocation => allocation.transportNumber === selectedTransport)
+                .filter(allocation => allocation.vehicle_ID === selectedTransport)
                 .flatMap(allocation => allocation.route)
         );
     }, [selectedTransport, rootOptimization]);
@@ -200,7 +200,7 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
                         value={selectedRouteIndex !== null ? selectedRouteIndex.toString() : 'all'}
                         label="Select Route"
                         onChange={(e) => handleRouteSelection(e.target.value)}
-                        style={{ backgroundColor: '#f5f5f5' }}
+                        // style={{ backgroundColor: '#f5f5f5' }}
                     >
                         <MenuItem value="all">All Routes</MenuItem>
                         {directionsResults.map((result, idx) => {
