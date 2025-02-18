@@ -17,6 +17,13 @@ const TransportPlanning = () => {
       },
     },
     {
+      title: 'Transport Unit Overview',
+      icon: <GavelIcon sx={{ fontSize: { xs: 40, sm: 50, md: 60 } }} />,
+      onClick: () => {
+        router.push('/units-overview');
+      },
+    },
+    {
       title: 'Spot Auction',
       icon: <GavelIcon sx={{ fontSize: { xs: 40, sm: 50, md: 60 } }} />,
       onClick: () => {
