@@ -188,7 +188,6 @@ const CreatePackage = () => {
                                 <Typography sx={{ fontSize: '14px', textAlign: 'center', color: activeStep === index ? "#83214F" : '#333', fontWeight: activeStep === index ? 'bold' : '400' }}>{label}</Typography>
                             </StepLabel>
                         </Step>
-
                     ))}
                 </Stepper>
             </Box>
