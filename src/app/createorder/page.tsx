@@ -30,7 +30,6 @@ const CreateOrder: React.FC = () => {
             setSnackbarOpen(true);
    }
     },[packageSelectErr])
-
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
     const selectedTrucks = useAppSelector((state) => state.auth.selectedTrucks || []);
 
@@ -38,7 +37,6 @@ const CreateOrder: React.FC = () => {
     if (allProductsFectchingError) {
     }
     const allPackagesData = packagesData?.packages || [];
-
     const steps = ['Select Packages', 'Vehicle Optimization', 'Route Optimization', 'Load Optimization', 'Review Order'];
 
 

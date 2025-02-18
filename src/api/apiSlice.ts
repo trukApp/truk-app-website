@@ -47,6 +47,7 @@ export const apiSlice = createApi({
     "UomMaster",
     "CreateOrder",
     "PackagesForOrder",
+    "Orders"
   ],
   endpoints: (builder) => ({
     userLogin: builder.mutation<User, { phone: string; password: string }>({
@@ -491,6 +492,16 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: [{ type: "PackagesForOrder", id: "LIST" }],
     }),
+
+    // Orders
+    getAllOrders: builder.query({
+      query: (params) => ({
+        url: `order/all-orders`,
+        method: "GET",
+        params,
+      }),
+      providesTags: [{ type: "Orders", id: "LIST" }],
+    }),
   }),
 });
 
@@ -544,4 +555,5 @@ export const {
   useCreatePackageForOrderMutation,
   useDeletePackageForOrderMutation,
   useEditPackageForOrderMutation,
+  useGetAllOrdersQuery,
 } = apiSlice;

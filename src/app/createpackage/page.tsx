@@ -14,7 +14,7 @@ import { RootState, useAppSelector } from '@/store';
 import { resetCompletedSteps, setCompletedState, setPackageAddtionalInfo, setPackageBillTo, setPackagePickAndDropTimings, setPackageShipFrom, setPackageShipTo, setPackageTax, setProductsList } from '@/store/authSlice';
 import { useRouter } from "next/navigation";
 import { useCreatePackageForOrderMutation } from '@/api/apiSlice';
-
+import { StepIconProps } from "@mui/material/StepIcon";
 
 const steps = ['Ship From', 'Ship To', 'Package Details', 'Bill To', 'Additional Info', 'Pickup/Drop off', 'Tax Info'];
 
@@ -25,7 +25,6 @@ const CreatePackage = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const completedSteps = useSelector((state: RootState) => state.auth.completedState);
-
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error' | 'warning' | 'info'>("success");
@@ -39,10 +38,38 @@ const CreatePackage = () => {
     const packagePickUpAndDropTimingsFromRedux = useAppSelector((state) => state.auth.packagePickAndDropTimings);
     const [createPackageOrder, {isLoading:isPackageCreating}] = useCreatePackageForOrderMutation()
 
+const CustomStepIcon = (props: StepIconProps) => {
+    const { active, completed, icon } = props;
+    return (
+        <Box
+            sx={{
+                width: 25,
+                height: 25,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: "50%",
+                backgroundColor: completed
+                    ? "#83214F"
+                    : active
+                    ? "#83214F"
+                    : "#ccc",
+                color: 'white',
+                fontWeight: "bold",
+            }}
+        >
+            {completed ? (
+                <Typography variant="body2" sx={{ fontSize: 15, fontWeight: "bold" }}>
+                    ✔
+                </Typography>
+            ) : (
+                <Typography variant="body2">{icon}</Typography>
+            )}
+        </Box>
+    );
+};
     const handleNext = () => {
         dispatch(setCompletedState(activeStep));
-        // setActiveStep(stepIndex + 1);
-        // setActiveStep(activeStep+1)
         const nextStep = completedSteps.findIndex(step => !step);
     setActiveStep(nextStep !== -1 ? nextStep : activeStep + 1);
     };
@@ -178,19 +205,28 @@ const CreatePackage = () => {
                     </DialogActions>
                 </Dialog>
             )}
-            <Box sx={{ overflowX: isMobile ? 'auto' : 'visible', padding: '10px' }}>
-                <Stepper activeStep={activeStep} alternativeLabel>
-                    {steps.map((label, index) => (
-                        <Step key={index} completed={!!completedSteps[index]}>
-                            <StepLabel onClick={() => handleStepClick(index)} sx={{
-                                cursor: 'pointer',
-                            }}>
-                                <Typography sx={{ fontSize: '14px', textAlign: 'center', color: activeStep === index ? "#83214F" : '#333', fontWeight: activeStep === index ? 'bold' : '400' }}>{label}</Typography>
-                            </StepLabel>
-                        </Step>
-                    ))}
-                </Stepper>
-            </Box>
+            <Box sx={{ overflowX: isMobile ? "auto" : "visible", padding: "10px" }}>
+    <Stepper activeStep={activeStep} alternativeLabel>
+        {steps.map((label, index) => (
+            <Step key={index} completed={!!completedSteps[index]}>
+                <StepLabel 
+                    StepIconComponent={CustomStepIcon} // Use custom icon 
+                    onClick={() => handleStepClick(index)} 
+                    sx={{ cursor: "pointer" }}>
+                    <Typography
+                        sx={{
+                            fontSize: "14px",
+                            textAlign: "center",
+                            color: activeStep === index ? "#83214F" : "#333",
+                            fontWeight: activeStep === index ? "bold" : "400",
+                        }}>
+                        {label}
+                    </Typography>
+                </StepLabel>
+            </Step>
+        ))}
+    </Stepper>
+</Box>
 
             {/* Form Content */}
             <Grid container spacing={2} sx={{ padding: isMobile ? '10px' : '20px' }}>
