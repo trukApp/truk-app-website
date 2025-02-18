@@ -18,18 +18,18 @@ import {
   Logout as LogoutIcon,
   Person as PersonIcon,
 } from "@mui/icons-material";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 
 const Header = () => {
   const [anchorElProfile, setAnchorElProfile] = useState<null | HTMLElement>(null);
   const [anchorElHamburger, setAnchorElHamburger] = useState<null | HTMLElement>(null);
   const router = useRouter();
-  const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
+  const currentPath = usePathname();
 
   const user = {
-    name: "Teja Bandaru", // Replace with actual user data
-    profileImage: "https://cdn.pixabay.com/photo/2024/02/28/15/14/ai-generated-8602228_640.jpg",
+    name: "Teja Bandaru",
+    profileImage: "https://www.shutterstock.com/image-photo/white-truck-isolated-on-background-260nw-510103681.jpg",
   };
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -53,6 +53,7 @@ const Header = () => {
     if (isConfirmed) {
       await signOut({ redirect: false });
       localStorage.clear()
+      setAnchorElProfile(null)
       router.push("/login");
     }
   };
@@ -63,11 +64,9 @@ const Header = () => {
 
   return (
     <AppBar position="fixed"
-      // color="info"
       sx={{ backgroundColor: "#83214F" }}
     >
       <Toolbar>
-        {/* Logo */}
         <Typography variant="h6" component="div" sx={{ flexGrow: 1, cursor: 'pointer' }} onClick={handleNavigationToHomePage}>
           Truk App 🚚
         </Typography>
@@ -75,26 +74,29 @@ const Header = () => {
         {/* Desktop View */}
         <div className="hidden md:flex space-x-4">
           <IconButton
-            color={currentPath === "/" ? "secondary" : "inherit"}
+            sx={{ color: currentPath === "/" ? "pink" : "inherit", fontWeight: 'bold' }}
             href="/"
           >
             <HomeIcon style={{ marginRight: "5px" }} />
             <p style={{ fontSize: "14px" }}>Home</p>
           </IconButton>
+
           <IconButton
-            color={currentPath === "/createorder" ? "secondary" : "inherit"}
+            sx={{ color: currentPath === "/createorder" ? "pink" : "inherit", fontWeight: 'bold' }}
             href="/createorder"
           >
             <LocalShippingIcon style={{ marginRight: "5px" }} />
             <p style={{ fontSize: "14px" }}>Create Order</p>
           </IconButton>
+
           <IconButton
-            color={currentPath === "/createpackage" ? "secondary" : "inherit"}
+            sx={{ color: currentPath === "/createpackage" ? "pink" : "inherit", fontWeight: 'bold' }}
             href="/createpackage"
           >
             <InventoryIcon style={{ marginRight: "5px" }} />
             <p style={{ fontSize: "14px" }}>Create Package</p>
           </IconButton>
+
           <IconButton onClick={handleProfileMenuOpen}>
             {user.profileImage ? (
               <Avatar src={user.profileImage} />
@@ -104,10 +106,9 @@ const Header = () => {
           </IconButton>
         </div>
 
+
         {/* Mobile View */}
         <div className="flex md:hidden">
-
-
           {/* Hamburger Icon */}
           <IconButton
             color="inherit"
@@ -127,7 +128,6 @@ const Header = () => {
           </IconButton>
         </div>
 
-        {/* Profile Menu */}
         <Menu
           anchorEl={anchorElProfile}
           open={Boolean(anchorElProfile)}
@@ -137,14 +137,6 @@ const Header = () => {
             <PersonIcon style={{ marginRight: "10px" }} />
             My Profile
           </MenuItem>
-          {/* <MenuItem onClick={handleProfileMenuClose}>
-            <GavelIcon style={{ marginRight: "10px" }} />
-            Terms and Conditions
-          </MenuItem>
-          <MenuItem onClick={handleProfileMenuClose}>
-            <PrivacyTipIcon style={{ marginRight: "10px" }} />
-            Privacy
-          </MenuItem> */}
           <MenuItem onClick={handleLogout}>
             <LogoutIcon style={{ marginRight: "10px" }} />
             Logout

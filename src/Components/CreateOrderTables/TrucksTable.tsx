@@ -74,8 +74,8 @@ const TrucksTable: React.FC<TrucksTableProps> = ({ trucks }) => {
                 </Box>
             ),
         },
-        { field: "totalCost", headerName: "Total Weight Capacity", width: 180 },
-        { field: "unallocatedPackages", headerName: "UnLocated Packages", width: 180 },
+        { field: "totalCost", headerName: "Total cost(Rs.)", width: 180 },
+        { field: "unallocatedPackages", headerName: "Unallocated Packages", width: 180 },
 
         // Hide cost-related headers in parent rows
         {
@@ -124,7 +124,7 @@ const TrucksTable: React.FC<TrucksTableProps> = ({ trucks }) => {
                     id: `${truck.label}-${allocation.vehicle_ID}`,
                     label: `Vehicle ID: ${allocation.vehicle_ID}`,
                     totalCost: `${allocation.totalWeightCapacity} kg`,
-                    unallocatedPackages: `${allocation.totalVolumeCapacity} m³`,
+                    unallocatedPackages: allocation.totalVolumeCapacity ? `${allocation.totalVolumeCapacity} m³`: 'NA',
                     cost: allocation.cost,
                     leftoverWeight: allocation.leftoverWeight,
                     leftoverVolume: allocation.leftoverVolume,
@@ -138,7 +138,7 @@ const TrucksTable: React.FC<TrucksTableProps> = ({ trucks }) => {
 
     return (
         <Box sx={{ height: 500, width: "100%" }}>
-            <Typography variant="h6">Suggested Trucks</Typography>
+            <Typography variant="h5" sx={{textAlign:'center', fontWeight:500,marginTop:3, }}>Suggested Trucks</Typography>
             <DataGrid
                 rows={rows}
                 columns={columns}

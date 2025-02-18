@@ -10,7 +10,7 @@ import PickupDropoff from '@/Components/CreatePackageTabs/PickUpAndDropOffDetail
 import PackageDetails from '@/Components/CreatePackageTabs/PackageDetailsTab';
 import BillTo from '@/Components/CreatePackageTabs/CreatePackageBillTo';
 import SnackbarAlert from '@/Components/ReusableComponents/SnackbarAlerts';
-import { RootState, useAppSelector } from '@/store'; 
+import { RootState, useAppSelector } from '@/store';
 import { resetCompletedSteps, setCompletedState, setPackageAddtionalInfo, setPackageBillTo, setPackagePickAndDropTimings, setPackageShipFrom, setPackageShipTo, setPackageTax, setProductsList } from '@/store/authSlice';
 import { useRouter } from "next/navigation";
 import { useCreatePackageForOrderMutation } from '@/api/apiSlice';
@@ -36,7 +36,7 @@ const CreatePackage = () => {
     const shipToReduxValues = useAppSelector((state) => state.auth.packageShipTo);
     const productListFromRedux = useAppSelector((state) => state.auth.packagesDetails);
     const packagePickUpAndDropTimingsFromRedux = useAppSelector((state) => state.auth.packagePickAndDropTimings);
-    const [createPackageOrder, {isLoading:isPackageCreating}] = useCreatePackageForOrderMutation()
+    const [createPackageOrder, { isLoading: isPackageCreating }] = useCreatePackageForOrderMutation()
 
 const CustomStepIcon = (props: StepIconProps) => {
     const { active, completed, icon } = props;
@@ -71,7 +71,7 @@ const CustomStepIcon = (props: StepIconProps) => {
     const handleNext = () => {
         dispatch(setCompletedState(activeStep));
         const nextStep = completedSteps.findIndex(step => !step);
-    setActiveStep(nextStep !== -1 ? nextStep : activeStep + 1);
+        setActiveStep(nextStep !== -1 ? nextStep : activeStep + 1);
     };
 
     const handleBack = () => setActiveStep((prevStep) => prevStep - 1);
@@ -81,7 +81,7 @@ const CustomStepIcon = (props: StepIconProps) => {
     };
 
     const handleCreateAnother = () => {
-        setModalOpen(false); 
+        setModalOpen(false);
         setActiveStep(0)
     };
     const handleGoToOrder = () => {
@@ -105,19 +105,19 @@ const CustomStepIcon = (props: StepIconProps) => {
     }, [completedSteps]);
     console.log("all ", completedSteps, activeStep)
     const handleSubmit = async () => {
-            const firstUnfilledIndex = completedSteps.findIndex((step) => !step);
-            console.log("firstunfilled ", firstUnfilledIndex)
-            if (firstUnfilledIndex !== -1) {
-                setSnackbarMessage("Some steps are unfilled!");
-                setSnackbarSeverity("warning");
-                setSnackbarOpen(true);
-                setActiveStep(firstUnfilledIndex);
-                return;
-            } else {
-                try {
-                    const createPackageBody = {
-                        packages: [
-                          {
+        const firstUnfilledIndex = completedSteps.findIndex((step) => !step);
+        console.log("firstunfilled ", firstUnfilledIndex)
+        if (firstUnfilledIndex !== -1) {
+            setSnackbarMessage("Some steps are unfilled!");
+            setSnackbarSeverity("warning");
+            setSnackbarOpen(true);
+            setActiveStep(firstUnfilledIndex);
+            return;
+        } else {
+            try {
+                const createPackageBody = {
+                    packages: [
+                        {
                             ship_from: shipFromReduxValues?.locationId,
                             ship_to: shipToReduxValues?.locationId,
                             product_ID: productListFromRedux.map((product) => ({
@@ -134,15 +134,15 @@ const CustomStepIcon = (props: StepIconProps) => {
                             pickup_date_time: packagePickUpAndDropTimingsFromRedux?.pickupDateTime,
                             dropoff_date_time: packagePickUpAndDropTimingsFromRedux?.dropoffDateTime,
                             tax_info: {
-                                tax_rate : packageTaxFromRedux?.taxRate,
+                                tax_rate: packageTaxFromRedux?.taxRate,
                             },
                         },
                     ],
-    
+
                 }
-                console.log("package body to submit :", createPackageBody)
+                // console.log("package body to submit :", createPackageBody)
                 const response = await createPackageOrder(createPackageBody).unwrap();
-                console.log('create packages response :', response)
+                // console.log('create packages response :', response)
                 if (response) {
                     dispatch(resetCompletedSteps())
                     setModalOpen(true)
@@ -158,7 +158,7 @@ const CustomStepIcon = (props: StepIconProps) => {
                     dispatch(setPackagePickAndDropTimings(null))
                     setActiveStep(0)
                 }
-                }
+            }
             catch (error) {
                 console.log("err :", error)
                 setSnackbarMessage("Something went wrong! please try again.");
@@ -166,15 +166,15 @@ const CustomStepIcon = (props: StepIconProps) => {
                 setSnackbarOpen(true);
             }
         }
-        
 
-    }; 
+
+    };
     if (isPackageCreating) {
         console.log('creating')
     }
     return (
         <Grid>
-             <Backdrop
+            <Backdrop
                 sx={{
                     color: "#ffffff",
                     zIndex: (theme) => theme.zIndex.drawer + 1,
@@ -189,7 +189,7 @@ const CustomStepIcon = (props: StepIconProps) => {
                 severity={snackbarSeverity}
                 onClose={() => setSnackbarOpen(false)}
             />
-                {modalOpen && (
+            {modalOpen && (
                 <Dialog open={modalOpen} onClose={() => setModalOpen(false)} >
                     <DialogTitle>Package Created Successfully</DialogTitle>
                     <DialogContent>

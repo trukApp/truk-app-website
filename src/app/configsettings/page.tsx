@@ -1,113 +1,14 @@
-// // 'use client';
-// // import { useAppSelector, useAppDispatch } from '@/store';
-// // import React from 'react';
-// // import { Checkbox, FormControlLabel, Grid, Paper, Typography } from '@mui/material';
-// // import { setFilters } from '@/store/authSlice';
-
-// // const ConfigSettings = () => {
-// //     const dispatch = useAppDispatch();
-// //     const filters = useAppSelector((state) => state.auth.filters);
-
-// //     console.log("Redux Filters: ", filters);
-
-// //     const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-// //         const { name, checked } = event.target;
-// //         dispatch(setFilters({
-// //             ...filters,
-// //             [name]: checked // Update only the selected filter
-// //         }));
-// //     };
-
-// //     return (
-// //         <Paper sx={{ p: 3, width: '350px', borderRadius: 2, boxShadow: 3 }}>
-// //             <Typography variant="h6" gutterBottom sx={{ color: '#83214F' }}>
-// //                 Config Settings
-// //             </Typography>
-
-// //             <Grid container spacing={2} sx={{ marginBottom: '10px' }}>
-// //                 {Object.entries(filters).map(([filterKey, filterValue]) => (
-// //                     <Grid item xs={12} key={filterKey}>
-// //                         <FormControlLabel
-// //                             control={
-// //                                 <Checkbox
-// //                                     checked={filterValue}
-// //                                     onChange={handleFilterChange}
-// //                                     name={filterKey}
-// //                                 />
-// //                             }
-// //                             label={filterKey.replace(/([A-Z])/g, ' $1').trim()}
-// //                         />
-// //                     </Grid>
-// //                 ))}
-// //             </Grid>
-// //         </Paper>
-// //     );
-// // };
-
-// // export default ConfigSettings;
-
-
-
-// 'use client';
-// import { useAppSelector, useAppDispatch } from '@/store';
-// import React from 'react';
-// import { Checkbox, FormControlLabel, Grid, Paper, Typography } from '@mui/material';
-// import { setFilters } from '@/store/authSlice';
-
-// const ConfigSettings = () => {
-//     const dispatch = useAppDispatch();
-//     const filters = useAppSelector((state) => state.auth.filters);
-
-//     console.log("Redux Filters: ", filters);
-
-//     const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-//         const { name, checked } = event.target;
-//         dispatch(setFilters({
-//             ...filters,
-//             [name]: checked // Update only the selected filter
-//         }));
-//     };
-
-//     return (
-//         <Paper sx={{ p: 3, width: '350px', borderRadius: 2, boxShadow: 3 }}>
-//             <Typography variant="h6" gutterBottom sx={{ color: '#83214F' }}>
-//                 Config Settings
-//             </Typography>
-
-//             <Grid container spacing={2} sx={{ marginBottom: '10px' }}>
-//                 {Object.entries(filters).map(([filterKey, filterValue]) => (
-//                     <Grid item xs={12} key={filterKey}>
-//                         <FormControlLabel
-//                             control={
-//                                 <Checkbox
-//                                     checked={typeof filterValue === "boolean" ? filterValue : false} // Ensure correct boolean value
-//                                     onChange={handleFilterChange}
-//                                     name={filterKey}
-//                                 />
-//                             }
-//                             label={filterKey.replace(/([A-Z])/g, ' $1').trim()}
-//                         />
-//                     </Grid>
-//                 ))}
-//             </Grid>
-//         </Paper>
-//     );
-// };
-
-// export default ConfigSettings;
-
-
 'use client';
 import { useAppSelector, useAppDispatch } from '@/store';
 import React from 'react';
-import { Checkbox, FormControlLabel, Grid, Paper, Typography } from '@mui/material';
+import { Checkbox, FormControlLabel, Grid, Typography } from '@mui/material';
 import { setFilters } from '@/store/authSlice';
 
 const ConfigSettings = () => {
     const dispatch = useAppDispatch();
     const filters = useAppSelector((state) => state.auth.filters);
 
-    console.log("Redux Filters BEFORE Rendering:", filters); // Debugging
+    console.log("filters:", filters);
 
     const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const { name, checked } = event.target;
@@ -115,29 +16,42 @@ const ConfigSettings = () => {
     };
 
     return (
-        <Paper sx={{ p: 3, width: '350px', borderRadius: 2, boxShadow: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ color: '#83214F' }}>
+
+        <Grid
+            container
+            direction="column"
+            alignItems="center"
+
+        >
+            <Typography variant="h6" gutterBottom sx={{ color: '#83214F', fontWeight: 'bold' }}>
                 Config Settings
             </Typography>
 
-            <Grid container spacing={2} sx={{ marginBottom: '10px' }}>
+            <Grid container spacing={2}
+                sx={{ p: 3, borderRadius: 2, width: '700px' }}
+            >
                 {Object.entries(filters).map(([filterKey, filterValue]) => (
-                    <Grid item xs={12} key={filterKey}>
+                    <Grid item key={filterKey}>
                         <FormControlLabel
                             control={
                                 <Checkbox
-                                    checked={Boolean(filters[filterKey])} // Ensure it's a boolean value
+                                    checked={filterValue}
                                     onChange={handleFilterChange}
                                     name={filterKey}
                                 />
                             }
-                            label={filterKey.replace(/([A-Z])/g, ' $1').trim()}
+                            label={filterKey
+                                .replace(/([A-Z])/g, ' $1')
+                                .trim()
+                                .toLowerCase()
+                                .replace(/^./, (char) => char.toUpperCase())
+                            }
                         />
 
                     </Grid>
                 ))}
             </Grid>
-        </Paper>
+        </Grid>
     );
 };
 
