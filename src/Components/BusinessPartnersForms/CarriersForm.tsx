@@ -95,7 +95,7 @@ const CarrierForm: React.FC = () => {
 
     // Return the combined details or a fallback message if no valid details
     return details.length > 0 ? details.join(", ") : "Location details not available";
-};
+    };
 
     const getAllLanes = lanesData?.lanes.length > 0 ? lanesData?.lanes : []
     console.log('carriers :', data)

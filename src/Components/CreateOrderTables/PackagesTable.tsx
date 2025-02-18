@@ -23,6 +23,10 @@ export interface TaxInfo {
 }
 
 export interface Package {
+    handling_unit_type: string;
+    dimensions_uom: string;
+    packaging_type_name: string;
+    dimensions: string;
     pac_id: number;
     pack_ID: string;
     pac_ID: string;
@@ -48,6 +52,44 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
     const [selectionModel, setSelectionModel] = useState<number[]>([]);
     const filters = useAppSelector((state) => state.auth.filters);
+    const { data: locationsData } = useGetLocationMasterQuery({})
+    const { data: packagesData } = useGetPackageMasterQuery({})
+    console.log("packages :", packagesData)
+    const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
+    const getAllPackages = packagesData?.packages.length > 0 ? packagesData?.packages : []
+    const getLocationDetails = (loc_ID: string) => {
+        // Find the location object from the array
+        const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
+        if (!location) return "Location details not available";
+        const details = [
+            location.loc_ID,
+            location.address_1,
+            location.address_2,
+            location.city,
+            location.state,
+            location.country,
+            location.pincode
+        ].filter(Boolean);
+    
+        return details.length > 0 ? details.join(", ") : "Location details not available";
+    };
+    const getPackageDetails = (pac_ID: string) => {
+    const packageInfo = getAllPackages.find((pkg: Package) => pkg.pac_ID === pac_ID);
+    
+    if (!packageInfo) return "Package details not available";
+
+        const details = [
+        packageInfo.packaging_type_name,
+        packageInfo.dimensions,
+        // packageInfo.dimensions_uom,
+        packageInfo.handling_unit_type,
+        
+    ].filter(Boolean);
+
+    return details.length > 0 ? details.join(", ") : "Package details not available";
+};
+
+
 
     useEffect(() => {
         const selectedIds = selectedPackages.map((pkg) => pkg.pac_id);
