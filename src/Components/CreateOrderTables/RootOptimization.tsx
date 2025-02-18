@@ -77,6 +77,10 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
         }
     }, [rootOptimization]);
 
+    useEffect(() => {
+        setSelectedRouteIndex(null);
+    }, [selectedTransport]);
+    console.log('selectedRouteIndex', selectedRouteIndex);
     const filteredRoutes = useMemo(() => {
         if (!selectedTransport) return [];
         return rootOptimization.flatMap(vehicle =>
@@ -181,10 +185,13 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
         <div style={{ width: '100%' }}>
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', margin: '1rem' }}>
                 <FormControl sx={{ minWidth: 250 }} size="small">
-                    <InputLabel>Transport</InputLabel>
+                    <InputLabel>Vehicles</InputLabel>
                     <Select
                         value={selectedTransport}
-                        onChange={(e) => setSelectedTransport(e.target.value)}
+                        onChange={(e) => {
+                            setSelectedTransport(e.target.value);
+                            setSelectedRouteIndex(null);
+                        }}
                         label="Transport"
                     >
                         {transportOptions.map((option, index) => (
@@ -200,7 +207,6 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
                         value={selectedRouteIndex !== null ? selectedRouteIndex.toString() : 'all'}
                         label="Select Route"
                         onChange={(e) => handleRouteSelection(e.target.value)}
-                        // style={{ backgroundColor: '#f5f5f5' }}
                     >
                         <MenuItem value="all">All Routes</MenuItem>
                         {directionsResults.map((result, idx) => {
