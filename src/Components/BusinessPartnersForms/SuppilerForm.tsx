@@ -85,6 +85,20 @@ const SupplierForm: React.FC = () => {
     })
     const { data: locationsData, error: getLocationsError, isLoading: isLocationLoading } = useGetLocationMasterQuery([])
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
+     const getLocationDetails = (loc_ID: string) => {
+        const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
+        if (!location) return "Location details not available";
+          const details = [
+            location.address_1,
+            location.address_2,
+            location.city,
+            location.state,
+            location.country,
+            location.pincode
+          ].filter(Boolean);
+    
+          return details.length > 0 ? details.join(", ") : "Location details not available";
+      };
     console.log("getLocationsError: ", getLocationsError)
     const vendorsData = data?.partners.length > 0 ? data?.partners : []
 
@@ -157,12 +171,32 @@ const SupplierForm: React.FC = () => {
     const columns: GridColDef[] = [
         { field: 'supplier_id', headerName: 'Supplier ID', width: 150 },
         { field: 'name', headerName: 'Name', width: 200 },
-        { field: 'loc_ID', headerName: 'Supplier Location ID', width: 150 },
-        { field: 'location_pincode', headerName: 'SupplierPincode', width: 100 },
+        // { field: 'loc_ID', headerName: 'Supplier Location ID', width: 150 },
+            {
+            field: "loc_ID",
+            headerName: "Supplier Location ID",
+            width: 150,
+            renderCell: (params) => (
+              <Tooltip title={getLocationDetails(params.value)} arrow>
+                <span>{params.value}</span>
+              </Tooltip>
+            ),
+          },
+        { field: 'location_pincode', headerName: 'Supplier Pincode', width: 100 },
         { field: 'location_city', headerName: 'Supplier City', width: 150 },
         { field: 'location_state', headerName: 'Supplier State', width: 150 },
         { field: 'location_country', headerName: 'Supplier Country', width: 150 },
-        { field: 'loc_of_source', headerName: 'Source Location ID', width: 150 },
+        // { field: 'loc_of_source', headerName: 'Source Location ID', width: 150 },
+            {
+            field: "loc_of_source",
+            headerName: "Source Location ID",
+            width: 200,
+            renderCell: (params) => (
+              <Tooltip title={getLocationDetails(params.value)} arrow>
+                <span>{params.value}</span>
+              </Tooltip>
+            ),
+          },
         // { field: 'pod_relevant', headerName: 'Pod relevant', width: 150 },
         {
             field: 'actions',
@@ -607,9 +641,21 @@ const SupplierForm: React.FC = () => {
                                 </Grid>
 
                                 <Box marginTop={3} textAlign="center">
-                                    <Button type="submit" variant="contained" color="primary">
-                                        {updateRecord ? "Update" : "Create"}
-                                    </Button>
+                                    <Button
+                                        type="submit"
+                                        variant="contained"
+                                        sx={{
+                                            backgroundColor: "#83214F",
+                                            color: "#fff",
+                                            "&:hover": {
+                                            backgroundColor: "#fff",
+                                            color: "#83214F"
+                                            }
+                                        }}
+                                        >
+                                        {updateRecord ? "Update Supplier" : "Create Supplier"}
+                                        </Button>
+
                                     <Button variant="outlined" color="secondary"
                                         onClick={() => {
                                             setFormInitialValues(initialSupplierValues)

@@ -37,7 +37,6 @@ export default function Home() {
       <TransportPlanning />
       <TransportExecution />
       <RatingsAndReviews />
-      {/* <MapComponent /> */}
     </Grid>
   );
 }

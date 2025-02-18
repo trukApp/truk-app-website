@@ -1,5 +1,5 @@
 .nextButton {
-  background-color: #6a0dad;
+  background-color: "#83214F";
   color: white;
   border: none;
   transition: background-color 0.3s ease;
@@ -8,13 +8,13 @@
 }
 
 .nextButton:hover {
-  background-color: #5a0ca1;
+  background-color: "#83214F";
 }
 
 .backButton {
   background-color: white;
-  color: #6a0dad;
-  border: 2px solid #a3000016;
+  color: "#83214F";
+  border: 2px solid "#83214F";
   transition: all 0.3s ease;
   margin-right: 20px;
   padding-right: 30px;
@@ -22,8 +22,8 @@
 }
 
 .backButton:hover {
-  background-color: #6a0dad;
-  color: white;
+  background-color: "#83214F";
+  /* color: white; */
 }
 
 .buttonsContainer {

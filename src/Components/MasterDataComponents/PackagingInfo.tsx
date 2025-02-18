@@ -26,7 +26,7 @@ export interface Package {
   package_id: string;
 
 }
-interface PackageInfo {
+export interface PackageInfo {
   id: string;
   handlingUnitType: string;
   packagingDimensions: string;
@@ -372,9 +372,21 @@ const PackagingForm = () => {
 
             {/* Submit Button */}
             <Box sx={{ marginTop: 3, textAlign: 'center' }}>
-              <Button color="primary" variant="contained" type="submit">
-                {isEditing ? "Update package" : "Create pacakage"}
+              <Button
+                type="submit"
+                variant="contained"
+                sx={{
+                  backgroundColor: "#83214F",
+                  color: "#fff",
+                  "&:hover": {
+                    backgroundColor: "#fff",
+                    color: "#83214F"
+                  }
+                }}
+              >
+                {isEditing ? "Update package" : "Create package"}
               </Button>
+
               <Button
                 variant="outlined"
                 color="secondary"

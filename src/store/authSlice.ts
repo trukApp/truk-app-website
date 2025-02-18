@@ -63,6 +63,7 @@ export interface IPackageTax {
   receiverGSTN: string;
   carrierGSTN: string;
   isSelfTransport: string;
+  taxRate: string;
 }
 
 export interface IAuthState {
@@ -82,14 +83,16 @@ export interface IAuthState {
   packagePickAndDropTimings: FormValues | null;
   packageTax: IPackageTax | null;
   completedState: boolean[];
-  filters: {
-    checkValidity: false;
-    checkDowntime: false;
-    sortUnlimitedUsage: false;
-    sortOwnership: false;
-    sortByCost: false;
-    sortByCapacity: false;
-  };
+  filters: ConfigFilters;
+}
+
+export interface ConfigFilters {
+  checkValidity: boolean;
+  checkDowntime: boolean;
+  sortUnlimitedUsage: boolean;
+  sortOwnership: boolean;
+  sortByCost: boolean;
+  sortByCapacity: boolean;
 }
 
 const initialState: IAuthState = {
@@ -184,11 +187,8 @@ export const authSlice = createSlice({
     resetCompletedSteps: (state) => {
       state.completedState = [];
     },
-    setFilters: (
-      state,
-      action: PayloadAction<Partial<IAuthState["filters"]>>
-    ) => {
-      state.filters = { ...state.filters, ...action.payload };
+    setFilters: (state, action: PayloadAction<ConfigFilters>) => {
+      state.filters = action.payload;
     },
   },
 });

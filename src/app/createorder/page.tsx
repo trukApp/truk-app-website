@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Stepper, Step, StepLabel, Button, Typography, DialogActions, DialogContent, Dialog, DialogTitle } from '@mui/material';
 import PackagesTable from '@/Components/CreateOrderTables/PackagesTable';
 import TrucksTable, { Truck } from '@/Components/CreateOrderTables/TrucksTable';
@@ -10,14 +10,26 @@ import styles from './createorder.module.css';
 import { withAuthComponent } from '@/Components/WithAuthComponent';
 import { useGetAllPackagesForOrderQuery, useSelectTheProductsMutation } from '@/api/apiSlice';
 import ReviewCreateOrder from '@/Components/CreateOrderTables/ReviewOrder';
+import SnackbarAlert from '@/Components/ReusableComponents/SnackbarAlerts';
+import { CustomButtonFilled, CustomButtonOutlined } from '@/Components/ReusableComponents/ButtonsComponent';
 
 const CreateOrder: React.FC = () => {
+      const [snackbarOpen, setSnackbarOpen] = useState(false);
+      const [snackbarMessage, setSnackbarMessage] = useState("");
+      const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const [activeStep, setActiveStep] = useState(0);
-    const [selectTheTrucks] = useSelectTheProductsMutation();
+    const [selectTheTrucks,{error:packageSelectErr }] = useSelectTheProductsMutation();
     const [selectTrucks, setSelectTrucks] = useState<Truck[]>([]);
     const [modalOpen, setModalOpen] = useState(false);
     const filters = useAppSelector((state) => state.auth.filters);
 
+    useEffect(() => {
+        if (packageSelectErr) {
+            setSnackbarMessage(`Please select the packages of same SHIP FROM location`);
+            setSnackbarSeverity("warning");
+            setSnackbarOpen(true);
+   }
+    },[packageSelectErr])
 
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
     const selectedTrucks = useAppSelector((state) => state.auth.selectedTrucks || []);
@@ -27,30 +39,13 @@ const CreateOrder: React.FC = () => {
     }
     const allPackagesData = packagesData?.packages || [];
 
-    const steps = ['Select Packages', 'Truck Selection', 'Route Optimization', 'Load Optimization', 'Review Order'];
+    const steps = ['Select Packages', 'Vehicle Optimization', 'Route Optimization', 'Load Optimization', 'Review Order'];
 
 
     const handleCreateOrder = () => {
         console.log(selectedPackages);
 
     };
-
-    // const handleSelectTruck = async () => {
-    //     if (activeStep === 0) {
-    //         const packagesIDArray = selectedPackages.map((item) => item.pack_ID);
-    //         const body = {
-    //             packages: packagesIDArray,
-    //             filters
-    //         }
-    //         const response = await selectTheTrucks(body).unwrap();
-    //         if (response) {
-    //             setSelectTrucks([response?.scenarioCost, response?.scenarioEta])
-    //             setActiveStep((prev) => prev + 1)
-    //         }
-    //     } else {
-    //         setActiveStep((prev) => prev + 1);
-    //     }
-    // };
 
     const handleSelectTruck = async () => {
         if (activeStep === 0) {
@@ -93,6 +88,13 @@ const CreateOrder: React.FC = () => {
 
     return (
         <div>
+
+            <SnackbarAlert
+                open={snackbarOpen}
+                message={snackbarMessage}
+                severity={snackbarSeverity}
+                onClose={() => setSnackbarOpen(false)}
+            />
             {modalOpen && (
                 <Dialog open={modalOpen} onClose={() => setModalOpen(false)} >
                     <DialogTitle>Proceed for order </DialogTitle>
@@ -103,9 +105,10 @@ const CreateOrder: React.FC = () => {
                         <Button variant="outlined" onClick={() => setModalOpen(false)} color="secondary">
                             Cancel
                         </Button>
-                        <Button variant="outlined" onClick={handleCreateOrder} color="primary">
+                        {/* <Button variant="outlined" onClick={handleCreateOrder} color="primary">
                             Create order
-                        </Button>
+                        </Button> */}
+                        <CustomButtonFilled  onSubmit={()=>handleCreateOrder()}>Next</CustomButtonFilled>
                     </DialogActions>
                 </Dialog>
             )}
@@ -151,29 +154,46 @@ const CreateOrder: React.FC = () => {
                 )}
             </div>
             <div className={styles.buttonsContainer}>
-                <Button
+                {/* <Button
                     className={styles.backButton}
                     disabled={activeStep === 0}
                     onClick={() => setActiveStep((prev) => prev - 1)}
                 >
                     Back
-                </Button>
+                </Button> */}
+                <CustomButtonOutlined  onClick = {()=> setActiveStep((prev)=> prev-1)} >Back</CustomButtonOutlined>
                 {activeStep === 4 ? (
-                    <Button
-                        variant='contained' color='primary'
-                        className={styles.nextButton}
-                        onClick={() => setModalOpen(true)}
-                    >
-                        Submit
-                    </Button>
+                    // <Button
+                    //     variant='contained' sx={{
+                    //                             backgroundColor: "#83214F",
+                    //                             color: "#fff",
+                    //                             "&:hover": {
+                    //                             backgroundColor: "#fff",
+                    //                             color: "#83214F"
+                    //                         }
+                    //                                             }}
+                    //     className={styles.nextButton}
+                    //     onClick={() => setModalOpen(true)}
+                    // >
+                    //     Submit
+                    // </Button>
+                <CustomButtonFilled  onClick={()=>setModalOpen(true)}>Submit</CustomButtonFilled>
                 ) : (
-                    <Button
-                        variant='contained' color='primary'
-                        // className={styles.nextButton}
-                        onClick={handleSelectTruck}
-                    >
-                        Next
-                    </Button>
+                    // <Button
+                    //     variant='contained' sx={{
+                    //                             backgroundColor: "#83214F",
+                    //                             color: "#fff",
+                    //                             "&:hover": {
+                    //                             backgroundColor: "#fff",
+                    //                             color: "#83214F"
+                    //                         }
+                    //                                             }}
+                    //     // className={styles.nextButton}
+                    //     onClick={handleSelectTruck}
+                    // >
+                    //     Next
+                        // </Button>
+                        <CustomButtonFilled  onClick={()=>handleSelectTruck()}>Next</CustomButtonFilled>
                 )}
             </div>
 

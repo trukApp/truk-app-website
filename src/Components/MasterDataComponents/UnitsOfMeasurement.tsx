@@ -421,9 +421,21 @@ const UnitsOfMeasurement: React.FC = () => {
 									gap={2}
 									style={{ marginTop: "20px" }}
 								>
-									<Button type="submit" variant="contained" color="primary">
-										{isEditing ? "Update UOM" : "Create UOM"}
-									</Button>
+									<Button
+  type="submit"
+  variant="contained"
+  sx={{
+    backgroundColor: "#83214F",
+    color: "#fff",
+    "&:hover": {
+      backgroundColor: "#fff",
+      color: "#83214F"
+    }
+  }}
+>
+  {isEditing ? "Update UOM" : "Create UOM"}
+</Button>
+
 									<Button
 										variant="outlined"
 										color="secondary"

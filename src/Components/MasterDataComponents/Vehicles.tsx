@@ -243,8 +243,21 @@ const VehicleForm: React.FC = () => {
 		console.log("err in loading vehicles data :", error);
 	}
 	const { data: locationsData, isLoading: isLocationLoading } = useGetLocationMasterQuery({});
-	const getAllLocations =
-		locationsData?.locations.length > 0 ? locationsData?.locations : [];
+	const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
+	 const getLocationDetails = (loc_ID: string) => {
+		  const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
+		  if (!location) return "Location details not available";
+			const details = [
+			  location.address_1,
+			  location.address_2,
+			  location.city,
+			  location.state,
+			  location.country,
+			  location.pincode
+			].filter(Boolean);
+	  
+			return details.length > 0 ? details.join(", ") : "Location details not available";
+		};
 	const vehiclesMaster = data?.vehicles;
 	const unitsofMeasurement = useSelector(
 		(state: RootState) => state.auth.unitsofMeasurement
@@ -417,7 +430,17 @@ const VehicleForm: React.FC = () => {
 
 	const columns: GridColDef[] = [
 		{ field: "vehicleId", headerName: "Vehicle ID", width: 150 },
-		{ field: "locationId", headerName: "Location ID", width: 150 },
+		// { field: "locationId", headerName: "Location ID", width: 150 },
+			{
+			field: "locationId",
+			headerName: "Location ID",
+			width: 150,
+			renderCell: (params) => (
+			  <Tooltip title={getLocationDetails(params.value)} arrow>
+				<span>{params.value}</span>
+			  </Tooltip>
+			),
+		  },
 		{ field: "timeZone", headerName: "Time Zone", width: 150 },
 		{
 			field: "unlimitedUsage",
@@ -1578,9 +1601,21 @@ const VehicleForm: React.FC = () => {
 										</Grid>
 
 										<Box mt={3} textAlign="center">
-											<Button variant="contained" color="primary" type="submit">
+											<Button
+												type="submit"
+												variant="contained"
+												sx={{
+													backgroundColor: "#83214F",
+													color: "#fff",
+													"&:hover": {
+													backgroundColor: "#fff",
+													color: "#83214F"
+													}
+												}}
+												>
 												{isEditing ? "Update vehicle" : "Create vehicle"}
 											</Button>
+
 											<Button
 												variant="outlined"
 												color="secondary"

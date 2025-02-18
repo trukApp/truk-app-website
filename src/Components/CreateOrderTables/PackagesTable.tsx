@@ -2,8 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { DataGrid, GridCellParams, GridColDef } from '@mui/x-data-grid';
 import { useAppSelector, useAppDispatch } from '@/store';
 import { setFilters, setSelectedPackages } from '@/store/authSlice';
-import { Grid, FormControlLabel, Checkbox } from '@mui/material';
+import { Grid, FormControlLabel, Checkbox, Tooltip } from '@mui/material';
 import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
+import { useGetLocationMasterQuery, useGetPackageMasterQuery } from '@/api/apiSlice';
+import { Location } from '../MasterDataComponents/Locations';
+
 
 export interface Product {
     prod_ID: string;
@@ -20,8 +23,13 @@ export interface TaxInfo {
 }
 
 export interface Package {
+    handling_unit_type: string;
+    dimensions_uom: string;
+    packaging_type_name: string;
+    dimensions: string;
     pac_id: number;
     pack_ID: string;
+    pac_ID: string;
     ship_from: string;
     ship_to: string;
     product_ID: Product[];
@@ -44,6 +52,44 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
     const [selectionModel, setSelectionModel] = useState<number[]>([]);
     const filters = useAppSelector((state) => state.auth.filters);
+    const { data: locationsData } = useGetLocationMasterQuery({})
+    const { data: packagesData } = useGetPackageMasterQuery({})
+    console.log("packages :", packagesData)
+    const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
+    const getAllPackages = packagesData?.packages.length > 0 ? packagesData?.packages : []
+    const getLocationDetails = (loc_ID: string) => {
+        // Find the location object from the array
+        const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
+        if (!location) return "Location details not available";
+        const details = [
+            location.loc_ID,
+            location.address_1,
+            location.address_2,
+            location.city,
+            location.state,
+            location.country,
+            location.pincode
+        ].filter(Boolean);
+    
+        return details.length > 0 ? details.join(", ") : "Location details not available";
+    };
+    const getPackageDetails = (pac_ID: string) => {
+    const packageInfo = getAllPackages.find((pkg: Package) => pkg.pac_ID === pac_ID);
+    
+    if (!packageInfo) return "Package details not available";
+
+        const details = [
+        packageInfo.packaging_type_name,
+        packageInfo.dimensions,
+        // packageInfo.dimensions_uom,
+        packageInfo.handling_unit_type,
+        
+    ].filter(Boolean);
+
+    return details.length > 0 ? details.join(", ") : "Package details not available";
+};
+
+
 
     useEffect(() => {
         const selectedIds = selectedPackages.map((pkg) => pkg.pac_id);
@@ -57,10 +103,51 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
 
     const columns: GridColDef[] = [
         { field: 'pack_ID', headerName: 'Package ID', width: 150 },
-        { field: 'ship_from', headerName: 'Ship From', width: 150 },
-        { field: 'ship_to', headerName: 'Ship To', width: 150 },
-        { field: 'package_info', headerName: 'Package Info', width: 150 },
-        { field: 'bill_to', headerName: 'Bill To', width: 150 },
+        // { field: 'ship_from', headerName: 'Ship From', width: 150 },
+               {
+                    field: "ship_from",
+                    headerName: "Ship from",
+                    width: 150,
+                    renderCell: (params) => (
+                      <Tooltip title={getLocationDetails(params.value)} arrow>
+                        <span>{params.value}</span>
+                      </Tooltip>
+                    ),
+                  },
+        // { field: 'ship_to', headerName: 'Ship To', width: 150 },
+               {
+                    field: "ship_to",
+                    headerName: "Ship to",
+                    width: 150,
+                    renderCell: (params) => (
+                      <Tooltip title={getLocationDetails(params.value)} arrow>
+                        <span>{params.value}</span>
+                      </Tooltip>
+                    ),
+                  },
+        // { field: 'package_info', headerName: 'Package Info', width: 150 },
+        {
+            field: "package_info",
+            headerName: "Package Info",
+            width: 150,
+            renderCell: (params) => (
+                <Tooltip title={getPackageDetails(params.value)} arrow>
+                <span>{params.value}</span>
+                </Tooltip>
+            ),
+            },
+
+        // { field: 'bill_to', headerName: 'Bill To', width: 150 },
+            {
+                    field: "bill_to",
+                    headerName: "Bill to",
+                    width: 150,
+                    renderCell: (params) => (
+                      <Tooltip title={getLocationDetails(params.value)} arrow>
+                        <span>{params.value}</span>
+                      </Tooltip>
+                    ),
+                  },
         { field: 'return_label', headerName: 'Return Label', width: 150 },
         { field: 'pickup_date_time', headerName: 'Pickup Date & Time', width: 200 },
         { field: 'dropoff_date_time', headerName: 'Dropoff Date & Time', width: 200 },
@@ -70,7 +157,7 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
             headerName: 'Product Details',
             width: 300,
             renderCell: (params: GridCellParams) => {
-                const products = params.value as { prod_ID: string; quantity: number }[]; // Type assertion
+                const products = params.value as { prod_ID: string; quantity: number }[];
                 return (
                     <div>
                         {products?.map((prod) => (
@@ -85,7 +172,7 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
             headerName: 'Additional Info',
             width: 250,
             renderCell: (params: GridCellParams) => {
-                const info = params.value as { invoice: string; reference_id: string }; // Type assertion
+                const info = params.value as { invoice: string; reference_id: string };
                 return (
                     <div>
                         <div>Invoice: {info?.invoice}</div>
