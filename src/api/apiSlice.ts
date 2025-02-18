@@ -448,6 +448,17 @@ export const apiSlice = createApi({
       invalidatesTags: [{ type: "PackagesForOrder", id: "LIST" }],
     }),
 
+    confomOrder: builder.mutation({
+      query: (body) => {
+        return {
+          url: "order/confirm-order",
+          method: "POST",
+          body,
+        };
+      },
+      invalidatesTags: [{ type: "PackagesForOrder", id: "LIST" }],
+    }),
+
     getDataCount: builder.query({
       query: () => ({
         url: `data/count-data`,
@@ -544,4 +555,5 @@ export const {
   useCreatePackageForOrderMutation,
   useDeletePackageForOrderMutation,
   useEditPackageForOrderMutation,
+  useConfomOrderMutation,
 } = apiSlice;

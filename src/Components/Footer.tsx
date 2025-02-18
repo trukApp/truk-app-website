@@ -28,7 +28,7 @@ const Footer: React.FC = () => {
           mb: 2,
         }}
       >
-        <Typography variant="body2" sx={{ color: "#555" }}>
+        <Typography variant="body2" sx={{ color: "#000000", fontWeight: 'bold', fontSize: '16px' }}>
           <Link href="/terms" passHref>
             Terms and Conditions
           </Link>{" "}

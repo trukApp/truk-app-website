@@ -113,12 +113,12 @@ const initialState: IAuthState = {
   packageTax: null,
   completedState: [],
   filters: {
-    checkValidity: false,
-    checkDowntime: false,
-    sortUnlimitedUsage: false,
-    sortOwnership: false,
-    sortByCost: false,
-    sortByCapacity: false,
+    checkValidity: true,
+    checkDowntime: true,
+    sortUnlimitedUsage: true,
+    sortOwnership: true,
+    sortByCost: true,
+    sortByCapacity: true,
   },
 };
 

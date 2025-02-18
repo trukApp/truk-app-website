@@ -76,25 +76,25 @@ const CarrierForm: React.FC = () => {
 
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
     const getLocationDetails = (loc_ID: string) => {
-    // Find the location object from the array
-    const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
+        // Find the location object from the array
+        const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
 
-    // Return a fallback message if location not found
-    if (!location) return "Location details not available";
+        // Return a fallback message if location not found
+        if (!location) return "Location details not available";
 
-    // Gather the location details, filter out any falsy values (e.g., empty strings, null, undefined)
-    const details = [
-        location.loc_ID,
-        location.address_1,
-        location.address_2,
-        location.city,
-        location.state,
-        location.country,
-        location.pincode
-    ].filter(Boolean);
+        // Gather the location details, filter out any falsy values (e.g., empty strings, null, undefined)
+        const details = [
+            location.loc_ID,
+            location.address_1,
+            location.address_2,
+            location.city,
+            location.state,
+            location.country,
+            location.pincode
+        ].filter(Boolean);
 
-    // Return the combined details or a fallback message if no valid details
-    return details.length > 0 ? details.join(", ") : "Location details not available";
+        // Return the combined details or a fallback message if no valid details
+        return details.length > 0 ? details.join(", ") : "Location details not available";
     };
 
     const getAllLanes = lanesData?.lanes.length > 0 ? lanesData?.lanes : []
@@ -105,34 +105,34 @@ const CarrierForm: React.FC = () => {
     }
 
     const getLaneDetails = (lane_ID: string) => {
-    // Find the lane object from lanesData
-    const lane = lanesData?.lanes.find((l:Lane) => l.lane_ID === lane_ID);
-    
-    // If no lane is found, return fallback message
-    if (!lane) return "Lane details not available";
+        // Find the lane object from lanesData
+        const lane = lanesData?.lanes.find((l: Lane) => l.lane_ID === lane_ID);
 
-    // Extract source and destination location details
-    const sourceLocationDetails = [
-        lane.src_loc_ID,
-        lane.src_loc_desc,
-        lane.src_city,
-        lane.src_state,
-        lane.src_latitude,
-        lane.src_longitude
-    ].filter(Boolean).join(", ");
+        // If no lane is found, return fallback message
+        if (!lane) return "Lane details not available";
 
-    const destinationLocationDetails = [
-        lane.des_loc_ID,
-        lane.des_loc_desc,
-        lane.des_city,
-        lane.des_state,
-        lane.des_latitude,
-        lane.des_longitude
-    ].filter(Boolean).join(", ");
+        // Extract source and destination location details
+        const sourceLocationDetails = [
+            lane.src_loc_ID,
+            lane.src_loc_desc,
+            lane.src_city,
+            lane.src_state,
+            lane.src_latitude,
+            lane.src_longitude
+        ].filter(Boolean).join(", ");
 
-    // Return combined source and destination location details
-    return `Source: ${sourceLocationDetails} | Destination: ${destinationLocationDetails}`;
-};
+        const destinationLocationDetails = [
+            lane.des_loc_ID,
+            lane.des_loc_desc,
+            lane.des_city,
+            lane.des_state,
+            lane.des_latitude,
+            lane.des_longitude
+        ].filter(Boolean).join(", ");
+
+        // Return combined source and destination location details
+        return `Source: ${sourceLocationDetails} | Destination: ${destinationLocationDetails}`;
+    };
 
     const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
         setPaginationModel(newPaginationModel);
@@ -312,51 +312,51 @@ const CarrierForm: React.FC = () => {
         { field: 'contactNumber', headerName: 'Contact Number', width: 150 },
         { field: 'emailId', headerName: 'Email ID', width: 150 },
         { field: 'vehicleTypes', headerName: 'Vehicle Types', width: 150 },
-{
-  field: "locationIds",
-  headerName: "Locations",
-  width: 150,
-  renderCell: (params) => { 
-    const locationIds = Array.isArray(params.value) ? params.value : [params.value];
-    const allLocs = locationIds.join(" | ")
-    const locationDetails = locationIds
-      .map((id) => getLocationDetails(id))
-      .join(" | "); 
+        {
+            field: "locationIds",
+            headerName: "Locations",
+            width: 150,
+            renderCell: (params) => {
+                const locationIds = Array.isArray(params.value) ? params.value : [params.value];
+                const allLocs = locationIds.join(" | ")
+                const locationDetails = locationIds
+                    .map((id) => getLocationDetails(id))
+                    .join(" | ");
 
-    return (
-      <Tooltip title={locationDetails} arrow>
-            <span>{allLocs}</span> 
-      </Tooltip>
-    );
-  },
-}
+                return (
+                    <Tooltip title={locationDetails} arrow>
+                        <span>{allLocs}</span>
+                    </Tooltip>
+                );
+            },
+        }
 
 
-,
+        ,
 
         // { field: 'laneIds', headerName: 'Lane IDs', width: 150 },
-{
-  field: "lane_ID",
-  headerName: "Lane Details",
-  width: 200,
-  renderCell: (params) => {
-    // Ensure params.value is an array, otherwise treat it as a single lane ID
-    const laneIDs = Array.isArray(params.row.laneIds) ? params.row.laneIds : [params.row.laneIds];
+        {
+            field: "lane_ID",
+            headerName: "Lane Details",
+            width: 200,
+            renderCell: (params) => {
+                // Ensure params.value is an array, otherwise treat it as a single lane ID
+                const laneIDs = Array.isArray(params.row.laneIds) ? params.row.laneIds : [params.row.laneIds];
 
-      const allLanes = laneIDs.join(" | ")
-      console.log('lane id s :', laneIDs)
-    const laneDetails = laneIDs
-      .map((id:string) => getLaneDetails(id))
-      .join(" | "); // Combine the details of all lanes into a single string
+                const allLanes = laneIDs.join(" | ")
+                console.log('lane id s :', laneIDs)
+                const laneDetails = laneIDs
+                    .map((id: string) => getLaneDetails(id))
+                    .join(" | "); // Combine the details of all lanes into a single string
 
-    return (
-      <Tooltip title={laneDetails} arrow>
-            <span>{allLanes}</span>
-            {/* <span>fghm</span> */}
-      </Tooltip>
-    );
-  },
-},
+                return (
+                    <Tooltip title={laneDetails} arrow>
+                        <span>{allLanes}</span>
+                        {/* <span>fghm</span> */}
+                    </Tooltip>
+                );
+            },
+        },
         // { field: 'deviceDetails', headerName: 'Device Details', flex: 2 },
         // {
         //     field: 'enrollSpotAuction',
@@ -701,12 +701,12 @@ const CarrierForm: React.FC = () => {
                                         type="submit"
                                         variant="contained"
                                         sx={{
-                                        backgroundColor: "#83214F", // Custom button background color
-                                        color: "#fff", // Text color
-                                        "&:hover": {
-                                            backgroundColor: "#fff",  
-                                            color: "#83214F"  
-                                        }
+                                            backgroundColor: "#83214F", // Custom button background color
+                                            color: "#fff", // Text color
+                                            "&:hover": {
+                                                backgroundColor: "#fff",
+                                                color: "#83214F"
+                                            }
                                         }}
                                     >
                                         {isEditing ? "Update carrier" : "Create carrier"}
