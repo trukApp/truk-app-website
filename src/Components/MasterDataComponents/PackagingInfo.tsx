@@ -144,7 +144,7 @@ const PackagingForm = () => {
 
       });
     }
-  }, [editRow]);
+  }, [editRow, formik]);
   const handlingUnitOptions = ['Pallet', 'Container', 'Crate', 'Box', 'Drum', 'Bag', 'Sack'];
 
   const handleEdit = (row: PackageInfo) => {

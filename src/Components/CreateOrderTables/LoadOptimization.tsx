@@ -3,7 +3,6 @@ import React from 'react';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { Box, Typography, Paper } from '@mui/material';
 
-// Define the Vehicle and LoadArrangement types
 interface LoadArrangement {
     stop: number;
     location: string;
@@ -18,12 +17,14 @@ interface Allocation {
     leftoverVolume: number;
     cost: number;
     loadArrangement?: LoadArrangement[];
+    // occupiedWeight: number;
+    // occupiedVolume: number;
 }
 
 
 const LoadOptimization = () => {
     const selectedTrucks = useAppSelector((state) => state.auth.selectedTrucks || []);
-    window.scrollTo(0, 0)
+
 
     if (!selectedTrucks.length || !selectedTrucks[0].allocations) {
         return <Typography variant="h6">No vehicle data available.</Typography>;
@@ -37,10 +38,9 @@ const LoadOptimization = () => {
             </Typography>
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
                 {getVechiles.map((vehicle, index) => {
-                    // Define columns for the DataGrid
                     const columns: GridColDef[] = [
                         { field: 'id', headerName: 'Load Arrangement', width: 100 },
-                        { field: 'location', headerName: 'Load Address', width: 400 },
+                        { field: 'location', headerName: 'Delivery Address', width: 400 },
                         { field: 'packages', headerName: 'Packages', width: 250 },
                     ];
 
@@ -55,20 +55,32 @@ const LoadOptimization = () => {
                             <Typography variant="h6" gutterBottom sx={{ mb: 2, fontWeight: 'bold', }} color='#83214F'>
                                 Vehicle ID: {vehicle.vehicle_ID}
                             </Typography>
+
                             <Typography variant="body1" sx={{ mb: 1 }}>
-                                <strong>Total Weight Capacity:</strong> {vehicle.totalWeightCapacity} kg
+                                Total Weight Capacity:  <strong>{vehicle.totalWeightCapacity} kg</strong>
+                            </Typography>
+
+                            {/* <Typography variant="body1" sx={{ mb: 1 }}>
+                            Occupied Weight:   <strong>{vehicle.occupiedWeight} kg</strong>
+                            </Typography> */}
+
+                            <Typography variant="body1" sx={{ mb: 1 }}>
+                                Leftover Weight: <strong>{vehicle.leftoverWeight} kg</strong>
+                            </Typography>
+
+                            <Typography variant="body1" sx={{ mb: 1 }}>
+                                Total Volume Capacity: <strong>{vehicle.totalVolumeCapacity} m³</strong>
+                            </Typography>
+
+                            {/* <Typography variant="body1" sx={{ mb: 1 }}>
+                            Occupied Volume:   <strong> {vehicle.occupiedVolume} kg</strong>
+                            </Typography> */}
+
+                            <Typography variant="body1" sx={{ mb: 1 }}>
+                                Leftover Volume:   <strong>{vehicle.leftoverVolume} m³</strong>
                             </Typography>
                             <Typography variant="body1" sx={{ mb: 1 }}>
-                                <strong>Leftover Weight:</strong> {vehicle.leftoverWeight} kg
-                            </Typography>
-                            <Typography variant="body1" sx={{ mb: 1 }}>
-                                <strong>Total Volume Capacity:</strong> {vehicle.totalVolumeCapacity} m³
-                            </Typography>
-                            <Typography variant="body1" sx={{ mb: 1 }}>
-                                <strong>Leftover Volume:</strong> {vehicle.leftoverVolume} m³
-                            </Typography>
-                            <Typography variant="body1" sx={{ mb: 1 }}>
-                                <strong>Cost:</strong> ₹{vehicle.cost}
+                                Estimated Cost:   <strong>₹{vehicle.cost}</strong>
                             </Typography>
 
                             {rows.length === 0 ? (

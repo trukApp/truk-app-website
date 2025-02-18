@@ -48,39 +48,6 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
     const [selectionModel, setSelectionModel] = useState<number[]>([]);
     const filters = useAppSelector((state) => state.auth.filters);
-    const { data: locationsData} = useGetLocationMasterQuery({})
-    const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
-    const { data: packagesData} = useGetPackageMasterQuery({})
-    const getLocationDetails = (loc_ID: string) => {
-          const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
-          if (!location) return "Location details not available";
-            const details = [
-              location.address_1,
-              location.address_2,
-              location.city,
-              location.state,
-              location.country,
-              location.pincode
-            ].filter(Boolean);
-      
-            return details.length > 0 ? details.join(", ") : "Location details not available";
-    };
-    const getAllPackages = packagesData?.packages.length > 0 ? packagesData?.packages : []
-    const getPackageDetails = (pac_ID: string) => {
-        const packageData = getAllPackages.find((pkg: Package) => pkg.pac_ID === pac_ID);
-        if (!packageData) return "Package details not available";
-
-        const details = [
-            `Dimensions: ${packageData.dimensions} ${packageData.dimensions_uom}`,
-            `Handling Unit Type: ${packageData.handling_unit_type}`,
-            `Packaging Type: ${packageData.packaging_type_name}`
-        ].filter(Boolean);
-
-        return details.length > 0 ? details.join(", ") : "Package details not available";
-        };
-
-    console.log('all packages data :', getAllPackages)
-    window.scrollTo(0, 0)
 
     useEffect(() => {
         const selectedIds = selectedPackages.map((pkg) => pkg.pac_id);
@@ -148,7 +115,7 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
             headerName: 'Product Details',
             width: 300,
             renderCell: (params: GridCellParams) => {
-                const products = params.value as { prod_ID: string; quantity: number }[]; // Type assertion
+                const products = params.value as { prod_ID: string; quantity: number }[];
                 return (
                     <div>
                         {products?.map((prod) => (
@@ -163,7 +130,7 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
             headerName: 'Additional Info',
             width: 250,
             renderCell: (params: GridCellParams) => {
-                const info = params.value as { invoice: string; reference_id: string }; // Type assertion
+                const info = params.value as { invoice: string; reference_id: string };
                 return (
                     <div>
                         <div>Invoice: {info?.invoice}</div>

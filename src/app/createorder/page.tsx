@@ -39,7 +39,7 @@ const CreateOrder: React.FC = () => {
     }
     const allPackagesData = packagesData?.packages || [];
 
-    const steps = ['Select Packages', 'Truck Selection', 'Route Optimization', 'Load Optimization', 'Review Order'];
+    const steps = ['Select Packages', 'Vehicle Optimization', 'Route Optimization', 'Load Optimization', 'Review Order'];
 
 
     const handleCreateOrder = () => {
@@ -53,16 +53,36 @@ const CreateOrder: React.FC = () => {
             const body = {
                 packages: packagesIDArray,
                 filters
-            }
+            };
+
             const response = await selectTheTrucks(body).unwrap();
             if (response) {
-                setSelectTrucks([response?.scenarioCost, response?.scenarioEta])
-                setActiveStep((prev) => prev + 1)
+                let transportCounter = 1;
+                const updatedScenarioCost = {
+                    ...response.scenarioCost,
+                    allocations: response.scenarioCost.allocations.map((vehicle: Truck) => ({
+                        ...vehicle,
+                        transportNumber: `Transport ${transportCounter++}`
+                    }))
+                };
+
+                transportCounter = 1;
+                const updatedScenarioEta = {
+                    ...response.scenarioEta,
+                    allocations: response.scenarioEta.allocations.map((vehicle: Truck) => ({
+                        ...vehicle,
+                        transportNumber: `Transport ${transportCounter++}`
+                    }))
+                };
+
+                setSelectTrucks([updatedScenarioCost, updatedScenarioEta]);
+                setActiveStep((prev) => prev + 1);
             }
         } else {
             setActiveStep((prev) => prev + 1);
         }
     };
+
 
 
 
