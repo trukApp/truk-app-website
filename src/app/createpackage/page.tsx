@@ -210,7 +210,7 @@ const CustomStepIcon = (props: StepIconProps) => {
         {steps.map((label, index) => (
             <Step key={index} completed={!!completedSteps[index]}>
                 <StepLabel 
-                    StepIconComponent={CustomStepIcon} // Use custom icon 
+                    StepIconComponent={CustomStepIcon}
                     onClick={() => handleStepClick(index)} 
                     sx={{ cursor: "pointer" }}>
                     <Typography

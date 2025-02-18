@@ -91,8 +91,8 @@ export interface ConfigFilters {
   checkDowntime: boolean;
   sortUnlimitedUsage: boolean;
   sortOwnership: boolean;
-  sortByCost: boolean;
-  sortByCapacity: boolean;
+  // sortByCost: boolean;
+  // sortByCapacity: boolean;
 }
 
 const initialState: IAuthState = {
@@ -117,8 +117,8 @@ const initialState: IAuthState = {
     checkDowntime: true,
     sortUnlimitedUsage: true,
     sortOwnership: true,
-    sortByCost: true,
-    sortByCapacity: true,
+    // sortByCost: true,
+    // sortByCapacity: true,
   },
 };
 
