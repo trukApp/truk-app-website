@@ -63,6 +63,7 @@ export interface IPackageTax {
   receiverGSTN: string;
   carrierGSTN: string;
   isSelfTransport: string;
+  taxRate: string;
 }
 
 export interface IAuthState {

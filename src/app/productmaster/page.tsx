@@ -36,6 +36,7 @@ import DataGridSkeletonLoader from '@/Components/ReusableComponents/DataGridSkel
 import SnackbarAlert from '@/Components/ReusableComponents/SnackbarAlerts';
 import { Location } from '@/Components/MasterDataComponents/Locations';
 import { Package } from '@/Components/MasterDataComponents/PackagingInfo';
+import { CustomButtonFilled } from '@/Components/ReusableComponents/ButtonsComponent';
 
 export interface PackagingType {
     pac_ID: string;
@@ -132,6 +133,7 @@ const ProductMasterPage = () => {
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
     const getAllPackages = packagesData?.packages.length > 0 ? packagesData?.packages : []
     const allProductsData = productsData?.products || [];
+    
 
     console.log("Getting all product errors: ", allProductsFectchingError)
     console.log("getLocationsError: ", getLocationsError)
@@ -825,10 +827,22 @@ const ProductMasterPage = () => {
                                 </Grid>
 
                                 <Box marginTop={2} textAlign="center">
-                                    <Button type="submit" variant="contained" color="primary">
+                                    {/* <Button
+                                        type="submit"
+                                        variant="contained"
+                                        sx={{
+                                            backgroundColor: "#83214F",
+                                            color: "#fff",
+                                            "&:hover": {
+                                            backgroundColor: "#fff",
+                                            color: "#83214F"
+                                            }
+                                        }}
+                                        >
                                         {updateRecord ? "Update product" : "Create product"}
-                                    </Button>
-                                    <Button
+                                    </Button> */}
+                                <CustomButtonFilled >{updateRecord ? "Update product" : "Create product"}</CustomButtonFilled>
+                                <Button
                                         variant="outlined"
                                         color="secondary"
                                         onClick={() => {

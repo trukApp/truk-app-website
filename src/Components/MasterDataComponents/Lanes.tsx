@@ -34,6 +34,7 @@ import { RootState } from '@/store';
 import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 import { Location } from './Locations';
+import { CustomButtonFilled } from '../ReusableComponents/ButtonsComponent';
 
 interface LaneDetails {
   // General Data
@@ -109,7 +110,20 @@ const TransportationLanes = () => {
   const [deleteLane, { isLoading: deleteLaneLoading }] = useDeleteLaneMasterMutation()
   const { data: locationsData, isLoading: isLocationLoading } = useGetLocationMasterQuery({});
   const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
-
+   const getLocationDetails = (loc_ID: string) => {
+      const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
+      if (!location) return "Location details not available";
+        const details = [
+          location.address_1,
+          location.address_2,
+          location.city,
+          location.state,
+          location.country,
+          location.pincode
+        ].filter(Boolean);
+  
+        return details.length > 0 ? details.join(", ") : "Location details not available";
+    };
   if (error) {
     console.error("Error fetching lanes:", error);
   }
@@ -331,8 +345,26 @@ const TransportationLanes = () => {
 
   const columns: GridColDef[] = [
     { field: "laneId", headerName: "Lane ID", width: 150 },
-    { field: "sourceLocationId", headerName: "Source Location", width: 150 },
-    { field: "destinationLocationId", headerName: "Destination Location", width: 180 },
+        {
+        field: "sourceLocationId",
+        headerName: "Source Location ID",
+        width: 150,
+        renderCell: (params) => (
+          <Tooltip  title={getLocationDetails(params.value)} arrow>
+            <span>{params.value}</span>
+          </Tooltip>
+        ),
+      },
+      {
+          field: "destinationLocationId",
+          headerName: "Destination Location",
+          width: 150,
+          renderCell: (params) => (
+            <Tooltip title={getLocationDetails(params.value)} arrow>
+            <span>{params.value}</span>
+            </Tooltip>
+          ),
+          },
     { field: "vehicleType", headerName: "Vehicle Type", width: 150 },
     { field: "transportStartDate", headerName: "Transport Start Date", width: 180 },
     { field: "transportEndDate", headerName: "Transport End Date", width: 180 },
@@ -852,9 +884,22 @@ const TransportationLanes = () => {
 
             {/* Submit Button */}
             <Box sx={{ textAlign: 'center', marginTop: 3 }}>
-              <Button type="submit" variant="contained" color="primary">
-                {isEditing ? "Update lane" : "Create lane"}
-              </Button>
+             {/* <Button
+                  type="submit"
+                  variant="contained"
+                  sx={{
+                    backgroundColor: "#83214F",
+                    color: "#fff",
+                    "&:hover": {
+                      backgroundColor: "#fff",
+                      color: "#83214F"
+                    }
+                  }}
+                >
+                  {isEditing ? "Update lane" : "Create lane"}
+                </Button> */}
+              <CustomButtonFilled >{isEditing ?  "Update lane" : "Create lane"}</CustomButtonFilled>
+
               <Button
                 variant="outlined"
                 color="secondary"

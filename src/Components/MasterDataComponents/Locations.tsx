@@ -31,6 +31,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import MassUpload from '../MassUpload/MassUpload';
 import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
+import { CustomButtonFilled } from '../ReusableComponents/ButtonsComponent';
 
 export interface Location {
   location_id: number;
@@ -792,9 +793,22 @@ const Locations: React.FC = () => {
                 </Grid>
               </Grid>
               <Box sx={{ marginTop: '24px', textAlign: 'center' }}>
-                <Button variant="contained" color="primary" type="submit">
+                {/* <Button
+                  type="submit"
+                  variant="contained"
+                  sx={{
+                    backgroundColor: "#83214F",
+                    color: "#fff",
+                    "&:hover": {
+                      backgroundColor: "#fff",
+                      color: "#83214F"
+                    }
+                  }}
+                >
                   {isEditing ? "Update location" : "Create location"}
-                </Button>
+                </Button> */}
+                <CustomButtonFilled  >{isEditing ? "Update location": "Create location"}</CustomButtonFilled>
+
                 <Button
                   variant='outlined'
                   color="secondary"

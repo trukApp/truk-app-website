@@ -5,7 +5,11 @@ import { Grid, TextField, Checkbox, FormControlLabel, Button, Typography } from 
 import * as Yup from 'yup';
 import styles from './CreatePackage.module.css';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { setCompletedState, setPackageAddtionalInfo } from '@/store/authSlice';
+import {
+    // setCompletedState,
+    setPackageAddtionalInfo
+} from '@/store/authSlice';
+import { CustomButtonFilled, CustomButtonOutlined } from '../ReusableComponents/ButtonsComponent';
 
 export interface AdditionalInfo {
     referenceId: string;
@@ -31,10 +35,10 @@ const validationSchema = Yup.object().shape({
     additionalInfo: Yup.object().shape({
         referenceId: Yup.string().required('Reference ID is required'),
         invoiceNumber: Yup.string().required('Invoice # is required'),
-        poNumber: Yup.string().required('PO # is required'),
-        salesOrderNumber: Yup.string().required('Sales Order # is required'),
-        department: Yup.string().required('Department is required'),
-        returnLabel: Yup.boolean(),
+        // poNumber: Yup.string().required('PO # is required'),
+        // salesOrderNumber: Yup.string().required('Sales Order # is required'),
+        // department: Yup.string().required('Department is required'),
+        // returnLabel: Yup.boolean(),
         // file: Yup.mixed().nullable().required('File is required'),
     }),
 });
@@ -64,7 +68,7 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
 
     const handleFormSubmit = (values: FormValues, actions: FormikHelpers<FormValues>) => {
         dispatch(setPackageAddtionalInfo(values.additionalInfo));
-        dispatch(setCompletedState(4));
+        // dispatch(setCompletedState(4));
         onNext(values);
         actions.setSubmitting(false);
     };
@@ -85,7 +89,7 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
                                 <Field
                                     as={TextField}
                                     name="additionalInfo.referenceId"
-                                    label="Reference ID"
+                                    label="Reference ID*"
                                     fullWidth
                                     size="small"
                                     error={touched.additionalInfo?.referenceId && Boolean(errors.additionalInfo?.referenceId)}
@@ -97,7 +101,7 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
                                 <Field
                                     as={TextField}
                                     name="additionalInfo.invoiceNumber"
-                                    label="Invoice #"
+                                    label="Invoice *"
                                     fullWidth
                                     size="small"
                                     error={touched.additionalInfo?.invoiceNumber && Boolean(errors.additionalInfo?.invoiceNumber)}
@@ -112,8 +116,8 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
                                     label="PO #"
                                     fullWidth
                                     size="small"
-                                    error={touched.additionalInfo?.poNumber && Boolean(errors.additionalInfo?.poNumber)}
-                                    helperText={touched.additionalInfo?.poNumber && errors.additionalInfo?.poNumber}
+                                    // error={touched.additionalInfo?.poNumber && Boolean(errors.additionalInfo?.poNumber)}
+                                    // helperText={touched.additionalInfo?.poNumber && errors.additionalInfo?.poNumber}
                                 />
                             </Grid>
 
@@ -124,8 +128,8 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
                                     label="Sales Order #"
                                     fullWidth
                                     size="small"
-                                    error={touched.additionalInfo?.salesOrderNumber && Boolean(errors.additionalInfo?.salesOrderNumber)}
-                                    helperText={touched.additionalInfo?.salesOrderNumber && errors.additionalInfo?.salesOrderNumber}
+                                    // error={touched.additionalInfo?.salesOrderNumber && Boolean(errors.additionalInfo?.salesOrderNumber)}
+                                    // helperText={touched.additionalInfo?.salesOrderNumber && errors.additionalInfo?.salesOrderNumber}
                                 />
                             </Grid>
 
@@ -136,8 +140,8 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
                                     label="Department"
                                     fullWidth
                                     size="small"
-                                    error={touched.additionalInfo?.department && Boolean(errors.additionalInfo?.department)}
-                                    helperText={touched.additionalInfo?.department && errors.additionalInfo?.department}
+                                    // error={touched.additionalInfo?.department && Boolean(errors.additionalInfo?.department)}
+                                    // helperText={touched.additionalInfo?.department && errors.additionalInfo?.department}
                                 />
                             </Grid>
 
@@ -191,14 +195,16 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
                             {/* Navigation Buttons */}
                             <Grid container spacing={2} justifyContent="center" marginTop={2}>
                                 <Grid item>
-                                    <Button variant="outlined" onClick={onBack}>
+                                    {/* <Button variant="outlined" onClick={onBack}>
                                         Back
-                                    </Button>
+                                    </Button> */}
+                                    <CustomButtonOutlined onClick={onBack}>Back</CustomButtonOutlined>
                                 </Grid>
                                 <Grid item>
-                                    <Button type="submit" variant="contained" color="primary">
+                                    {/* <Button type="submit" variant="contained" color="primary">
                                         Next
-                                    </Button>
+                                    </Button> */}
+                                    <CustomButtonFilled >Next</CustomButtonFilled>
                                 </Grid>
                             </Grid>
                         </Grid>

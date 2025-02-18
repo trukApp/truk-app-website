@@ -238,7 +238,7 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
       }
 
     } catch (error) {
-      setSnackbarMessage("Something went wrong! Please try again.");
+      setSnackbarMessage(`Something went wrong! Please try again, ${error}`);
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
       setIsModalOpen(false)
@@ -264,9 +264,23 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
       >
         <CircularProgress color="inherit" />
       </Backdrop>
-      <Button variant="contained" onClick={() => setIsModalOpen(true)}>
+      {/* <Button variant="contained" onClick={() => setIsModalOpen(true)}>
         Upload CSV
-      </Button>
+      </Button> */}
+<Button
+  variant="contained"
+  onClick={() => setIsModalOpen(true)}
+  sx={{
+    backgroundColor: "#83214F", // Custom background color for normal state
+    color: "#fff",  
+    "&:hover": {
+      backgroundColor: '#fff',  
+      color: "#83214F" 
+    }
+  }}
+>
+  Upload CSV
+</Button>
 
       <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <Box

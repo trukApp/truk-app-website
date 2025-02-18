@@ -2,15 +2,19 @@
 import React, { useState } from 'react';
 import { Formik, Form, Field, FormikProps } from 'formik';
 import * as Yup from 'yup';
-import { Checkbox, FormControlLabel, Grid, TextField, Button, SelectChangeEvent, FormControl, InputLabel, Select, MenuItem, Tooltip, FormHelperText, Backdrop, CircularProgress } from '@mui/material';
+import { Checkbox, FormControlLabel, Grid, TextField, SelectChangeEvent, FormControl, InputLabel, Select, MenuItem, Tooltip, FormHelperText, Backdrop, CircularProgress, Typography } from '@mui/material';
 import styles from './CreatePackage.module.css';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { setCompletedState, setPackageBillTo } from '@/store/authSlice';
+import {
+    // setCompletedState,
+    setPackageBillTo
+} from '@/store/authSlice';
 // import { IShipFrom } from '@/store/authSlice';
 import { useGetLocationMasterQuery, usePostLocationMasterMutation } from '@/api/apiSlice';
 import { Location } from '../MasterDataComponents/Locations';
 import { IShipFrom } from './CreatePackageShipFrom';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
+import { CustomButtonFilled, CustomButtonOutlined } from '../ReusableComponents/ButtonsComponent';
 
 interface ShipFromProps {
     onNext: (values: IShipFrom) => void;
@@ -51,12 +55,13 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const [postLocation, { isLoading: postLocationLoading }] = usePostLocationMasterMutation({})
-    const shipFromReduxValues = useAppSelector((state) => state.auth.packageBillTo)
-
-    const { data: locationsData, error: getLocationsError, isLoading: isLocationLoading } = useGetLocationMasterQuery([])
-    const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
-    console.log("getLocationsError: ", getLocationsError)
-
+    const billToReduxValues = useAppSelector((state) => state.auth.packageBillTo)
+    const shipFromReduxValues = useAppSelector((state) => state.auth.packageShipFrom)
+    const { data: locationsData, isLoading: isLocationLoading } = useGetLocationMasterQuery([])
+    const allLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
+    const getAllLocations = allLocations.filter(
+            (location: Location) => location.loc_ID !== shipFromReduxValues?.locationId
+    );
 
     const handleLocationChange = (
         event: SelectChangeEvent<string>,
@@ -81,6 +86,9 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
             setFieldValue('locationType', selectedLocation.loc_type || '');
             setFieldValue('glnCode', selectedLocation.gln_code || '');
             setFieldValue('iataCode', selectedLocation.iata_code || '');
+            setFieldValue('contactPerson', selectedLocation.contact_name || '');
+            setFieldValue('phoneNumber', selectedLocation.contact_phone_number|| '');
+            setFieldValue('email', selectedLocation.contact_email || '');
         } else {
             setFieldValue('locationDescription', '');
             setFieldValue('addressLine1', '');
@@ -96,6 +104,9 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
             setFieldValue('locationType', '');
             setFieldValue('glnCode', '');
             setFieldValue('iataCode', '');
+            setFieldValue('contactPerson',  '');
+            setFieldValue('phoneNumber',   '');
+            setFieldValue('email', '');
         }
     };
 
@@ -119,25 +130,25 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
             </Backdrop>
             <Formik
                 initialValues={{
-                    locationId: shipFromReduxValues?.locationId || '',
-                    locationDescription: shipFromReduxValues?.locationDescription || '',
-                    contactPerson: shipFromReduxValues?.contactPerson || '',
-                    phoneNumber: shipFromReduxValues?.phoneNumber || '',
-                    email: shipFromReduxValues?.email || '',
-                    addressLine1: shipFromReduxValues?.addressLine1 || '',
-                    addressLine2: shipFromReduxValues?.addressLine2 || '',
-                    city: shipFromReduxValues?.city || '',
-                    state: shipFromReduxValues?.state || '',
-                    country: shipFromReduxValues?.country || '',
-                    pincode: shipFromReduxValues?.pincode || '',
+                    locationId: billToReduxValues?.locationId || '',
+                    locationDescription: billToReduxValues?.locationDescription || '',
+                    contactPerson: billToReduxValues?.contactPerson || '',
+                    phoneNumber: billToReduxValues?.phoneNumber || '',
+                    email: billToReduxValues?.email || '',
+                    addressLine1: billToReduxValues?.addressLine1 || '',
+                    addressLine2: billToReduxValues?.addressLine2 || '',
+                    city: billToReduxValues?.city || '',
+                    state: billToReduxValues?.state || '',
+                    country: billToReduxValues?.country || '',
+                    pincode: billToReduxValues?.pincode || '',
                     saveAsNewLocationId: false, // Always false initially
                     saveAsDefaultShipFromLocation: true, // Always true initially
-                    latitude: shipFromReduxValues?.latitude || '',
-                    longitude: shipFromReduxValues?.longitude || '',
-                    timeZone: shipFromReduxValues?.timeZone || '',
-                    glnCode: shipFromReduxValues?.glnCode || '',
-                    iataCode: shipFromReduxValues?.iataCode || '',
-                    locationType: shipFromReduxValues?.locationType || ''
+                    latitude: billToReduxValues?.latitude || '',
+                    longitude: billToReduxValues?.longitude || '',
+                    timeZone: billToReduxValues?.timeZone || '',
+                    glnCode: billToReduxValues?.glnCode || '',
+                    iataCode: billToReduxValues?.iataCode || '',
+                    locationType: billToReduxValues?.locationType || ''
                 }}
 
                 validationSchema={validationSchema}
@@ -145,7 +156,7 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                     const { saveAsNewLocationId, saveAsDefaultShipFromLocation, ...shipFromData } = values;
                     console.log(saveAsNewLocationId, saveAsDefaultShipFromLocation)
                     dispatch(setPackageBillTo(shipFromData))
-                    dispatch(setCompletedState(3));
+                    // dispatch(setCompletedState(3));
 
                     if (values.saveAsNewLocationId) {
                         try {
@@ -196,8 +207,17 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
             >
                 {({ values, touched, errors, handleSubmit, setFieldValue, handleBlur }) => (
                     <Form  >
+                        <Typography variant="h6" sx={{fontWeight:'bold', textAlign:'center' , marginTop:3}}>Bill to Details</Typography>
                         <Grid item xs={12} sx={{ display: 'flex', flexDirection: "row", gap: '20px' }}>
                             <FormControlLabel
+                                control={<Field name="saveAsDefaultShipFromLocation" type="checkbox" as={Checkbox} />}
+                                label="Save as default Ship From Location"
+                                onChange={() => {
+                                    setFieldValue('saveAsDefaultShipFromLocation', !values.saveAsDefaultShipFromLocation);
+                                    setFieldValue('saveAsNewLocationId', false);
+                                }}
+                            />
+                                                        <FormControlLabel
                                 control={<Field name="saveAsNewLocationId" type="checkbox" as={Checkbox} />}
                                 label="Save as new Location ID"
                                 onChange={() => {
@@ -223,14 +243,6 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
 
                                 }}
                             />
-                            <FormControlLabel
-                                control={<Field name="saveAsDefaultShipFromLocation" type="checkbox" as={Checkbox} />}
-                                label="Save as default Ship From Location"
-                                onChange={() => {
-                                    setFieldValue('saveAsDefaultShipFromLocation', !values.saveAsDefaultShipFromLocation);
-                                    setFieldValue('saveAsNewLocationId', false);
-                                }}
-                            />
                         </Grid>
                         <Grid container spacing={2} className={styles.formsBgContainer}>
                             <h3 className={styles.mainHeading}>Location Details</h3>
@@ -240,7 +252,7 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                                         <FormControl size='small' fullWidth error={touched?.locationId && Boolean(errors?.locationId)}>
                                             <InputLabel shrink>Location ID</InputLabel>
                                             <Select displayEmpty
-                                                label="Location ID"
+                                                label="Location ID*"
                                                 name="locationId"
                                                 value={values?.locationId}
                                                 onChange={(event) => handleLocationChange(event, setFieldValue)}
@@ -273,7 +285,7 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                                 <Grid item xs={12} md={2.4}>
                                     <Field
                                         name="locationDescription"
-                                        as={TextField}
+                                        as={TextField} disabled
                                         label="Location Description*"
                                         InputLabelProps={{ shrink: true }} size='small' fullWidth
 
@@ -284,7 +296,7 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                                 <Grid item xs={12} md={2.4}>
                                     <Field
                                         name="latitude"
-                                        as={TextField}
+                                        as={TextField} disabled
                                         label="Latitude*"
                                         InputLabelProps={{ shrink: true }} size='small' fullWidth
                                         error={touched?.latitude && Boolean(errors?.latitude)}
@@ -294,7 +306,7 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                                 <Grid item xs={12} md={2.4}>
                                     <Field
                                         name="longitude"
-                                        as={TextField}
+                                        as={TextField} disabled
                                         label="Longitude*"
                                         InputLabelProps={{ shrink: true }} size='small' fullWidth
                                         error={touched?.longitude && Boolean(errors?.longitude)}
@@ -303,7 +315,7 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                                 </Grid>
                                 <Grid item xs={12} md={2.4}>
                                     <Field
-                                        name="timeZone"
+                                        name="timeZone" disabled
                                         as={TextField}
                                         label="Time zone*"
                                         InputLabelProps={{ shrink: true }} size='small' fullWidth
@@ -313,7 +325,7 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                                 </Grid>
                                 <Grid item xs={12} md={2.4}>
                                     <Field
-                                        name="locationType"
+                                        name="locationType" disabled
                                         as={TextField}
                                         label="Location type*"
                                         InputLabelProps={{ shrink: true }} size='small' fullWidth
@@ -349,8 +361,8 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                             <Grid item xs={12} md={2.4}>
                                 <Field
                                     name="addressLine1"
-                                    as={TextField}
-                                    label="Address Line 1"
+                                    as={TextField} 
+                                    label="Address Line 1*"
                                     InputLabelProps={{ shrink: true }} size = 'small' fullWidth
                                     
                                     error={touched?.addressLine1 && Boolean(errors?.addressLine1)}
@@ -369,7 +381,7 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                                 <Field
                                     name="city"
                                     as={TextField}
-                                    label="City"
+                                    label="City*" disabled
                                     InputLabelProps={{ shrink: true }} size = 'small' fullWidth
                                      
                                     error={touched?.city && Boolean(errors?.city)}
@@ -379,8 +391,8 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                             <Grid item xs={12} md={2.4}>
                                 <Field
                                     name="state"
-                                    as={TextField}
-                                    label="State"
+                                    as={TextField} disabled
+                                    label="State*"
                                     InputLabelProps={{ shrink: true }} size = 'small' fullWidth
                                      
                                     error={touched?.state && Boolean(errors?.state)}
@@ -389,9 +401,9 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                             </Grid>
                             <Grid item xs={12} md={2.4}>
                                 <Field
-                                    name="country"
+                                    name="country" disabled
                                     as={TextField}
-                                    label="Country"
+                                    label="Country*"
                                     InputLabelProps={{ shrink: true }} size = 'small' fullWidth
                                      
                                     error={touched?.country && Boolean(errors?.country)}
@@ -400,9 +412,9 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                             </Grid>
                             <Grid item xs={12} md={2.4}>
                                 <Field
-                                    name="pincode"
+                                    name="pincode" disabled
                                     as={TextField}
-                                    label="Pincode"
+                                    label="Pincode*"
                                     InputLabelProps={{ shrink: true }} size = 'small' fullWidth
                                     required
                                     error={touched?.pincode && Boolean(errors?.pincode)}
@@ -416,7 +428,7 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                                 <Field
                                     name="contactPerson"
                                     as={TextField}
-                                    label="Contact Person"
+                                    label="Contact Person*"
                                     InputLabelProps={{ shrink: true }} size = 'small' fullWidth
                                      
                                     error={touched?.contactPerson && Boolean(errors?.contactPerson)}
@@ -427,7 +439,7 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                                 <Field
                                     name="phoneNumber"
                                     as={TextField}
-                                    label="Phone Number"
+                                    label="Phone Number*"
                                     InputLabelProps={{ shrink: true }} size = 'small' fullWidth
                                     type='number'
                                     error={touched?.phoneNumber && Boolean(errors?.phoneNumber)}
@@ -438,7 +450,7 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                                 <Field
                                     name="email"
                                     as={TextField}
-                                    label="Email Address"
+                                    label="Email Address*"
                                     InputLabelProps={{ shrink: true }} size = 'small' fullWidth
                                     
                                     error={touched?.email && Boolean(errors?.email)}
@@ -467,19 +479,20 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                             {/* Back & Next Buttons */}
                             <Grid container spacing={2} justifyContent="center" marginTop={2}>
                                 <Grid item>
-                                    <Button variant="outlined" onClick={onBack}>
+                                    {/* <Button variant="outlined" onClick={onBack}>
                                         Back
-                                    </Button>
+                                    </Button> */}
+                                    <CustomButtonOutlined onClick={onBack}>Back</CustomButtonOutlined>
                                 </Grid>
                                 <Grid item>
-                                    <Button
+                                    {/* <Button
                                         variant="contained"
-                                        color="primary"
-                                        // disabled={!isValid || !dirty}
+                                        color="primary" 
                                         onClick={() => handleSubmit()}
                                     >
                                         Next
-                                    </Button>
+                                    </Button> */}
+                                    <CustomButtonFilled  onSubmit={()=>handleSubmit()}>Next</CustomButtonFilled>
                                 </Grid>
                             </Grid>
                         </Grid>

@@ -1,10 +1,14 @@
 'use client';
 import React from 'react';
 import { Formik, Form, Field, FormikHelpers } from 'formik';
-import { Grid, TextField, Button, Typography } from '@mui/material';
+import { Grid, TextField, Typography } from '@mui/material';
 import * as Yup from 'yup';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { setCompletedState, setPackagePickAndDropTimings } from '@/store/authSlice';
+import {
+    // setCompletedState,
+    setPackagePickAndDropTimings
+} from '@/store/authSlice';
+import { CustomButtonFilled, CustomButtonOutlined } from '../ReusableComponents/ButtonsComponent';
 
 interface PickupDropTab {
     onNext: (values: FormValues) => void;
@@ -37,9 +41,10 @@ const PickupDropoff: React.FC<PickupDropTab> = ({ onNext, onBack }) => {
 
     const handleFormSubmit = (values: FormValues, actions: FormikHelpers<FormValues>, onNext: (values: FormValues) => void) => {
         dispatch(setPackagePickAndDropTimings(values))
-        dispatch(setCompletedState(5));
+        // dispatch(setCompletedState(5));
         onNext(values);
         actions.setSubmitting(false);
+        
     };
 
     return (
@@ -101,18 +106,21 @@ const PickupDropoff: React.FC<PickupDropTab> = ({ onNext, onBack }) => {
                         {/* Submit Button */}
                         <Grid container spacing={2} justifyContent="center" marginTop={2}>
                             <Grid item>
-                                <Button variant="outlined" onClick={onBack}  >
+                                {/* <Button variant="outlined" onClick={onBack}  >
                                     Back
-                                </Button>
+                                </Button> */}
+                                    <CustomButtonOutlined onClick={onBack}>Back</CustomButtonOutlined>
                             </Grid>
                             <Grid item>
-                                <Button
+                                {/* <Button
                                     type="submit"
                                     variant="contained"
                                     color="primary"
                                 >
                                     Next
-                                </Button>
+                                </Button> */}
+                                 <CustomButtonFilled type="submit">Next</CustomButtonFilled>
+
                             </Grid>
                         </Grid>
                     </Grid>

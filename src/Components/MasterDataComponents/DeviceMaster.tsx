@@ -16,6 +16,7 @@ import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 import { Location } from './Locations';
 import { CarrierFormBE } from '../BusinessPartnersForms/CarriersForm';
+import { CustomButtonFilled } from '../ReusableComponents/ButtonsComponent';
 
 
 interface DeviceMasterValues {
@@ -59,7 +60,34 @@ const DeviceMaster: React.FC = () => {
   const { data: carriersData, isLoading: isCarrierLoading } = useGetCarrierMasterQuery({});
   const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
   const getAllCarriers = carriersData?.carriers.length > 0 ? carriersData?.carriers : [];
+  const getLocationDetails = (loc_ID: string) => {
+    const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
+    if (!location) return "Location details not available";
+      const details = [
+        location.address_1,
+        location.address_2,
+        location.city,
+        location.state,
+        location.country,
+        location.pincode
+      ].filter(Boolean);
 
+      return details.length > 0 ? details.join(", ") : "Location details not available";
+  };
+
+ const getCarriersDetails = (carrier_ID: string) => {
+    const carrier = getAllCarriers.find((carr: CarrierFormBE) => carr.carrier_ID === carrier_ID);
+    if (!carrier) return "Location details not available";
+    const { carrier_name, carrier_address, carrier_loc_of_operation } = carrier;
+    const locationDetails = carrier_loc_of_operation && carrier_loc_of_operation.length > 0
+        ? carrier_loc_of_operation.join(", ")
+        : "No locations available";
+
+    // Format and return the details
+    return `${carrier_name}, ${carrier_address}, Locations: ${locationDetails}`;
+};
+
+ console.log('getAll carriers :', getAllCarriers)
   useEffect(() => {
     if (postSuccess || editSuccess || deleteSuccess) {
       refetch();
@@ -201,8 +229,28 @@ const DeviceMaster: React.FC = () => {
     { field: "deviceUID", headerName: "Device UID", width: 200 },
     { field: "simImeiNumber", headerName: "SIM IMEI Number", width: 200 },
     { field: "vehicleNumber", headerName: "Vehicle Number", width: 150 },
-    { field: "carrierId", headerName: "Carrier ID", width: 150 },
-    { field: "locationId", headerName: "Location ID", width: 150 },
+    // { field: "carrierId", headerName: "Carrier ID", width: 150 },
+        {
+    field: "carrierId",
+    headerName: "Carrier ID",
+    width: 150,
+    renderCell: (params) => (
+      <Tooltip title={getCarriersDetails(params.value)} arrow>
+        <span>{params.value}</span>
+      </Tooltip>
+    ),
+  },
+      {
+    field: "locationId",
+    headerName: "Location ID",
+    width: 150,
+    renderCell: (params) => (
+      <Tooltip title={getLocationDetails(params.value)} arrow>
+        <span>{params.value}</span>
+      </Tooltip>
+    ),
+  },
+
     {
       field: "actions",
       headerName: "Actions",
@@ -457,9 +505,23 @@ const DeviceMaster: React.FC = () => {
               </Grid>
             </Grid>
             <Box mt={3} textAlign="center">
-              <Button variant="contained" color="primary" type="submit">
-                {isEditing ? "Update device" : "Create device"}
-              </Button>
+              
+              {/* <Button
+                  type="submit"
+                  variant="contained"
+                  sx={{
+                    backgroundColor: "#83214F",
+                    color: "#fff",
+                    "&:hover": {
+                      backgroundColor: "#fff",
+                      color: "#83214F"
+                    }
+                  }}
+                >
+                  {isEditing ? "Update device" : "Create device"}
+                </Button> */}
+              <CustomButtonFilled  >{isEditing ? "Update device": "Create device"}</CustomButtonFilled>
+
               <Button
                 variant="outlined"
                 color="secondary"
