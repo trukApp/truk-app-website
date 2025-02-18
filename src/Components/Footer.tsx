@@ -64,7 +64,7 @@ const Footer: React.FC = () => {
           </IconButton>
         </Box>
       </Box>
-      <Typography variant="body2" sx={{ color: "#777" }}>
+      <Typography variant="body2" sx={{ color: "#000000" }}>
         © {new Date().getFullYear()} Truckapp. All rights reserved.
       </Typography>
     </Box>
