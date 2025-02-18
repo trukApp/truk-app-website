@@ -27,30 +27,13 @@ const CreateOrder: React.FC = () => {
     }
     const allPackagesData = packagesData?.packages || [];
 
-    const steps = ['Select Packages', 'Truck Selection', 'Route Optimization', 'Load Optimization', 'Review Order'];
+    const steps = ['Select Packages', 'Vehicle Optimization', 'Route Optimization', 'Load Optimization', 'Review Order'];
 
 
     const handleCreateOrder = () => {
         console.log(selectedPackages);
 
     };
-
-    // const handleSelectTruck = async () => {
-    //     if (activeStep === 0) {
-    //         const packagesIDArray = selectedPackages.map((item) => item.pack_ID);
-    //         const body = {
-    //             packages: packagesIDArray,
-    //             filters
-    //         }
-    //         const response = await selectTheTrucks(body).unwrap();
-    //         if (response) {
-    //             setSelectTrucks([response?.scenarioCost, response?.scenarioEta])
-    //             setActiveStep((prev) => prev + 1)
-    //         }
-    //     } else {
-    //         setActiveStep((prev) => prev + 1);
-    //     }
-    // };
 
     const handleSelectTruck = async () => {
         if (activeStep === 0) {

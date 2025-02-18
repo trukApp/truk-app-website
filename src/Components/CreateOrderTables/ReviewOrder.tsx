@@ -1,9 +1,7 @@
 import { useAppSelector } from '@/store';
 import React from 'react';
-import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Grid } from '@mui/material';
+import { Box, Typography, Paper, Grid } from '@mui/material';
 import { DataGrid, } from '@mui/x-data-grid';
-
-// Define types
 interface Allocation {
     vehicle_ID: string;
     totalWeightCapacity: number;
@@ -25,9 +23,36 @@ const ReviewCreateOrder = () => {
     const selectedTrucks = useAppSelector((state) => state.auth.selectedTrucks || []);
 
 
+    const packageColumns = [
+        { field: 'pack_ID', headerName: 'Package ID', flex: 1 },
+        { field: 'ship_from', headerName: 'Ship From', flex: 1 },
+        { field: 'ship_to', headerName: 'Ship To', flex: 1 },
+        { field: 'products', headerName: 'Products', flex: 2 },
+        { field: 'invoice', headerName: 'Invoice', flex: 1 },
+        { field: 'reference_id', headerName: 'Reference ID', flex: 1 },
+        { field: 'pickup_date_time', headerName: 'Pickup Date & Time', flex: 1 },
+        { field: 'dropoff_date_time', headerName: 'Dropoff Date & Time', flex: 1 },
+        { field: 'tax_info', headerName: 'Tax Info', flex: 1 },
+        { field: 'return_label', headerName: 'Return Label', flex: 1 }
+    ];
+
+    const packageRows = selectedPackages.map((pkg, index) => ({
+        id: index,
+        pack_ID: pkg.pack_ID,
+        ship_from: pkg.ship_from,
+        ship_to: pkg.ship_to,
+        products: pkg.product_ID.map(product => `${product.prod_ID} (Qty: ${product.quantity})`).join(', '),
+        invoice: pkg.additional_info?.invoice || 'N/A',
+        reference_id: pkg.additional_info?.reference_id || 'N/A',
+        pickup_date_time: pkg.pickup_date_time,
+        dropoff_date_time: pkg.dropoff_date_time,
+        tax_info: pkg.tax_info?.tax_rate || 'N/A',
+        return_label: pkg.return_label ? 'Yes' : 'No'
+    }));
+
     return (
         <Box sx={{ p: 3 }}>
-            <Paper sx={{ mb: 3, p: 2, borderRadius: 2, boxShadow: 3 }}>
+            {/* <Paper sx={{ mb: 3, p: 2, borderRadius: 2, boxShadow: 3 }}>
                 <Typography variant="h6" gutterBottom sx={{ color: '#83214F' }}>Selected Packages</Typography>
                 <TableContainer>
                     <Table>
@@ -69,34 +94,32 @@ const ReviewCreateOrder = () => {
                         </TableBody>
                     </Table>
                 </TableContainer>
+            </Paper> */}
+
+            <Paper sx={{ mb: 3, p: 2, borderRadius: 2, boxShadow: 3 }}>
+                <Typography variant="h6" gutterBottom sx={{ color: '#83214F' }}>Selected Packages</Typography>
+                <div style={{ height: 400, width: '100%' }}>
+                    <DataGrid
+                        rows={packageRows}
+                        columns={packageColumns}
+                        pageSizeOptions={[5, 10, 20]}
+                        // checkboxSelection
+                        disableRowSelectionOnClick
+                    />
+                </div>
             </Paper>
 
-            {/* Selected Truck Details Section */}
             <Grid>
                 {selectedTrucks.length > 0 && (
                     <Paper sx={{ mb: 3, p: 2, borderRadius: 2, boxShadow: 3 }}>
                         <Typography variant="h6" gutterBottom sx={{ color: '#83214F' }}>Selected Truck Details</Typography>
                         <Typography>Label: <strong>{selectedTrucks[0].label}</strong> </Typography>
-                        <Typography>Total Cost: <strong> ₹{selectedTrucks[0].totalCost}</strong></Typography>
+                        <Typography>Total Estimated Cost: <strong> ₹{selectedTrucks[0].totalCost}</strong></Typography>
                     </Paper>
                 )}
             </Grid>
-            {/* <Paper sx={{ mb: 3, p: 2, borderRadius: 2, boxShadow: 3 }}>
-                <Typography variant="h6" gutterBottom>Route Optimization (Number of stops: {selectedTrucks[0]?.allocations.length}) </Typography>
-                    {selectedTrucks[0]?.allocations?.map((allocation: Allocation, index: number) => (
-                        <Grid key={index} sx={{display:'flex' , flexDirection:'row'}}>
-                            <Typography sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Stop {index + 1} : </Typography>
-                            <Typography  sx={{ ml: 1, flex: 1, display: "inline-block", wordBreak: "break-word" }}>
-                                {allocation.loadArrangement?.map((stop) => stop.location).join(', ') || "N/A"}
-                            </Typography>
-                        </Grid>
-                ))}
-            </Paper> */}
 
             <Grid>
-
-
-                {/* Load  and route Optimization Section */}
                 <Paper sx={{ mb: 3, p: 2, borderRadius: 2, boxShadow: 3 }}>
                     <Typography variant="h6" gutterBottom sx={{ color: '#83214F' }}>
                         Load and Route Optimised vehicles : {selectedTrucks[0]?.allocations?.length}
@@ -130,10 +153,9 @@ const ReviewCreateOrder = () => {
                                         Leftover Volume: <strong>{vehicle.leftoverVolume} m³</strong>
                                     </Typography>
                                     <Typography>
-                                        Cost: <strong>₹{vehicle.cost}</strong>
+                                        Estimated Cost: <strong>₹{vehicle.cost}</strong>
                                     </Typography>
 
-                                    {/* Data Grid for Load Arrangement */}
                                     {vehicle.loadArrangement && vehicle.loadArrangement.length > 0 ? (
                                         <Box sx={{ mt: 2, height: 300, backgroundColor: "white", borderRadius: 1, overflow: "hidden" }}>
                                             <DataGrid
@@ -143,8 +165,8 @@ const ReviewCreateOrder = () => {
                                                     packages: item.packages ? item.packages.join(", ") : "N/A",
                                                 }))}
                                                 columns={[
-                                                    { field: "id", headerName: "Stop No", width: 100 },
-                                                    { field: "location", headerName: "Load Address", width: 300 },
+                                                    { field: "id", headerName: "Load Arrangement", width: 100 },
+                                                    { field: "location", headerName: "Delivery Address", width: 300 },
                                                     { field: "packages", headerName: "Packages", width: 200 },
                                                 ]}
                                                 pageSizeOptions={[5, 10]}

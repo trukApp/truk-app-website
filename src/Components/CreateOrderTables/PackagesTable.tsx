@@ -70,7 +70,7 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
             headerName: 'Product Details',
             width: 300,
             renderCell: (params: GridCellParams) => {
-                const products = params.value as { prod_ID: string; quantity: number }[]; // Type assertion
+                const products = params.value as { prod_ID: string; quantity: number }[];
                 return (
                     <div>
                         {products?.map((prod) => (
@@ -85,7 +85,7 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
             headerName: 'Additional Info',
             width: 250,
             renderCell: (params: GridCellParams) => {
-                const info = params.value as { invoice: string; reference_id: string }; // Type assertion
+                const info = params.value as { invoice: string; reference_id: string };
                 return (
                     <div>
                         <div>Invoice: {info?.invoice}</div>
