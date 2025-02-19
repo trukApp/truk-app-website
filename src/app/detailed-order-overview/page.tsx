@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import React from "react";
 import { useGetOrderByIdQuery } from "@/api/apiSlice";
 import { Backdrop, CircularProgress, Grid, Paper, Typography, Box } from "@mui/material";
