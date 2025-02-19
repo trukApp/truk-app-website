@@ -37,6 +37,7 @@ import SnackbarAlert from '@/Components/ReusableComponents/SnackbarAlerts';
 import { Location } from '@/Components/MasterDataComponents/Locations';
 import { Package } from '@/Components/MasterDataComponents/PackagingInfo';
 import { CustomButtonFilled } from '@/Components/ReusableComponents/ButtonsComponent';
+import { withAuthComponent } from '@/Components/WithAuthComponent';
 
 export interface PackagingType {
     pac_ID: string;
@@ -411,10 +412,10 @@ const ProductMasterPage = () => {
                         onSubmit={handleSubmit}
                         enableReinitialize={true}
                     >
-                        {({ values, handleChange, handleBlur, errors, touched, setFieldValue }) => (
+                        {({ values, handleChange, handleBlur, errors, touched, setFieldValue, resetForm }) => (
                             <Form>
-                                <Typography variant="h6" className={style.basicDetailsHeading}>
-                                    Basic Data
+                                <Typography variant="h6" sx={{fontWeight:600,   marginTop:2}} >
+                                    Basic data
                                 </Typography>
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} sm={6} md={2.4} >
@@ -548,78 +549,89 @@ const ProductMasterPage = () => {
                                     </Grid>
                                 </Grid>
 
-                                <Typography variant="h6" className={style.basicDetailsHeading}>
-                                    Shelf Life
+                                <Typography variant="h6" sx={{fontWeight:600,   marginTop:2}}>
+                                    Shelf life
                                 </Typography>
 
                                 <Grid container spacing={2}>
-                                    {/* <Grid item xs={12} sm={6} md={2.4} >
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="Expiration Date"
-                                            name="expirationDate"
-                                            type="date"
-                                            value={values.expirationDate}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            InputLabelProps={{ shrink: true }}
-                                        />
-                                    </Grid> */}
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth
-                                            size="small"
-                                            label="Expiration Date"
-                                            name="expirationDate"
-                                            type="date"
-                                            value={
-                                                values.expirationDate
-                                                    ? values.expirationDate.split('-').reverse().join('-')
-                                                    : ''
-                                            }
-                                            onChange={(e) => {
-                                                const selectedDate = e.target.value;
-                                                const formattedDate = selectedDate
-                                                    .split('-').reverse().join('-');
-                                                handleChange({ target: { name: 'expiryDate', value: formattedDate } });
-                                            }}
-                                            onBlur={handleBlur}
+                                                        size="small"
+                                                        label="Expiration Date"
+                                                        name="expirationDate"
+                                                        type="date"
+                                                        value={
+                                                            values.expirationDate
+                                                                ? values.expirationDate
+                                                                    .split("-")
+                                                                    .reverse()
+                                                                    .join("-")
+                                                                : ""
+                                                        }
+                                                        onChange={(e) => {
+                                                            const selectedDate = e.target.value;
+                                                            const formattedDate = selectedDate
+                                                                .split("-")
+                                                                .reverse()
+                                                                .join("-");
+                                                            handleChange({
+                                                                target: {
+                                                                    name: "expirationDate",
+                                                                    value: formattedDate,
+                                                                },
+                                                            });
+                                                        }}
+                                                        onBlur={handleBlur}
+                                                        error={
+                                                            touched.expirationDate &&
+                                                            Boolean(errors.expirationDate)
+                                                        }
+                                                        helperText={
+                                                            touched.expirationDate && errors.expirationDate
+                                                        }
                                             InputLabelProps={{ shrink: true }}
                                         />
                                     </Grid>
-                                    {/* <Grid item xs={12} sm={6} md={2.4} >
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="Best Before Date"
-                                            name="bestBeforeDate"
-                                            type="date"
-                                            value={values.bestBeforeDate}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            InputLabelProps={{ shrink: true }}
-                                        />
-                                    </Grid> */}
+                                     
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                            fullWidth
-                                            size="small"
-                                            label="Best Before Date"
-                                            name="bestBeforeDate"
-                                            type="date"
-                                            value={
-                                                values.bestBeforeDate
-                                                    ? values.bestBeforeDate.split('-').reverse().join('-')
-                                                    : ''
-                                            }
-                                            onChange={(e) => {
-                                                const selectedDate = e.target.value;
-                                                const formattedDate = selectedDate
-                                                    .split('-').reverse().join('-');
-                                                handleChange({ target: { name: 'expiryDate', value: formattedDate } });
-                                            }}
-                                            onBlur={handleBlur}
-                                            InputLabelProps={{ shrink: true }}
-                                        />
+                                                        fullWidth
+                                                        size="small"
+                                                        label="Best Before Date"
+                                                        name="bestBeforeDate"
+                                                        type="date"
+                                                        value={
+                                                            values.bestBeforeDate
+                                                                ? values.bestBeforeDate
+                                                                    .split("-")
+                                                                    .reverse()
+                                                                    .join("-")
+                                                                : ""
+                                                        }
+                                                        onChange={(e) => {
+                                                            const selectedDate = e.target.value;
+                                                            const formattedDate = selectedDate
+                                                                .split("-")
+                                                                .reverse()
+                                                                .join("-");
+                                                            handleChange({
+                                                                target: {
+                                                                    name: "bestBeforeDate",
+                                                                    value: formattedDate,
+                                                                },
+                                                            });
+                                                        }}
+                                                        onBlur={handleBlur}
+                                                        error={
+                                                            touched.bestBeforeDate &&
+                                                            Boolean(errors.bestBeforeDate)
+                                                        }
+                                                        helperText={
+                                                            touched.bestBeforeDate && errors.bestBeforeDate
+                                                        }
+                                                        InputLabelProps={{ shrink: true }}
+                                                    />
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
@@ -666,8 +678,8 @@ const ProductMasterPage = () => {
                                     </Grid>
                                 </Grid>
 
-                                <Typography variant="h6" className={style.basicDetailsHeading}>
-                                    Location Data
+                                <Typography variant="h6" sx={{fontWeight:600,   marginTop:2}}>
+                                    Location data
                                 </Typography>
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} sm={6} md={2.4}>
@@ -772,8 +784,8 @@ const ProductMasterPage = () => {
                                     </Grid>
                                 </Grid>
 
-                                <Typography variant="h6" className={style.basicDetailsHeading}>
-                                    Storage Data
+                                <Typography variant="h6" sx={{fontWeight:600,   marginTop:1}}>
+                                    Storage data
                                 </Typography>
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} md={3}>
@@ -827,20 +839,6 @@ const ProductMasterPage = () => {
                                 </Grid>
 
                                 <Box marginTop={2} textAlign="center">
-                                    {/* <Button
-                                        type="submit"
-                                        variant="contained"
-                                        sx={{
-                                            backgroundColor: "#83214F",
-                                            color: "#fff",
-                                            "&:hover": {
-                                            backgroundColor: "#fff",
-                                            color: "#83214F"
-                                            }
-                                        }}
-                                        >
-                                        {updateRecord ? "Update product" : "Create product"}
-                                    </Button> */}
                                 <CustomButtonFilled >{updateRecord ? "Update product" : "Create product"}</CustomButtonFilled>
                                 <Button
                                         variant="outlined"
@@ -848,6 +846,7 @@ const ProductMasterPage = () => {
                                         onClick={() => {
                                             setFormInitialValues(productFormInitialValues)
                                             setUpdateRecord(false)
+                                            resetForm({ values: productFormInitialValues });
                                         }}
                                         style={{ marginLeft: "10px" }}>Reset
                                     </Button>
@@ -876,4 +875,4 @@ const ProductMasterPage = () => {
     );
 };
 
-export default ProductMasterPage;
+export default withAuthComponent(ProductMasterPage);

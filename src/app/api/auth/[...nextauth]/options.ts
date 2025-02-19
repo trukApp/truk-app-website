@@ -3,9 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 
 declare module "next-auth" {
   interface User {
-    id: string;
-    // name: string;
-    // phone: string;
+    id: string; 
     accessToken: string;
     refreshToken: string;
   }
@@ -17,8 +15,6 @@ declare module "next-auth" {
 
   interface JWT {
     id: string;
-    // name: string;
-    // phone: string;
     accessToken: string;
     refreshToken: string;
     accessTokenExpires: number;
@@ -29,8 +25,6 @@ const refreshAccessToken = async (refreshToken: string) => {
   try {
     const response = await fetch(
       `https://dev-api.trukapp.com/truk/log/refresh-token`,
-      // `http://192.168.10.28:8088/truk/log/refresh-token`,    // teja ofc
-      // `http://192.168.29.78:8088/truk/log/refresh-token`,    // teja pg
       {
         method: "POST",
         headers: {
@@ -39,8 +33,9 @@ const refreshAccessToken = async (refreshToken: string) => {
         body: JSON.stringify({ refreshToken }),
       }
     );
-
+   
     if (!response.ok) {
+      
       throw new Error(`Failed to refresh access token: ${response.statusText}`);
     }
 
@@ -48,7 +43,7 @@ const refreshAccessToken = async (refreshToken: string) => {
     return {
       accessToken: data.accessToken,
       // refreshToken: data.refreshToken || refreshToken,
-      accessTokenExpires: Date.now() + 24 * 60 * 60 * 1000, // in milli seconds
+      accessTokenExpires: Date.now() + 24 * 60 * 60 * 1000, 
     };
   } catch (error) {
     console.error("Refresh token error:", error);
@@ -75,15 +70,16 @@ export const options: NextAuthOptions = {
         },
       },
       async authorize(credentials) {
-        if (!credentials?.phone || !credentials?.password) {
-          throw new Error("Phone number and password are required");
+        if (!credentials?.phone) {
+          throw new Error("Phone number is required");
+        }
+        else if (!credentials?.password) {
+          throw new Error("Password is required");
         }
 
         try {
           const response = await fetch(
             `https://dev-api.trukapp.com/truk/log/login`,
-            // `http://192.168.10.28:8088/truk/log/login`,   // teja ofc
-            // `http://192.168.29.78:8088/truk/log/login`,      // teja pg
             {
               method: "POST",
               headers: {
@@ -95,25 +91,23 @@ export const options: NextAuthOptions = {
               }),
             }
           );
-          if (!response.ok) {
-            throw new Error("Invalid phone number or password");
+          console.log("login response :", response)
+          if (response.status === 404) {
+              throw new Error("You dont have an account to login");
           }
-
           const user = await response.json();
           if (user && user.accessToken) {
             return {
               id: user.profile_id,
-              // name: user.user.first_name,
-              // phone: user.user.mobile,
               accessToken: user.accessToken,
               refreshToken: user.refreshToken,
             };
           }
 
-          throw new Error("Login failed");
+          throw new Error("Check the password you have entered");
         } catch (error) {
           console.error("Login error:", error);
-          throw new Error("Unable to login. Please try again.");
+          throw error
         }
       },
     }),
@@ -125,8 +119,6 @@ export const options: NextAuthOptions = {
       if (user) {
         return {
           id: user.id,
-          // name: user.name,
-          // phone: user.phone,
           accessToken: user.accessToken,
           refreshToken: user.refreshToken,
           accessTokenExpires: Date.now() + 23 * 60 * 60 * 1000,
@@ -158,8 +150,6 @@ export const options: NextAuthOptions = {
     async session({ session, token }) {
       session.user = {
         id: token.id as string,
-        // name: token.name as string,
-        // phone: token.phone as string,
         accessToken: token.accessToken as string,
         refreshToken: token.refreshToken as string,
       };
@@ -181,7 +171,7 @@ export const options: NextAuthOptions = {
 
   session: {
     strategy: "jwt",
-    maxAge: 24 * 60 * 60, //must return here in seconds
+    maxAge: 24 * 60 * 60,
   },
 
   jwt: {

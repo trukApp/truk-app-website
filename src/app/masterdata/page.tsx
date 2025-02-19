@@ -46,7 +46,7 @@ const MasterData: React.FC = () => {
         sx={{
           marginBottom: "10px",
           "& .MuiTabs-indicator": {
-            backgroundColor: "#1976d2",
+            backgroundColor: "#83214F",
           },
         }}
       >
