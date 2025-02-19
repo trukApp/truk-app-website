@@ -47,7 +47,7 @@ export const apiSlice = createApi({
     "UomMaster",
     "CreateOrder",
     "PackagesForOrder",
-    "Orders"
+    "Orders",
   ],
   endpoints: (builder) => ({
     userLogin: builder.mutation<User, { phone: string; password: string }>({
@@ -67,6 +67,7 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: [{ type: "PARTNERS", id: "LIST" }],
     }),
+
     vendorRegistration: builder.mutation({
       query: (body) => ({
         url: "business/create-partners",
@@ -437,29 +438,6 @@ export const apiSlice = createApi({
       invalidatesTags: [{ type: "ProductMaster", id: "LIST" }],
     }),
 
-    //Crearte order
-    selectTheProducts: builder.mutation({
-      query: (body) => {
-        return {
-          url: "createOrder/create-order",
-          method: "POST",
-          body,
-        };
-      },
-      invalidatesTags: [{ type: "PackagesForOrder", id: "LIST" }],
-    }),
-
-    confomOrder: builder.mutation({
-      query: (body) => {
-        return {
-          url: "order/confirm-order",
-          method: "POST",
-          body,
-        };
-      },
-      invalidatesTags: [{ type: "PackagesForOrder", id: "LIST" }],
-    }),
-
     getDataCount: builder.query({
       query: () => ({
         url: `data/count-data`,
@@ -504,12 +482,43 @@ export const apiSlice = createApi({
       invalidatesTags: [{ type: "PackagesForOrder", id: "LIST" }],
     }),
 
-    // Orders
+    //Crearte order
+    selectTheProducts: builder.mutation({
+      query: (body) => {
+        return {
+          url: "createOrder/create-order",
+          method: "POST",
+          body,
+        };
+      },
+      // invalidatesTags: [{ type: "Orders", id: "LIST" }],
+    }),
+
+    confomOrder: builder.mutation({
+      query: (body) => {
+        return {
+          url: "order/confirm-order",
+          method: "POST",
+          body,
+        };
+      },
+      invalidatesTags: [{ type: "Orders", id: "LIST" }],
+    }),
+
     getAllOrders: builder.query({
       query: (params) => ({
         url: `order/all-orders`,
         method: "GET",
         params,
+      }),
+      providesTags: [{ type: "Orders", id: "LIST" }],
+    }),
+
+    getOrderById: builder.query({
+      query: ({ orderId }) => ({
+        url: `order/order-by-id`,
+        method: "GET",
+        params: { order_ID: orderId },
       }),
       providesTags: [{ type: "Orders", id: "LIST" }],
     }),
@@ -568,4 +577,5 @@ export const {
   useEditPackageForOrderMutation,
   useConfomOrderMutation,
   useGetAllOrdersQuery,
+  useGetOrderByIdQuery,
 } = apiSlice;
