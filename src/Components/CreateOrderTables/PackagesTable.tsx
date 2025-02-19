@@ -228,7 +228,7 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
                 ))}
             </Grid> */}
 
-            <Grid sx={{ marginTop: '20px', marginBottom: '20px' }}>
+            <Grid sx={{ marginTop: '5px', marginBottom: '20px' }}>
                 {isPackagesLoading ? (
                     <DataGridSkeletonLoader columns={columns} />
                 ) : (

@@ -4,6 +4,7 @@ import { Box, Typography, Card } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import GavelIcon from '@mui/icons-material/Gavel';
+import { Inventory2 } from '@mui/icons-material';
 
 const TransportPlanning = () => {
   const router = useRouter();
@@ -18,7 +19,7 @@ const TransportPlanning = () => {
     },
     {
       title: 'Transport Unit Overview',
-      icon: <GavelIcon sx={{ fontSize: { xs: 40, sm: 50, md: 60 } }} />,
+      icon: <Inventory2 sx={{ fontSize: { xs: 40, sm: 50, md: 60 } }} />,
       onClick: () => {
         router.push('/units-overview');
       },

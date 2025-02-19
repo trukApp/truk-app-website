@@ -83,7 +83,8 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
                 <Form>
                     <Typography variant="h6" sx={{fontWeight:'bold', textAlign:'center' , marginTop:3}}>Additional Details</Typography>
                     <Grid>
-                        <h3 className={styles.mainHeading}>Additional Information</h3>
+                        {/* <h3 className={styles.mainHeading}>Additional Information</h3> */}
+                        <Typography variant='h6' sx={{ fontWeight:600}}>Additional information</Typography>
                         <Grid container spacing={2} className={styles.formsBgContainer}>
                             <Grid item xs={12} md={2.4}>
                                 <Field

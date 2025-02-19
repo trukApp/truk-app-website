@@ -157,7 +157,7 @@ const CreateOrder: React.FC = () => {
                     ✔
                 </Typography>
             ) : (
-                <Typography variant="body2">{icon}</Typography>
+                <Typography variant="body2" >{icon}</Typography>
             )}
         </Box>
     );
@@ -220,7 +220,7 @@ const CreateOrder: React.FC = () => {
             <div>
                 {activeStep === 0 && (
                     <div>
-                        <Typography variant="h6">Select Packages</Typography>
+                        <Typography variant="h6" sx={{fontWeight:600, marginTop:2}}>Select packages</Typography>
                         <PackagesTable allPackagesData={allPackagesData} isPackagesLoading={isPackagesLoading} />
 
                     </div>
