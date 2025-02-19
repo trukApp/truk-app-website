@@ -220,6 +220,30 @@ export const apiSlice = createApi({
       invalidatesTags: [{ type: "LocationMaster", id: "LIST" }],
     }),
 
+    updateShipFromDefaultLocationId: builder.mutation({
+      query: ({ locId, defShipFrom }) => ({
+        url: `masLoc/update-location-flag?loc_ID=${locId}&def_ship_from=${defShipFrom}`,
+        method: "PUT",
+      }),
+      invalidatesTags: [{ type: "LocationMaster", id: "LIST" }],
+    }),
+
+    updateShipToDefaultLocationId: builder.mutation({
+      query: ({ locId, defShipFrom }) => ({
+        url: `masLoc/update-location-flag?loc_ID=${locId}&def_ship_to=${defShipFrom}`,
+        method: "PUT",
+      }),
+      invalidatesTags: [{ type: "LocationMaster", id: "LIST" }],
+    }),
+
+    updateBillToDefaultLocationId: builder.mutation({
+      query: ({ locId, defShipFrom }) => ({
+        url: `masLoc/update-location-flag?loc_ID=${locId}&def_bill_to=${defShipFrom}`,
+        method: "PUT",
+      }),
+      invalidatesTags: [{ type: "LocationMaster", id: "LIST" }],
+    }),
+
     // vehciles master
     getVehicleMaster: builder.query({
       query: (params) => {
@@ -446,7 +470,7 @@ export const apiSlice = createApi({
       // providesTags: [{ type: "ProductMaster", id: "LIST" }],
     }),
 
-    //Create Order
+    //Packages API'S
     getAllPackagesForOrder: builder.query({
       query: (params) => ({
         url: `products/packages/all-packages`,
@@ -578,4 +602,7 @@ export const {
   useConfomOrderMutation,
   useGetAllOrdersQuery,
   useGetOrderByIdQuery,
+  useUpdateShipFromDefaultLocationIdMutation,
+  useUpdateShipToDefaultLocationIdMutation,
+  useUpdateBillToDefaultLocationIdMutation,
 } = apiSlice;

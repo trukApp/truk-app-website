@@ -53,6 +53,9 @@ export interface Location {
   contact_name: string;
   contact_phone_number: string;
   contact_email: string;
+  def_ship_from: number | boolean;
+  def_bill_to: number | boolean;
+  locationId: string
 }
 
 // Define the type for each row in the DataGrid
@@ -807,7 +810,7 @@ const Locations: React.FC = () => {
                 >
                   {isEditing ? "Update location" : "Create location"}
                 </Button> */}
-                <CustomButtonFilled  >{isEditing ? "Update location": "Create location"}</CustomButtonFilled>
+                <CustomButtonFilled  >{isEditing ? "Update location" : "Create location"}</CustomButtonFilled>
 
                 <Button
                   variant='outlined'

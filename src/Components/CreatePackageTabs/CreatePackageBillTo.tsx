@@ -9,8 +9,7 @@ import {
     // setCompletedState,
     setPackageBillTo
 } from '@/store/authSlice';
-// import { IShipFrom } from '@/store/authSlice';
-import { useGetLocationMasterQuery, usePostLocationMasterMutation } from '@/api/apiSlice';
+import { useGetLocationMasterQuery, usePostLocationMasterMutation, useUpdateBillToDefaultLocationIdMutation } from '@/api/apiSlice';
 import { Location } from '../MasterDataComponents/Locations';
 import { IShipFrom } from './CreatePackageShipFrom';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
@@ -22,7 +21,6 @@ interface ShipFromProps {
 }
 
 const validationSchema = Yup.object({
-
     locationId: Yup.string().when("saveAsNewLocationId", {
         is: (value: boolean) => value === false,
         then: (schema) => schema.required("Location ID is required"),
@@ -51,22 +49,44 @@ const validationSchema = Yup.object({
 
 const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
     const dispatch = useAppDispatch()
+    const { data: locationsData, isLoading: isLocationLoading } = useGetLocationMasterQuery([])
+    const [updateDefulatFromLocation, { isLoading: defaultLocationLoading }] = useUpdateBillToDefaultLocationIdMutation();
+    const allLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
+    const defaultLocationData = allLocations?.find((eachLocation: Location) =>
+        eachLocation?.def_bill_to === 1)
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const [postLocation, { isLoading: postLocationLoading }] = usePostLocationMasterMutation({})
     const billToReduxValues = useAppSelector((state) => state.auth.packageBillTo)
     const shipFromReduxValues = useAppSelector((state) => state.auth.packageShipFrom)
-    const { data: locationsData, isLoading: isLocationLoading } = useGetLocationMasterQuery([])
-    const allLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
     const getAllLocations = allLocations.filter(
-            (location: Location) => location.loc_ID !== shipFromReduxValues?.locationId
+        (location: Location) => location.loc_ID !== shipFromReduxValues?.locationId
     );
 
-    const handleLocationChange = (
-        event: SelectChangeEvent<string>,
-        setFieldValue: FormikProps<IShipFrom>['setFieldValue']
-    ) => {
+    const shipBillToInitialValues = {
+        locationId: billToReduxValues?.locationId || defaultLocationData?.loc_ID || '',
+        locationDescription: billToReduxValues?.locationDescription || defaultLocationData?.loc_desc || '',
+        contactPerson: billToReduxValues?.contactPerson || defaultLocationData?.contact_name || '',
+        phoneNumber: billToReduxValues?.phoneNumber || defaultLocationData?.contact_phone_number || '',
+        email: billToReduxValues?.email || defaultLocationData?.contact_email || '',
+        addressLine1: billToReduxValues?.addressLine1 || defaultLocationData?.address_1 || '',
+        addressLine2: billToReduxValues?.addressLine2 || defaultLocationData?.address_2 || '',
+        city: billToReduxValues?.city || defaultLocationData?.city || '',
+        state: billToReduxValues?.state || defaultLocationData?.state || '',
+        country: billToReduxValues?.country || defaultLocationData?.country || '',
+        pincode: billToReduxValues?.pincode || defaultLocationData?.pincode || '',
+        saveAsNewLocationId: false,
+        saveAsDefaultShipFromLocation: defaultLocationData?.def_bill_to || false,
+        latitude: billToReduxValues?.latitude || defaultLocationData?.latitude || '',
+        longitude: billToReduxValues?.longitude || defaultLocationData?.longitude || '',
+        timeZone: billToReduxValues?.timeZone || defaultLocationData?.time_zone || '',
+        glnCode: billToReduxValues?.glnCode || defaultLocationData?.gln_code || '',
+        iataCode: billToReduxValues?.iataCode || defaultLocationData?.iata_code || '',
+        locationType: billToReduxValues?.locationType || defaultLocationData?.loc_type || ''
+    }
+
+    const handleLocationChange = (event: SelectChangeEvent<string>, setFieldValue: FormikProps<IShipFrom>['setFieldValue']) => {
         const selectedLocationId = event.target.value;
         setFieldValue('locationId', selectedLocationId);
 
@@ -87,8 +107,9 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
             setFieldValue('glnCode', selectedLocation.gln_code || '');
             setFieldValue('iataCode', selectedLocation.iata_code || '');
             setFieldValue('contactPerson', selectedLocation.contact_name || '');
-            setFieldValue('phoneNumber', selectedLocation.contact_phone_number|| '');
+            setFieldValue('phoneNumber', selectedLocation.contact_phone_number || '');
             setFieldValue('email', selectedLocation.contact_email || '');
+            setFieldValue('saveAsDefaultShipFromLocation', selectedLocation.def_bill_to || false);
         } else {
             setFieldValue('locationDescription', '');
             setFieldValue('addressLine1', '');
@@ -104,12 +125,20 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
             setFieldValue('locationType', '');
             setFieldValue('glnCode', '');
             setFieldValue('iataCode', '');
-            setFieldValue('contactPerson',  '');
-            setFieldValue('phoneNumber',   '');
+            setFieldValue('contactPerson', '');
+            setFieldValue('phoneNumber', '');
             setFieldValue('email', '');
         }
     };
 
+    const handleDefaultLocationChange = async (locId: string, defaultValue: number | boolean) => {
+        try {
+            const response = await updateDefulatFromLocation({ locId: locId, defShipFrom: defaultValue ? 1 : 0 }).unwrap();
+            console.log("response: ", response)
+        } catch (error) {
+            console.log("Getting error while changing default value: ", error)
+        }
+    }
 
     return (
         <Grid>
@@ -124,33 +153,12 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                     color: "#ffffff",
                     zIndex: (theme) => theme.zIndex.drawer + 1,
                 }}
-                open={postLocationLoading}
+                open={postLocationLoading || isLocationLoading || defaultLocationLoading}
             >
                 <CircularProgress color="inherit" />
             </Backdrop>
             <Formik
-                initialValues={{
-                    locationId: billToReduxValues?.locationId || '',
-                    locationDescription: billToReduxValues?.locationDescription || '',
-                    contactPerson: billToReduxValues?.contactPerson || '',
-                    phoneNumber: billToReduxValues?.phoneNumber || '',
-                    email: billToReduxValues?.email || '',
-                    addressLine1: billToReduxValues?.addressLine1 || '',
-                    addressLine2: billToReduxValues?.addressLine2 || '',
-                    city: billToReduxValues?.city || '',
-                    state: billToReduxValues?.state || '',
-                    country: billToReduxValues?.country || '',
-                    pincode: billToReduxValues?.pincode || '',
-                    saveAsNewLocationId: false, // Always false initially
-                    saveAsDefaultShipFromLocation: true, // Always true initially
-                    latitude: billToReduxValues?.latitude || '',
-                    longitude: billToReduxValues?.longitude || '',
-                    timeZone: billToReduxValues?.timeZone || '',
-                    glnCode: billToReduxValues?.glnCode || '',
-                    iataCode: billToReduxValues?.iataCode || '',
-                    locationType: billToReduxValues?.locationType || ''
-                }}
-
+                initialValues={shipBillToInitialValues}
                 validationSchema={validationSchema}
                 onSubmit={async (values: IShipFrom, { setFieldValue }) => {
                     const { saveAsNewLocationId, saveAsDefaultShipFromLocation, ...shipFromData } = values;
@@ -199,25 +207,26 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                             setSnackbarSeverity("error");
                             setSnackbarOpen(true);
                         }
-
                     }
                     onNext(values);
-
                 }}
             >
                 {({ values, touched, errors, handleSubmit, setFieldValue, handleBlur }) => (
                     <Form  >
-                        <Typography variant="h6" sx={{fontWeight:'bold', textAlign:'center' , marginTop:3}}>Bill to Details</Typography>
+                        <Typography variant="h6" sx={{ fontWeight: 'bold', textAlign: 'center', marginTop: 3 }}>Bill to Details</Typography>
                         <Grid item xs={12} sx={{ display: 'flex', flexDirection: "row", gap: '20px' }}>
                             <FormControlLabel
                                 control={<Field name="saveAsDefaultShipFromLocation" type="checkbox" as={Checkbox} />}
-                                label="Save as default Ship From Location"
+                                label="Save as default bill to location"
                                 onChange={() => {
                                     setFieldValue('saveAsDefaultShipFromLocation', !values.saveAsDefaultShipFromLocation);
                                     setFieldValue('saveAsNewLocationId', false);
+                                    if (values.locationId) {
+                                        handleDefaultLocationChange(values?.locationId, !values.saveAsDefaultShipFromLocation)
+                                    }
                                 }}
                             />
-                                                        <FormControlLabel
+                            <FormControlLabel
                                 control={<Field name="saveAsNewLocationId" type="checkbox" as={Checkbox} />}
                                 label="Save as new Location ID"
                                 onChange={() => {
@@ -277,7 +286,7 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                                                 )}
                                             </Select>
                                             {touched?.locationId && errors?.locationId && (
-                                                <FormHelperText>{errors?.locationId}</FormHelperText>
+                                                <FormHelperText error>{typeof errors.locationId === "string" ? errors.locationId : ""}</FormHelperText>
                                             )}
                                         </FormControl> </Grid>
                                 )}
@@ -356,143 +365,116 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                                 </Grid>
                             </Grid>
 
-                        <h3 className={styles.mainHeading}>Address Information</h3>
-                        <Grid container spacing={2}>
-                            <Grid item xs={12} md={2.4}>
-                                <Field
-                                    name="addressLine1"
-                                    as={TextField} 
-                                    label="Address Line 1*"
-                                    InputLabelProps={{ shrink: true }} size = 'small' fullWidth
-                                    
-                                    error={touched?.addressLine1 && Boolean(errors?.addressLine1)}
-                                    helperText={touched?.addressLine1 && errors?.addressLine1}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={2.4}>
-                                <Field
-                                    name="addressLine2"
-                                    as={TextField}
-                                    label="Address Line 2"
-                                    InputLabelProps={{ shrink: true }} size = 'small' fullWidth
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={2.4}>
-                                <Field
-                                    name="city"
-                                    as={TextField}
-                                    label="City*" disabled
-                                    InputLabelProps={{ shrink: true }} size = 'small' fullWidth
-                                     
-                                    error={touched?.city && Boolean(errors?.city)}
-                                    helperText={touched?.city && errors?.city}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={2.4}>
-                                <Field
-                                    name="state"
-                                    as={TextField} disabled
-                                    label="State*"
-                                    InputLabelProps={{ shrink: true }} size = 'small' fullWidth
-                                     
-                                    error={touched?.state && Boolean(errors?.state)}
-                                    helperText={touched?.state && errors?.state}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={2.4}>
-                                <Field
-                                    name="country" disabled
-                                    as={TextField}
-                                    label="Country*"
-                                    InputLabelProps={{ shrink: true }} size = 'small' fullWidth
-                                     
-                                    error={touched?.country && Boolean(errors?.country)}
-                                    helperText={touched?.country && errors?.country}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={2.4}>
-                                <Field
-                                    name="pincode" disabled
-                                    as={TextField}
-                                    label="Pincode*"
-                                    InputLabelProps={{ shrink: true }} size = 'small' fullWidth
-                                    required
-                                    error={touched?.pincode && Boolean(errors?.pincode)}
-                                    helperText={touched?.pincode && errors?.pincode}
-                                />
-                            </Grid>
-                        </Grid>
-                        <h3 className={styles.mainHeading}>Contact Information</h3>
-                        <Grid container spacing={2}>
-                            <Grid item xs={12} md={2.4}>
-                                <Field
-                                    name="contactPerson"
-                                    as={TextField}
-                                    label="Contact Person*"
-                                    InputLabelProps={{ shrink: true }} size = 'small' fullWidth
-                                     
-                                    error={touched?.contactPerson && Boolean(errors?.contactPerson)}
-                                    helperText={touched?.contactPerson && errors?.contactPerson}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={2.4}>
-                                <Field
-                                    name="phoneNumber"
-                                    as={TextField}
-                                    label="Phone Number*"
-                                    InputLabelProps={{ shrink: true }} size = 'small' fullWidth
-                                    type='number'
-                                    error={touched?.phoneNumber && Boolean(errors?.phoneNumber)}
-                                    helperText={touched?.phoneNumber && errors?.phoneNumber}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={2.4}>
-                                <Field
-                                    name="email"
-                                    as={TextField}
-                                    label="Email Address*"
-                                    InputLabelProps={{ shrink: true }} size = 'small' fullWidth
-                                    
-                                    error={touched?.email && Boolean(errors?.email)}
-                                    helperText={touched?.email && errors?.email}
-                                />
-                            </Grid>
-                        </Grid>
+                            <h3 className={styles.mainHeading}>Address Information</h3>
+                            <Grid container spacing={2}>
+                                <Grid item xs={12} md={2.4}>
+                                    <Field
+                                        name="addressLine1"
+                                        as={TextField}
+                                        label="Address Line 1*"
+                                        InputLabelProps={{ shrink: true }} size='small' fullWidth
 
+                                        error={touched?.addressLine1 && Boolean(errors?.addressLine1)}
+                                        helperText={touched?.addressLine1 && errors?.addressLine1}
+                                    />
+                                </Grid>
+                                <Grid item xs={12} md={2.4}>
+                                    <Field
+                                        name="addressLine2"
+                                        as={TextField}
+                                        label="Address Line 2"
+                                        InputLabelProps={{ shrink: true }} size='small' fullWidth
+                                    />
+                                </Grid>
+                                <Grid item xs={12} md={2.4}>
+                                    <Field
+                                        name="city"
+                                        as={TextField}
+                                        label="City*" disabled
+                                        InputLabelProps={{ shrink: true }} size='small' fullWidth
 
-                            {/* <h3 className={styles.mainHeading}>Save Options</h3>
-                        <Grid container spacing={2}>
-                            <Grid item xs={12} md={2.4}>
-                                <FormControlLabel
-                                    control={<Field name="saveAsNewLocationId" type="checkbox" as={Checkbox} />}
-                                    label="Save as new Location ID"
-                                />
+                                        error={touched?.city && Boolean(errors?.city)}
+                                        helperText={touched?.city && errors?.city}
+                                    />
+                                </Grid>
+                                <Grid item xs={12} md={2.4}>
+                                    <Field
+                                        name="state"
+                                        as={TextField} disabled
+                                        label="State*"
+                                        InputLabelProps={{ shrink: true }} size='small' fullWidth
+
+                                        error={touched?.state && Boolean(errors?.state)}
+                                        helperText={touched?.state && errors?.state}
+                                    />
+                                </Grid>
+                                <Grid item xs={12} md={2.4}>
+                                    <Field
+                                        name="country" disabled
+                                        as={TextField}
+                                        label="Country*"
+                                        InputLabelProps={{ shrink: true }} size='small' fullWidth
+
+                                        error={touched?.country && Boolean(errors?.country)}
+                                        helperText={touched?.country && errors?.country}
+                                    />
+                                </Grid>
+                                <Grid item xs={12} md={2.4}>
+                                    <Field
+                                        name="pincode" disabled
+                                        as={TextField}
+                                        label="Pincode*"
+                                        InputLabelProps={{ shrink: true }} size='small' fullWidth
+                                        required
+                                        error={touched?.pincode && Boolean(errors?.pincode)}
+                                        helperText={touched?.pincode && errors?.pincode}
+                                    />
+                                </Grid>
                             </Grid>
-                            <Grid item xs={12} md={2.4}>
-                                <FormControlLabel
-                                    control={<Field name="saveAsDefaultShipFromLocation" type="checkbox" as={Checkbox} />}
-                                    label="Save as default Ship From Location"
-                                />
+                            <h3 className={styles.mainHeading}>Contact Information</h3>
+                            <Grid container spacing={2}>
+                                <Grid item xs={12} md={2.4}>
+                                    <Field
+                                        name="contactPerson"
+                                        as={TextField}
+                                        label="Contact Person*"
+                                        InputLabelProps={{ shrink: true }} size='small' fullWidth
+
+                                        error={touched?.contactPerson && Boolean(errors?.contactPerson)}
+                                        helperText={touched?.contactPerson && errors?.contactPerson}
+                                    />
+                                </Grid>
+                                <Grid item xs={12} md={2.4}>
+                                    <Field
+                                        name="phoneNumber"
+                                        as={TextField}
+                                        label="Phone Number*"
+                                        InputLabelProps={{ shrink: true }} size='small' fullWidth
+                                        type='number'
+                                        error={touched?.phoneNumber && Boolean(errors?.phoneNumber)}
+                                        helperText={touched?.phoneNumber && errors?.phoneNumber}
+                                    />
+                                </Grid>
+                                <Grid item xs={12} md={2.4}>
+                                    <Field
+                                        name="email"
+                                        as={TextField}
+                                        label="Email Address*"
+                                        InputLabelProps={{ shrink: true }} size='small' fullWidth
+
+                                        error={touched?.email && Boolean(errors?.email)}
+                                        helperText={touched?.email && errors?.email}
+                                    />
+                                </Grid>
                             </Grid>
-                        </Grid> */}
 
                             {/* Back & Next Buttons */}
                             <Grid container spacing={2} justifyContent="center" marginTop={2}>
                                 <Grid item>
-                                    {/* <Button variant="outlined" onClick={onBack}>
-                                        Back
-                                    </Button> */}
                                     <CustomButtonOutlined onClick={onBack}>Back</CustomButtonOutlined>
                                 </Grid>
                                 <Grid item>
-                                    {/* <Button
-                                        variant="contained"
-                                        color="primary" 
-                                        onClick={() => handleSubmit()}
-                                    >
-                                        Next
-                                    </Button> */}
-                                    <CustomButtonFilled  onSubmit={()=>handleSubmit()}>Next</CustomButtonFilled>
+                                    <CustomButtonFilled onSubmit={() => handleSubmit()}>Next</CustomButtonFilled>
                                 </Grid>
                             </Grid>
                         </Grid>

@@ -45,6 +45,7 @@ export interface IShipTo {
   locationType: string;
   glnCode: string;
   iataCode: string;
+  // def_ship_to: number | boolean;
 }
 
 export interface IProductDetail {
