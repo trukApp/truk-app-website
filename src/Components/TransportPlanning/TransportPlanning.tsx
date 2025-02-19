@@ -68,6 +68,7 @@ const TransportPlanning = () => {
                 boxShadow: 6,
                 backgroundColor: '#FAF1F8',
               },
+              cursor: 'pointer'
             }}
           >
             {tile.icon}

@@ -53,6 +53,7 @@ const SettingsComponent = () => {
                 boxShadow: 6,
                 backgroundColor: '#FAF1F8',
               },
+              cursor: 'pointer'
             }}
             onClick={tile.onClick}
           >
