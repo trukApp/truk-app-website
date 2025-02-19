@@ -15,6 +15,7 @@ import { resetCompletedSteps, setCompletedState, setPackageAddtionalInfo, setPac
 import { useRouter } from "next/navigation";
 import { useCreatePackageForOrderMutation } from '@/api/apiSlice';
 import { StepIconProps } from "@mui/material/StepIcon";
+import { withAuthComponent } from '@/Components/WithAuthComponent';
 
 const steps = ['Ship From', 'Ship To', 'Package Details', 'Bill To', 'Additional Info', 'Pickup/Drop off', 'Tax Info'];
 
@@ -242,4 +243,4 @@ const CustomStepIcon = (props: StepIconProps) => {
     );
 };
 
-export default CreatePackage;
+export default withAuthComponent(CreatePackage);

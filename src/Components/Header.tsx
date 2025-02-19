@@ -9,6 +9,7 @@ import {
   Menu,
   MenuItem,
   Avatar,
+  Grid,
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -21,11 +22,13 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 
+
 const Header = () => {
   const [anchorElProfile, setAnchorElProfile] = useState<null | HTMLElement>(null);
   const [anchorElHamburger, setAnchorElHamburger] = useState<null | HTMLElement>(null);
   const router = useRouter();
   const currentPath = usePathname();
+  
 
   const user = {
     name: "Teja Bandaru",
@@ -71,7 +74,8 @@ const Header = () => {
           Truk App 🚚
         </Typography>
 
-        {/* Desktop View */}
+        <Grid>
+                  {/* Desktop View */}
         <div className="hidden md:flex space-x-4">
           <IconButton
             sx={{ color: currentPath === "/" ? "pink" : "inherit", fontWeight: 'bold' }}
@@ -177,6 +181,9 @@ const Header = () => {
             Create Package
           </MenuItem>
         </Menu>
+        </Grid>
+
+
       </Toolbar>
     </AppBar>
   );

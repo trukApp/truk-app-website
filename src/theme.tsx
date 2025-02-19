@@ -4,10 +4,10 @@ import { createTheme } from '@mui/material/styles';
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#1976d2', // Blue
+      main: "#83214F",
     },
     secondary: {
-      main: '#dc004e', // Pink
+      main: '#dc004e',
     },
   },
   typography: {
@@ -31,6 +31,36 @@ const theme = createTheme({
       xl: 1920,
     },
   },
+  components: {
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          "&:hover .MuiOutlinedInput-notchedOutline": {
+            borderColor: "#83214F",
+          },
+          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+            borderColor: "#83214F",
+          },
+           "&.Mui-disabled .MuiOutlinedInput-notchedOutline": {
+            borderColor: "lightGrey",
+          },
+        },
+      },
+    },
+    MuiInputLabel: {
+      styleOverrides: {
+        root: {
+          color: "grey",
+          "&.Mui-focused": {
+            color: "#83214F",
+          },
+        },
+      },
+    },
+  
+    
+  },
+  
 });
 
 export default theme;
