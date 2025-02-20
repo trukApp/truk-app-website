@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Box, Collapse, IconButton, Paper, Typography, Grid } from "@mui/material";
+import { Box, Collapse, IconButton, Paper, Typography, Grid, Button, useTheme, useMediaQuery } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import { useRouter } from 'next/navigation';
 
 interface Allocation {
     vehicle_ID: string;
@@ -20,12 +21,17 @@ interface AllocationsProps {
 }
 
 const Allocations: React.FC<AllocationsProps> = ({ allocations }) => {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+    const router = useRouter();
     const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({});
 
     const handleToggle = (vehicleId: string) => {
         setExpanded((prev) => ({ ...prev, [vehicleId]: !prev[vehicleId] }));
     };
-
+    const handleTrack = (vehicle_ID: string) => {
+        router.push(`/liveTracking?vehicle_ID=${vehicle_ID}`);
+    };
     return (
         <Box>
             <Typography variant="h6" gutterBottom>
@@ -47,14 +53,60 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations }) => {
                     </Grid>
 
                     <Collapse in={expanded[allocation.vehicle_ID]} timeout="auto" unmountOnExit>
-                        <Box sx={{ mt: 2 }}>
-                            <Typography variant="body2">Total Volume Capacity: {allocation.totalVolumeCapacity}</Typography>
-                            <Typography variant="body2">Total Weight Capacity: {allocation.totalWeightCapacity}</Typography>
-                            <Typography variant="body2">Occupied Volume: {allocation.occupiedVolume}</Typography>
-                            <Typography variant="body2">Occupied Weight: {allocation.occupiedWeight}</Typography>
-                            <Typography variant="body2">Leftover Volume: {allocation.leftoverVolume}</Typography>
-                            <Typography variant="body2">Leftover Weight: {allocation.leftoverWeight}</Typography>
-                            <Typography variant="body2">Packages: {allocation.packages.join(", ")}</Typography>
+                        <Box
+                            sx={{
+                                mt: 2,
+                                p: 2,
+                                borderRadius: 2,
+                                bgcolor: "background.paper",
+                                boxShadow: 2
+                            }}
+                        >
+                            <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
+                                Vehicle ID: {allocation.vehicle_ID}
+                            </Typography>
+
+                            <Grid container spacing={2}>
+                                <Grid item xs={12} sm={6}>
+                                    <Typography variant="body2">
+                                        <strong>Total Volume Capacity:</strong> {allocation.totalVolumeCapacity}
+                                    </Typography>
+                                    <Typography variant="body2">
+                                        <strong>Total Weight Capacity:</strong> {allocation.totalWeightCapacity}
+                                    </Typography>
+                                    <Typography variant="body2">
+                                        <strong>Occupied Volume:</strong> {allocation.occupiedVolume}
+                                    </Typography>
+                                </Grid>
+
+                                <Grid item xs={12} sm={6}>
+                                    <Typography variant="body2">
+                                        <strong>Occupied Weight:</strong> {allocation.occupiedWeight}
+                                    </Typography>
+                                    <Typography variant="body2">
+                                        <strong>Leftover Volume:</strong> {allocation.leftoverVolume}
+                                    </Typography>
+                                    <Typography variant="body2">
+                                        <strong>Leftover Weight:</strong> {allocation.leftoverWeight}
+                                    </Typography>
+                                </Grid>
+                            </Grid>
+
+                            <Box sx={{ mt: 2 }}>
+                                <Typography variant="body2">
+                                    <strong>Packages:</strong> {allocation.packages.join(", ")}
+                                </Typography>
+                            </Box>
+
+                            <Box sx={{ display: "flex", justifyContent: isMobile ? "center" : "flex-end", mt: 3 }}>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={() => handleTrack(allocation.vehicle_ID)}
+                                >
+                                    View Track
+                                </Button>
+                            </Box>
                         </Box>
                     </Collapse>
                 </Paper>
