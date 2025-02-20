@@ -147,6 +147,9 @@ const Locations: React.FC = () => {
             loc_type: values.locationType,
             gln_code: values.glnCode,
             iata_code: values.iataCode,
+            contact_name: values?.locationContactName,
+            contact_phone_number: values?.locationContactNumber,
+            contact_email: values?.locationContactEmail
 
           }
         ]
@@ -164,7 +167,10 @@ const Locations: React.FC = () => {
         pincode: values.pincode,
         loc_type: values.locationType,
         gln_code: values.glnCode,
-        iata_code: values.iataCode
+        iata_code: values.iataCode,
+        contact_name: values?.locationContactName,
+        contact_phone_number: values?.locationContactNumber,
+        contact_email: values?.locationContactEmail
       }
       if (isEditing && editRow) {
         const locationId = editRow.id
@@ -188,9 +194,7 @@ const Locations: React.FC = () => {
           setSnackbarSeverity("success");
           setSnackbarOpen(true);
         }
-
       }
-
     } catch (error) {
       console.error('API Error:', error);
       setSnackbarMessage("Something went wrong! please try again");
@@ -198,9 +202,7 @@ const Locations: React.FC = () => {
       setSnackbarOpen(true);
       setShowForm(false)
     }
-
   }
-
 
   const handleEdit = (row: DataGridRow) => {
     setShowForm(true)
@@ -295,26 +297,25 @@ const Locations: React.FC = () => {
   const { values, errors, touched, handleChange, handleBlur, handleSubmit } = formik;
 
 
-  const rows = locationsMaster?.map((location: Location, index: number) => ({
+  const rows = locationsMaster?.map((location: Location) => ({
     id: location.location_id,
     locationId: location.loc_ID,
     locationDescription: location.loc_desc,
-    locationType: location.loc_type || null,
-    glnCode: location.gln_code || `GLN-${1000 + index}`,
-    iataCode: location.iata_code || `IATA-${200 + index}`,
+    locationType: location.loc_type,
+    glnCode: location.gln_code || 'NA',
+    iataCode: location.iata_code || 'NA',
     longitude: location.longitude,
     latitude: location.latitude,
-    timeZone: location.time_zone || "UTC+05:30",
-    city: location.city || `City-${index + 1}`,
+    timeZone: location.time_zone,
+    city: location.city,
     addressLine1: location.address_1,
     addressLine2: location.address_2,
-    // district: location.district || `District-${index + 1}`,
-    state: location.state || `State-${index + 1}`,
-    country: location.country || "India",
-    pincode: location.pincode || `5000${index}`,
-    locationContactName: location.contact_name || 'null',
-    locationContactNumber: location.contact_phone_number || 'null',
-    locationContactEmail: location.contact_email || 'null',
+    state: location.state,
+    country: location.country,
+    pincode: location.pincode,
+    locationContactName: location.contact_name,
+    locationContactNumber: location.contact_phone_number,
+    locationContactEmail: location.contact_email,
   })) || [];
 
   const columns: GridColDef[] = [
@@ -358,8 +359,6 @@ const Locations: React.FC = () => {
     },
   ];
 
-
-
   return (
     <>
       <Backdrop
@@ -402,13 +401,8 @@ const Locations: React.FC = () => {
           </Box>
           <MassUpload arrayKey="locations" />
         </Box>
-
-
         <Collapse in={showForm}>
-
           <Box marginBottom={4} padding={2} border="1px solid #ccc" borderRadius={2}>
-
-
             <Grid container spacing={2} padding={2}>
               <Typography variant="h6" align="center" gutterBottom>
                 1. General info
@@ -785,7 +779,7 @@ const Locations: React.FC = () => {
                       fullWidth
                       size="small"
                       label="Contact email*"
-                      name="locationEmail"
+                      name="locationContactEmail"
                       value={values.locationContactEmail}
                       onChange={handleChange}
                       onBlur={handleBlur}
@@ -795,23 +789,9 @@ const Locations: React.FC = () => {
                   </Grid>
                 </Grid>
               </Grid>
-              <Box sx={{ marginTop: '24px', textAlign: 'center' }}>
-                {/* <Button
-                  type="submit"
-                  variant="contained"
-                  sx={{
-                    backgroundColor: "#83214F",
-                    color: "#fff",
-                    "&:hover": {
-                      backgroundColor: "#fff",
-                      color: "#83214F"
-                    }
-                  }}
-                >
-                  {isEditing ? "Update location" : "Create location"}
-                </Button> */}
-                <CustomButtonFilled  >{isEditing ? "Update location" : "Create location"}</CustomButtonFilled>
 
+              <Box sx={{ marginTop: '24px', textAlign: 'center' }}>
+                <CustomButtonFilled  >{isEditing ? "Update location" : "Create location"}</CustomButtonFilled>
                 <Button
                   variant='outlined'
                   color="secondary"
@@ -826,20 +806,8 @@ const Locations: React.FC = () => {
             </Grid>
           </Box>
         </Collapse>
-
-
       </Box>
 
-      {/* Data grid */}
-      {/* <div style={{ marginTop: "40px" }}>
-        <DataGridComponent
-          columns={columns}
-          rows={rows}
-          isLoading={false}
-          pageSizeOptions={[10, 20, 30]}
-          initialPageSize={10}
-        />
-      </div> */}
       <div style={{ marginTop: "40px" }}>
         {isLoading ? (
           <DataGridSkeletonLoader columns={columns} />
