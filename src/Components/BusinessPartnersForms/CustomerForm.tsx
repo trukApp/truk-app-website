@@ -17,6 +17,7 @@ import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 import { Location } from '../MasterDataComponents/Locations';
 
 
+
 // Validation schema for CustomerForm
 const customerValidationSchema = Yup.object().shape({
     name: Yup.string().required('Name is required'),
@@ -48,6 +49,7 @@ interface Correspondence {
     email: string;
 }
 interface Customer {
+    customerId: string;
     pod_relevant: number;
     location_country: string;
     location_city: string;
@@ -69,6 +71,7 @@ interface Customer {
 }
 
 const initialCustomerValues = {
+    customerId :'',
     name: '',
     locationId: '',
     pincode: '',
@@ -132,6 +135,7 @@ const CustomerForm: React.FC = () => {
         setPaginationModel(newPaginationModel);
     };
     const mapRowToInitialValues = (rowData: Customer) => ({
+        customerId : rowData.customerId || '',
         name: rowData.name || '',
         locationId: rowData.loc_ID || '',
         pincode: rowData.location_pincode || '',
@@ -382,10 +386,23 @@ const CustomerForm: React.FC = () => {
                         onSubmit={handleCustomerSubmit}
                         enableReinitialize={true}
                     >
-                        {({ values, handleChange, handleBlur, errors, touched, setFieldValue }) => (
+                        {({ values, handleChange, handleBlur, errors, touched, setFieldValue, resetForm }) => (
                             <Form>
                                 <h3 className={styles.mainHeading}>General Data</h3>
                                 <Grid container spacing={2}>
+                                    {updateRecord && 
+                                        <Grid item xs={12} sm={6} md={2.4}>
+                                        <TextField disabled
+                                            fullWidth size='small'
+                                            label="Customer ID"
+                                            name="customerId"
+                                            value={values.customerId}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                        />
+                                    </Grid>
+                                    }
+                                     
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
@@ -624,6 +641,7 @@ const CustomerForm: React.FC = () => {
                                         onClick={() => {
                                             setFormInitialValues(initialCustomerValues)
                                             setUpdateRecord(false)
+                                            resetForm() 
                                         }}
                                         style={{ marginLeft: "10px" }}>Reset
                                     </Button>

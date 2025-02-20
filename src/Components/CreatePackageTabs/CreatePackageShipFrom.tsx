@@ -247,7 +247,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                     {({ values, touched, errors, handleSubmit, setFieldValue, handleBlur }) => (
                         <Form >
                             <Typography variant="h6" sx={{ fontWeight: 'bold', textAlign: 'center', marginTop: 3 }}>Ship from Details</Typography>
-                            <Grid item xs={12} sx={{ display: 'flex', flexDirection: "row", gap: '20px' }}>
+                         <Grid item xs={12} sx={{ display: 'flex', flexDirection: { md: "row", xs: "column" }, gap: {md:'20px', xs:'2px' },marginLeft:"15px"}}>
                                 <FormControlLabel
                                     control={<Field name="saveAsDefaultShipFromLocation" type="checkbox" as={Checkbox} />}
                                     label="Save as default Ship From Location"
@@ -408,7 +408,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                                     <Grid item xs={12} md={2.4}>
                                         <Field
                                             name="addressLine1"
-                                            as={TextField}
+                                            as={TextField} disabled
                                             label="Address Line 1 *"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
 
@@ -418,7 +418,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                                     </Grid>
                                     <Grid item xs={12} md={2.4}>
                                         <Field
-                                            name="addressLine2"
+                                            name="addressLine2" disabled
                                             as={TextField}
                                             label="Address Line 2"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
@@ -473,7 +473,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} md={2.4}>
                                         <Field
-                                            name="contactPerson"
+                                            name="contactPerson" disabled
                                             as={TextField}
                                             label="Contact Person*"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
@@ -484,7 +484,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                                     </Grid>
                                     <Grid item xs={12} md={2.4}>
                                         <Field
-                                            name="phoneNumber"
+                                            name="phoneNumber" disabled
                                             as={TextField}
                                             label="Phone Number*"
                                             inputProps={{
@@ -499,7 +499,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                                     </Grid>
                                     <Grid item xs={12} md={2.4}>
                                         <Field
-                                            name="email"
+                                            name="email" disabled
                                             as={TextField}
                                             label="Email Address*"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth

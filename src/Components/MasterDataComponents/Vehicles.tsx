@@ -320,7 +320,8 @@ const VehicleForm: React.FC = () => {
 
 	const [initialValues, setInitialValues] = useState(initialFormValues);
 	useEffect(() => {
-		if (editRow) {
+		if (editRow) { 
+			console.log('edit row :', editRow)
 			const editPayloadWeight = editRow.payloadWeight.split(" ");
 			const editCubicCapacity = editRow?.cubicCapacity.split(" ");
 			const editInteriorLength = editRow.interiorLength.split(" ");
@@ -751,6 +752,7 @@ const VehicleForm: React.FC = () => {
 											1. General Data
 										</Typography>
 										<Grid container spacing={2}>
+											{isEditing && 
 											<Grid item xs={12} sm={6} md={2.4}>
 												<TextField
 													fullWidth
@@ -762,7 +764,8 @@ const VehicleForm: React.FC = () => {
 													size="small"
 													disabled
 												/>
-											</Grid>
+											</Grid>}
+									
 											<Grid item xs={12} sm={6} md={2.4}>
 												<FormControl fullWidth size="small" error={touched.locationId && Boolean(errors.locationId)}>
 													<InputLabel>Location ID</InputLabel>

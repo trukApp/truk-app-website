@@ -56,7 +56,7 @@ const PickupDropoff: React.FC<PickupDropTab> = ({ onNext, onBack }) => {
         >
             {({ errors, touched }) => (
                     <Form style={{ width: '100%' }}>
-                          <Typography variant="h6" sx={{fontWeight:'bold', textAlign:'center' , marginTop:3}}>Pickup and dropoff Details</Typography>
+                          <Typography variant="h6" sx={{fontWeight:'bold', textAlign:'center' , marginTop:4, marginBottom:1}}>Pickup and dropoff Details</Typography>
                         <Grid container spacing={2}
                             sx={{ 
                         marginTop: 3, 

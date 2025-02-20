@@ -13,9 +13,11 @@ import ReviewCreateOrder from '@/Components/CreateOrderTables/ReviewOrder';
 import SnackbarAlert from '@/Components/ReusableComponents/SnackbarAlerts';
 import { CustomButtonFilled, CustomButtonOutlined } from '@/Components/ReusableComponents/ButtonsComponent';
 import { setSelectedPackages, setSelectedTrucks } from '@/store/authSlice';
-
+import { useMediaQuery, useTheme } from '@mui/material';
 
 const CreateOrder: React.FC = () => {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const dispatch = useAppDispatch();
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -133,10 +135,10 @@ const CreateOrder: React.FC = () => {
         }
     };
     const CustomStepIcon = (props: StepIconProps) => {
-    const { active, completed, icon } = props;
-    return (
-        <Box
-            sx={{
+        const { active, completed, icon } = props;
+        return (
+            <Box
+                sx={{
                 width: 25,
                 height: 25,
                 display: "flex",
@@ -161,7 +163,7 @@ const CreateOrder: React.FC = () => {
             )}
         </Box>
     );
-};
+    };
 
     return (
         <div>
@@ -209,13 +211,43 @@ const CreateOrder: React.FC = () => {
                     </DialogActions>
                 </Dialog>
             )}
-            <Stepper  activeStep={activeStep} alternativeLabel>
+            {/* <Stepper  activeStep={activeStep} alternativeLabel>
                 {steps.map((label) => (
                     <Step key={label}>
                         <StepLabel StepIconComponent={CustomStepIcon}>{label}</StepLabel>
                     </Step>
                 ))}
-            </Stepper>
+            </Stepper> */}
+            <Box sx={{ width: "100%", overflowX: isMobile ? "auto" : "visible", padding: "10px" }}>
+                <Stepper
+                    activeStep={activeStep}
+                    alternativeLabel
+                    sx={{
+                        flexWrap: "nowrap",
+                        '& .MuiStepConnector-line': {
+                            borderWidth: '1px'
+                        },
+                    }}
+                >
+                    {steps.map((label, index) => (
+                        <Step key={index} >
+                            <StepLabel StepIconComponent={CustomStepIcon}  >
+                                <Typography
+                                    sx={{
+                                        fontSize: "14px",
+                                        color: activeStep === index ? "#83214F" : "#333",
+                                        fontWeight: activeStep === index ? "bold" : "400",
+                                        whiteSpace: "nowrap",
+                                    }}
+                                >
+                                    {label}
+                                </Typography>
+                            </StepLabel>
+                        </Step>
+                    ))}
+                </Stepper>
+            </Box>
+
 
             <div>
                 {activeStep === 0 && (

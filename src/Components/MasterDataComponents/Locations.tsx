@@ -770,7 +770,7 @@ const Locations: React.FC = () => {
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth
-                      size="small"
+                      size="small" type='number'
                       label="Contact phone number*"
                       name="locationContactNumber"
                       value={values.locationContactNumber}
@@ -796,20 +796,6 @@ const Locations: React.FC = () => {
                 </Grid>
               </Grid>
               <Box sx={{ marginTop: '24px', textAlign: 'center' }}>
-                {/* <Button
-                  type="submit"
-                  variant="contained"
-                  sx={{
-                    backgroundColor: "#83214F",
-                    color: "#fff",
-                    "&:hover": {
-                      backgroundColor: "#fff",
-                      color: "#83214F"
-                    }
-                  }}
-                >
-                  {isEditing ? "Update location" : "Create location"}
-                </Button> */}
                 <CustomButtonFilled  >{isEditing ? "Update location" : "Create location"}</CustomButtonFilled>
 
                 <Button

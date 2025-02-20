@@ -172,7 +172,7 @@ const CreatePackage = () => {
         console.log('creating')
     }
     return (
-        <Grid>
+        <div>
             <Backdrop
                 sx={{
                     color: "#ffffff",
@@ -205,26 +205,26 @@ const CreatePackage = () => {
                 </Dialog>
             )}
             <Box sx={{ overflowX: isMobile ? "auto" : "visible", padding: "10px" }}>
-                <Stepper activeStep={activeStep} alternativeLabel>
+                <Stepper 
+                    activeStep={activeStep} 
+                    alternativeLabel sx={{
+                                        flexWrap: "nowrap",
+                                        '& .MuiStepConnector-line': {
+                                            borderWidth: '1px'
+                                        },
+                                    }}
+                >
                     {steps.map((label, index) => (
                         <Step key={index} completed={!!completedSteps[index]}>
-                            <StepLabel
-                                StepIconComponent={CustomStepIcon}
-                                onClick={() => handleStepClick(index)}
-                                sx={{ cursor: "pointer" }}>
-                                <Typography
-                                    sx={{
-                                        fontSize: "14px",
-                                        textAlign: "center",
-                                        color: activeStep === index ? "#83214F" : "#333",
-                                        fontWeight: activeStep === index ? "bold" : "400",
-                                    }}>
+                            <StepLabel StepIconComponent={CustomStepIcon} onClick={() => handleStepClick(index)} sx={{ cursor: "pointer" }}>
+                                <Typography sx={{ fontSize: "14px", color: activeStep === index ? "#83214F" : "#333", fontWeight: activeStep === index ? "bold" : "400", whiteSpace: "nowrap" }}>
                                     {label}
                                 </Typography>
                             </StepLabel>
                         </Step>
                     ))}
                 </Stepper>
+ 
             </Box>
 
             {/* Form Content */}
@@ -237,7 +237,7 @@ const CreatePackage = () => {
                 {activeStep === 5 && <PickupDropoff onNext={() => handleNext()} onBack={handleBack} />}
                 {activeStep === 6 && <TaxInfo onSubmit={handleSubmit} onBack={handleBack} />}
             </Grid>
-        </Grid>
+        </div>
     );
 };
 

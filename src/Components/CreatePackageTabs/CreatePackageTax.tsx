@@ -6,6 +6,7 @@ import * as Yup from 'yup';
 import {useAppDispatch,   useAppSelector } from '@/store';
 import { setPackageTax } from '@/store/authSlice';
 import { CustomButtonFilled, CustomButtonOutlined } from '../ReusableComponents/ButtonsComponent';
+import styles from './CreatePackage.module.css';
 
 interface TaxInfoValues {
     taxInfo: {
@@ -69,7 +70,7 @@ const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
             {({ touched, errors }) => (
                     <Form style={{ width: '100%' }}>
                         <Typography variant="h6" sx={{fontWeight:'bold', textAlign:'center' , marginTop:3}}>Tax info</Typography>
-                    <Grid container spacing={2} sx={{marginTop:3}}>
+                    <Grid container className={styles.formsBgContainer} spacing={2}>
                         <Grid item xs={12} md={2.4}>
                             <Field
                                 as={TextField}

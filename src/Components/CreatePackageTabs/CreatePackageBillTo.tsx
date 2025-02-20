@@ -214,7 +214,7 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                 {({ values, touched, errors, handleSubmit, setFieldValue, handleBlur }) => (
                     <Form  >
                         <Typography variant="h6" sx={{ fontWeight: 'bold', textAlign: 'center', marginTop: 3 }}>Bill to Details</Typography>
-                        <Grid item xs={12} sx={{ display: 'flex', flexDirection: "row", gap: '20px' }}>
+                        <Grid item xs={12}  sx={{ display: 'flex', flexDirection: { md: "row", xs: "column" }, gap: {md:'20px', xs:'2px' } ,marginLeft:"15px"}}>
                             <FormControlLabel
                                 control={<Field name="saveAsDefaultShipFromLocation" type="checkbox" as={Checkbox} />}
                                 label="Save as default bill to location"

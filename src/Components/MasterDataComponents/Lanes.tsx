@@ -443,7 +443,8 @@ const TransportationLanes = () => {
             <Box sx={{ marginBottom: 3 }}>
               <h3>1. General Data</h3>
               <Grid container spacing={2}>
-                <Grid item xs={12} sm={6} md={2.4}>
+                {isEditing &&
+                  <Grid item xs={12} sm={6} md={2.4}>
                   <TextField
                     fullWidth
                     id="laneId" disabled
@@ -454,7 +455,8 @@ const TransportationLanes = () => {
                     InputProps={{ readOnly: true }}
                     size="small"
                   />
-                </Grid>
+                </Grid> }
+
 
                 <Grid item xs={12} sm={6} md={2.4}>
                   <FormControl

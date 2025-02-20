@@ -7,6 +7,7 @@ import {
   // setCompletedState,
   setProductsList
 } from "@/store/authSlice";
+import styles from './CreatePackage.module.css';
 import { useGetAllProductsQuery } from "@/api/apiSlice";
 import { Product } from "@/app/productmaster/page";
 import { CustomButtonFilled, CustomButtonOutlined } from "../ReusableComponents/ButtonsComponent";
@@ -104,13 +105,13 @@ const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
     <Grid>
       <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleFormSubmit}>
   {({ values, handleSubmit, setFieldValue }) => (
-    <Form onSubmit={handleSubmit}>
-      <Typography variant="h6" sx={{ fontWeight: 'bold', textAlign: 'center', marginTop: 3 }}>Package Details</Typography>
+    <Form onSubmit={handleSubmit} className={styles.formsBgContainer}>
+      <Typography variant="h6" sx={{ fontWeight: 'bold', textAlign: 'center' }}>Package Details</Typography>
       <FieldArray name="packageDetails">
         {({ push, remove }) => (
           <>
             {values.packageDetails.map((_, index) => (
-              <Grid container spacing={2} sx={{ marginTop: 3 }} key={index}>
+              <Grid container spacing={2} sx={{ marginTop: 1 }} key={index}>
                 {Object.keys(initialValues.packageDetails[0]).map((fieldName) => (
                   <Grid item xs={12} md={2.4} key={fieldName}>
                     <Field name={`packageDetails.${index}.${fieldName}`}>
