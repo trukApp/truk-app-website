@@ -51,7 +51,7 @@
 // export default OrderDetailedOverview;
 
 
-
+import { Suspense } from "react";
 import OrderDetailedOverview from "./detailedOverview";
 
 export default function Page() {
