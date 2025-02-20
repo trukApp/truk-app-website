@@ -335,6 +335,7 @@ const LiveTracking: React.FC = () => {
     const [vehiclePosition, setVehiclePosition] = useState<{ lat: number; lng: number }>(hyderabadLocations[0]);
     const [completedRoutes, setCompletedRoutes] = useState<boolean[]>(new Array(hyderabadLocations.length - 1).fill(false));
     const [isMoving, setIsMoving] = useState<boolean>(false);
+    const [isDeviation, setIsDeviation] = useState<boolean>(false);
 
     const { isLoaded } = useJsApiLoader({
         googleMapsApiKey: mapsKey,
@@ -345,6 +346,22 @@ const LiveTracking: React.FC = () => {
             lat: start.lat + (end.lat - start.lat) * fraction,
             lng: start.lng + (end.lng - start.lng) * fraction,
         };
+    };
+
+    // Function to calculate distance between two lat/lng points using Haversine formula
+    const getDistance = (pos1: { lat: number; lng: number }, pos2: { lat: number; lng: number }) => {
+        const R = 6371e3; // Radius of the Earth in meters
+        const lat1 = (pos1.lat * Math.PI) / 180;
+        const lat2 = (pos2.lat * Math.PI) / 180;
+        const deltaLat = ((pos2.lat - pos1.lat) * Math.PI) / 180;
+        const deltaLng = ((pos2.lng - pos1.lng) * Math.PI) / 180;
+
+        const a = Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
+                  Math.cos(lat1) * Math.cos(lat2) *
+                  Math.sin(deltaLng / 2) * Math.sin(deltaLng / 2);
+
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c; // Distance in meters
     };
 
     useEffect(() => {
@@ -363,7 +380,21 @@ const LiveTracking: React.FC = () => {
                     const fraction = elapsed / duration;
 
                     if (fraction < 1) {
-                        setVehiclePosition(interpolate(start, end, fraction));
+                        const newPosition = interpolate(start, end, fraction);
+                        setVehiclePosition(newPosition);
+
+                        // Check for route deviation
+                        const expectedDistance = getDistance(start, end);
+                        const actualDistance = getDistance(newPosition, end);
+                        if (actualDistance > expectedDistance * 1.2) { // Allow 20% buffer
+                            if (!isDeviation) {
+                                setIsDeviation(true);
+                                alert("Route deviation detected! Please get back on track.");
+                            }
+                        } else {
+                            setIsDeviation(false);
+                        }
+
                         animationFrameId = requestAnimationFrame(animate);
                     } else {
                         setVehiclePosition(end);
@@ -400,6 +431,7 @@ const LiveTracking: React.FC = () => {
         setVehiclePosition(hyderabadLocations[0]);
         setCompletedRoutes(new Array(hyderabadLocations.length - 1).fill(false));
         setIsMoving(true);
+        setIsDeviation(false);
     };
 
     if (!isLoaded) return <p>Loading Maps...</p>;
@@ -439,15 +471,19 @@ const LiveTracking: React.FC = () => {
                         }}
                     />
                 ))}
-                
+
                 {/* Moving Vehicle Marker */}
                 <Marker
                     position={vehiclePosition}
                     icon={{
-                        url: "https://maps.google.com/mapfiles/kml/shapes/cabs.png",
+                        url: isDeviation
+                            ? "https://maps.google.com/mapfiles/ms/icons/red-dot.png"
+                            : "https://maps.google.com/mapfiles/kml/shapes/cabs.png",
                         scaledSize: new window.google.maps.Size(30, 30),
                     }}
                 />
+
+                {/* Draw all routes including the first one initially */}
                 {hyderabadLocations.map((location, index) => {
                     if (index < hyderabadLocations.length - 1) {
                         const isCurrentSegment = index === currentLocationIndex;
@@ -480,5 +516,3 @@ const LiveTracking: React.FC = () => {
 };
 
 export default LiveTracking;
-
-
