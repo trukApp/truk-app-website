@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Box, Collapse, IconButton, Paper, Typography, Grid } from "@mui/material";
+import { Box, Collapse, IconButton, Paper, Typography, Grid, Button } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import { useRouter } from 'next/navigation';
 
 interface Allocation {
     vehicle_ID: string;
@@ -20,12 +21,15 @@ interface AllocationsProps {
 }
 
 const Allocations: React.FC<AllocationsProps> = ({ allocations }) => {
+    const router = useRouter();
     const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({});
 
     const handleToggle = (vehicleId: string) => {
         setExpanded((prev) => ({ ...prev, [vehicleId]: !prev[vehicleId] }));
     };
-
+    const handleTrack = (vehicle_ID: string) => {
+        router.push(`/liveTracking?vehicle_ID=${vehicle_ID}`);
+    };
     return (
         <Box>
             <Typography variant="h6" gutterBottom>
@@ -56,6 +60,14 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations }) => {
                             <Typography variant="body2">Leftover Weight: {allocation.leftoverWeight}</Typography>
                             <Typography variant="body2">Packages: {allocation.packages.join(", ")}</Typography>
                         </Box>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            sx={{ mt: 2 }}
+                            onClick={() => handleTrack(allocation.vehicle_ID)}
+                        >
+                            View Track
+                        </Button>
                     </Collapse>
                 </Paper>
             ))}
