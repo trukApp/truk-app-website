@@ -139,30 +139,30 @@ const CreateOrder: React.FC = () => {
         return (
             <Box
                 sx={{
-                width: 25,
-                height: 25,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: "50%",
-                backgroundColor: completed
-                    ? "#83214F"
-                    : active
-                    ? "#83214F"
-                    : "#ccc",
-                color: 'white',
-                fontWeight: "bold",
-            }}
-        >
-            {completed ? (
-                <Typography variant="body2" sx={{ fontSize: 15, fontWeight: "bold" }}>
-                    ✔
-                </Typography>
-            ) : (
-                <Typography variant="body2" >{icon}</Typography>
-            )}
-        </Box>
-    );
+                    width: 25,
+                    height: 25,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: "50%",
+                    backgroundColor: completed
+                        ? "#83214F"
+                        : active
+                            ? "#83214F"
+                            : "#ccc",
+                    color: 'white',
+                    fontWeight: "bold",
+                }}
+            >
+                {completed ? (
+                    <Typography variant="body2" sx={{ fontSize: 15, fontWeight: "bold" }}>
+                        ✔
+                    </Typography>
+                ) : (
+                    <Typography variant="body2" >{icon}</Typography>
+                )}
+            </Box>
+        );
     };
 
     return (
@@ -252,7 +252,7 @@ const CreateOrder: React.FC = () => {
             <div>
                 {activeStep === 0 && (
                     <div>
-                        <Typography variant="h6" sx={{fontWeight:600, marginTop:2}}>Select packages</Typography>
+                        <Typography variant="h6" sx={{ fontWeight: 600, marginTop: 2 }}>Select packages</Typography>
                         <PackagesTable allPackagesData={allPackagesData} isPackagesLoading={isPackagesLoading} />
 
                     </div>
@@ -283,7 +283,9 @@ const CreateOrder: React.FC = () => {
                 )}
             </div>
             <div className={styles.buttonsContainer}>
-                <CustomButtonOutlined onClick={() => setActiveStep((prev) => prev - 1)} >Back</CustomButtonOutlined>
+                {activeStep === 0 ? null : (
+                    <CustomButtonOutlined onClick={() => setActiveStep((prev) => prev - 1)} >Back</CustomButtonOutlined>
+                )}
                 {activeStep === 4 ? (
                     <CustomButtonFilled onClick={() => setModalOpen(true)}>Submit</CustomButtonFilled>
                 ) : (

@@ -44,12 +44,12 @@ const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
       Yup.object().shape({
         productId: Yup.string().required("Required"),
         productName: Yup.string().required("Required"),
-        hsnCode: Yup.string().required("Required"),
-        rfid: Yup.string().required("Required"),
+        // hsnCode: Yup.string().required("Required"),
+        // rfid: Yup.string().required("Required"),
         dimensions: Yup.string().required("Required"),
         quantity: Yup.string().required("Required"),
         weight: Yup.string().required("Required"),
-        packagingType: Yup.string().required("Required"),
+        // packagingType: Yup.string().required("Required"),
       })
     ),
   });
@@ -96,8 +96,8 @@ const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
       setFieldValue(`packageDetails.${index}.weight`, `${selectedProduct.weight} ${selectedProduct.weight_uom}`);
       setFieldValue(`packageDetails.${index}.dimensions`, `${selectedProduct.volume} ${selectedProduct.volume_uom}`);
       setFieldValue(`packageDetails.${index}.packagingType`, selectedProduct.packaging_type[0]?.pac_ID);
-    
-      
+
+
     }
   };
 
@@ -180,74 +180,74 @@ const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
                                     fieldName
                                         .replace(/([A-Z])/g, " $1") 
                                         .replace(/^./, (str) => str.toUpperCase())
-                                        .trim() + " *" 
-                                }
+                                        .trim() + " *"
+                                    }
 
-                              fullWidth
-                              size="small"
-                              type={fieldName === "quantity" ? "number" : "text"}
-                              error={meta.touched && Boolean(meta.error)}
-                              helperText={meta.touched && meta.error}
-                            />
-                          );
-                        }
-                      }}
-                    </Field>
-                  </Grid>
-                ))}
+                                    fullWidth
+                                    size="small"
+                                    type={fieldName === "quantity" ? "number" : "text"}
+                                    error={meta.touched && Boolean(meta.error)}
+                                    helperText={meta.touched && meta.error}
+                                  />
+                                );
+                              }
+                            }}
+                          </Field>
+                        </Grid>
+                      ))}
 
-                {values.packageDetails.length > 1 && (
-                  <Grid item xs={12}>
-                    <Button variant="outlined" size="small" color="secondary" onClick={() => remove(index)}>
-                      Remove
+                      {values.packageDetails.length > 1 && (
+                        <Grid item xs={12}>
+                          <Button variant="outlined" size="small" color="secondary" onClick={() => remove(index)}>
+                            Remove
+                          </Button>
+                        </Grid>
+                      )}
+                    </Grid>
+                  ))}
+
+                  <Grid item xs={12} style={{ marginTop: 10 }}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="small"
+                      onClick={() =>
+                        push({
+                          productId: "",
+                          productName: "",
+                          hsnCode: "",
+                          rfid: "",
+                          dimensions: "",
+                          quantity: "",
+                          weight: "",
+                          packagingType: "",
+                        })
+                      }
+                    >
+                      Add One More
                     </Button>
                   </Grid>
-                )}
-              </Grid>
-            ))}
+                </>
+              )}
+            </FieldArray>
 
-            <Grid item xs={12} style={{ marginTop: 10 }}>
-              <Button
-                variant="contained"
-                color="primary"
-                size="small"
-                onClick={() =>
-                  push({
-                    productId: "",
-                    productName: "",
-                    hsnCode: "",
-                    rfid: "",
-                    dimensions: "",
-                    quantity: "",
-                    weight: "",
-                    packagingType: "",
-                  })
-                }
-              >
-                Add One More
-              </Button>
-            </Grid>
-          </>
-        )}
-      </FieldArray>
-
-      <Grid container spacing={2} justifyContent="center" marginTop={2}>
-        <Grid item>
-          {/* <Button variant="outlined" onClick={onBack}>
+            <Grid container spacing={2} justifyContent="center" marginTop={2}>
+              <Grid item>
+                {/* <Button variant="outlined" onClick={onBack}>
             Back
           </Button> */}
-            <CustomButtonOutlined onClick={onBack}>Back</CustomButtonOutlined>
-        </Grid>
-        <Grid item>
-          {/* <Button variant="contained" color="primary" type="submit">
+                <CustomButtonOutlined onClick={onBack}>Back</CustomButtonOutlined>
+              </Grid>
+              <Grid item>
+                {/* <Button variant="contained" color="primary" type="submit">
             Next
           </Button> */}
-            <CustomButtonFilled  >Next</CustomButtonFilled>
-        </Grid>
-      </Grid>
-    </Form>
-  )}
-</Formik>
+                <CustomButtonFilled  >Next</CustomButtonFilled>
+              </Grid>
+            </Grid>
+          </Form>
+        )}
+      </Formik>
 
     </Grid>
   );

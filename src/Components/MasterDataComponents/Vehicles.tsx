@@ -221,11 +221,11 @@ const validationSchema = Yup.object({
 	avgCost: Yup.number()
 		.typeError("Average cost must be a number")
 		.required("Average cost of transportation is required"),
-	downtimeStart: Yup.string().required("Downtime Start is required"),
-	downtimeEnd: Yup.string().required("Downtime End is required"),
-	downtimeLocation: Yup.string().required("Downtime Location is required"),
-	downtimeDescription: Yup.string().required("Description is required"),
-	downtimeReason: Yup.string().required("Reason is required"),
+	// downtimeStart: Yup.string().required("Downtime Start is required"),
+	// downtimeEnd: Yup.string().required("Downtime End is required"),
+	// downtimeLocation: Yup.string().required("Downtime Location is required"),
+	// downtimeDescription: Yup.string().required("Description is required"),
+	// downtimeReason: Yup.string().required("Reason is required"),
 });
 
 const VehicleForm: React.FC = () => {
@@ -244,20 +244,20 @@ const VehicleForm: React.FC = () => {
 	}
 	const { data: locationsData, isLoading: isLocationLoading } = useGetLocationMasterQuery({});
 	const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
-	 const getLocationDetails = (loc_ID: string) => {
-		  const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
-		  if (!location) return "Location details not available";
-			const details = [
-			  location.address_1,
-			  location.address_2,
-			  location.city,
-			  location.state,
-			  location.country,
-			  location.pincode
-			].filter(Boolean);
-	  
-			return details.length > 0 ? details.join(", ") : "Location details not available";
-		};
+	const getLocationDetails = (loc_ID: string) => {
+		const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
+		if (!location) return "Location details not available";
+		const details = [
+			location.address_1,
+			location.address_2,
+			location.city,
+			location.state,
+			location.country,
+			location.pincode
+		].filter(Boolean);
+
+		return details.length > 0 ? details.join(", ") : "Location details not available";
+	};
 	const vehiclesMaster = data?.vehicles;
 	const unitsofMeasurement = useSelector(
 		(state: RootState) => state.auth.unitsofMeasurement
@@ -432,16 +432,16 @@ const VehicleForm: React.FC = () => {
 	const columns: GridColDef[] = [
 		{ field: "vehicleId", headerName: "Vehicle ID", width: 150 },
 		// { field: "locationId", headerName: "Location ID", width: 150 },
-			{
+		{
 			field: "locationId",
 			headerName: "Location ID",
 			width: 150,
 			renderCell: (params) => (
-			  <Tooltip title={getLocationDetails(params.value)} arrow>
-				<span>{params.value}</span>
-			  </Tooltip>
+				<Tooltip title={getLocationDetails(params.value)} arrow>
+					<span>{params.value}</span>
+				</Tooltip>
 			),
-		  },
+		},
 		{ field: "timeZone", headerName: "Time Zone", width: 150 },
 		{
 			field: "unlimitedUsage",
@@ -597,7 +597,9 @@ const VehicleForm: React.FC = () => {
 					cost_per_ton: values.avgCost,
 				},
 			};
+
 			if (isEditing && editRow) {
+				console.log('qwerty')
 				const vehicleId = editRow.id;
 				const response = await editVehicle({
 					body: editBody,
@@ -615,7 +617,7 @@ const VehicleForm: React.FC = () => {
 			} else {
 				const response = await postVehicle(body).unwrap();
 				if (response?.created_records) {
-					setSnackbarMessage(`Device ID ${response.created_records[0]} created successfully!`);
+					setSnackbarMessage(`Vehicle ID ${response.created_records[0]} created successfully!`);
 					resetForm();
 					setShowForm(false)
 					setIsEditing(false)
@@ -744,6 +746,7 @@ const VehicleForm: React.FC = () => {
 								handleChange,
 								handleBlur,
 								setFieldValue,
+								resetForm
 							}) => (
 								<Form>
 									<Grid>
@@ -888,7 +891,7 @@ const VehicleForm: React.FC = () => {
 											2. Transportation Details
 										</Typography>
 										<Grid container spacing={2}>
-											<Grid item xs={12} sm={6} md={2.4}>
+											{/* <Grid item xs={12} sm={6} md={2.4}>
 												<TextField
 													fullWidth
 													size="small"
@@ -926,8 +929,30 @@ const VehicleForm: React.FC = () => {
 													}
 													InputLabelProps={{ shrink: true }}
 												/>
-											</Grid>
+											</Grid> */}
 											<Grid item xs={12} sm={6} md={2.4}>
+												<TextField
+													fullWidth
+													size="small"
+													label="Validity From"
+													name="validityFrom"
+													type="date"
+													value={
+														values.validityFrom
+													}
+													onChange={handleChange}
+													onBlur={handleBlur}
+													error={
+														touched.validityFrom &&
+														Boolean(errors.validityFrom)
+													}
+													helperText={
+														touched.validityFrom && errors.validityFrom
+													}
+													InputLabelProps={{ shrink: true }}
+												/>
+											</Grid>
+											{/* <Grid item xs={12} sm={6} md={2.4}>
 												<TextField
 													fullWidth
 													size="small"
@@ -955,6 +980,29 @@ const VehicleForm: React.FC = () => {
 															},
 														});
 													}}
+													onBlur={handleBlur}
+													error={
+														touched.validityTo &&
+														Boolean(errors.validityTo)
+													}
+													helperText={
+														touched.validityTo && errors.validityTo
+													}
+													InputLabelProps={{ shrink: true }}
+												/>
+											</Grid> */}
+											<Grid item xs={12} sm={6} md={2.4}>
+												<TextField
+													fullWidth
+													size="small"
+													label="Validity To"
+													name="validityTo"
+													type="date"
+													value={
+														values.validityTo
+
+													}
+													onChange={handleChange}
 													onBlur={handleBlur}
 													error={
 														touched.validityTo &&
@@ -1445,33 +1493,10 @@ const VehicleForm: React.FC = () => {
 													type="date"
 													value={
 														values.downtimeStart
-															? values.downtimeStart
-																.split("-")
-																.reverse()
-																.join("-")
-															: ""
+
 													}
-													onChange={(e) => {
-														const selectedDate = e.target.value;
-														const formattedDate = selectedDate
-															.split("-")
-															.reverse()
-															.join("-");
-														handleChange({
-															target: {
-																name: "downtimeStart",
-																value: formattedDate,
-															},
-														});
-													}}
+													onChange={handleChange}
 													onBlur={handleBlur}
-													error={
-														touched.downtimeStart &&
-														Boolean(errors.downtimeStart)
-													}
-													helperText={
-														touched.downtimeStart && errors.downtimeStart
-													}
 													InputLabelProps={{ shrink: true }}
 												/>
 											</Grid>
@@ -1485,33 +1510,10 @@ const VehicleForm: React.FC = () => {
 													type="date"
 													value={
 														values.downtimeEnd
-															? values.downtimeEnd
-																.split("-")
-																.reverse()
-																.join("-")
-															: ""
+
 													}
-													onChange={(e) => {
-														const selectedDate = e.target.value;
-														const formattedDate = selectedDate
-															.split("-")
-															.reverse()
-															.join("-");
-														handleChange({
-															target: {
-																name: "downtimeEnd",
-																value: formattedDate,
-															},
-														});
-													}}
+													onChange={handleChange}
 													onBlur={handleBlur}
-													error={
-														touched.downtimeEnd &&
-														Boolean(errors.downtimeEnd)
-													}
-													helperText={
-														touched.downtimeEnd && errors.downtimeEnd
-													}
 													InputLabelProps={{ shrink: true }}
 												/>
 											</Grid>
@@ -1524,13 +1526,6 @@ const VehicleForm: React.FC = () => {
 													value={values.downtimeLocation}
 													onChange={handleChange}
 													onBlur={handleBlur}
-													error={
-														touched.downtimeLocation &&
-														Boolean(errors.downtimeLocation)
-													}
-													helperText={
-														touched.downtimeLocation && errors.downtimeLocation
-													}
 													size="small"
 												/>
 											</Grid>
@@ -1542,14 +1537,6 @@ const VehicleForm: React.FC = () => {
 													value={values.downtimeDescription}
 													onChange={handleChange}
 													onBlur={handleBlur}
-													error={
-														touched.downtimeDescription &&
-														Boolean(errors.downtimeDescription)
-													}
-													helperText={
-														touched.downtimeDescription &&
-														errors.downtimeDescription
-													}
 													size="small"
 												/>
 											</Grid>
@@ -1564,13 +1551,6 @@ const VehicleForm: React.FC = () => {
 													value={values.downtimeReason}
 													onChange={handleChange}
 													onBlur={handleBlur}
-													error={
-														touched.downtimeReason &&
-														Boolean(errors.downtimeReason)
-													}
-													helperText={
-														touched.downtimeReason && errors.downtimeReason
-													}
 													size="small"
 												>
 													{downtimeReasons.map((reason) => (
@@ -1596,9 +1576,9 @@ const VehicleForm: React.FC = () => {
 													value={values.avgCost}
 													onChange={handleChange}
 													onBlur={handleBlur}
+													size="small"
 													error={touched.avgCost && Boolean(errors.avgCost)}
 													helperText={touched.avgCost && errors.avgCost}
-													size="small"
 												/>
 											</Grid>
 										</Grid>
@@ -1611,11 +1591,11 @@ const VehicleForm: React.FC = () => {
 													backgroundColor: "#83214F",
 													color: "#fff",
 													"&:hover": {
-													backgroundColor: "#fff",
-													color: "#83214F"
+														backgroundColor: "#fff",
+														color: "#83214F"
 													}
 												}}
-												>
+											>
 												{isEditing ? "Update vehicle" : "Create vehicle"}
 											</Button>
 
@@ -1626,6 +1606,7 @@ const VehicleForm: React.FC = () => {
 													setInitialValues(initialFormValues);
 													setIsEditing(false);
 													setEditRow(null);
+													resetForm();
 												}}
 												style={{ marginLeft: "10px" }}
 											>
