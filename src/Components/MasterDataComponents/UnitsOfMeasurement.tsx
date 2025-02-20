@@ -47,51 +47,93 @@ interface unitTypesBE {
 }
 
 // Mapping for units and their alternate units
+// const unitMappings: Record<string, string[]> = {
+// 	// Weight Units
+// 	Ton: ["Kilogram", "Gram", "Milligram"],
+// 	Kilogram: ["Gram", "Milligram"],
+// 	Gram: ["Milligram"],
+
+// 	// Volume Units
+// 	CubicKilometer: [
+// 		"Cubic Meter",
+// 		"Cubic Decimeter",
+// 		"Cubic Centimeter",
+// 		"Cubic Millimeter",
+// 	],
+// 	CubicMeter: ["Cubic Decimeter", "Cubic Centimeter", "Cubic Millimeter"],
+// 	CubicDecimeter: ["Cubic Centimeter", "Cubic Millimeter"],
+// 	CubicCentimeter: ["Cubic Millimeter"],
+// 	CubicMillimeter: [],
+
+// 	Liter: ["Millilitre"],
+
+// 	Gallon: ["Liter", "Millilitre"],
+// 	Quart: ["Liter", "Millilitre"],
+// 	Pint: ["Liter", "Millilitre"],
+// 	FluidOunce: ["Millilitre"],
+
+// 	CubicFoot: ["Cubic Inch", "Cubic Centimeter"],
+// 	CubicInch: ["Cubic Centimeter"],
+
+// 	// Length Units
+// 	Kilometer: ["Meter", "Decimeter", "Centimeter", "Millimeter"],
+// 	Meter: ["Decimeter", "Centimeter", "Millimeter"],
+// 	Decimeter: ["Centimeter", "Millimeter"],
+// 	Centimeter: ["Millimeter", "Micrometer"],
+
+// 	Mile: ["Kilometer", "Meter"],
+// 	Yard: ["Meter", "Centimeter"],
+// 	Foot: ["Inch", "Centimeter", "Millimeter"],
+// 	Inch: ["Centimeter", "Millimeter"],
+
+// 	// Time Units
+// 	Hour: ["Minute", "Second"],
+// 	Minute: ["Second"],
+// 	Second: ["Millisecond"],
+// 	Millisecond: ["Microsecond", "Nanosecond"],
+// };
+
 const unitMappings: Record<string, string[]> = {
 	// Weight Units
-	Ton: ["Kilogram", "Gram", "Milligram"],
-	Kilogram: ["Gram", "Milligram"],
-	Gram: ["Milligram"],
+	"ton": ["kg", "g", "mg"],  // Ton to Kilogram, Gram, Milligram
+	"kg": ["g", "mg"],        // Kilogram to Gram, Milligram
+	"g": ["mg"],              // Gram to Milligram
 
 	// Volume Units
-	CubicKilometer: [
-		"Cubic Meter",
-		"Cubic Decimeter",
-		"Cubic Centimeter",
-		"Cubic Millimeter",
-	],
-	CubicMeter: ["Cubic Decimeter", "Cubic Centimeter", "Cubic Millimeter"],
-	CubicDecimeter: ["Cubic Centimeter", "Cubic Millimeter"],
-	CubicCentimeter: ["Cubic Millimeter"],
-	CubicMillimeter: [],
+	"km^3": ["m^3", "dm^3", "cm^3", "mm^3"],  // Cubic Kilometer conversions
+	"m^3": ["dm^3", "cm^3", "mm^3"],         // Cubic Meter conversions
+	"dm^3": ["cm^3", "mm^3"],               // Cubic Decimeter conversions
+	"cm^3": ["mm^3"],                      // Cubic Centimeter to Millimeter
+	"mm^3": [],                            // Smallest unit
 
-	Liter: ["Millilitre"],
+	"L": ["mL"],  // Liter to Millilitre
+	"gal": ["L", "mL"],  // Gallon to Liter, Millilitre
+	"qt": ["L", "mL"],   // Quart to Liter, Millilitre
+	"pt": ["L", "mL"],   // Pint to Liter, Millilitre
+	"fl oz": ["mL"],     // Fluid Ounce to Millilitre
 
-	Gallon: ["Liter", "Millilitre"],
-	Quart: ["Liter", "Millilitre"],
-	Pint: ["Liter", "Millilitre"],
-	FluidOunce: ["Millilitre"],
-
-	CubicFoot: ["Cubic Inch", "Cubic Centimeter"],
-	CubicInch: ["Cubic Centimeter"],
+	"ft^3": ["in^3", "cm^3"],  // Cubic Foot conversions
+	"in^3": ["cm^3"],         // Cubic Inch to Centimeter
 
 	// Length Units
-	Kilometer: ["Meter", "Decimeter", "Centimeter", "Millimeter"],
-	Meter: ["Decimeter", "Centimeter", "Millimeter"],
-	Decimeter: ["Centimeter", "Millimeter"],
-	Centimeter: ["Millimeter", "Micrometer"],
+	"km": ["m", "dm", "cm", "mm"],  // Kilometer to smaller units
+	"m": ["dm", "cm", "mm"],        // Meter to smaller units
+	"dm": ["cm", "mm"],             // Decimeter conversions
+	"cm": ["mm", "µm"],             // Centimeter to Millimeter, Micrometer
 
-	Mile: ["Kilometer", "Meter"],
-	Yard: ["Meter", "Centimeter"],
-	Foot: ["Inch", "Centimeter", "Millimeter"],
-	Inch: ["Centimeter", "Millimeter"],
+	"mi": ["km", "m"],  // Mile conversions
+	"yd": ["m", "cm"],  // Yard conversions
+	"ft": ["in", "cm", "mm"],  // Foot conversions
+	"in": ["cm", "mm"],        // Inch conversions
 
 	// Time Units
-	Hour: ["Minute", "Second"],
-	Minute: ["Second"],
-	Second: ["Millisecond"],
-	Millisecond: ["Microsecond", "Nanosecond"],
+	"h": ["min", "s"],     // Hour to Minutes, Seconds
+	"min": ["s"],          // Minute to Seconds
+	"s": ["ms"],           // Second to Millisecond
+	"ms": ["µs", "ns"],    // Millisecond to Microsecond, Nanosecond
 };
+
+
 
 const UnitsOfMeasurement: React.FC = () => {
 	const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -320,6 +362,7 @@ const UnitsOfMeasurement: React.FC = () => {
 						enableReinitialize={true}
 						validationSchema={validationSchema}
 						onSubmit={handleSubmit}
+
 					>
 						{({
 							handleChange,
@@ -328,6 +371,7 @@ const UnitsOfMeasurement: React.FC = () => {
 							values,
 							touched,
 							errors,
+							resetForm
 						}) => (
 							<Form>
 								<Grid container spacing={2}>
@@ -422,19 +466,19 @@ const UnitsOfMeasurement: React.FC = () => {
 									style={{ marginTop: "20px" }}
 								>
 									<Button
-  type="submit"
-  variant="contained"
-  sx={{
-    backgroundColor: "#83214F",
-    color: "#fff",
-    "&:hover": {
-      backgroundColor: "#fff",
-      color: "#83214F"
-    }
-  }}
->
-  {isEditing ? "Update UOM" : "Create UOM"}
-</Button>
+										type="submit"
+										variant="contained"
+										sx={{
+											backgroundColor: "#83214F",
+											color: "#fff",
+											"&:hover": {
+												backgroundColor: "#fff",
+												color: "#83214F"
+											}
+										}}
+									>
+										{isEditing ? "Update UOM" : "Create UOM"}
+									</Button>
 
 									<Button
 										variant="outlined"
@@ -443,6 +487,7 @@ const UnitsOfMeasurement: React.FC = () => {
 											setInitialValues(initialFormValues);
 											setIsEditing(false);
 											setEditRow(null);
+											resetForm()
 										}}
 										style={{ marginLeft: "10px" }}
 									>

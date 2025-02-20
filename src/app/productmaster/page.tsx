@@ -45,6 +45,8 @@ export interface PackagingType {
 
 }
 export interface Product {
+    weight_uom: string;
+    productID: string;
     productName: string;
     productCode: string;
     category: string;
@@ -87,6 +89,8 @@ export interface Product {
     packingLabel: boolean;
     quantity: number;
     destination: string;
+    volume_uom: string;
+
 }
 
 const ProductMasterPage = () => {
@@ -96,6 +100,7 @@ const ProductMasterPage = () => {
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const unitsofMeasurement = useSelector((state: RootState) => state.auth.unitsofMeasurement);
     const productFormInitialValues = {
+        productID: '',
         productName: '',
         productDescription: '',
         basicUoM: unitsofMeasurement[0],
@@ -134,7 +139,7 @@ const ProductMasterPage = () => {
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
     const getAllPackages = packagesData?.packages.length > 0 ? packagesData?.packages : []
     const allProductsData = productsData?.products || [];
-    
+
 
     console.log("Getting all product errors: ", allProductsFectchingError)
     console.log("getLocationsError: ", getLocationsError)
@@ -146,34 +151,43 @@ const ProductMasterPage = () => {
         productDescription: Yup.string().required('Product Description is required'),
         basicUoM: Yup.string().required('Basic Unit of Measure is required'),
         salesUoM: Yup.string().required('Sales Unit of Measure is required'),
+        packagingType: Yup.string().required('packaging type is required'),
     });
 
 
-    const mapRowToInitialValues = (selectedProduct: Product) => ({
-        productName: selectedProduct.productName || '',
-        productDescription: selectedProduct.product_desc || '',
-        basicUoM: selectedProduct.basic_uom || '',
-        salesUoM: selectedProduct.sales_uom || '',
-        weightUoM: selectedProduct.weight || '',
-        volumeUoM: selectedProduct.volume || '',
-        shelfLife: '',
-        expirationDate: selectedProduct.expiration || '',
-        bestBeforeDate: selectedProduct.best_before || '',
-        stackingFactor: selectedProduct?.stacking_factor || '',
-        documents: '',
-        locationId: selectedProduct?.packagingType[0]?.location || '',
-        packagingType: selectedProduct?.packagingType[0]?.pac_ID || '',
-        generatePackagingLabel: selectedProduct.packingLabel || false,
-        specialInstructions: selectedProduct.specialInstructions || '',
-        fragileGoods: selectedProduct.fragile_goods || false,
-        dangerousGoods: selectedProduct.dangerous_goods || false,
-        hazardousStorage: selectedProduct?.hazardous || false,
-        skuNumber: selectedProduct.sku_num || '',
-        hsncode: selectedProduct.hsn_code || '',
-        weightUnit: unitsofMeasurement[0],
-        volumeUnit: unitsofMeasurement[0],
-        temperatureControl: selectedProduct?.tempControl || false,
-    });
+    const mapRowToInitialValues = (selectedProduct: Product) => {
+        console.log('selected pro :', selectedProduct)
+        const weightUnit = selectedProduct.weight.split(' ')
+        const volumeUnit = selectedProduct.volume.split(' ')
+        return (
+            {
+                productID: selectedProduct.productID || '',
+                productName: selectedProduct.productName || '',
+                productDescription: selectedProduct.product_desc || '',
+                basicUoM: selectedProduct.basic_uom || '',
+                salesUoM: selectedProduct.sales_uom || '',
+                weightUoM: weightUnit[0] || '',
+                volumeUoM: volumeUnit[0] || '',
+                shelfLife: '',
+                expirationDate: selectedProduct.expiration || '',
+                bestBeforeDate: selectedProduct.best_before || '',
+                stackingFactor: selectedProduct?.stacking_factor || '',
+                documents: '',
+                locationId: selectedProduct?.packagingType[0]?.location || '',
+                packagingType: selectedProduct?.packagingType[0]?.pac_ID || '',
+                generatePackagingLabel: selectedProduct.packingLabel || false,
+                specialInstructions: selectedProduct.specialInstructions || '',
+                fragileGoods: selectedProduct.fragile_goods || false,
+                dangerousGoods: selectedProduct.dangerous_goods || false,
+                hazardousStorage: selectedProduct?.hazardous || false,
+                skuNumber: selectedProduct.sku_num || '',
+                hsncode: selectedProduct.hsn_code || '',
+                weightUnit: weightUnit[1],
+                volumeUnit: volumeUnit[1],
+                temperatureControl: selectedProduct?.tempControl || false,
+            });
+    }
+
 
     const handleEdit = async (rowData: Product) => {
         setShowForm(true)
@@ -251,8 +265,8 @@ const ProductMasterPage = () => {
         product_desc: product.product_desc,
         sales_uom: product.sales_uom,
         basic_uom: product.basic_uom,
-        weight: product.weight,
-        volume: product.volume,
+        weight: `${product.weight} ${product.weight_uom}`,
+        volume: `${product.volume} ${product.volume_uom}`,
         expiration: product.expiration,
         best_before: product.best_before,
         hsn_code: product.hsn_code,
@@ -414,10 +428,21 @@ const ProductMasterPage = () => {
                     >
                         {({ values, handleChange, handleBlur, errors, touched, setFieldValue, resetForm }) => (
                             <Form>
-                                <Typography variant="h6" sx={{fontWeight:600,   marginTop:2}} >
+                                <Typography variant="h6" sx={{ fontWeight: 600, marginTop: 2 }} >
                                     Basic data
                                 </Typography>
                                 <Grid container spacing={2}>
+                                    {updateRecord &&
+                                        <Grid item xs={12} sm={6} md={2.4} >
+                                            <TextField
+                                                fullWidth size='small'
+                                                label="Product ID" disabled
+                                                name="productID"
+                                                value={values.productID}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                            />
+                                        </Grid>}
                                     <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
                                             fullWidth size='small'
@@ -549,7 +574,7 @@ const ProductMasterPage = () => {
                                     </Grid>
                                 </Grid>
 
-                                <Typography variant="h6" sx={{fontWeight:600,   marginTop:2}}>
+                                <Typography variant="h6" sx={{ fontWeight: 600, marginTop: 2 }}>
                                     Shelf life
                                 </Typography>
 
@@ -557,81 +582,81 @@ const ProductMasterPage = () => {
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth
-                                                        size="small"
-                                                        label="Expiration Date"
-                                                        name="expirationDate"
-                                                        type="date"
-                                                        value={
-                                                            values.expirationDate
-                                                                ? values.expirationDate
-                                                                    .split("-")
-                                                                    .reverse()
-                                                                    .join("-")
-                                                                : ""
-                                                        }
-                                                        onChange={(e) => {
-                                                            const selectedDate = e.target.value;
-                                                            const formattedDate = selectedDate
-                                                                .split("-")
-                                                                .reverse()
-                                                                .join("-");
-                                                            handleChange({
-                                                                target: {
-                                                                    name: "expirationDate",
-                                                                    value: formattedDate,
-                                                                },
-                                                            });
-                                                        }}
-                                                        onBlur={handleBlur}
-                                                        error={
-                                                            touched.expirationDate &&
-                                                            Boolean(errors.expirationDate)
-                                                        }
-                                                        helperText={
-                                                            touched.expirationDate && errors.expirationDate
-                                                        }
+                                            size="small"
+                                            label="Expiration Date"
+                                            name="expirationDate"
+                                            type="date"
+                                            value={
+                                                values.expirationDate
+                                                    ? values.expirationDate
+                                                        .split("-")
+                                                        .reverse()
+                                                        .join("-")
+                                                    : ""
+                                            }
+                                            onChange={(e) => {
+                                                const selectedDate = e.target.value;
+                                                const formattedDate = selectedDate
+                                                    .split("-")
+                                                    .reverse()
+                                                    .join("-");
+                                                handleChange({
+                                                    target: {
+                                                        name: "expirationDate",
+                                                        value: formattedDate,
+                                                    },
+                                                });
+                                            }}
+                                            onBlur={handleBlur}
+                                            error={
+                                                touched.expirationDate &&
+                                                Boolean(errors.expirationDate)
+                                            }
+                                            helperText={
+                                                touched.expirationDate && errors.expirationDate
+                                            }
                                             InputLabelProps={{ shrink: true }}
                                         />
                                     </Grid>
-                                     
+
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
-                                                        fullWidth
-                                                        size="small"
-                                                        label="Best Before Date"
-                                                        name="bestBeforeDate"
-                                                        type="date"
-                                                        value={
-                                                            values.bestBeforeDate
-                                                                ? values.bestBeforeDate
-                                                                    .split("-")
-                                                                    .reverse()
-                                                                    .join("-")
-                                                                : ""
-                                                        }
-                                                        onChange={(e) => {
-                                                            const selectedDate = e.target.value;
-                                                            const formattedDate = selectedDate
-                                                                .split("-")
-                                                                .reverse()
-                                                                .join("-");
-                                                            handleChange({
-                                                                target: {
-                                                                    name: "bestBeforeDate",
-                                                                    value: formattedDate,
-                                                                },
-                                                            });
-                                                        }}
-                                                        onBlur={handleBlur}
-                                                        error={
-                                                            touched.bestBeforeDate &&
-                                                            Boolean(errors.bestBeforeDate)
-                                                        }
-                                                        helperText={
-                                                            touched.bestBeforeDate && errors.bestBeforeDate
-                                                        }
-                                                        InputLabelProps={{ shrink: true }}
-                                                    />
+                                            fullWidth
+                                            size="small"
+                                            label="Best Before Date"
+                                            name="bestBeforeDate"
+                                            type="date"
+                                            value={
+                                                values.bestBeforeDate
+                                                    ? values.bestBeforeDate
+                                                        .split("-")
+                                                        .reverse()
+                                                        .join("-")
+                                                    : ""
+                                            }
+                                            onChange={(e) => {
+                                                const selectedDate = e.target.value;
+                                                const formattedDate = selectedDate
+                                                    .split("-")
+                                                    .reverse()
+                                                    .join("-");
+                                                handleChange({
+                                                    target: {
+                                                        name: "bestBeforeDate",
+                                                        value: formattedDate,
+                                                    },
+                                                });
+                                            }}
+                                            onBlur={handleBlur}
+                                            error={
+                                                touched.bestBeforeDate &&
+                                                Boolean(errors.bestBeforeDate)
+                                            }
+                                            helperText={
+                                                touched.bestBeforeDate && errors.bestBeforeDate
+                                            }
+                                            InputLabelProps={{ shrink: true }}
+                                        />
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
@@ -678,7 +703,7 @@ const ProductMasterPage = () => {
                                     </Grid>
                                 </Grid>
 
-                                <Typography variant="h6" sx={{fontWeight:600,   marginTop:2}}>
+                                <Typography variant="h6" sx={{ fontWeight: 600, marginTop: 2 }}>
                                     Location data
                                 </Typography>
                                 <Grid container spacing={2}>
@@ -784,7 +809,7 @@ const ProductMasterPage = () => {
                                     </Grid>
                                 </Grid>
 
-                                <Typography variant="h6" sx={{fontWeight:600,   marginTop:1}}>
+                                <Typography variant="h6" sx={{ fontWeight: 600, marginTop: 1 }}>
                                     Storage data
                                 </Typography>
                                 <Grid container spacing={2}>
@@ -839,8 +864,8 @@ const ProductMasterPage = () => {
                                 </Grid>
 
                                 <Box marginTop={2} textAlign="center">
-                                <CustomButtonFilled >{updateRecord ? "Update product" : "Create product"}</CustomButtonFilled>
-                                <Button
+                                    <CustomButtonFilled >{updateRecord ? "Update product" : "Create product"}</CustomButtonFilled>
+                                    <Button
                                         variant="outlined"
                                         color="secondary"
                                         onClick={() => {
