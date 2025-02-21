@@ -764,7 +764,7 @@ const Locations: React.FC = () => {
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth
-                      size="small"
+                      size="small" type='number'
                       label="Contact phone number*"
                       name="locationContactNumber"
                       value={values.locationContactNumber}

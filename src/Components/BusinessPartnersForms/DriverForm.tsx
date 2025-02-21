@@ -16,6 +16,7 @@ import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 import { Location } from '../MasterDataComponents/Locations';
 interface DriverFormValues {
+  driverId: string;
   driverName: string;
   locations: string[];
   address1: string;
@@ -33,6 +34,8 @@ interface DriverFormValues {
 }
 
 interface Driver {
+  driverID: string;
+  driverId: string;
   id: number;
   dri_ID: string;
   driver_name: string;
@@ -69,6 +72,7 @@ interface Driver {
 }
 
 const initialDriverValues = {
+  driverId:'',
   driverName: '',
   locations: [] as string[],
   // address: '',
@@ -138,9 +142,11 @@ const DriverForm: React.FC = () => {
 
 
   const mapRowToInitialValues = (rowData: Driver) => {
+    console.log('rowData?  :', rowData )
     const matchedLocation = getAllLocations.find((loc: Location) => loc.loc_ID === rowData?.locations[0]);
 
     return {
+      driverId:rowData?.driverID || '',
       driverName: rowData?.driverName || '',
       locations: rowData?.locations ? [...rowData.locations] : [],
       drivingLicense: rowData?.drivingLicense || '',
@@ -406,10 +412,22 @@ const DriverForm: React.FC = () => {
             validationSchema={driverValidationSchema}
             onSubmit={handleDriverSubmit}
           >
-            {({ values, handleChange, handleBlur, errors, touched, setFieldValue }) => (
+            {({ values, handleChange, handleBlur, errors, touched, setFieldValue, resetForm }) => (
               <Form>
                 <h4 className={styles.mainHeading}>General Data</h4>
                 <Grid container spacing={2} style={{ marginBottom: '30px' }}>
+                  {updateRecord && 
+                    <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth size='small'
+                      label="Driver ID" disabled
+                      name="driverId"
+                      value={values.driverId}
+                      onChange={handleChange}
+                      onBlur={handleBlur} 
+                    />
+                  </Grid> }
+                
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth size='small'
@@ -417,9 +435,7 @@ const DriverForm: React.FC = () => {
                       name="driverName"
                       value={values.driverName}
                       onChange={handleChange}
-                      onBlur={handleBlur}
-                      error={touched.driverName && Boolean(errors.driverName)}
-                      helperText={touched.driverName && errors.driverName}
+                      onBlur={handleBlur} 
                     />
                   </Grid>
                   <Grid item xs={12} sm={6} md={2.4}>
@@ -658,6 +674,7 @@ const DriverForm: React.FC = () => {
                     onClick={() => {
                       setFormInitialValues(initialDriverValues);
                       setUpdateRecord(false)
+                      resetForm()
                     }}
                     style={{ marginLeft: "10px" }}>Reset
                   </Button>

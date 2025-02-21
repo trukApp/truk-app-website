@@ -328,7 +328,8 @@ const DeviceMaster: React.FC = () => {
           <form onSubmit={formik.handleSubmit}>
             <Grid container spacing={2}>
               {/* Device ID */}
-              <Grid item xs={12} sm={6} md={2.4}  >
+              {isEditing &&  
+                 <Grid item xs={12} sm={6} md={2.4}  >
                 <TextField
                   fullWidth size='small'
                   id="deviceId"
@@ -339,7 +340,8 @@ const DeviceMaster: React.FC = () => {
                   onBlur={formik.handleBlur}
                   disabled
                 />
-              </Grid>
+              </Grid>}
+            
 
               {/* Device Type */}
               <Grid item xs={12} sm={6} md={2.4}>

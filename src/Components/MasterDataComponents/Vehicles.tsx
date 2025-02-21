@@ -218,9 +218,9 @@ const validationSchema = Yup.object({
 	// doorWidth: Yup.number(),
 	// doorHeight: Yup.number(),
 	// doorLength: Yup.number(),
-	// avgCost: Yup.number()
-	// 	.typeError("Average cost must be a number")
-	// 	.required("Average cost of transportation is required"),
+	avgCost: Yup.number()
+		.typeError("Average cost must be a number")
+		.required("Average cost of transportation is required"),
 	// downtimeStart: Yup.string().required("Downtime Start is required"),
 	// downtimeEnd: Yup.string().required("Downtime End is required"),
 	// downtimeLocation: Yup.string().required("Downtime Location is required"),
@@ -320,7 +320,8 @@ const VehicleForm: React.FC = () => {
 
 	const [initialValues, setInitialValues] = useState(initialFormValues);
 	useEffect(() => {
-		if (editRow) {
+		if (editRow) { 
+			console.log('edit row :', editRow)
 			const editPayloadWeight = editRow.payloadWeight.split(" ");
 			const editCubicCapacity = editRow?.cubicCapacity.split(" ");
 			const editInteriorLength = editRow.interiorLength.split(" ");
@@ -596,7 +597,9 @@ const VehicleForm: React.FC = () => {
 					cost_per_ton: values.avgCost,
 				},
 			};
+
 			if (isEditing && editRow) {
+				console.log('qwerty')
 				const vehicleId = editRow.id;
 				const response = await editVehicle({
 					body: editBody,
@@ -752,6 +755,7 @@ const VehicleForm: React.FC = () => {
 											1. General Data
 										</Typography>
 										<Grid container spacing={2}>
+											{isEditing && 
 											<Grid item xs={12} sm={6} md={2.4}>
 												<TextField
 													fullWidth
@@ -763,7 +767,8 @@ const VehicleForm: React.FC = () => {
 													size="small"
 													disabled
 												/>
-											</Grid>
+											</Grid>}
+									
 											<Grid item xs={12} sm={6} md={2.4}>
 												<FormControl fullWidth size="small" error={touched.locationId && Boolean(errors.locationId)}>
 													<InputLabel>Location ID</InputLabel>
@@ -886,7 +891,7 @@ const VehicleForm: React.FC = () => {
 											2. Transportation Details
 										</Typography>
 										<Grid container spacing={2}>
-											<Grid item xs={12} sm={6} md={2.4}>
+											{/* <Grid item xs={12} sm={6} md={2.4}>
 												<TextField
 													fullWidth
 													size="small"
@@ -924,8 +929,30 @@ const VehicleForm: React.FC = () => {
 													}
 													InputLabelProps={{ shrink: true }}
 												/>
-											</Grid>
+											</Grid> */}
 											<Grid item xs={12} sm={6} md={2.4}>
+												<TextField
+													fullWidth
+													size="small"
+													label="Validity From"
+													name="validityFrom"
+													type="date"
+													value={
+														values.validityFrom
+													}
+													onChange={handleChange}
+													onBlur={handleBlur}
+													error={
+														touched.validityFrom &&
+														Boolean(errors.validityFrom)
+													}
+													helperText={
+														touched.validityFrom && errors.validityFrom
+													}
+													InputLabelProps={{ shrink: true }}
+												/>
+											</Grid>
+											{/* <Grid item xs={12} sm={6} md={2.4}>
 												<TextField
 													fullWidth
 													size="small"
@@ -953,6 +980,29 @@ const VehicleForm: React.FC = () => {
 															},
 														});
 													}}
+													onBlur={handleBlur}
+													error={
+														touched.validityTo &&
+														Boolean(errors.validityTo)
+													}
+													helperText={
+														touched.validityTo && errors.validityTo
+													}
+													InputLabelProps={{ shrink: true }}
+												/>
+											</Grid> */}
+											<Grid item xs={12} sm={6} md={2.4}>
+												<TextField
+													fullWidth
+													size="small"
+													label="Validity To"
+													name="validityTo"
+													type="date"
+													value={
+														values.validityTo
+
+													}
+													onChange={handleChange}
 													onBlur={handleBlur}
 													error={
 														touched.validityTo &&
@@ -1443,25 +1493,9 @@ const VehicleForm: React.FC = () => {
 													type="date"
 													value={
 														values.downtimeStart
-															? values.downtimeStart
-																.split("-")
-																.reverse()
-																.join("-")
-															: ""
+
 													}
-													onChange={(e) => {
-														const selectedDate = e.target.value;
-														const formattedDate = selectedDate
-															.split("-")
-															.reverse()
-															.join("-");
-														handleChange({
-															target: {
-																name: "downtimeStart",
-																value: formattedDate,
-															},
-														});
-													}}
+													onChange={handleChange}
 													onBlur={handleBlur}
 													InputLabelProps={{ shrink: true }}
 												/>
@@ -1476,25 +1510,9 @@ const VehicleForm: React.FC = () => {
 													type="date"
 													value={
 														values.downtimeEnd
-															? values.downtimeEnd
-																.split("-")
-																.reverse()
-																.join("-")
-															: ""
+
 													}
-													onChange={(e) => {
-														const selectedDate = e.target.value;
-														const formattedDate = selectedDate
-															.split("-")
-															.reverse()
-															.join("-");
-														handleChange({
-															target: {
-																name: "downtimeEnd",
-																value: formattedDate,
-															},
-														});
-													}}
+													onChange={handleChange}
 													onBlur={handleBlur}
 													InputLabelProps={{ shrink: true }}
 												/>
@@ -1559,6 +1577,8 @@ const VehicleForm: React.FC = () => {
 													onChange={handleChange}
 													onBlur={handleBlur}
 													size="small"
+													error={touched.avgCost && Boolean(errors.avgCost)}
+													helperText={touched.avgCost && errors.avgCost}
 												/>
 											</Grid>
 										</Grid>

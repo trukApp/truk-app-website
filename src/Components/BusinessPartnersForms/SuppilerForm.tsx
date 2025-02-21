@@ -28,6 +28,7 @@ interface Correspondence {
     email: string;
 }
 export interface Customer {
+    supplierID: string;
     location_country: string;
     location_city: string;
     location_state: string;
@@ -49,7 +50,7 @@ export interface Customer {
 }
 
 const initialSupplierValues = {
-    // supplierId: '',
+    supplierID: '',
     name: '',
     locationId: '',
     pincode: '',
@@ -110,6 +111,7 @@ const SupplierForm: React.FC = () => {
         setPaginationModel(newPaginationModel);
     };
     const mapRowToInitialValues = (rowData: Customer) => ({
+        supplierID:rowData.supplierID || '',
         name: rowData.name || '',
         locationId: rowData.loc_ID || '',
         pincode: rowData.location_pincode || '',
@@ -380,10 +382,22 @@ const SupplierForm: React.FC = () => {
                         onSubmit={handleSupplierSubmit}
                         enableReinitialize={true}
                     >
-                        {({ values, handleChange, handleBlur, errors, touched, setFieldValue }) => (
+                        {({ values, handleChange, handleBlur, errors, touched, setFieldValue,resetForm }) => (
                             <Form>
                                 <h3 className={styles.mainHeading}>General Data</h3>
                                 <Grid container spacing={2}>
+                                  {updateRecord && 
+                                    <Grid item xs={12} sm={6} md={2.4}>
+                                        <TextField
+                                            fullWidth size='small' disabled
+                                            label="Supplier ID"
+                                            name="supplierID"
+                                            value={values.supplierID}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur} 
+                                        />
+                                        </Grid>
+                                    }
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
@@ -660,6 +674,7 @@ const SupplierForm: React.FC = () => {
                                         onClick={() => {
                                             setFormInitialValues(initialSupplierValues)
                                             setUpdateRecord(false)
+                                            resetForm()
                                         }}
                                         style={{ marginLeft: "10px" }}>Reset
                                     </Button>

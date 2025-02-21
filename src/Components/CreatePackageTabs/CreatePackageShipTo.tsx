@@ -63,10 +63,8 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
     );
 
     console.log("getDefaultLocationId: ", defaultLocationData)
-
-
     const shipFromInitialValues = {
-        locationId: defaultLocationData?.loc_ID || '',
+        locationId: shipToReduxValues?.locationId || defaultLocationData?.loc_ID || '',
         locationDescription: shipToReduxValues?.locationDescription || defaultLocationData?.loc_desc || '',
         contactPerson: shipToReduxValues?.contactPerson || defaultLocationData?.contact_name || '',
         phoneNumber: shipToReduxValues?.phoneNumber || defaultLocationData?.contact_phone_number || '',
@@ -221,8 +219,8 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                 >
                     {({ values, touched, errors, handleSubmit, setFieldValue, handleBlur }) => (
                         <Form  >
-                            <Typography variant="h6" sx={{ fontWeight: 'bold', textAlign: 'center', marginTop: 3 }}>Ship to Details</Typography>
-                            <Grid item xs={12} sx={{ display: 'flex', flexDirection: "row", gap: '20px' }}>
+                            <Typography variant="h6"  sx={{ fontWeight: 'bold', textAlign: 'center', marginTop: 3 }}>Ship to Details</Typography>
+                            <Grid item xs={12} sx={{ display: 'flex', flexDirection: { md: "row", xs: "column" }, gap: {md:'20px', xs:'2px' },marginLeft:"15px"} }>
                                 <FormControlLabel
                                     control={<Field name="saveAsDefaultShipFromLocation" type="checkbox" as={Checkbox} />}
                                     label="Save as default Ship To Location"
@@ -379,7 +377,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} md={2.4}>
                                         <Field
-                                            name="addressLine1"
+                                            name="addressLine1" disabled
                                             as={TextField}
                                             label="Address Line 1*"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
@@ -446,7 +444,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                     <Grid item xs={12} md={2.4}>
                                         <Field
                                             name="contactPerson"
-                                            as={TextField}
+                                            as={TextField} disabled
                                             label="Contact Person*"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
 
@@ -456,7 +454,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                     </Grid>
                                     <Grid item xs={12} md={2.4}>
                                         <Field
-                                            name="phoneNumber"
+                                            name="phoneNumber" disabled
                                             as={TextField}
                                             inputProps={{
                                                 maxLength: 10,
@@ -471,7 +469,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                     </Grid>
                                     <Grid item xs={12} md={2.4}>
                                         <Field
-                                            name="email"
+                                            name="email" disabled
                                             as={TextField}
                                             label="Email Address*"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth

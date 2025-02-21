@@ -430,13 +430,14 @@ const CarrierForm: React.FC = () => {
                         validationSchema={carrierValidationSchema}
                         onSubmit={handleCarrierSubmit}
                     >
-                        {({ values, handleChange, handleBlur, errors, touched,
+                        {({ values, handleChange, handleBlur, errors, touched, resetForm ,
                             setFieldValue
                         }) => (
                             <Form>
                                 <h3 className={styles.mainHeading}>General Data</h3>
                                 <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6} md={4}>
+                                    {isEditing && 
+                                        <Grid item xs={12} sm={6} md={4}>
                                         <TextField disabled
                                             fullWidth size="small"
                                             label="Carrier ID"
@@ -444,10 +445,9 @@ const CarrierForm: React.FC = () => {
                                             value={values.carrierId}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
-                                            error={touched.carrierId && Boolean(errors.carrierId)}
-                                            helperText={touched.carrierId && errors.carrierId}
                                         />
-                                    </Grid>
+                                    </Grid>}
+                              
                                     <Grid item xs={12} sm={6} md={4}>
                                         <TextField
                                             fullWidth size="small"
@@ -715,6 +715,7 @@ const CarrierForm: React.FC = () => {
                                         onClick={() => {
                                             setInitialValues(initialCarrierValues)
                                             setIsEditing(false)
+                                            resetForm()
                                         }}
                                         style={{ marginLeft: "10px" }}>Reset
                                     </Button>

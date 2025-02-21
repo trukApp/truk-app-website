@@ -82,10 +82,9 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
             {({ touched, errors, setFieldValue }) => (
                 <Form>
                     <Typography variant="h6" sx={{fontWeight:'bold', textAlign:'center' , marginTop:3}}>Additional Details</Typography>
-                    <Grid>
-                        {/* <h3 className={styles.mainHeading}>Additional Information</h3> */}
+                    <Grid  className={styles.formsBgContainer}>
                         <Typography variant='h6' sx={{ fontWeight:600}}>Additional information</Typography>
-                        <Grid container spacing={2} className={styles.formsBgContainer}>
+                        <Grid container spacing={2}>
                             <Grid item xs={12} md={2.4}>
                                 <Field
                                     as={TextField}
@@ -162,9 +161,18 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
                                                 InputProps={{
                                                     readOnly: true,
                                                     endAdornment: (
-                                                        <Button sx={{ alignSelf: 'flex-end' }}
+                                                        <Button  
                                                             variant="contained"
                                                             component="label"
+                                                                                        sx={{
+                                minWidth: "auto", 
+                                padding: "6px 12px",  
+                                margin: 0, // Removes unwanted margin
+                                height: '100%', // Makes sure button aligns with TextField height
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
                                                         >
                                                             Browse
                                                             <input

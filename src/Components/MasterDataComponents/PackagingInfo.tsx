@@ -262,8 +262,8 @@ const PackagingForm = () => {
             </Typography>
             <Grid container spacing={2}  >
 
-              {/* Auto-Generated ID (Read-only) */}
-              <Grid item xs={2.4}>
+              {isEditing &&
+                <Grid item xs={12} md={2.4}>
                 <TextField
                   fullWidth disabled
                   id="packagingTypeId"
@@ -274,10 +274,11 @@ const PackagingForm = () => {
                   InputProps={{ readOnly: true }}
                   size="small"
                 />
-              </Grid>
+              </Grid> }
+
 
               {/* Packaging Type Name */}
-              <Grid item xs={2.4}>
+              <Grid item xs={12} md={2.4}>
                 <TextField
                   fullWidth
                   id="packagingTypeName"
@@ -293,7 +294,7 @@ const PackagingForm = () => {
 
 
               {/* Packaging Dimensions */}
-              <Grid item xs={2.4}>
+              <Grid item xs={12} md={2.4}>
                 <TextField
                   fullWidth
                   id="packagingDimensions"
@@ -310,7 +311,7 @@ const PackagingForm = () => {
 
 
               {/* Packaging Dimensions UoM */}
-              <Grid item xs={2.4}>
+              <Grid item xs={12} md={2.4}>
                 {/* <TextField
                   fullWidth
                   id="packagingDimensionsUoM"
@@ -343,7 +344,7 @@ const PackagingForm = () => {
               </Grid>
 
               {/* Handling Unit Type Dropdown */}
-              <Grid item xs={2.4}>
+              <Grid item xs={12} md={2.4}>
                 <FormControl fullWidth size="small">
                   <InputLabel id="handlingUnitType-label">Handling Unit Type</InputLabel>
                   <Select
