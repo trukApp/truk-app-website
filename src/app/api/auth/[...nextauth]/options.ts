@@ -25,8 +25,8 @@ const refreshAccessToken = async (refreshToken: string) => {
   console.log('token to refresh the accessToken :', refreshToken)
   try {
     const response = await fetch(
-      // `https://dev-api.trukapp.com/truk/log/refresh-token`,
-       `http://192.168.10.40:8088/truk/log/refresh-token`,    // teja ofc
+      `https://dev-api.trukapp.com/truk/log/refresh-token`,
+      //  `http://192.168.10.40:8088/truk/log/refresh-token`,    // teja ofc
       {
         method: "POST",
         headers: {
@@ -82,8 +82,8 @@ export const options: NextAuthOptions = {
 
         try {
           const response = await fetch(
-            // `https://dev-api.trukapp.com/truk/log/login`,
-            `http://192.168.10.40:8088/truk/log/login`,    // teja ofc
+            `https://dev-api.trukapp.com/truk/log/login`,
+            // `http://192.168.10.40:8088/truk/log/login`,    // teja ofc
             {
               method: "POST",
               headers: {
