@@ -25,7 +25,8 @@ const refreshAccessToken = async (refreshToken: string) => {
   console.log('token to refresh the accessToken :', refreshToken)
   try {
     const response = await fetch(
-      `https://dev-api.trukapp.com/truk/log/refresh-token`,
+      // `https://dev-api.trukapp.com/truk/log/refresh-token`,
+       `http://192.168.10.40:8088/truk/log/refresh-token`,    // teja ofc
       {
         method: "POST",
         headers: {
@@ -81,7 +82,8 @@ export const options: NextAuthOptions = {
 
         try {
           const response = await fetch(
-            `https://dev-api.trukapp.com/truk/log/login`,
+            // `https://dev-api.trukapp.com/truk/log/login`,
+            `http://192.168.10.40:8088/truk/log/login`,    // teja ofc
             {
               method: "POST",
               headers: {
@@ -96,6 +98,9 @@ export const options: NextAuthOptions = {
           console.log("login response :", response)
           if (response.status === 404) {
               throw new Error("You dont have an account to login");
+          }
+          else if (response.status === 500) {
+            throw new Error("Internal server occured , try after sometime...");
           }
           const user = await response.json();
           console.log("user is :", user)
