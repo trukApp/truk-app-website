@@ -29,7 +29,7 @@ const CreatePackage = () => {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error' | 'warning' | 'info'>("success");
-    const [activeStep, setActiveStep] = useState(0);
+    const [activeStep, setActiveStep] = useState(1);
     const packageTaxFromRedux = useAppSelector((state) => state.auth.packageTax)
     const packageAddtionalInfoFromRedux = useAppSelector((state) => state.auth.packageAdditionalInfo);
     const billToReduxValues = useAppSelector((state) => state.auth.packageBillTo);

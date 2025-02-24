@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import { Formik, Form, Field, FormikProps } from 'formik';
-import { Grid, TextField, Checkbox, FormControlLabel, FormControl, InputLabel, Select, MenuItem, Tooltip, FormHelperText, SelectChangeEvent, Backdrop, CircularProgress, Typography } from '@mui/material';
+import {
+    Grid, TextField, Checkbox, FormControlLabel,Tooltip,
+ Backdrop, CircularProgress, Typography,
+    Paper,
+    List,
+    ListItem
+} from '@mui/material';
 import * as Yup from 'yup';
 import styles from './CreatePackage.module.css';
 import { useAppDispatch, useAppSelector } from '@/store';
@@ -8,7 +14,7 @@ import {
     // setCompletedState,
     setPackageShipTo
 } from '@/store/authSlice';
-import { useGetLocationMasterQuery, usePostLocationMasterMutation, useUpdateShipToDefaultLocationIdMutation } from '@/api/apiSlice';
+import { useGetFilteredLocationsQuery, useGetLocationMasterQuery, usePostLocationMasterMutation, useUpdateShipToDefaultLocationIdMutation } from '@/api/apiSlice';
 import { Location } from '../MasterDataComponents/Locations';
 import { IShipFrom } from './CreatePackageShipFrom';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
@@ -57,7 +63,12 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
     const [postLocation, { isLoading: postLocationLoading }] = usePostLocationMasterMutation({})
     const shipToReduxValues = useAppSelector((state) => state.auth.packageShipTo)
     const shipFromReduxValues = useAppSelector((state) => state.auth.packageShipFrom)
-
+    const [searchKey, setSearchKey] = useState('');
+    const [showSuggestions, setShowSuggestions] = useState(false); 
+    const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey);
+    const displayLocations = searchKey ? filteredLocations?.results || [] : allLocations;
+    console.log('display locs :', displayLocations)
+    
     const getAllLocations = allLocations.filter(
         (location: Location) => location.loc_ID !== shipFromReduxValues?.locationId
     );
@@ -87,50 +98,56 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
 
     console.log("getLocationsError: ", getLocationsError)
 
-    const handleLocationChange = (event: SelectChangeEvent<string>,setFieldValue: FormikProps<IShipFrom>['setFieldValue']) => {
-        const selectedLocationId = event.target.value;
-        setFieldValue('locationId', selectedLocationId);
+const handleLocationChange = (
+  selectedLocationId: string,
+  setFieldValue: FormikProps<IShipFrom>['setFieldValue']
+) => {
+  setFieldValue("locationId", selectedLocationId);
 
-        const selectedLocation = getAllLocations.find((loc: Location) => loc?.loc_ID === selectedLocationId);
+  const selectedLocation = getAllLocations.find(
+    (loc: Location) => loc?.loc_ID === selectedLocationId
+  );
 
-        if (selectedLocation) {
-            setFieldValue('locationDescription', selectedLocation.loc_desc || '');
-            setFieldValue('addressLine1', selectedLocation.address_1 || '');
-            setFieldValue('addressLine2', selectedLocation.address_2 || '');
-            setFieldValue('city', selectedLocation.city || '');
-            setFieldValue('state', selectedLocation.state || '');
-            setFieldValue('country', selectedLocation.country || '');
-            setFieldValue('pincode', selectedLocation.pincode || '');
-            setFieldValue('latitude', selectedLocation.latitude || '');
-            setFieldValue('longitude', selectedLocation.longitude || '');
-            setFieldValue('timeZone', selectedLocation.time_zone || '');
-            setFieldValue('locationType', selectedLocation.loc_type || '');
-            setFieldValue('glnCode', selectedLocation.gln_code || '');
-            setFieldValue('iataCode', selectedLocation.iata_code || '');
-            setFieldValue('contactPerson', selectedLocation.contact_name || '');
-            setFieldValue('phoneNumber', selectedLocation.contact_phone_number || '');
-            setFieldValue('email', selectedLocation.contact_email || '');
-            setFieldValue('saveAsDefaultShipFromLocation', selectedLocation.def_ship_from || false);
-        } else {
-            setFieldValue('locationDescription', '');
-            setFieldValue('addressLine1', '');
-            setFieldValue('addressLine2', '');
-            setFieldValue('locationId', '');
-            setFieldValue('city', '');
-            setFieldValue('state', '');
-            setFieldValue('country', '');
-            setFieldValue('pincode', '');
-            setFieldValue('latitude', '');
-            setFieldValue('longitude', '');
-            setFieldValue('timeZone', '');
-            setFieldValue('locationType', '');
-            setFieldValue('glnCode', '');
-            setFieldValue('iataCode', '');
-            setFieldValue('contactPerson', '');
-            setFieldValue('phoneNumber', '');
-            setFieldValue('email', '');
-        }
-    };
+  if (selectedLocation) {
+    setFieldValue("locationDescription", selectedLocation.loc_desc || "");
+    setFieldValue("addressLine1", selectedLocation.address_1 || "");
+    setFieldValue("addressLine2", selectedLocation.address_2 || "");
+    setFieldValue("city", selectedLocation.city || "");
+    setFieldValue("state", selectedLocation.state || "");
+    setFieldValue("country", selectedLocation.country || "");
+    setFieldValue("pincode", selectedLocation.pincode || "");
+    setFieldValue("latitude", selectedLocation.latitude || "");
+    setFieldValue("longitude", selectedLocation.longitude || "");
+    setFieldValue("timeZone", selectedLocation.time_zone || "");
+    setFieldValue("locationType", selectedLocation.loc_type || "");
+    setFieldValue("glnCode", selectedLocation.gln_code || "");
+    setFieldValue("iataCode", selectedLocation.iata_code || "");
+    setFieldValue("contactPerson", selectedLocation.contact_name || "");
+    setFieldValue("phoneNumber", selectedLocation.contact_phone_number || "");
+    setFieldValue("email", selectedLocation.contact_email || "");
+    setFieldValue("saveAsDefaultShipFromLocation", selectedLocation.def_ship_from || false);
+  } else {
+    // Reset values if location is not found
+    setFieldValue("locationId", "");
+    setFieldValue("locationDescription", "");
+    setFieldValue("addressLine1", "");
+    setFieldValue("addressLine2", "");
+    setFieldValue("city", "");
+    setFieldValue("state", "");
+    setFieldValue("country", "");
+    setFieldValue("pincode", "");
+    setFieldValue("latitude", "");
+    setFieldValue("longitude", "");
+    setFieldValue("timeZone", "");
+    setFieldValue("locationType", "");
+    setFieldValue("glnCode", "");
+    setFieldValue("iataCode", "");
+    setFieldValue("contactPerson", "");
+    setFieldValue("phoneNumber", "");
+    setFieldValue("email", "");
+  }
+};
+
 
     const handleDefaultLocationChange = async (locId: string, defaultValue: number | boolean) => {
         try {
@@ -263,40 +280,132 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                 <h3 className={styles.mainHeading}>Location Details</h3>
                                 <Grid container spacing={2}>
                                     {!values.saveAsNewLocationId && (
-                                        <Grid item xs={12} sm={6} md={2.4}>
-                                            <FormControl fullWidth size='small' error={touched?.locationId && Boolean(errors?.locationId)}>
-                                                <InputLabel shrink>Location ID</InputLabel>
-                                                <Select
-                                                    label="Location ID*"
-                                                    displayEmpty
-                                                    name="locationId"
-                                                    value={values?.locationId}
-                                                    onChange={(event) => handleLocationChange(event, setFieldValue)}
-                                                    onBlur={handleBlur}
-                                                >
-                                                    {isLocationLoading ? (
-                                                        <MenuItem disabled>
-                                                            <CircularProgress size={20} color="inherit" />
-                                                            <span style={{ marginLeft: "10px" }}>Loading...</span>
-                                                        </MenuItem>
-                                                    ) : (
-                                                        getAllLocations?.map((location: Location) => (
-                                                            <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                                                                <Tooltip
-                                                                    title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                                                    placement="right"
-                                                                >
-                                                                    <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                                                                </Tooltip>
-                                                            </MenuItem>
-                                                        ))
-                                                    )}
-                                                </Select>
-                                                {touched?.locationId && errors?.locationId && (
-                                                    // <FormHelperText>{errors?.locationId}</FormHelperText>
-                                                    <FormHelperText error>{typeof errors.locationId === "string" ? errors.locationId : ""}</FormHelperText>
-                                                )}
-                                            </FormControl> </Grid>
+//                                     <Grid item xs={12} sm={6} md={2.4}>
+//   <TextField
+//     fullWidth name="locationId"
+//     size="small"
+//     label="Search Location ID"
+//     onFocus={() => {
+//       if (!searchKey) {
+//         setSearchKey("");
+//       }
+//     }}
+//     onChange={(e) => setSearchKey(e.target.value)}
+//     onBlur={handleBlur}
+//     value={searchKey}
+//     error={touched?.locationId && Boolean(errors?.locationId)}
+//     helperText={
+//       touched?.locationId && typeof errors?.locationId === "string"
+//         ? errors.locationId
+//         : ""
+//     }
+//     InputProps={{
+//       endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
+//     }}
+//   />
+
+  
+//   {displayLocations?.length > 0 && (
+//     <Paper
+//       style={{
+//         maxHeight: 200,
+//         overflowY: "auto",
+//         position: "absolute",
+//         zIndex: 10,
+//        width:'18%'
+//       }}
+//     >
+//       <List>
+//         {displayLocations.map((location: Location) => (
+//           <ListItem
+//             key={location.loc_ID}
+//             component="li"
+//             onClick={() => {
+//               handleLocationChange(location.loc_ID, setFieldValue);
+//               setSearchKey(""); // Clear search on selection
+//             }}
+//             sx={{ cursor: "pointer" }}
+//           >
+//             <Tooltip
+//               title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+//               placement="right"
+//             >
+//               <span>{location.loc_ID}</span>
+//             </Tooltip>
+//           </ListItem>
+//         ))}
+//       </List>
+//     </Paper>
+//   )}
+                                            //                                     </Grid>
+                                            <Grid item xs={12} sm={6} md={2.4}>
+  <TextField
+    fullWidth
+    name="locationId"
+    size="small"
+    label="Search Location ID"
+    onFocus={() => {
+      if (!searchKey) {
+          setSearchKey(values?.locationId || ""); // Show selected location ID when focused
+          setShowSuggestions(true); 
+      }
+    }}
+        onChange={(e) => {
+            setSearchKey(e.target.value)
+            setShowSuggestions(true)} 
+    }
+    onBlur={handleBlur}
+    value={searchKey || values.locationId} // Display the selected location ID
+    error={touched?.locationId && Boolean(errors?.locationId)}
+    helperText={
+      touched?.locationId && typeof errors?.locationId === "string"
+        ? errors.locationId
+        : ""
+    }
+    InputProps={{
+      endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
+    }}
+  />
+
+  {/* Show search results dynamically */}
+  { showSuggestions &&  displayLocations?.length > 0 && (
+    <Paper
+      style={{
+        maxHeight: 200,
+        overflowY: "auto",
+        position: "absolute",
+        zIndex: 10,
+        width: "18%",
+      }}
+    >
+      <List>
+        {displayLocations.map((location: Location) => (
+          <ListItem
+            key={location.loc_ID}
+            component="li"
+            onClick={() => {
+              setSearchKey(location.loc_ID); // Update TextField value
+              setFieldValue("locationId", location.loc_ID); // Update Formik field
+              handleLocationChange(location.loc_ID, setFieldValue);
+            }}
+            sx={{ cursor: "pointer" }}
+          >
+            <Tooltip
+              title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+              placement="right"
+            >
+              <span>{location.loc_ID}</span>
+            </Tooltip>
+          </ListItem>
+        ))}
+      </List>
+    </Paper>
+  )}
+</Grid>
+
+
+
+                                            
                                     )}
 
                                     <Grid item xs={12} md={2.4}>
