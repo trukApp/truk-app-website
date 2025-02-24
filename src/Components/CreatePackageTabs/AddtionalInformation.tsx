@@ -81,9 +81,9 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
         >
             {({ touched, errors, setFieldValue }) => (
                 <Form>
-                    <Typography variant="h6" sx={{fontWeight:'bold', textAlign:'center' , marginTop:3}}>Additional Details</Typography>
-                    <Grid  className={styles.formsBgContainer}>
-                        <Typography variant='h6' sx={{ fontWeight:600}}>Additional information</Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', textAlign: 'center', marginTop: 3 }}>Additional Details</Typography>
+                    <Grid className={styles.formsBgContainer}>
+                        <Typography variant='h6' sx={{ fontWeight: 600 }}>Additional information</Typography>
                         <Grid container spacing={2}>
                             <Grid item xs={12} md={2.4}>
                                 <Field
@@ -116,8 +116,8 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
                                     label="PO #"
                                     fullWidth
                                     size="small"
-                                    // error={touched.additionalInfo?.poNumber && Boolean(errors.additionalInfo?.poNumber)}
-                                    // helperText={touched.additionalInfo?.poNumber && errors.additionalInfo?.poNumber}
+                                // error={touched.additionalInfo?.poNumber && Boolean(errors.additionalInfo?.poNumber)}
+                                // helperText={touched.additionalInfo?.poNumber && errors.additionalInfo?.poNumber}
                                 />
                             </Grid>
 
@@ -128,8 +128,8 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
                                     label="Sales Order #"
                                     fullWidth
                                     size="small"
-                                    // error={touched.additionalInfo?.salesOrderNumber && Boolean(errors.additionalInfo?.salesOrderNumber)}
-                                    // helperText={touched.additionalInfo?.salesOrderNumber && errors.additionalInfo?.salesOrderNumber}
+                                // error={touched.additionalInfo?.salesOrderNumber && Boolean(errors.additionalInfo?.salesOrderNumber)}
+                                // helperText={touched.additionalInfo?.salesOrderNumber && errors.additionalInfo?.salesOrderNumber}
                                 />
                             </Grid>
 
@@ -140,8 +140,8 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
                                     label="Department"
                                     fullWidth
                                     size="small"
-                                    // error={touched.additionalInfo?.department && Boolean(errors.additionalInfo?.department)}
-                                    // helperText={touched.additionalInfo?.department && errors.additionalInfo?.department}
+                                // error={touched.additionalInfo?.department && Boolean(errors.additionalInfo?.department)}
+                                // helperText={touched.additionalInfo?.department && errors.additionalInfo?.department}
                                 />
                             </Grid>
 
@@ -161,18 +161,18 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
                                                 InputProps={{
                                                     readOnly: true,
                                                     endAdornment: (
-                                                        <Button  
+                                                        <Button
                                                             variant="contained"
                                                             component="label"
-                                                                                        sx={{
-                                minWidth: "auto", 
-                                padding: "6px 12px",  
-                                margin: 0, // Removes unwanted margin
-                                height: '100%', // Makes sure button aligns with TextField height
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                            }}
+                                                            sx={{
+                                                                minWidth: "auto",
+                                                                padding: "6px 12px",
+                                                                margin: 0, // Removes unwanted margin
+                                                                height: '100%', // Makes sure button aligns with TextField height
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                            }}
                                                         >
                                                             Browse
                                                             <input

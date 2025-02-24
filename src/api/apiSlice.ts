@@ -194,6 +194,15 @@ export const apiSlice = createApi({
       providesTags: [{ type: "LocationMaster", id: "LIST" }],
     }),
 
+    getFilteredLocations: builder.query({
+      query: (searchKey) => ({
+        url: `masLoc/search-locations`,
+        method: "GET",
+        params: { searchKey },
+      }),
+      providesTags: [{ type: "LocationMaster", id: "SEARCH" }],
+    }),
+
     postLocationMaster: builder.mutation({
       query: (body) => ({
         url: "masLoc/create-location",
@@ -605,4 +614,5 @@ export const {
   useUpdateShipFromDefaultLocationIdMutation,
   useUpdateShipToDefaultLocationIdMutation,
   useUpdateBillToDefaultLocationIdMutation,
+  useGetFilteredLocationsQuery,
 } = apiSlice;

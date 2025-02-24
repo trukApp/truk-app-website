@@ -10,7 +10,7 @@ import {
     // setCompletedState,
     setPackageShipFrom
 } from '@/store/authSlice';
-import { useGetLocationMasterQuery, usePostLocationMasterMutation, useUpdateShipFromDefaultLocationIdMutation } from '@/api/apiSlice';
+import { useGetFilteredLocationsQuery, useGetLocationMasterQuery, usePostLocationMasterMutation, useUpdateShipFromDefaultLocationIdMutation } from '@/api/apiSlice';
 import { Location } from '../MasterDataComponents/Locations';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 import { CustomButtonFilled } from '../ReusableComponents/ButtonsComponent';
@@ -43,10 +43,16 @@ export interface IShipFrom {
 
 const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
     const { data: locationsData, isLoading: isLocationLoading } = useGetLocationMasterQuery([])
+
+    const [searchKey, setSearchKey] = useState('');
+    const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey);
     const allLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
+
+    const displayLocations = searchKey ? filteredLocations?.results || [] : allLocations;
 
     const defaultLocationData = allLocations?.find((eachLocation: Location) =>
         eachLocation?.def_ship_from === 1)
+
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
@@ -175,6 +181,10 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
         }
     }
 
+    const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchKey(event.target.value);
+    };
+
     return (
         <Grid>
             <SnackbarAlert
@@ -247,7 +257,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                     {({ values, touched, errors, handleSubmit, setFieldValue, handleBlur }) => (
                         <Form >
                             <Typography variant="h6" sx={{ fontWeight: 'bold', textAlign: 'center', marginTop: 3 }}>Ship from Details</Typography>
-                         <Grid item xs={12} sx={{ display: 'flex', flexDirection: { md: "row", xs: "column" }, gap: {md:'20px', xs:'2px' },marginLeft:"15px"}}>
+                            <Grid item xs={12} sx={{ display: 'flex', flexDirection: { md: "row", xs: "column" }, gap: { md: '20px', xs: '2px' }, marginLeft: "15px" }}>
                                 <FormControlLabel
                                     control={<Field name="saveAsDefaultShipFromLocation" type="checkbox" as={Checkbox} />}
                                     label="Save as default Ship From Location"
@@ -326,8 +336,47 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                                                     <FormHelperText error>{typeof errors.locationId === "string" ? errors.locationId : ""}</FormHelperText>
 
                                                 )}
-                                            </FormControl> </Grid>
+                                            </FormControl>
+                                        </Grid>
                                     )}
+
+                                    <Grid item xs={12} sm={6} md={2.4}>
+                                        <FormControl size="small" fullWidth error={touched?.locationId && Boolean(errors?.locationId)}>
+                                            <InputLabel shrink>Location ID</InputLabel>
+                                            <TextField
+                                                size="small"
+                                                placeholder="Search Location..."
+                                                value={searchKey}
+                                                onChange={handleSearchChange}
+                                                fullWidth
+                                            />
+                                            <Select
+                                                displayEmpty
+                                                name="locationId"
+                                                value={values?.locationId}
+                                                onChange={(event) => handleLocationChange(event, setFieldValue)}
+                                                onBlur={handleBlur}
+                                            >
+                                                {filteredLocationLoading || isLocationLoading ? (
+                                                    <MenuItem disabled>
+                                                        <CircularProgress size={20} color="inherit" />
+                                                        <span style={{ marginLeft: "10px" }}>Loading...</span>
+                                                    </MenuItem>
+                                                ) : (
+                                                    displayLocations.map((location: Location) => (
+                                                        <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                                            <Tooltip title={`${location.address_1}, ${location.city}, ${location.state}`}>
+                                                                <span>{location.loc_ID}</span>
+                                                            </Tooltip>
+                                                        </MenuItem>
+                                                    ))
+                                                )}
+                                            </Select>
+                                            {touched?.locationId && errors?.locationId && (
+                                                <FormHelperText error>{errors.locationId as string}</FormHelperText>
+                                            )}
+                                        </FormControl>
+                                    </Grid>
 
                                     <Grid item xs={12} md={2.4}>
                                         <Field
@@ -559,3 +608,5 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
 };
 
 export default ShipFrom;
+
+
