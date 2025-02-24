@@ -19,6 +19,7 @@ import {
     IconButton,
     Tooltip,
     CircularProgress,
+    Backdrop,
 } from '@mui/material';
 import style from './productmaster.module.css';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
@@ -90,7 +91,6 @@ export interface Product {
     quantity: number;
     destination: string;
     volume_uom: string;
-
 }
 
 const ProductMasterPage = () => {
@@ -133,9 +133,9 @@ const ProductMasterPage = () => {
     const [showForm, setShowForm] = useState(false);
     const { data: locationsData, error: getLocationsError, isLoading: isLocationLoading } = useGetLocationMasterQuery({})
     const { data: packagesData, isLoading: isPackageLoading } = useGetPackageMasterQuery({})
-    const [createNewProduct] = useCreateProductMutation();
-    const [deleteProduct] = useDeleteProductMutation()
-    const [updateProductDetails] = useEditProductMutation();
+    const [createNewProduct, { isLoading: createLoading }] = useCreateProductMutation();
+    const [deleteProduct, { isLoading: deleteProductLoading }] = useDeleteProductMutation()
+    const [updateProductDetails, { isLoading: updateProductLoading }] = useEditProductMutation();
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
     const getAllPackages = packagesData?.packages.length > 0 ? packagesData?.packages : []
     const allProductsData = productsData?.products || [];
@@ -396,97 +396,107 @@ const ProductMasterPage = () => {
     };
 
     return (
-        <Grid sx={{ margin: { xs: "0px", md: "0px 30px" } }}>
-            <SnackbarAlert
-                open={snackbarOpen}
-                message={snackbarMessage}
-                severity={snackbarSeverity}
-                onClose={() => setSnackbarOpen(false)}
-            />
-            <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md: '24px' } }} align="center" gutterBottom>
-                Product master
-            </Typography>
-            <Box display="flex" justifyContent="flex-end" gap={2}>
-                <Button
-                    variant="contained"
-                    onClick={() => setShowForm((prev) => !prev)}
-                    className={style.createButton}
-                >
-                    Create Product
-                    {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 4 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 4 }} />}
-                </Button>
-                <MassUpload arrayKey='products' />
-            </Box>
+        <>
+            <Backdrop
+                sx={{
+                    color: "#fff",
+                    zIndex: (theme) => theme.zIndex.drawer + 1
+                }}
+                open={isLoading || createLoading || deleteProductLoading || updateProductLoading}>
+                <CircularProgress color="inherit" />
+            </Backdrop>
 
-            <Collapse in={showForm}>
-                <Box marginBottom={2} padding={2} border="1px solid #ccc" borderRadius={2}>
-                    <Formik
-                        initialValues={formInitialValues}
-                        validationSchema={validationSchema}
-                        onSubmit={handleSubmit}
-                        enableReinitialize={true}
+            <Grid sx={{ margin: { xs: "0px", md: "0px 30px" } }}>
+                <SnackbarAlert
+                    open={snackbarOpen}
+                    message={snackbarMessage}
+                    severity={snackbarSeverity}
+                    onClose={() => setSnackbarOpen(false)}
+                />
+                <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md: '24px' } }} align="center" gutterBottom>
+                    Product master
+                </Typography>
+                <Box display="flex" justifyContent="flex-end" gap={2}>
+                    <Button
+                        variant="contained"
+                        onClick={() => setShowForm((prev) => !prev)}
+                        className={style.createButton}
                     >
-                        {({ values, handleChange, handleBlur, errors, touched, setFieldValue, resetForm }) => (
-                            <Form>
-                                <Typography variant="h6" sx={{ fontWeight: 600, marginTop: 2 }} >
-                                    Basic data
-                                </Typography>
-                                <Grid container spacing={2}>
-                                    {updateRecord &&
+                        Create Product
+                        {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 4 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 4 }} />}
+                    </Button>
+                    <MassUpload arrayKey='products' />
+                </Box>
+
+                <Collapse in={showForm}>
+                    <Box marginBottom={2} padding={2} border="1px solid #ccc" borderRadius={2}>
+                        <Formik
+                            initialValues={formInitialValues}
+                            validationSchema={validationSchema}
+                            onSubmit={handleSubmit}
+                            enableReinitialize={true}
+                        >
+                            {({ values, handleChange, handleBlur, errors, touched, setFieldValue, resetForm }) => (
+                                <Form>
+                                    <Typography variant="h6" sx={{ fontWeight: 600, marginTop: 2 }} >
+                                        Basic data
+                                    </Typography>
+                                    <Grid container spacing={2}>
+                                        {updateRecord &&
+                                            <Grid item xs={12} sm={6} md={2.4} >
+                                                <TextField
+                                                    fullWidth size='small'
+                                                    label="Product ID" disabled
+                                                    name="productID"
+                                                    value={values.productID}
+                                                    onChange={handleChange}
+                                                    onBlur={handleBlur}
+                                                />
+                                            </Grid>}
                                         <Grid item xs={12} sm={6} md={2.4} >
                                             <TextField
                                                 fullWidth size='small'
-                                                label="Product ID" disabled
-                                                name="productID"
-                                                value={values.productID}
+                                                label="Product name*"
+                                                name="productName"
+                                                value={values.productName}
                                                 onChange={handleChange}
                                                 onBlur={handleBlur}
+                                                error={touched.productName && Boolean(errors.productName)}
+                                                helperText={touched.productName && errors.productName}
                                             />
-                                        </Grid>}
-                                    <Grid item xs={12} sm={6} md={2.4} >
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="Product name*"
-                                            name="productName"
-                                            value={values.productName}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.productName && Boolean(errors.productName)}
-                                            helperText={touched.productName && errors.productName}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} sm={6} md={2.4} >
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="Product Description*"
-                                            name="productDescription"
-                                            value={values.productDescription}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.productDescription && Boolean(errors.productDescription)}
-                                            helperText={touched.productDescription && errors.productDescription}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} sm={6} md={2.4}   >
-                                        <TextField
-                                            fullWidth size='small'
-                                            select
-                                            label="Basic Unit of Measure*"
-                                            name="basicUoM"
-                                            value={values.basicUoM}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.basicUoM && Boolean(errors.basicUoM)}
-                                            helperText={touched.basicUoM && errors.basicUoM}
-                                        >
-                                            {unitsofMeasurement.map((unit) => (
-                                                <MenuItem key={unit} value={unit}>
-                                                    {unit}
-                                                </MenuItem>
-                                            ))}
-                                        </TextField>
-                                    </Grid>
-                                    {/* <Grid item xs={12} sm={6} md={2.4} >
+                                        </Grid>
+                                        <Grid item xs={12} sm={6} md={2.4} >
+                                            <TextField
+                                                fullWidth size='small'
+                                                label="Product Description*"
+                                                name="productDescription"
+                                                value={values.productDescription}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                error={touched.productDescription && Boolean(errors.productDescription)}
+                                                helperText={touched.productDescription && errors.productDescription}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} sm={6} md={2.4}   >
+                                            <TextField
+                                                fullWidth size='small'
+                                                select
+                                                label="Basic Unit of Measure*"
+                                                name="basicUoM"
+                                                value={values.basicUoM}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                error={touched.basicUoM && Boolean(errors.basicUoM)}
+                                                helperText={touched.basicUoM && errors.basicUoM}
+                                            >
+                                                {unitsofMeasurement.map((unit) => (
+                                                    <MenuItem key={unit} value={unit}>
+                                                        {unit}
+                                                    </MenuItem>
+                                                ))}
+                                            </TextField>
+                                        </Grid>
+                                        {/* <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
                                             fullWidth size='small'
                                             label="Sales Unit of Measure*"
@@ -498,249 +508,249 @@ const ProductMasterPage = () => {
                                             helperText={touched.salesUoM && errors.salesUoM}
                                         />
                                     </Grid> */}
-                                    <Grid item xs={12} sm={6} md={2.4}   >
-                                        <TextField
-                                            fullWidth size='small'
-                                            select
-                                            label="Sales Unit of Measure*"
-                                            name="salesUoM"
-                                            value={values.salesUoM}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.salesUoM && Boolean(errors.salesUoM)}
-                                            helperText={touched.salesUoM && errors.salesUoM}
-                                        >
-                                            {unitsofMeasurement.map((unit) => (
-                                                <MenuItem key={unit} value={unit}>
-                                                    {unit}
-                                                </MenuItem>
-                                            ))}
-                                        </TextField>
-                                    </Grid>
-                                    <Grid item xs={12} sm={6} md={2.4}   >
-                                        <TextField
-                                            fullWidth size='small'
-                                            type='number'
-                                            label="Weight"
-                                            name="weightUoM"
-                                            value={values.weightUoM}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} sm={6} md={2.4}   >
-                                        <TextField
-                                            fullWidth size='small'
-                                            select
-                                            label="Weight Unit"
-                                            name="weightUnit"
-                                            value={values.weightUnit}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                        >
-                                            {unitsofMeasurement.map((unit) => (
-                                                <MenuItem key={unit} value={unit}>
-                                                    {unit}
-                                                </MenuItem>
-                                            ))}
-                                        </TextField>
-                                    </Grid>
-                                    <Grid item xs={12} sm={6} md={2.4}  >
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="Volume" type='number'
-                                            name="volumeUoM"
-                                            value={values.volumeUoM}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} sm={6} md={2.4}  >
-                                        <TextField
-                                            fullWidth size='small'
-                                            select
-                                            label="Volume Unit"
-                                            name="volumeUnit"
-                                            value={values.volumeUnit}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                        >
-                                            {unitsofMeasurement.map((unit) => (
-                                                <MenuItem key={unit} value={unit}>
-                                                    {unit}
-                                                </MenuItem>
-                                            ))}
-                                        </TextField>
-                                    </Grid>
-                                </Grid>
-
-                                <Typography variant="h6" sx={{ fontWeight: 600, marginTop: 2 }}>
-                                    Shelf life
-                                </Typography>
-
-                                <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6} md={2.4}>
-                                        <TextField
-                                            fullWidth
-                                            size="small"
-                                            label="Expiration Date"
-                                            name="expirationDate"
-                                            type="date"
-                                            value={
-                                                values.expirationDate
-                                                    ? values.expirationDate
-                                                        .split("-")
-                                                        .reverse()
-                                                        .join("-")
-                                                    : ""
-                                            }
-                                            onChange={(e) => {
-                                                const selectedDate = e.target.value;
-                                                const formattedDate = selectedDate
-                                                    .split("-")
-                                                    .reverse()
-                                                    .join("-");
-                                                handleChange({
-                                                    target: {
-                                                        name: "expirationDate",
-                                                        value: formattedDate,
-                                                    },
-                                                });
-                                            }}
-                                            onBlur={handleBlur}
-                                            error={
-                                                touched.expirationDate &&
-                                                Boolean(errors.expirationDate)
-                                            }
-                                            helperText={
-                                                touched.expirationDate && errors.expirationDate
-                                            }
-                                            InputLabelProps={{ shrink: true }}
-                                        />
-                                    </Grid>
-
-                                    <Grid item xs={12} sm={6} md={2.4}>
-                                        <TextField
-                                            fullWidth
-                                            size="small"
-                                            label="Best Before Date"
-                                            name="bestBeforeDate"
-                                            type="date"
-                                            value={
-                                                values.bestBeforeDate
-                                                    ? values.bestBeforeDate
-                                                        .split("-")
-                                                        .reverse()
-                                                        .join("-")
-                                                    : ""
-                                            }
-                                            onChange={(e) => {
-                                                const selectedDate = e.target.value;
-                                                const formattedDate = selectedDate
-                                                    .split("-")
-                                                    .reverse()
-                                                    .join("-");
-                                                handleChange({
-                                                    target: {
-                                                        name: "bestBeforeDate",
-                                                        value: formattedDate,
-                                                    },
-                                                });
-                                            }}
-                                            onBlur={handleBlur}
-                                            error={
-                                                touched.bestBeforeDate &&
-                                                Boolean(errors.bestBeforeDate)
-                                            }
-                                            helperText={
-                                                touched.bestBeforeDate && errors.bestBeforeDate
-                                            }
-                                            InputLabelProps={{ shrink: true }}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} sm={6} md={2.4} >
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="Stacking Factor"
-                                            name="stackingFactor"
-                                            value={values.stackingFactor}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                        />
-                                    </Grid>
-
-                                    <Grid item xs={12} sm={6} md={2.4} >
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="SKU Number"
-                                            name="skuNumber"
-                                            value={values.skuNumber}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                        />
-                                    </Grid>
-
-                                    <Grid item xs={12} sm={6} md={2.4} >
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="HSN Code"
-                                            name="hsncode"
-                                            value={values.hsncode}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                        />
-                                    </Grid>
-
-                                    <Grid item xs={12} sm={6} md={2.4} >
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="Documents"
-                                            name="Documents"
-                                            value={values.documents}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                        />
-                                    </Grid>
-                                </Grid>
-
-                                <Typography variant="h6" sx={{ fontWeight: 600, marginTop: 2 }}>
-                                    Location data
-                                </Typography>
-                                <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6} md={2.4}>
-                                        <FormControl fullWidth size="small" error={touched.locationId && Boolean(errors.locationId)}>
-                                            <InputLabel>Location of Source</InputLabel>
-                                            <Select
-                                                label="Location of Source"
-                                                name="locationOfSource"
-                                                value={values.locationId}
-                                                onChange={(e) => setFieldValue('locationId', e.target.value)}
+                                        <Grid item xs={12} sm={6} md={2.4}   >
+                                            <TextField
+                                                fullWidth size='small'
+                                                select
+                                                label="Sales Unit of Measure*"
+                                                name="salesUoM"
+                                                value={values.salesUoM}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                error={touched.salesUoM && Boolean(errors.salesUoM)}
+                                                helperText={touched.salesUoM && errors.salesUoM}
+                                            >
+                                                {unitsofMeasurement.map((unit) => (
+                                                    <MenuItem key={unit} value={unit}>
+                                                        {unit}
+                                                    </MenuItem>
+                                                ))}
+                                            </TextField>
+                                        </Grid>
+                                        <Grid item xs={12} sm={6} md={2.4}   >
+                                            <TextField
+                                                fullWidth size='small'
+                                                type='number'
+                                                label="Weight"
+                                                name="weightUoM"
+                                                value={values.weightUoM}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} sm={6} md={2.4}   >
+                                            <TextField
+                                                fullWidth size='small'
+                                                select
+                                                label="Weight Unit"
+                                                name="weightUnit"
+                                                value={values.weightUnit}
+                                                onChange={handleChange}
                                                 onBlur={handleBlur}
                                             >
-                                                {isLocationLoading ? (
-                                                    <MenuItem disabled>
-                                                        <CircularProgress size={20} color="inherit" />
-                                                        <span style={{ marginLeft: "10px" }}>Loading...</span>
+                                                {unitsofMeasurement.map((unit) => (
+                                                    <MenuItem key={unit} value={unit}>
+                                                        {unit}
                                                     </MenuItem>
-                                                ) : (
-                                                    getAllLocations?.map((location: Location) => (
-                                                        <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                                                            <Tooltip
-                                                                title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                                                placement="right"
-                                                            >
-                                                                <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                                                            </Tooltip>
-                                                        </MenuItem>
-                                                    ))
-                                                )}
-                                            </Select>
-                                            {touched.locationId && errors.locationId && (
-                                                <FormHelperText>{errors.locationId}</FormHelperText>
-                                            )}
-                                        </FormControl>
+                                                ))}
+                                            </TextField>
+                                        </Grid>
+                                        <Grid item xs={12} sm={6} md={2.4}  >
+                                            <TextField
+                                                fullWidth size='small'
+                                                label="Volume" type='number'
+                                                name="volumeUoM"
+                                                value={values.volumeUoM}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} sm={6} md={2.4}  >
+                                            <TextField
+                                                fullWidth size='small'
+                                                select
+                                                label="Volume Unit"
+                                                name="volumeUnit"
+                                                value={values.volumeUnit}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                            >
+                                                {unitsofMeasurement.map((unit) => (
+                                                    <MenuItem key={unit} value={unit}>
+                                                        {unit}
+                                                    </MenuItem>
+                                                ))}
+                                            </TextField>
+                                        </Grid>
                                     </Grid>
-                                    {/* <Grid item xs={12} sm={6} md={2.4} >
+
+                                    <Typography variant="h6" sx={{ fontWeight: 600, marginTop: 2 }}>
+                                        Shelf life
+                                    </Typography>
+
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={12} sm={6} md={2.4}>
+                                            <TextField
+                                                fullWidth
+                                                size="small"
+                                                label="Expiration Date"
+                                                name="expirationDate"
+                                                type="date"
+                                                value={
+                                                    values.expirationDate
+                                                        ? values.expirationDate
+                                                            .split("-")
+                                                            .reverse()
+                                                            .join("-")
+                                                        : ""
+                                                }
+                                                onChange={(e) => {
+                                                    const selectedDate = e.target.value;
+                                                    const formattedDate = selectedDate
+                                                        .split("-")
+                                                        .reverse()
+                                                        .join("-");
+                                                    handleChange({
+                                                        target: {
+                                                            name: "expirationDate",
+                                                            value: formattedDate,
+                                                        },
+                                                    });
+                                                }}
+                                                onBlur={handleBlur}
+                                                error={
+                                                    touched.expirationDate &&
+                                                    Boolean(errors.expirationDate)
+                                                }
+                                                helperText={
+                                                    touched.expirationDate && errors.expirationDate
+                                                }
+                                                InputLabelProps={{ shrink: true }}
+                                            />
+                                        </Grid>
+
+                                        <Grid item xs={12} sm={6} md={2.4}>
+                                            <TextField
+                                                fullWidth
+                                                size="small"
+                                                label="Best Before Date"
+                                                name="bestBeforeDate"
+                                                type="date"
+                                                value={
+                                                    values.bestBeforeDate
+                                                        ? values.bestBeforeDate
+                                                            .split("-")
+                                                            .reverse()
+                                                            .join("-")
+                                                        : ""
+                                                }
+                                                onChange={(e) => {
+                                                    const selectedDate = e.target.value;
+                                                    const formattedDate = selectedDate
+                                                        .split("-")
+                                                        .reverse()
+                                                        .join("-");
+                                                    handleChange({
+                                                        target: {
+                                                            name: "bestBeforeDate",
+                                                            value: formattedDate,
+                                                        },
+                                                    });
+                                                }}
+                                                onBlur={handleBlur}
+                                                error={
+                                                    touched.bestBeforeDate &&
+                                                    Boolean(errors.bestBeforeDate)
+                                                }
+                                                helperText={
+                                                    touched.bestBeforeDate && errors.bestBeforeDate
+                                                }
+                                                InputLabelProps={{ shrink: true }}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} sm={6} md={2.4} >
+                                            <TextField
+                                                fullWidth size='small'
+                                                label="Stacking Factor"
+                                                name="stackingFactor"
+                                                value={values.stackingFactor}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                            />
+                                        </Grid>
+
+                                        <Grid item xs={12} sm={6} md={2.4} >
+                                            <TextField
+                                                fullWidth size='small'
+                                                label="SKU Number"
+                                                name="skuNumber"
+                                                value={values.skuNumber}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                            />
+                                        </Grid>
+
+                                        <Grid item xs={12} sm={6} md={2.4} >
+                                            <TextField
+                                                fullWidth size='small'
+                                                label="HSN Code"
+                                                name="hsncode"
+                                                value={values.hsncode}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                            />
+                                        </Grid>
+
+                                        <Grid item xs={12} sm={6} md={2.4} >
+                                            <TextField
+                                                fullWidth size='small'
+                                                label="Documents"
+                                                name="Documents"
+                                                value={values.documents}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                            />
+                                        </Grid>
+                                    </Grid>
+
+                                    <Typography variant="h6" sx={{ fontWeight: 600, marginTop: 2 }}>
+                                        Location data
+                                    </Typography>
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={12} sm={6} md={2.4}>
+                                            <FormControl fullWidth size="small" error={touched.locationId && Boolean(errors.locationId)}>
+                                                <InputLabel>Location of Source</InputLabel>
+                                                <Select
+                                                    label="Location of Source"
+                                                    name="locationOfSource"
+                                                    value={values.locationId}
+                                                    onChange={(e) => setFieldValue('locationId', e.target.value)}
+                                                    onBlur={handleBlur}
+                                                >
+                                                    {isLocationLoading ? (
+                                                        <MenuItem disabled>
+                                                            <CircularProgress size={20} color="inherit" />
+                                                            <span style={{ marginLeft: "10px" }}>Loading...</span>
+                                                        </MenuItem>
+                                                    ) : (
+                                                        getAllLocations?.map((location: Location) => (
+                                                            <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                                                <Tooltip
+                                                                    title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                                                    placement="right"
+                                                                >
+                                                                    <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                                                </Tooltip>
+                                                            </MenuItem>
+                                                        ))
+                                                    )}
+                                                </Select>
+                                                {touched.locationId && errors.locationId && (
+                                                    <FormHelperText>{errors.locationId}</FormHelperText>
+                                                )}
+                                            </FormControl>
+                                        </Grid>
+                                        {/* <Grid item xs={12} sm={6} md={2.4} >
                                         <TextField
                                             fullWidth size='small'
                                             label="Packaging Type"
@@ -750,153 +760,154 @@ const ProductMasterPage = () => {
                                             onBlur={handleBlur}
                                         />
                                     </Grid> */}
-                                    <Grid item xs={12} sm={6} md={2.4}>
-                                        <FormControl fullWidth size="small" error={touched.locationId && Boolean(errors.locationId)}>
-                                            <InputLabel>Packaging Type</InputLabel>
-                                            <Select
-                                                label="Packaging Type"
-                                                name="packagingType"
-                                                value={values.packagingType}
-                                                onChange={(e) => setFieldValue('packagingType', e.target.value)}
-                                                onBlur={handleBlur}
-                                            >
-                                                {isPackageLoading ? (
-                                                    <MenuItem disabled>
-                                                        <CircularProgress size={20} color="inherit" />
-                                                        <span style={{ marginLeft: "10px" }}>Loading...</span>
-                                                    </MenuItem>
-                                                ) : (
-                                                    getAllPackages?.map((packages: Package) => (
-                                                        <MenuItem key={packages.pac_ID} value={String(packages.pac_ID)}>
-                                                            <Tooltip
-                                                                title={`${packages.packaging_type_name}, ${packages.dimensions}, ${packages.dimensions_uom}`}
-                                                                placement="right"
-                                                            >
-                                                                <span style={{ flex: 1 }}>{packages.pac_ID}</span>
-                                                            </Tooltip>
+                                        <Grid item xs={12} sm={6} md={2.4}>
+                                            <FormControl fullWidth size="small" error={touched.locationId && Boolean(errors.locationId)}>
+                                                <InputLabel>Packaging Type</InputLabel>
+                                                <Select
+                                                    label="Packaging Type"
+                                                    name="packagingType"
+                                                    value={values.packagingType}
+                                                    onChange={(e) => setFieldValue('packagingType', e.target.value)}
+                                                    onBlur={handleBlur}
+                                                >
+                                                    {isPackageLoading ? (
+                                                        <MenuItem disabled>
+                                                            <CircularProgress size={20} color="inherit" />
+                                                            <span style={{ marginLeft: "10px" }}>Loading...</span>
                                                         </MenuItem>
-                                                    ))
+                                                    ) : (
+                                                        getAllPackages?.map((packages: Package) => (
+                                                            <MenuItem key={packages.pac_ID} value={String(packages.pac_ID)}>
+                                                                <Tooltip
+                                                                    title={`${packages.packaging_type_name}, ${packages.dimensions}, ${packages.dimensions_uom}`}
+                                                                    placement="right"
+                                                                >
+                                                                    <span style={{ flex: 1 }}>{packages.pac_ID}</span>
+                                                                </Tooltip>
+                                                            </MenuItem>
+                                                        ))
+                                                    )}
+                                                </Select>
+                                                {touched.packagingType && errors.packagingType && (
+                                                    <FormHelperText>{errors.packagingType}</FormHelperText>
                                                 )}
-                                            </Select>
-                                            {touched.packagingType && errors.packagingType && (
-                                                <FormHelperText>{errors.packagingType}</FormHelperText>
-                                            )}
-                                        </FormControl>
+                                            </FormControl>
+                                        </Grid>
+                                        <Grid item xs={12} sm={6} md={2.4} >
+                                            <FormControlLabel
+                                                control={
+                                                    <Checkbox
+                                                        name="generatePackagingLabel"
+                                                        checked={values.generatePackagingLabel}
+                                                        onChange={handleChange}
+                                                    />
+                                                }
+                                                label="Generate Packaging Label"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} sm={6} md={2.4} >
+                                            <TextField
+                                                fullWidth size='small'
+                                                label="Special Instructions"
+                                                name="specialInstructions"
+                                                value={values.specialInstructions}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                multiline
+                                                rows={3}
+                                            />
+                                        </Grid>
                                     </Grid>
-                                    <Grid item xs={12} sm={6} md={2.4} >
-                                        <FormControlLabel
-                                            control={
-                                                <Checkbox
-                                                    name="generatePackagingLabel"
-                                                    checked={values.generatePackagingLabel}
-                                                    onChange={handleChange}
-                                                />
-                                            }
-                                            label="Generate Packaging Label"
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} sm={6} md={2.4} >
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="Special Instructions"
-                                            name="specialInstructions"
-                                            value={values.specialInstructions}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            multiline
-                                            rows={3}
-                                        />
-                                    </Grid>
-                                </Grid>
 
-                                <Typography variant="h6" sx={{ fontWeight: 600, marginTop: 1 }}>
-                                    Storage data
-                                </Typography>
-                                <Grid container spacing={2}>
-                                    <Grid item xs={12} md={3}>
-                                        <FormControlLabel
-                                            control={
-                                                <Checkbox
-                                                    name="fragileGoods"
-                                                    checked={values.fragileGoods}
-                                                    onChange={handleChange}
-                                                />
-                                            }
-                                            label="Fragile Goods"
-                                        />
+                                    <Typography variant="h6" sx={{ fontWeight: 600, marginTop: 1 }}>
+                                        Storage data
+                                    </Typography>
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={12} md={3}>
+                                            <FormControlLabel
+                                                control={
+                                                    <Checkbox
+                                                        name="fragileGoods"
+                                                        checked={values.fragileGoods}
+                                                        onChange={handleChange}
+                                                    />
+                                                }
+                                                label="Fragile Goods"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={3}>
+                                            <FormControlLabel
+                                                control={
+                                                    <Checkbox
+                                                        name="dangerousGoods"
+                                                        checked={values.dangerousGoods}
+                                                        onChange={handleChange}
+                                                    />
+                                                }
+                                                label="Dangerous Goods"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={3}>
+                                            <FormControlLabel
+                                                control={
+                                                    <Checkbox
+                                                        name="hazardousStorage"
+                                                        checked={values.hazardousStorage}
+                                                        onChange={handleChange}
+                                                    />
+                                                }
+                                                label="Hazardous Substance Storage"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={3}>
+                                            <FormControlLabel
+                                                control={
+                                                    <Checkbox
+                                                        name="temperatureControl"
+                                                        checked={values.temperatureControl}
+                                                        onChange={handleChange}
+                                                    />
+                                                }
+                                                label="Temperature control"
+                                            />
+                                        </Grid>
                                     </Grid>
-                                    <Grid item xs={12} md={3}>
-                                        <FormControlLabel
-                                            control={
-                                                <Checkbox
-                                                    name="dangerousGoods"
-                                                    checked={values.dangerousGoods}
-                                                    onChange={handleChange}
-                                                />
-                                            }
-                                            label="Dangerous Goods"
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={3}>
-                                        <FormControlLabel
-                                            control={
-                                                <Checkbox
-                                                    name="hazardousStorage"
-                                                    checked={values.hazardousStorage}
-                                                    onChange={handleChange}
-                                                />
-                                            }
-                                            label="Hazardous Substance Storage"
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={3}>
-                                        <FormControlLabel
-                                            control={
-                                                <Checkbox
-                                                    name="temperatureControl"
-                                                    checked={values.temperatureControl}
-                                                    onChange={handleChange}
-                                                />
-                                            }
-                                            label="Temperature control"
-                                        />
-                                    </Grid>
-                                </Grid>
 
-                                <Box marginTop={2} textAlign="center">
-                                    <CustomButtonFilled >{updateRecord ? "Update product" : "Create product"}</CustomButtonFilled>
-                                    <Button
-                                        variant="outlined"
-                                        color="secondary"
-                                        onClick={() => {
-                                            setFormInitialValues(productFormInitialValues)
-                                            setUpdateRecord(false)
-                                            resetForm({ values: productFormInitialValues });
-                                        }}
-                                        style={{ marginLeft: "10px" }}>Reset
-                                    </Button>
-                                </Box>
-                            </Form>
-                        )
-                        }
-                    </Formik>
-                </Box>
-            </Collapse>
-            <div style={{ marginTop: "40px" }}>
-                {isLoading ? (
-                    <DataGridSkeletonLoader columns={columns} />
-                ) : (
-                    <DataGridComponent
-                        columns={columns}
-                        rows={rows}
-                        isLoading={isLoading}
-                        paginationModel={paginationModel}
-                        onPaginationModelChange={handlePaginationModelChange}
-                        activeEntity='products'
-                    />
-                )}
-            </div>
-        </Grid>
+                                    <Box marginTop={2} textAlign="center">
+                                        <CustomButtonFilled >{updateRecord ? "Update product" : "Create product"}</CustomButtonFilled>
+                                        <Button
+                                            variant="outlined"
+                                            color="secondary"
+                                            onClick={() => {
+                                                setFormInitialValues(productFormInitialValues)
+                                                setUpdateRecord(false)
+                                                resetForm({ values: productFormInitialValues });
+                                            }}
+                                            style={{ marginLeft: "10px" }}>Reset
+                                        </Button>
+                                    </Box>
+                                </Form>
+                            )
+                            }
+                        </Formik>
+                    </Box>
+                </Collapse>
+                <div style={{ marginTop: "40px" }}>
+                    {isLoading ? (
+                        <DataGridSkeletonLoader columns={columns} />
+                    ) : (
+                        <DataGridComponent
+                            columns={columns}
+                            rows={rows}
+                            isLoading={isLoading}
+                            paginationModel={paginationModel}
+                            onPaginationModelChange={handlePaginationModelChange}
+                            activeEntity='products'
+                        />
+                    )}
+                </div>
+            </Grid>
+        </>
     );
 };
 

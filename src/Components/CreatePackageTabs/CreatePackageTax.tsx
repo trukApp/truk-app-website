@@ -1,9 +1,9 @@
 'use client';
-import React  from 'react';
+import React from 'react';
 import { Formik, Form, Field, FormikHelpers, } from 'formik';
-import { Grid, TextField,  Typography, } from '@mui/material';
+import { Grid, TextField, Typography, } from '@mui/material';
 import * as Yup from 'yup';
-import {useAppDispatch,   useAppSelector } from '@/store';
+import { useAppDispatch, useAppSelector } from '@/store';
 import { setPackageTax } from '@/store/authSlice';
 import { CustomButtonFilled, CustomButtonOutlined } from '../ReusableComponents/ButtonsComponent';
 import styles from './CreatePackage.module.css';
@@ -26,17 +26,15 @@ interface TaxInfoProps {
 
 // Validation Schema
 const validationSchema = Yup.object().shape({
-    taxInfo: Yup.object().shape({
-        senderGSTN: Yup.string().required('GSTN of the Sender is required'),
-        receiverGSTN: Yup.string().required('GSTN of the Receiver is required'),
-        carrierGSTN: Yup.string().required('GSTN of the Carrier is required'),
-        taxRate: Yup.string().required('Tax rate is required'),
-        isSelfTransport: Yup.string()
-            .oneOf(['Yes', 'No'], 'Must be Yes or No')
-            .required('Self Transport is required'),
-    }),
-    
-    
+    // taxInfo: Yup.object().shape({
+    //     senderGSTN: Yup.string().required('GSTN of the Sender is required'),
+    //     receiverGSTN: Yup.string().required('GSTN of the Receiver is required'),
+    //     carrierGSTN: Yup.string().required('GSTN of the Carrier is required'),
+    //     taxRate: Yup.string().required('Tax rate is required'),
+    //     isSelfTransport: Yup.string()
+    //         .oneOf(['Yes', 'No'], 'Must be Yes or No')
+    //         .required('Self Transport is required'),
+    // }),
 });
 
 const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
@@ -48,82 +46,82 @@ const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
             receiverGSTN: '',
             carrierGSTN: '',
             isSelfTransport: '',
-            taxRate:'',
+            taxRate: '',
         },
     };
 
-      const handleSubmit = async (values: TaxInfoValues, actions: FormikHelpers<TaxInfoValues>, onSubmit: (values: TaxInfoValues) => void) => {
+    const handleSubmit = async (values: TaxInfoValues, actions: FormikHelpers<TaxInfoValues>, onSubmit: (values: TaxInfoValues) => void) => {
         dispatch(setPackageTax(values.taxInfo))
         // dispatch(setCompletedState(5));
         actions.setSubmitting(false);
         onSubmit(values);
-     
+
     };
 
     return (
         <>
-        <Formik
-            initialValues={initialValues}
-            validationSchema={validationSchema}
-            onSubmit={(values, actions) => handleSubmit(values, actions, onSubmit)}
-        >
-            {({ touched, errors }) => (
+            <Formik
+                initialValues={initialValues}
+                validationSchema={validationSchema}
+                onSubmit={(values, actions) => handleSubmit(values, actions, onSubmit)}
+            >
+                {({ touched, errors }) => (
                     <Form style={{ width: '100%' }}>
-                        <Typography variant="h6" sx={{fontWeight:'bold', textAlign:'center' , marginTop:3}}>Tax info</Typography>
-                    <Grid container className={styles.formsBgContainer} spacing={2}>
-                        <Grid item xs={12} md={2.4}>
-                            <Field
-                                as={TextField}
-                                name="taxInfo.senderGSTN"
-                                label="GSTN of the Sender"
-                                fullWidth size='small'
-                                error={touched.taxInfo?.senderGSTN && Boolean(errors.taxInfo?.senderGSTN)}
-                                helperText={touched.taxInfo?.senderGSTN && errors.taxInfo?.senderGSTN}
-                            />
-                        </Grid>
+                        <Typography variant="h6" sx={{ fontWeight: 'bold', textAlign: 'center', marginTop: 3 }}>Tax info</Typography>
+                        <Grid container className={styles.formsBgContainer} spacing={2}>
+                            <Grid item xs={12} md={2.4}>
+                                <Field
+                                    as={TextField}
+                                    name="taxInfo.senderGSTN"
+                                    label="GSTN of the Sender"
+                                    fullWidth size='small'
+                                    error={touched.taxInfo?.senderGSTN && Boolean(errors.taxInfo?.senderGSTN)}
+                                    helperText={touched.taxInfo?.senderGSTN && errors.taxInfo?.senderGSTN}
+                                />
+                            </Grid>
 
-                        <Grid item xs={12} md={2.4}>
-                            <Field
-                                as={TextField}
-                                name="taxInfo.receiverGSTN"
-                                label="GSTN of the Receiver"
-                                fullWidth size='small' 
-                                error={touched.taxInfo?.receiverGSTN && Boolean(errors.taxInfo?.receiverGSTN)}
-                                helperText={touched.taxInfo?.receiverGSTN && errors.taxInfo?.receiverGSTN}
-                            />
-                        </Grid>
+                            <Grid item xs={12} md={2.4}>
+                                <Field
+                                    as={TextField}
+                                    name="taxInfo.receiverGSTN"
+                                    label="GSTN of the Receiver"
+                                    fullWidth size='small'
+                                    error={touched.taxInfo?.receiverGSTN && Boolean(errors.taxInfo?.receiverGSTN)}
+                                    helperText={touched.taxInfo?.receiverGSTN && errors.taxInfo?.receiverGSTN}
+                                />
+                            </Grid>
 
-                        <Grid item xs={12} md={2.4}>
-                            <Field
-                                as={TextField}
-                                name="taxInfo.carrierGSTN"
-                                label="GSTN of the Carrier"
-                                fullWidth size='small'
-                                error={touched.taxInfo?.carrierGSTN && Boolean(errors.taxInfo?.carrierGSTN)}
-                                helperText={touched.taxInfo?.carrierGSTN && errors.taxInfo?.carrierGSTN}
-                            />
-                        </Grid>
+                            <Grid item xs={12} md={2.4}>
+                                <Field
+                                    as={TextField}
+                                    name="taxInfo.carrierGSTN"
+                                    label="GSTN of the Carrier"
+                                    fullWidth size='small'
+                                    error={touched.taxInfo?.carrierGSTN && Boolean(errors.taxInfo?.carrierGSTN)}
+                                    helperText={touched.taxInfo?.carrierGSTN && errors.taxInfo?.carrierGSTN}
+                                />
+                            </Grid>
 
-                        <Grid item xs={12} md={2.4}>
-                            <Field
-                                as={TextField}
-                                name="taxInfo.isSelfTransport"
-                                label="Self Transport (Yes/No)"
-                                fullWidth size='small'
-                                error={touched.taxInfo?.isSelfTransport && Boolean(errors.taxInfo?.isSelfTransport)}
-                                helperText={touched.taxInfo?.isSelfTransport && errors.taxInfo?.isSelfTransport}
-                            />
+                            <Grid item xs={12} md={2.4}>
+                                <Field
+                                    as={TextField}
+                                    name="taxInfo.isSelfTransport"
+                                    label="Self Transport (Yes/No)"
+                                    fullWidth size='small'
+                                    error={touched.taxInfo?.isSelfTransport && Boolean(errors.taxInfo?.isSelfTransport)}
+                                    helperText={touched.taxInfo?.isSelfTransport && errors.taxInfo?.isSelfTransport}
+                                />
                             </Grid>
                             <Grid item xs={12} md={2.4}>
-                            <Field
-                                as={TextField}
-                                name="taxInfo.taxRate"
-                                label="Tax rate"
-                                fullWidth size='small'
-                                error={touched.taxInfo?.taxRate && Boolean(errors.taxInfo?.taxRate)}
-                                helperText={touched.taxInfo?.taxRate && errors.taxInfo?.taxRate}
-                            />
-                        </Grid>
+                                <Field
+                                    as={TextField}
+                                    name="taxInfo.taxRate"
+                                    label="Tax rate"
+                                    fullWidth size='small'
+                                    error={touched.taxInfo?.taxRate && Boolean(errors.taxInfo?.taxRate)}
+                                    helperText={touched.taxInfo?.taxRate && errors.taxInfo?.taxRate}
+                                />
+                            </Grid>
 
                             {/* Navigation Buttons */}
                             <Grid container spacing={2} justifyContent="center" marginTop={2}>
@@ -137,7 +135,7 @@ const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
                                     {/* <Button type="submit" variant="contained" color="primary">
                                         Submit
                                     </Button> */}
-                                <CustomButtonFilled >Submit</CustomButtonFilled>
+                                    <CustomButtonFilled >Submit</CustomButtonFilled>
                                 </Grid>
                             </Grid>
                         </Grid>

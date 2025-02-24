@@ -17,7 +17,6 @@ const OrderDetailedOverview: React.FC = () => {
             <Backdrop sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }} open={isLoading}>
                 <CircularProgress color="inherit" />
             </Backdrop>
-
             {orderData && (
                 <Paper sx={{ p: 3, mb: 3, }}>
                     <Typography variant="h6" gutterBottom sx={{ color: "#83214F", fontWeight: 'bold' }}>

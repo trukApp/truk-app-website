@@ -447,7 +447,7 @@ export const apiSlice = createApi({
 
     deleteProduct: builder.mutation({
       query: (productId) => ({
-        url: ` masterProducts/delete-product?prod_id=${productId}`,
+        url: `masterProducts/delete-product?prod_id=${productId}`,
         method: "DELETE",
       }),
       invalidatesTags: [{ type: "ProductMaster", id: "LIST" }],
