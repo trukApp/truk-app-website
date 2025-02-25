@@ -2,14 +2,18 @@
 import React, { useState } from 'react';
 import { Formik, Form, Field, FormikProps } from 'formik';
 import * as Yup from 'yup';
-import { Checkbox, FormControlLabel, Grid, TextField, SelectChangeEvent, FormControl, InputLabel, Select, MenuItem, Tooltip, FormHelperText, Backdrop, CircularProgress, Typography } from '@mui/material';
+import {
+    Checkbox, FormControlLabel, Grid, TextField,Tooltip, 
+    // SelectChangeEvent, FormControl, InputLabel, Select, MenuItem, FormHelperText,
+    Backdrop, CircularProgress, Typography, Paper, List, ListItem
+} from '@mui/material';
 import styles from './CreatePackage.module.css';
 import { useAppDispatch, useAppSelector } from '@/store';
 import {
     // setCompletedState,
     setPackageBillTo
 } from '@/store/authSlice';
-import { useGetLocationMasterQuery, usePostLocationMasterMutation, useUpdateBillToDefaultLocationIdMutation } from '@/api/apiSlice';
+import { useGetFilteredLocationsQuery, useGetLocationMasterQuery, usePostLocationMasterMutation, useUpdateBillToDefaultLocationIdMutation } from '@/api/apiSlice';
 import { Location } from '../MasterDataComponents/Locations';
 import { IShipFrom } from './CreatePackageShipFrom';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
@@ -52,13 +56,21 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
     const { data: locationsData, isLoading: isLocationLoading } = useGetLocationMasterQuery([])
     const [updateDefulatFromLocation, { isLoading: defaultLocationLoading }] = useUpdateBillToDefaultLocationIdMutation();
     const allLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
+      const billToReduxValues = useAppSelector((state) => state.auth.packageBillTo)
     const defaultLocationData = allLocations?.find((eachLocation: Location) =>
         eachLocation?.def_bill_to === 1)
+        const [searchKey, setSearchKey] = useState(billToReduxValues?.locationId || defaultLocationData?.loc_ID || '');
+        const [showSuggestions, setShowSuggestions] = useState(false);
+        const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey);
+        
+        const displayLocations = searchKey ? filteredLocations?.results || [] : allLocations;
+        console.log("display:", displayLocations)
+    
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const [postLocation, { isLoading: postLocationLoading }] = usePostLocationMasterMutation({})
-    const billToReduxValues = useAppSelector((state) => state.auth.packageBillTo)
+  
     const shipFromReduxValues = useAppSelector((state) => state.auth.packageShipFrom)
     const getAllLocations = allLocations.filter(
         (location: Location) => location.loc_ID !== shipFromReduxValues?.locationId
@@ -86,50 +98,55 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
         locationType: billToReduxValues?.locationType || defaultLocationData?.loc_type || ''
     }
 
-    const handleLocationChange = (event: SelectChangeEvent<string>, setFieldValue: FormikProps<IShipFrom>['setFieldValue']) => {
-        const selectedLocationId = event.target.value;
-        setFieldValue('locationId', selectedLocationId);
-
-        const selectedLocation = getAllLocations.find((loc: Location) => loc?.loc_ID === selectedLocationId);
-
-        if (selectedLocation) {
-            setFieldValue('locationDescription', selectedLocation.loc_desc || '');
-            setFieldValue('addressLine1', selectedLocation.address_1 || '');
-            setFieldValue('addressLine2', selectedLocation.address_2 || '');
-            setFieldValue('city', selectedLocation.city || '');
-            setFieldValue('state', selectedLocation.state || '');
-            setFieldValue('country', selectedLocation.country || '');
-            setFieldValue('pincode', selectedLocation.pincode || '');
-            setFieldValue('latitude', selectedLocation.latitude || '');
-            setFieldValue('longitude', selectedLocation.longitude || '');
-            setFieldValue('timeZone', selectedLocation.time_zone || '');
-            setFieldValue('locationType', selectedLocation.loc_type || '');
-            setFieldValue('glnCode', selectedLocation.gln_code || '');
-            setFieldValue('iataCode', selectedLocation.iata_code || '');
-            setFieldValue('contactPerson', selectedLocation.contact_name || '');
-            setFieldValue('phoneNumber', selectedLocation.contact_phone_number || '');
-            setFieldValue('email', selectedLocation.contact_email || '');
-            setFieldValue('saveAsDefaultShipFromLocation', selectedLocation.def_bill_to || false);
-        } else {
-            setFieldValue('locationDescription', '');
-            setFieldValue('addressLine1', '');
-            setFieldValue('addressLine2', '');
-            setFieldValue('locationId', '');
-            setFieldValue('city', '');
-            setFieldValue('state', '');
-            setFieldValue('country', '');
-            setFieldValue('pincode', '');
-            setFieldValue('latitude', '');
-            setFieldValue('longitude', '');
-            setFieldValue('timeZone', '');
-            setFieldValue('locationType', '');
-            setFieldValue('glnCode', '');
-            setFieldValue('iataCode', '');
-            setFieldValue('contactPerson', '');
-            setFieldValue('phoneNumber', '');
-            setFieldValue('email', '');
-        }
-    };
+        const handleLocationChange = (
+            selectedLocationId: string,
+            setFieldValue: FormikProps<IShipFrom>['setFieldValue']
+        ) => {
+            setFieldValue("locationId", selectedLocationId);
+    
+            const selectedLocation = getAllLocations.find(
+                (loc: Location) => loc?.loc_ID === selectedLocationId
+            );
+    
+            if (selectedLocation) {
+                setFieldValue("locationDescription", selectedLocation.loc_desc || "");
+                setFieldValue("addressLine1", selectedLocation.address_1 || "");
+                setFieldValue("addressLine2", selectedLocation.address_2 || "");
+                setFieldValue("city", selectedLocation.city || "");
+                setFieldValue("state", selectedLocation.state || "");
+                setFieldValue("country", selectedLocation.country || "");
+                setFieldValue("pincode", selectedLocation.pincode || "");
+                setFieldValue("latitude", selectedLocation.latitude || "");
+                setFieldValue("longitude", selectedLocation.longitude || "");
+                setFieldValue("timeZone", selectedLocation.time_zone || "");
+                setFieldValue("locationType", selectedLocation.loc_type || "");
+                setFieldValue("glnCode", selectedLocation.gln_code || "");
+                setFieldValue("iataCode", selectedLocation.iata_code || "");
+                setFieldValue("contactPerson", selectedLocation.contact_name || "");
+                setFieldValue("phoneNumber", selectedLocation.contact_phone_number || "");
+                setFieldValue("email", selectedLocation.contact_email || "");
+                setFieldValue("saveAsDefaultShipFromLocation", selectedLocation.def_ship_from || false);
+            } else {
+                // Reset values if location is not found
+                setFieldValue("locationId", "");
+                setFieldValue("locationDescription", "");
+                setFieldValue("addressLine1", "");
+                setFieldValue("addressLine2", "");
+                setFieldValue("city", "");
+                setFieldValue("state", "");
+                setFieldValue("country", "");
+                setFieldValue("pincode", "");
+                setFieldValue("latitude", "");
+                setFieldValue("longitude", "");
+                setFieldValue("timeZone", "");
+                setFieldValue("locationType", "");
+                setFieldValue("glnCode", "");
+                setFieldValue("iataCode", "");
+                setFieldValue("contactPerson", "");
+                setFieldValue("phoneNumber", "");
+                setFieldValue("email", "");
+            }
+        };
 
     const handleDefaultLocationChange = async (locId: string, defaultValue: number | boolean) => {
         try {
@@ -257,38 +274,97 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                             <h3 className={styles.mainHeading}>Location Details</h3>
                             <Grid container spacing={2}>
                                 {!values.saveAsNewLocationId && (
-                                    <Grid item xs={12} sm={6} md={2.4}>
-                                        <FormControl size='small' fullWidth error={touched?.locationId && Boolean(errors?.locationId)}>
-                                            <InputLabel shrink>Location ID</InputLabel>
-                                            <Select displayEmpty
-                                                label="Location ID*"
+                                        <Grid item xs={12} sm={6} md={2.4}>
+                                            <TextField
+                                                fullWidth
                                                 name="locationId"
-                                                value={values?.locationId}
-                                                onChange={(event) => handleLocationChange(event, setFieldValue)}
+                                                size="small"
+                                                label="Search Location"
+                                                onFocus={() => {
+                                                    if (!searchKey) {
+                                                        setSearchKey(values?.locationId || "");
+                                                        setShowSuggestions(true);
+                                                    }
+                                                }}
+                                                onChange={(e) => {
+                                                    setSearchKey(e.target.value)
+                                                    setShowSuggestions(true) 
+                                                    setFieldValue("locationDescription", "");
+                                                    setFieldValue("addressLine1", "");
+                                                    setFieldValue("addressLine2", "");
+                                                    setFieldValue("city", "");
+                                                    setFieldValue("state", "");
+                                                    setFieldValue("country", "");
+                                                    setFieldValue("pincode", "");
+                                                    setFieldValue("latitude", "");
+                                                    setFieldValue("longitude", "");
+                                                    setFieldValue("timeZone", "");
+                                                    setFieldValue("locationType", "");
+                                                    setFieldValue("glnCode", "");
+                                                    setFieldValue("iataCode", "");
+                                                    setFieldValue("contactPerson", "");
+                                                    setFieldValue("phoneNumber", "");
+                                                    setFieldValue("email", "");
+                                                }
+                                                }
                                                 onBlur={handleBlur}
-                                            >
-                                                {isLocationLoading ? (
-                                                    <MenuItem disabled>
-                                                        <CircularProgress size={20} color="inherit" />
-                                                        <span style={{ marginLeft: "10px" }}>Loading...</span>
-                                                    </MenuItem>
-                                                ) : (
-                                                    getAllLocations?.map((location: Location) => (
-                                                        <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                                                            <Tooltip
-                                                                title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                                                placement="right"
-                                                            >
-                                                                <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                                                            </Tooltip>
-                                                        </MenuItem>
-                                                    ))
-                                                )}
-                                            </Select>
-                                            {touched?.locationId && errors?.locationId && (
-                                                <FormHelperText error>{typeof errors.locationId === "string" ? errors.locationId : ""}</FormHelperText>
-                                            )}
-                                        </FormControl> </Grid>
+                                                value={searchKey} // Display the selected location ID
+                                                error={touched?.locationId && Boolean(errors?.locationId)}
+                                                helperText={
+                                                    touched?.locationId && typeof errors?.locationId === "string"
+                                                        ? errors.locationId
+                                                        : ""
+                                                }
+                                                InputProps={{
+                                                    endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
+                                                }}
+                                            />
+                                            {showSuggestions && (
+    <Paper
+        style={{
+            maxHeight: 200,
+            overflowY: "auto",
+            position: "absolute",
+            zIndex: 10,
+            width: "18%",
+            padding: "8px",
+            textAlign: "center",
+        }}
+    >
+        {displayLocations.length > 0 ? (
+            <List>
+                {displayLocations.map((location: Location) => (
+                    <ListItem
+                        key={location.loc_ID}
+                        component="li"
+                        onClick={() => {
+                            setShowSuggestions(false);
+                            setSearchKey(location.loc_ID);
+                            handleLocationChange(location.loc_ID, setFieldValue);
+                            setFieldValue("locationId", location.loc_ID);
+                        }}
+                        sx={{ cursor: "pointer" }}
+                    >
+                        <Tooltip
+                            title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                            placement="right"
+                        >
+                            <span style={{ fontSize: "14px" }}>
+                                {location.loc_ID}, {location.loc_desc}
+                            </span>
+                        </Tooltip>
+                    </ListItem>
+                ))}
+            </List>
+        ) : (
+            <Typography variant="body2" color="textSecondary">
+                No results found
+            </Typography>
+        )}
+    </Paper>
+)}
+
+                                        </Grid>
                                 )}
 
                                 <Grid item xs={12} md={2.4}>
@@ -435,7 +511,7 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                             <Grid container spacing={2}>
                                 <Grid item xs={12} md={2.4}>
                                     <Field
-                                        name="contactPerson"
+                                        name="contactPerson" disabled
                                         as={TextField}
                                         label="Contact Person*"
                                         InputLabelProps={{ shrink: true }} size='small' fullWidth
@@ -446,7 +522,7 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                                 </Grid>
                                 <Grid item xs={12} md={2.4}>
                                     <Field
-                                        name="phoneNumber"
+                                        name="phoneNumber" disabled
                                         as={TextField}
                                         label="Phone Number*"
                                         InputLabelProps={{ shrink: true }} size='small' fullWidth
@@ -457,7 +533,7 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                                 </Grid>
                                 <Grid item xs={12} md={2.4}>
                                     <Field
-                                        name="email"
+                                        name="email" disabled
                                         as={TextField}
                                         label="Email Address*"
                                         InputLabelProps={{ shrink: true }} size='small' fullWidth
