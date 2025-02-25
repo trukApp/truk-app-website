@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Formik, Form, Field, FormikProps } from 'formik';
-import {Grid, TextField, Checkbox, FormControlLabel, Tooltip,Backdrop, CircularProgress, Typography,Paper,List,ListItem} from '@mui/material'
+import { Grid, TextField, Checkbox, FormControlLabel, Tooltip, Backdrop, CircularProgress, Typography, Paper, List, ListItem } from '@mui/material'
 import * as Yup from 'yup';
 import styles from './CreatePackage.module.css';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { setPackageShipTo} from '@/store/authSlice';
+import { setPackageShipTo } from '@/store/authSlice';
 import { useGetFilteredLocationsQuery, useGetLocationMasterQuery, usePostLocationMasterMutation, useUpdateShipToDefaultLocationIdMutation } from '@/api/apiSlice';
 import { Location } from '../MasterDataComponents/Locations';
 import { IShipFrom } from './CreatePackageShipFrom';
@@ -58,7 +58,6 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
     const [showSuggestions, setShowSuggestions] = useState(false);
     const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey);
     const displayLocations = searchKey ? filteredLocations?.results || [] : allLocations;
-    console.log('display locs :', displayLocations)
 
     const getAllLocations = allLocations.filter(
         (location: Location) => location.loc_ID !== shipFromReduxValues?.locationId
@@ -285,7 +284,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                                 }}
                                                 onChange={(e) => {
                                                     setSearchKey(e.target.value)
-                                                    setShowSuggestions(true) 
+                                                    setShowSuggestions(true)
                                                     setFieldValue("locationDescription", "");
                                                     setFieldValue("addressLine1", "");
                                                     setFieldValue("addressLine2", "");
@@ -343,7 +342,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                                                     title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
                                                                     placement="right"
                                                                 >
-                                                                    <span style={{fontSize:'14px'}}>{location.loc_ID}, {location.loc_desc}</span>
+                                                                    <span style={{ fontSize: '14px' }}>{location.loc_ID}, {location.loc_desc}</span>
                                                                 </Tooltip>
                                                             </ListItem>
                                                         ))}
@@ -351,10 +350,6 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                                 </Paper>
                                             )}
                                         </Grid>
-
-
-
-
                                     )}
 
                                     <Grid item xs={12} md={2.4}>
@@ -364,8 +359,8 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                             label="Location Description*"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
 
-                                            // error={touched?.locationDescription && Boolean(errors?.locationDescription)}
-                                            // helperText={touched?.locationDescription && errors?.locationDescription}
+                                        // error={touched?.locationDescription && Boolean(errors?.locationDescription)}
+                                        // helperText={touched?.locationDescription && errors?.locationDescription}
                                         />
                                     </Grid>
                                     <Grid item xs={12} md={2.4}>
@@ -374,8 +369,8 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                             as={TextField} disabled
                                             label="Latitude*"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                            // error={touched?.latitude && Boolean(errors?.latitude)}
-                                            // helperText={touched?.latitude && errors?.latitude}
+                                        // error={touched?.latitude && Boolean(errors?.latitude)}
+                                        // helperText={touched?.latitude && errors?.latitude}
                                         />
                                     </Grid>
                                     <Grid item xs={12} md={2.4}>
@@ -384,8 +379,8 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                             as={TextField}
                                             label="Longitude*" disabled
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                            // error={touched?.longitude && Boolean(errors?.longitude)}
-                                            // helperText={touched?.longitude && errors?.longitude}
+                                        // error={touched?.longitude && Boolean(errors?.longitude)}
+                                        // helperText={touched?.longitude && errors?.longitude}
                                         />
                                     </Grid>
                                     <Grid item xs={12} md={2.4}>
@@ -394,8 +389,8 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                             as={TextField}
                                             label="Time zone*"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                            // error={touched?.timeZone && Boolean(errors?.timeZone)}
-                                            // helperText={touched?.timeZone && errors?.timeZone}
+                                        // error={touched?.timeZone && Boolean(errors?.timeZone)}
+                                        // helperText={touched?.timeZone && errors?.timeZone}
                                         />
                                     </Grid>
                                     <Grid item xs={12} md={2.4}>
@@ -404,8 +399,8 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                             as={TextField}
                                             label="Location type*"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                            // error={touched?.locationType && Boolean(errors?.locationType)}
-                                            // helperText={touched?.locationType && errors?.locationType}
+                                        // error={touched?.locationType && Boolean(errors?.locationType)}
+                                        // helperText={touched?.locationType && errors?.locationType}
                                         />
                                     </Grid>
                                     <Grid item xs={12} md={2.4}>
@@ -414,8 +409,8 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                             as={TextField} disabled
                                             label="GLN Code"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                            // error={touched?.glnCode && Boolean(errors?.glnCode)}
-                                            // helperText={touched?.glnCode && errors?.glnCode}
+                                        // error={touched?.glnCode && Boolean(errors?.glnCode)}
+                                        // helperText={touched?.glnCode && errors?.glnCode}
                                         />
                                     </Grid>
 
@@ -425,8 +420,8 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                             as={TextField}
                                             label="IATA Code"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                            // error={touched?.iataCode && Boolean(errors?.iataCode)}
-                                            // helperText={touched?.iataCode && errors?.iataCode}
+                                        // error={touched?.iataCode && Boolean(errors?.iataCode)}
+                                        // helperText={touched?.iataCode && errors?.iataCode}
                                         />
                                     </Grid>
                                 </Grid>
@@ -440,8 +435,8 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                             label="Address Line 1*"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
 
-                                            // error={touched?.addressLine1 && Boolean(errors?.addressLine1)}
-                                            // helperText={touched?.addressLine1 && errors?.addressLine1}
+                                        // error={touched?.addressLine1 && Boolean(errors?.addressLine1)}
+                                        // helperText={touched?.addressLine1 && errors?.addressLine1}
                                         />
                                     </Grid>
                                     <Grid item xs={12} md={2.4}>
@@ -470,8 +465,8 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                             label="State*"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
 
-                                            // error={touched?.state && Boolean(errors?.state)}
-                                            // helperText={touched?.state && errors?.state}
+                                        // error={touched?.state && Boolean(errors?.state)}
+                                        // helperText={touched?.state && errors?.state}
                                         />
                                     </Grid>
                                     <Grid item xs={12} md={2.4}>
@@ -481,8 +476,8 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                             label="Country*"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
 
-                                            // error={touched?.country && Boolean(errors?.country)}
-                                            // helperText={touched?.country && errors?.country}
+                                        // error={touched?.country && Boolean(errors?.country)}
+                                        // helperText={touched?.country && errors?.country}
                                         />
                                     </Grid>
                                     <Grid item xs={12} md={2.4}>
@@ -492,8 +487,8 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                             label="Pincode*" disabled
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
                                             required
-                                            // error={touched?.pincode && Boolean(errors?.pincode)}
-                                            // helperText={touched?.pincode && errors?.pincode}
+                                        // error={touched?.pincode && Boolean(errors?.pincode)}
+                                        // helperText={touched?.pincode && errors?.pincode}
                                         />
                                     </Grid>
                                 </Grid>
@@ -506,8 +501,8 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                             label="Contact Person*"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
 
-                                            // error={touched?.contactPerson && Boolean(errors?.contactPerson)}
-                                            // helperText={touched?.contactPerson && errors?.contactPerson}
+                                        // error={touched?.contactPerson && Boolean(errors?.contactPerson)}
+                                        // helperText={touched?.contactPerson && errors?.contactPerson}
                                         />
                                     </Grid>
                                     <Grid item xs={12} md={2.4}>
@@ -521,8 +516,8 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                             label="Phone Number*"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
                                             type='number'
-                                            // error={touched?.phoneNumber && Boolean(errors?.phoneNumber)}
-                                            // helperText={touched?.phoneNumber && errors?.phoneNumber}
+                                        // error={touched?.phoneNumber && Boolean(errors?.phoneNumber)}
+                                        // helperText={touched?.phoneNumber && errors?.phoneNumber}
                                         />
                                     </Grid>
                                     <Grid item xs={12} md={2.4}>
@@ -532,8 +527,8 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                             label="Email Address*"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
 
-                                            // error={touched?.email && Boolean(errors?.email)}
-                                            // helperText={touched?.email && errors?.email}
+                                        // error={touched?.email && Boolean(errors?.email)}
+                                        // helperText={touched?.email && errors?.email}
                                         />
                                     </Grid>
                                 </Grid>

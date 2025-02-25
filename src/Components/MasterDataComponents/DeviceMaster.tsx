@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { Grid, TextField, Button, Box, Typography, Collapse, IconButton, Backdrop, CircularProgress, FormControl, InputLabel, Select, MenuItem, Tooltip, FormHelperText } from "@mui/material";
+import { Grid, TextField, Button, Box, Typography, Collapse, IconButton, Backdrop, CircularProgress, FormControl, InputLabel, Select, MenuItem, Tooltip, FormHelperText, Paper, List, ListItem } from "@mui/material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { GridColDef, GridPaginationModel } from "@mui/x-data-grid";
@@ -10,7 +10,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import styles from './MasterData.module.css';
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { useGetDeviceMasterQuery, usePostDeviceMasterMutation, useEditDeviceMasterMutation, useDeleteDeviceMasterMutation, useGetLocationMasterQuery, useGetCarrierMasterQuery } from '@/api/apiSlice';
+import { useGetDeviceMasterQuery, usePostDeviceMasterMutation, useEditDeviceMasterMutation, useDeleteDeviceMasterMutation, useGetLocationMasterQuery, useGetCarrierMasterQuery, useGetFilteredLocationsQuery } from '@/api/apiSlice';
 import MassUpload from '../MassUpload/MassUpload';
 import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
@@ -60,34 +60,40 @@ const DeviceMaster: React.FC = () => {
   const { data: carriersData, isLoading: isCarrierLoading } = useGetCarrierMasterQuery({});
   const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
   const getAllCarriers = carriersData?.carriers.length > 0 ? carriersData?.carriers : [];
+  const [searchKey, setSearchKey] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  // const { data: locationsData } = useGetLocationMasterQuery({});
+  // const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
+  const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey);
+  const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
   const getLocationDetails = (loc_ID: string) => {
     const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
     if (!location) return "Location details not available";
-      const details = [
-        location.address_1,
-        location.address_2,
-        location.city,
-        location.state,
-        location.country,
-        location.pincode
-      ].filter(Boolean);
+    const details = [
+      location.address_1,
+      location.address_2,
+      location.city,
+      location.state,
+      location.country,
+      location.pincode
+    ].filter(Boolean);
 
-      return details.length > 0 ? details.join(", ") : "Location details not available";
+    return details.length > 0 ? details.join(", ") : "Location details not available";
   };
 
- const getCarriersDetails = (carrier_ID: string) => {
+  const getCarriersDetails = (carrier_ID: string) => {
     const carrier = getAllCarriers.find((carr: CarrierFormBE) => carr.carrier_ID === carrier_ID);
     if (!carrier) return "Location details not available";
     const { carrier_name, carrier_address, carrier_loc_of_operation } = carrier;
     const locationDetails = carrier_loc_of_operation && carrier_loc_of_operation.length > 0
-        ? carrier_loc_of_operation.join(", ")
-        : "No locations available";
+      ? carrier_loc_of_operation.join(", ")
+      : "No locations available";
 
     // Format and return the details
     return `${carrier_name}, ${carrier_address}, Locations: ${locationDetails}`;
-};
+  };
 
- console.log('getAll carriers :', getAllCarriers)
+  console.log('getAll carriers :', getAllCarriers)
   useEffect(() => {
     if (postSuccess || editSuccess || deleteSuccess) {
       refetch();
@@ -230,26 +236,26 @@ const DeviceMaster: React.FC = () => {
     { field: "simImeiNumber", headerName: "SIM IMEI Number", width: 200 },
     { field: "vehicleNumber", headerName: "Vehicle Number", width: 150 },
     // { field: "carrierId", headerName: "Carrier ID", width: 150 },
-        {
-    field: "carrierId",
-    headerName: "Carrier ID",
-    width: 150,
-    renderCell: (params) => (
-      <Tooltip title={getCarriersDetails(params.value)} arrow>
-        <span>{params.value}</span>
-      </Tooltip>
-    ),
-  },
-      {
-    field: "locationId",
-    headerName: "Location ID",
-    width: 150,
-    renderCell: (params) => (
-      <Tooltip title={getLocationDetails(params.value)} arrow>
-        <span>{params.value}</span>
-      </Tooltip>
-    ),
-  },
+    {
+      field: "carrierId",
+      headerName: "Carrier ID",
+      width: 150,
+      renderCell: (params) => (
+        <Tooltip title={getCarriersDetails(params.value)} arrow>
+          <span>{params.value}</span>
+        </Tooltip>
+      ),
+    },
+    {
+      field: "locationId",
+      headerName: "Location ID",
+      width: 150,
+      renderCell: (params) => (
+        <Tooltip title={getLocationDetails(params.value)} arrow>
+          <span>{params.value}</span>
+        </Tooltip>
+      ),
+    },
 
     {
       field: "actions",
@@ -328,20 +334,20 @@ const DeviceMaster: React.FC = () => {
           <form onSubmit={formik.handleSubmit}>
             <Grid container spacing={2}>
               {/* Device ID */}
-              {isEditing &&  
-                 <Grid item xs={12} sm={6} md={2.4}  >
-                <TextField
-                  fullWidth size='small'
-                  id="deviceId"
-                  name="deviceId"
-                  label="Device ID (Auto Generated)"
-                  value={formik.values.deviceId}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  disabled
-                />
-              </Grid>}
-            
+              {isEditing &&
+                <Grid item xs={12} sm={6} md={2.4}  >
+                  <TextField
+                    fullWidth size='small'
+                    id="deviceId"
+                    name="deviceId"
+                    label="Device ID (Auto Generated)"
+                    value={formik.values.deviceId}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    disabled
+                  />
+                </Grid>}
+
 
               {/* Device Type */}
               <Grid item xs={12} sm={6} md={2.4}>
@@ -466,7 +472,7 @@ const DeviceMaster: React.FC = () => {
                   onChange={formik.handleChange}
                 />
               </Grid> */}
-              <Grid item xs={12} sm={6} md={2.4}>
+              {/* <Grid item xs={12} sm={6} md={2.4}>
                 <FormControl
                   fullWidth
                   size="small"
@@ -504,10 +510,80 @@ const DeviceMaster: React.FC = () => {
                     <FormHelperText>{formik.errors.locationId}</FormHelperText>
                   )}
                 </FormControl>
+              </Grid> */}
+
+
+              <Grid item xs={12} sm={6} md={2.4}>
+                <TextField
+                  fullWidth
+                  name="locationId"
+                  size="small"
+                  label="Location ID"
+                  onFocus={() => {
+                    if (!searchKey) {
+                      setSearchKey(formik.values?.locationId || "");
+                      setShowSuggestions(true);
+                    }
+                  }}
+                  onChange={(e) => {
+                    setSearchKey(e.target.value)
+                    setShowSuggestions(true)
+                  }
+                  }
+                  // onBlur={handleBlur}
+                  value={searchKey} // Display the selected location ID
+                  // error={touched?.locationId && Boolean(errors?.locationId)}
+                  error={
+                    formik.touched.locationId && Boolean(formik.errors.locationId)
+                  }
+                  helperText={
+                    formik.touched?.locationId && typeof formik.errors?.locationId === "string"
+                      ? formik.errors.locationId
+                      : ""
+                  }
+                  InputProps={{
+                    endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
+                  }}
+                />
+                {showSuggestions && displayLocations?.length > 0 && (
+                  <Paper
+                    style={{
+                      maxHeight: 200,
+                      overflowY: "auto",
+                      position: "absolute",
+                      zIndex: 10,
+                      width: "18%",
+                    }}
+                  >
+                    <List>
+                      {displayLocations.map((location: Location) => (
+                        <ListItem
+                          key={location.loc_ID}
+                          component="li"
+                          onClick={() => {
+                            setShowSuggestions(false)
+                            setSearchKey(location.loc_ID);
+                            // handleLocationChange(location.loc_ID, setFieldValue);
+                            formik.setFieldValue("locationId", location.loc_ID);
+                          }}
+                          sx={{ cursor: "pointer" }}
+                        >
+                          <Tooltip
+                            title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                            placement="right"
+                          >
+                            <span style={{ fontSize: '14px' }}>{location.loc_ID}, {location.loc_desc}</span>
+                          </Tooltip>
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Paper>
+                )}
               </Grid>
+
             </Grid>
             <Box mt={3} textAlign="center">
-              
+
               {/* <Button
                   type="submit"
                   variant="contained"
@@ -522,7 +598,7 @@ const DeviceMaster: React.FC = () => {
                 >
                   {isEditing ? "Update device" : "Create device"}
                 </Button> */}
-              <CustomButtonFilled  >{isEditing ? "Update device": "Create device"}</CustomButtonFilled>
+              <CustomButtonFilled  >{isEditing ? "Update device" : "Create device"}</CustomButtonFilled>
 
               <Button
                 variant="outlined"

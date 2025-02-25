@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Formik, Form, FormikProps } from "formik";
+import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import {
 	TextField,
@@ -22,6 +22,9 @@ import {
 	Backdrop,
 	CircularProgress,
 	Tooltip,
+	Paper,
+	List,
+	ListItem,
 } from "@mui/material";
 import { DataGridComponent } from "../GridComponent";
 import { GridColDef, GridPaginationModel } from "@mui/x-data-grid";
@@ -31,6 +34,7 @@ import styles from "./MasterData.module.css";
 import {
 	useDeleteVehicleMasterMutation,
 	useEditVehicleMasterMutation,
+	useGetFilteredLocationsQuery,
 	useGetLocationMasterQuery,
 	useGetVehicleMasterQuery,
 	usePostVehicleMasterMutation,
@@ -213,19 +217,9 @@ const validationSchema = Yup.object({
 	maxLength: Yup.number().required("Max Length is required"),
 	maxWidth: Yup.number().required("Max Width is required"),
 	maxHeight: Yup.number().required("Max Height is required"),
-	// platformHeight: Yup.number(),
-	// topDeckHeight: Yup.number(),
-	// doorWidth: Yup.number(),
-	// doorHeight: Yup.number(),
-	// doorLength: Yup.number(),
 	avgCost: Yup.number()
 		.typeError("Average cost must be a number")
 		.required("Average cost of transportation is required"),
-	// downtimeStart: Yup.string().required("Downtime Start is required"),
-	// downtimeEnd: Yup.string().required("Downtime End is required"),
-	// downtimeLocation: Yup.string().required("Downtime Location is required"),
-	// downtimeDescription: Yup.string().required("Description is required"),
-	// downtimeReason: Yup.string().required("Reason is required"),
 });
 
 const VehicleForm: React.FC = () => {
@@ -239,11 +233,16 @@ const VehicleForm: React.FC = () => {
 	const [postVehicle, { isLoading: postVehicleLoading }] = usePostVehicleMasterMutation();
 	const [editVehicle, { isLoading: editVehicleLoading }] = useEditVehicleMasterMutation();
 	const [deleteVehicle, { isLoading: deleteVehicleLoading }] = useDeleteVehicleMasterMutation();
+	const [searchKey, setSearchKey] = useState('');
+	const [showSuggestions, setShowSuggestions] = useState(false);
+	const { data: locationsData } = useGetLocationMasterQuery({});
+	const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
+	const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey);
+	const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
+
 	if (error) {
 		console.log("err in loading vehicles data :", error);
 	}
-	const { data: locationsData, isLoading: isLocationLoading } = useGetLocationMasterQuery({});
-	const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
 	const getLocationDetails = (loc_ID: string) => {
 		const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
 		if (!location) return "Location details not available";
@@ -320,7 +319,7 @@ const VehicleForm: React.FC = () => {
 
 	const [initialValues, setInitialValues] = useState(initialFormValues);
 	useEffect(() => {
-		if (editRow) { 
+		if (editRow) {
 			console.log('edit row :', editRow)
 			const editPayloadWeight = editRow.payloadWeight.split(" ");
 			const editCubicCapacity = editRow?.cubicCapacity.split(" ");
@@ -470,11 +469,6 @@ const VehicleForm: React.FC = () => {
 		{ field: "maxLength", headerName: "Max Length", width: 150 },
 		{ field: "maxWidth", headerName: "Max Width", width: 150 },
 		{ field: "maxHeight", headerName: "Max Height", width: 150 },
-		// { field: "platformHeight", headerName: "Platform Height", width: 150 },
-		// { field: "topDeckHeight", headerName: "Top Deck Height", width: 150 },
-		// { field: "doorWidth", headerName: "Door Width", width: 150 },
-		// { field: "doorHeight", headerName: "Door Height", width: 150 },
-		// { field: "doorLength", headerName: "Door Length", width: 150 },
 		{ field: "downtimeStart", headerName: "Downtime Start", width: 150 },
 		{ field: "downtimeEnd", headerName: "Downtime End", width: 150 },
 		{ field: "downtimeLocation", headerName: "Downtime Location", width: 200 },
@@ -672,15 +666,15 @@ const VehicleForm: React.FC = () => {
 		}
 	};
 
-	const handleLocationChange = (
-		event: SelectChangeEvent<string>,
-		setFieldValue: FormikProps<{ locationId: string; timeZone: string }>['setFieldValue']
-	) => {
-		const selectedLocation = event.target.value;
-		setFieldValue('locationId', selectedLocation);
-		const matchedLocation = getAllLocations?.find((loc: Location) => loc.loc_ID === selectedLocation);
-		setFieldValue("timeZone", matchedLocation ? matchedLocation?.time_zone : "");
-	};
+	// const handleLocationChange = (
+	// 	event: SelectChangeEvent<string>,
+	// 	setFieldValue: FormikProps<{ locationId: string; timeZone: string }>['setFieldValue']
+	// ) => {
+	// 	const selectedLocation = event.target.value;
+	// 	setFieldValue('locationId', selectedLocation);
+	// 	const matchedLocation = getAllLocations?.find((loc: Location) => loc.loc_ID === selectedLocation);
+	// 	setFieldValue("timeZone", matchedLocation ? matchedLocation?.time_zone : "");
+	// };
 
 	return (
 		<>
@@ -755,21 +749,21 @@ const VehicleForm: React.FC = () => {
 											1. General Data
 										</Typography>
 										<Grid container spacing={2}>
-											{isEditing && 
-											<Grid item xs={12} sm={6} md={2.4}>
-												<TextField
-													fullWidth
-													label="Vehicle ID (Auto generated)"
-													name="vehicleId"
-													value={values.vehicleId}
-													onChange={handleChange}
-													onBlur={handleBlur}
-													size="small"
-													disabled
-												/>
-											</Grid>}
-									
-											<Grid item xs={12} sm={6} md={2.4}>
+											{isEditing &&
+												<Grid item xs={12} sm={6} md={2.4}>
+													<TextField
+														fullWidth
+														label="Vehicle ID (Auto generated)"
+														name="vehicleId"
+														value={values.vehicleId}
+														onChange={handleChange}
+														onBlur={handleBlur}
+														size="small"
+														disabled
+													/>
+												</Grid>}
+
+											{/* <Grid item xs={12} sm={6} md={2.4}>
 												<FormControl fullWidth size="small" error={touched.locationId && Boolean(errors.locationId)}>
 													<InputLabel>Location ID</InputLabel>
 													<Select
@@ -801,6 +795,71 @@ const VehicleForm: React.FC = () => {
 														<FormHelperText>{errors.locationId}</FormHelperText>
 													)}
 												</FormControl>
+											</Grid> */}
+
+											<Grid item xs={12} sm={6} md={2.4}>
+												<TextField
+													fullWidth
+													name="locationId"
+													size="small"
+													label="Search Location"
+													onFocus={() => {
+														if (!searchKey) {
+															setSearchKey(values?.locationId || "");
+															setShowSuggestions(true);
+														}
+													}}
+													onChange={(e) => {
+														setSearchKey(e.target.value)
+														setShowSuggestions(true)
+													}
+													}
+													onBlur={handleBlur}
+													value={searchKey} // Display the selected location ID
+													error={touched?.locationId && Boolean(errors?.locationId)}
+													helperText={
+														touched?.locationId && typeof errors?.locationId === "string"
+															? errors.locationId
+															: ""
+													}
+													InputProps={{
+														endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
+													}}
+												/>
+												{showSuggestions && displayLocations?.length > 0 && (
+													<Paper
+														style={{
+															maxHeight: 200,
+															overflowY: "auto",
+															position: "absolute",
+															zIndex: 10,
+															width: "18%",
+														}}
+													>
+														<List>
+															{displayLocations.map((location: Location) => (
+																<ListItem
+																	key={location.loc_ID}
+																	component="li"
+																	onClick={() => {
+																		setShowSuggestions(false)
+																		setSearchKey(location.loc_ID);
+																		// handleLocationChange(location.loc_ID, setFieldValue);
+																		setFieldValue("locationId", location.loc_ID);
+																	}}
+																	sx={{ cursor: "pointer" }}
+																>
+																	<Tooltip
+																		title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+																		placement="right"
+																	>
+																		<span style={{ fontSize: '14px' }}>{location.loc_ID}, {location.loc_desc}</span>
+																	</Tooltip>
+																</ListItem>
+															))}
+														</List>
+													</Paper>
+												)}
 											</Grid>
 											<Grid item xs={12} sm={6} md={2.4}>
 												<TextField
@@ -816,38 +875,6 @@ const VehicleForm: React.FC = () => {
 													size="small"
 												/>
 											</Grid>
-											{/* <Grid item xs={12}>
-												<FormControlLabel
-													control={
-														<Checkbox
-															checked={values.unlimitedUsage}
-															onChange={(e) =>
-																handleChange({
-																	target: {
-																		name: "unlimitedUsage",
-																		value: e.target.checked,
-																	},
-																})
-															}
-														/>
-													}
-													label="Unlimited Usage"
-												/>
-											</Grid>
-											{!values.unlimitedUsage && (
-												<Grid item xs={12} sm={6} md={2.4}>
-													<TextField
-														fullWidth
-														label="Individual Resources"
-														name="individualResources"
-														type="number"
-														value={values.individualResources}
-														onChange={handleChange}
-														onBlur={handleBlur}
-														size="small"
-													/>
-												</Grid>
-											)} */}
 											<Grid item xs={12}>
 												<FormControlLabel
 													control={
@@ -857,7 +884,7 @@ const VehicleForm: React.FC = () => {
 																const checked = e.target.checked;
 																setFieldValue("unlimitedUsage", checked);
 																if (checked) {
-																	setFieldValue("individualResources", ""); // Ensures controlled input
+																	setFieldValue("individualResources", "");
 																}
 															}}
 														/>
@@ -891,45 +918,6 @@ const VehicleForm: React.FC = () => {
 											2. Transportation Details
 										</Typography>
 										<Grid container spacing={2}>
-											{/* <Grid item xs={12} sm={6} md={2.4}>
-												<TextField
-													fullWidth
-													size="small"
-													label="Validity From"
-													name="validityFrom"
-													type="date"
-													value={
-														values.validityFrom
-															? values.validityFrom
-																.split("-")
-																.reverse()
-																.join("-")
-															: ""
-													}
-													onChange={(e) => {
-														const selectedDate = e.target.value;
-														const formattedDate = selectedDate
-															.split("-")
-															.reverse()
-															.join("-");
-														handleChange({
-															target: {
-																name: "validityFrom",
-																value: formattedDate,
-															},
-														});
-													}}
-													onBlur={handleBlur}
-													error={
-														touched.validityFrom &&
-														Boolean(errors.validityFrom)
-													}
-													helperText={
-														touched.validityFrom && errors.validityFrom
-													}
-													InputLabelProps={{ shrink: true }}
-												/>
-											</Grid> */}
 											<Grid item xs={12} sm={6} md={2.4}>
 												<TextField
 													fullWidth
@@ -952,45 +940,6 @@ const VehicleForm: React.FC = () => {
 													InputLabelProps={{ shrink: true }}
 												/>
 											</Grid>
-											{/* <Grid item xs={12} sm={6} md={2.4}>
-												<TextField
-													fullWidth
-													size="small"
-													label="Validity To"
-													name="validityTo"
-													type="date"
-													value={
-														values.validityTo
-															? values.validityTo
-																.split("-")
-																.reverse()
-																.join("-")
-															: ""
-													}
-													onChange={(e) => {
-														const selectedDate = e.target.value;
-														const formattedDate = selectedDate
-															.split("-")
-															.reverse()
-															.join("-");
-														handleChange({
-															target: {
-																name: "validityTo",
-																value: formattedDate,
-															},
-														});
-													}}
-													onBlur={handleBlur}
-													error={
-														touched.validityTo &&
-														Boolean(errors.validityTo)
-													}
-													helperText={
-														touched.validityTo && errors.validityTo
-													}
-													InputLabelProps={{ shrink: true }}
-												/>
-											</Grid> */}
 											<Grid item xs={12} sm={6} md={2.4}>
 												<TextField
 													fullWidth
