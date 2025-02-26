@@ -116,8 +116,7 @@ const Locations: React.FC = () => {
   const [postLocation, { isLoading: postLocationLoading }] = usePostLocationMasterMutation();
   const [editLocation, { isLoading: editLocationLoading }] = useEditLocationMasterMutation();
   const [deleteLocation, { isLoading: deleteLocationLoading }] = useDeleteLocationMasterMutation()
-
-
+  console.log('all locations :', data?.locations)
 
   if (error) {
     console.error("Error fetching locations:", error);
@@ -270,19 +269,20 @@ const Locations: React.FC = () => {
 
   useEffect(() => {
     if (editRow) {
+      console.log('edit row :', editRow)
       formik.setValues({
         id: editRow.id,
         locationId: editRow.locationId,
         locationDescription: editRow.locationDescription,
         locationType: editRow.locationType,
-        glnCode: editRow.glnCode,
-        iataCode: editRow.iataCode,
+        glnCode: editRow.glnCode !=='NA' ? editRow.glnCode : "",
+        iataCode: editRow.iataCode !=='NA' ? editRow.iataCode : "" ,
         longitude: editRow.longitude,
         latitude: editRow.latitude,
         timeZone: editRow.timeZone,
         city: editRow.city,
-        addressLine1: editRow?.addressLine1,
-        addressLine2: editRow?.addressLine2,
+        addressLine1: editRow.addressLine1 ? editRow.addressLine1 : '',
+        addressLine2: editRow.addressLine2 ? editRow.addressLine2 :'',
         district: editRow.district,
         state: editRow.state,
         country: editRow.country,
@@ -293,7 +293,7 @@ const Locations: React.FC = () => {
         locationContactEmail: editRow.locationContactEmail,
       });
     }
-  }, [editRow, formik]);
+  }, [editRow]);
   const { values, errors, touched, handleChange, handleBlur, handleSubmit } = formik;
 
 
@@ -408,7 +408,8 @@ const Locations: React.FC = () => {
                 1. General info
               </Typography>
               <Grid container spacing={2}>
-                {/* <Grid item xs={12} sm={6} md={2.4}>
+                {isEditing &&
+                 <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth disabled
                       size="small"
@@ -421,7 +422,8 @@ const Locations: React.FC = () => {
                         readOnly: true,
                       }}
                     />
-                  </Grid> */}
+                  </Grid> }
+               
                 <Grid item xs={12} sm={6} md={2.4}>
                   <TextField
                     fullWidth
@@ -435,47 +437,6 @@ const Locations: React.FC = () => {
                     helperText={touched.locationDescription && errors.locationDescription}
                   />
                 </Grid>
-                {/* <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth
-                    size="small"
-                    InputProps={{
-                        style: { textTransform: 'capitalize' }
-                      }}
-                      select sx={{textTransform:'capitalize'}}
-                      name="locationType"
-                      value={values.locationType}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      error={touched.locationType && Boolean(errors.locationType)}
-                      helperText={touched.locationType && errors.locationType}
-                      SelectProps={{
-                        native: true, // Use native dropdown
-                      }}
-                    >
-                      <option value="" disabled>
-                        Select Location Type *
-                      </option>
-                      <option value="product plant">Product Plant</option>
-                      <option value="distribution center">Distribution Center</option>
-                      <option value="shipping point">Shipping Point</option>
-                      <option value="customer">Customer</option>
-                      <option value="vendor">Vendor</option>
-                      <option value="terminal">Terminal</option>
-                      <option value="port">Port</option>
-                      <option value="airport">Airport</option>
-                      <option value="railway station">Railway Station</option>
-                      <option value="container freight station">Container Freight Station</option>
-                      <option value="hub">Hub</option>
-                      <option value="gateway">Gateway</option>
-                      <option value="container yard">Container Yard</option>
-                      <option value="warehouse">Warehouse</option>
-                      <option value="carrier warehouse">Carrier Warehouse</option>
-                      <option value="rail junction">Rail Junction</option>
-                      <option value="border cross point">Border Cross Point</option>
-                    </TextField>
-                  </Grid> */}
-
                 <Grid item xs={12} sm={6} md={2.4}>
                   <TextField
                     fullWidth
@@ -509,7 +470,6 @@ const Locations: React.FC = () => {
                     value={values.iataCode}
                     onChange={handleChange}
                     onBlur={handleBlur}
-
                     inputProps={{ maxLength: 3 }}
                   />
                 </Grid>

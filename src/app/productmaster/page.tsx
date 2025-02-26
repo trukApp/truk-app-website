@@ -161,7 +161,7 @@ const ProductMasterPage = () => {
         const volumeUnit = selectedProduct.volume.split(' ')
         return (
             {
-                productID: selectedProduct.productID || '',
+                productID: selectedProduct.product_ID || '',
                 productName: selectedProduct.productName || '',
                 productDescription: selectedProduct.product_desc || '',
                 basicUoM: selectedProduct.basic_uom || '',
@@ -326,6 +326,7 @@ const ProductMasterPage = () => {
 
             const editProductBody = {
                 ...updateRecordData,
+            
                 product_name: values?.productName,
                 product_desc: values?.productDescription,
                 basic_uom: values?.basicUoM,
@@ -461,8 +462,6 @@ const ProductMasterPage = () => {
                                                 value={values.productName}
                                                 onChange={handleChange}
                                                 onBlur={handleBlur}
-                                                error={touched.productName && Boolean(errors.productName)}
-                                                helperText={touched.productName && errors.productName}
                                             />
                                         </Grid>
                                         <Grid item xs={12} sm={6} md={2.4} >

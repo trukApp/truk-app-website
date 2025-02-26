@@ -3,52 +3,27 @@
 import React, { useEffect, useState } from "react";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
-import {
-	TextField,
-	Grid,
-	Box,
-	Typography,
-	Checkbox,
-	FormControlLabel,
-	MenuItem,
-	Button,
-	Collapse,
-	IconButton,
-	FormHelperText,
-	Select,
-	FormControl,
-	InputLabel,
-	SelectChangeEvent,
-	Backdrop,
-	CircularProgress,
-	Tooltip,
-	Paper,
-	List,
-	ListItem,
-} from "@mui/material";
+import {TextField,Grid,Box,Typography,Checkbox,FormControlLabel,MenuItem,Button,Collapse,IconButton,Backdrop,CircularProgress,Tooltip,Paper,List,ListItem} from "@mui/material";
 import { DataGridComponent } from "../GridComponent";
 import { GridColDef, GridPaginationModel } from "@mui/x-data-grid";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import styles from "./MasterData.module.css";
-import {
-	useDeleteVehicleMasterMutation,
-	useEditVehicleMasterMutation,
-	useGetFilteredLocationsQuery,
-	useGetLocationMasterQuery,
-	useGetVehicleMasterQuery,
-	usePostVehicleMasterMutation,
-} from "@/api/apiSlice";
+import {useDeleteVehicleMasterMutation,useEditVehicleMasterMutation,useGetFilteredLocationsQuery,useGetLocationMasterQuery,useGetUomMasterQuery,useGetVehicleMasterQuery,usePostVehicleMasterMutation,} from "@/api/apiSlice";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MassUpload from "../MassUpload/MassUpload";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store";
 import DataGridSkeletonLoader from "../ReusableComponents/DataGridSkeletonLoader";
 import { Location } from "./Locations";
 import SnackbarAlert from "../ReusableComponents/SnackbarAlerts";
-
+import { setUnitsofMeasurement } from "@/store/authSlice";
 export interface VehicleFormValues {
+	hazardousStorage: boolean;
+	temperatureControl: boolean;
+	dangerousGoods: boolean;
+	fragileGoods: boolean;
 	vehicleId: string;
 	id: string;
 	locationId: string;
@@ -62,52 +37,36 @@ export interface VehicleFormValues {
 	ownership: string;
 	payloadWeight: string;
 	payloadWeightUnits: string;
-
 	cubicCapacity: string;
 	cubicCapacityUnits: string;
-
 	interiorLength: string;
 	interiorLengthUnits: string;
-
 	interiorWidth: string;
 	interiorWidthUnits: string;
-
 	interiorHeight: string;
 	interiorHeightUnits: string;
-
 	tareWeight: string;
 	tareWeightUnits: string;
-
 	maxGrossWeight: string;
 	maxGrossWeightUnits: string;
-
 	tareVolume: string;
 	tareVolumeUnits: string;
-
 	maxLength: string;
 	maxLengthUnits: string;
-
 	maxWidth: string;
 	maxWidthUnits: string;
-
 	maxHeight: string;
 	maxHeightUnits: string;
-
 	platformHeight: string;
 	platformHeightUnits: string;
-
 	topDeckHeight: string;
 	topDeckHeightUnits: string;
-
 	doorWidth: string;
 	doorWidthUnits: string;
-
 	doorHeight: string;
 	doorHeightUnits: string;
-
 	doorLength: string;
 	doorLengthUnits: string;
-
 	avgCost: string;
 	downtimeStart: string;
 	downtimeEnd: string;
@@ -115,11 +74,9 @@ export interface VehicleFormValues {
 	downtimeDescription: string;
 	downtimeReason: string;
 }
-
 interface AdditionalDetails {
 	cost_per_ton: string;
 }
-
 interface Capacity {
 	cubic_capacity_unit: string;
 	payload_weight_unit: string;
@@ -129,7 +86,6 @@ interface Capacity {
 	interior_width: string;
 	payload_weight: string;
 }
-
 interface Downtimes {
 	downtime_desc: string;
 	downtime_starts_from: string;
@@ -137,7 +93,6 @@ interface Downtimes {
 	downtime_location: string;
 	reason: string;
 }
-
 interface PhysicalProperties {
 	max_gross_weight: string;
 	max_height: string;
@@ -146,7 +101,6 @@ interface PhysicalProperties {
 	tare_volume: string;
 	tare_weight: string;
 }
-
 interface TransportationDetails {
 	ownership: string;
 	validity_from: string;
@@ -154,8 +108,11 @@ interface TransportationDetails {
 	vehicle_group: string;
 	vehicle_type: string;
 }
-
 export interface VehicleDetails {
+	temp_controlled_vehicle: boolean;
+	hazardous_proof: boolean;
+	danger_proof: boolean;
+	fragile_vehicle: boolean;
 	time_zone: string;
 	id: string;
 	additional_details: AdditionalDetails;
@@ -189,18 +146,17 @@ export interface VehicleDetails {
 }
 
 const downtimeReasons = ["Maintenance", "Breakdown", "Inspection", "Other"];
-
 const validationSchema = Yup.object({
 	locationId: Yup.string().required("Location ID is required"),
 	timeZone: Yup.string().required("Time Zone is required"),
 	unlimitedUsage: Yup.boolean(),
 	individualResources: Yup.number()
-		.typeError("Must be a number")
-		.when("unlimitedUsage", {
-			is: false,
-			then: (schema) => schema.required("Individual Resources is required"),
-			otherwise: (schema) => schema.notRequired().nullable(),
-		}),
+    .typeError("Must be a number")
+    .when("unlimitedUsage", {
+        is: false,
+        then: (schema) => schema.required("Individual Resources is required"),
+        otherwise: (schema) => schema.notRequired().nullable(),
+    }),
 	validityFrom: Yup.string().required("Validity start date is required"),
 	validityTo: Yup.string().required("Validity end date is required"),
 	vehicleType: Yup.string().required("Vehicle Type is required"),
@@ -223,6 +179,7 @@ const validationSchema = Yup.object({
 });
 
 const VehicleForm: React.FC = () => {
+	const dispatch = useDispatch();
 	const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10, });
 	const [snackbarOpen, setSnackbarOpen] = useState(false);
 	const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -239,6 +196,20 @@ const VehicleForm: React.FC = () => {
 	const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
 	const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey);
 	const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
+	  const { data: uom, error: uomErr } = useGetUomMasterQuery([])
+	  if (uomErr) {
+		console.log("uom err:", uomErr)
+	  }
+	  useEffect(() => {
+		if (uom && uom.uomList) {
+		  const unitsofMeasure = uom.uomList.map((item: { unit_name: string }) => item.unit_name);
+		  dispatch(setUnitsofMeasurement(unitsofMeasure));
+		}
+	
+		if (uomErr) {
+		  console.error("uom error:", uomErr);
+		}
+	  }, [uom, uomErr, dispatch]);
 
 	if (error) {
 		console.log("err in loading vehicles data :", error);
@@ -257,7 +228,7 @@ const VehicleForm: React.FC = () => {
 
 		return details.length > 0 ? details.join(", ") : "Location details not available";
 	};
-	const vehiclesMaster = data?.vehicles;
+	const vehiclesMaster = data?.vehicles; 
 	const unitsofMeasurement = useSelector(
 		(state: RootState) => state.auth.unitsofMeasurement
 	);
@@ -315,6 +286,10 @@ const VehicleForm: React.FC = () => {
 		downtimeLocation: "",
 		downtimeDescription: "",
 		downtimeReason: "",
+		fragileGoods: false,
+		dangerousGoods: false,
+		temperatureControl: false,
+		hazardousStorage : false
 	};
 
 	const [initialValues, setInitialValues] = useState(initialFormValues);
@@ -383,6 +358,10 @@ const VehicleForm: React.FC = () => {
 				downtimeLocation: editRow.downtimeLocation,
 				downtimeDescription: editRow.downtimeDescription,
 				downtimeReason: editRow.downtimeReason,
+				fragileGoods: editRow.fragileGoods,
+		dangerousGoods: editRow.dangerousGoods,
+		temperatureControl: editRow.temperatureControl,
+		hazardousStorage : editRow.hazardousStorage
 			}));
 		}
 	}, [editRow]);
@@ -426,6 +405,10 @@ const VehicleForm: React.FC = () => {
 		downtimeLocation: vehicle?.downtimes?.downtime_location,
 		downtimeDescription: vehicle?.downtimes?.downtime_desc,
 		downtimeReason: vehicle?.downtimes?.reason,
+		fragileGoods: vehicle.fragile_vehicle,
+		dangerousGoods: vehicle.danger_proof,
+		hazardousStorage: vehicle.hazardous_proof,
+		temperatureControl: vehicle.temp_controlled_vehicle,
 	}));
 
 	const columns: GridColDef[] = [
@@ -545,6 +528,10 @@ const VehicleForm: React.FC = () => {
 						additional_details: {
 							cost_per_ton: values.avgCost,
 						},
+						fragile_vehicle: values.fragileGoods,
+						danger_proof: values.dangerousGoods,
+						hazardous_proof: values.hazardousStorage,
+						temp_controlled_vehicle: values.temperatureControl,
 					},
 				],
 			};
@@ -590,8 +577,12 @@ const VehicleForm: React.FC = () => {
 				additional_details: {
 					cost_per_ton: values.avgCost,
 				},
+				fragile_vehicle: values.fragileGoods,
+      			danger_proof: values.dangerousGoods,
+      			hazardous_proof: values.hazardousStorage,
+      			temp_controlled_vehicle: values.temperatureControl,
 			};
-
+			 
 			if (isEditing && editRow) {
 				console.log('qwerty')
 				const vehicleId = editRow.id;
@@ -606,6 +597,7 @@ const VehicleForm: React.FC = () => {
 					setIsEditing(false)
 					setSnackbarSeverity("success");
 					setSnackbarOpen(true);
+					setSearchKey('')
 				}
 
 			} else {
@@ -617,6 +609,7 @@ const VehicleForm: React.FC = () => {
 					setIsEditing(false)
 					setSnackbarSeverity("success");
 					setSnackbarOpen(true);
+					setSearchKey('')
 				}
 
 			}
@@ -628,6 +621,7 @@ const VehicleForm: React.FC = () => {
 			setShowForm(false);
 			resetForm();
 			setIsEditing(false)
+			setSearchKey('')
 		}
 	};
 
@@ -665,16 +659,6 @@ const VehicleForm: React.FC = () => {
 			setSnackbarOpen(true);
 		}
 	};
-
-	// const handleLocationChange = (
-	// 	event: SelectChangeEvent<string>,
-	// 	setFieldValue: FormikProps<{ locationId: string; timeZone: string }>['setFieldValue']
-	// ) => {
-	// 	const selectedLocation = event.target.value;
-	// 	setFieldValue('locationId', selectedLocation);
-	// 	const matchedLocation = getAllLocations?.find((loc: Location) => loc.loc_ID === selectedLocation);
-	// 	setFieldValue("timeZone", matchedLocation ? matchedLocation?.time_zone : "");
-	// };
 
 	return (
 		<>
@@ -763,46 +747,12 @@ const VehicleForm: React.FC = () => {
 													/>
 												</Grid>}
 
-											{/* <Grid item xs={12} sm={6} md={2.4}>
-												<FormControl fullWidth size="small" error={touched.locationId && Boolean(errors.locationId)}>
-													<InputLabel>Location ID</InputLabel>
-													<Select
-														label="Location ID"
-														name="locations"
-														value={values.locationId || ''}
-														onChange={(event) => handleLocationChange(event, setFieldValue)}
-														onBlur={handleBlur}
-													>
-														{isLocationLoading ? (
-															<MenuItem disabled>
-																<CircularProgress size={20} color="inherit" />
-																<span style={{ marginLeft: "10px" }}>Loading...</span>
-															</MenuItem>
-														) : (
-															getAllLocations?.map((location: Location) => (
-																<MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-																	<Tooltip
-																		title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-																		placement="right"
-																	>
-																		<span style={{ flex: 1 }}>{location.loc_ID}</span>
-																	</Tooltip>
-																</MenuItem>
-															))
-														)}
-													</Select>
-													{touched.locationId && errors.locationId && (
-														<FormHelperText>{errors.locationId}</FormHelperText>
-													)}
-												</FormControl>
-											</Grid> */}
-
-											<Grid item xs={12} sm={6} md={2.4}>
+									        <Grid item xs={12} sm={6} md={2.4}>
 												<TextField
 													fullWidth
 													name="locationId"
 													size="small"
-													label="Search Location"
+													label="Search Location... "
 													onFocus={() => {
 														if (!searchKey) {
 															setSearchKey(values?.locationId || "");
@@ -814,8 +764,8 @@ const VehicleForm: React.FC = () => {
 														setShowSuggestions(true)
 													}
 													}
-													onBlur={handleBlur}
-													value={searchKey} // Display the selected location ID
+													// onBlur={handleBlur}
+													value={editRow ? values.locationId : searchKey}
 													error={touched?.locationId && Boolean(errors?.locationId)}
 													helperText={
 														touched?.locationId && typeof errors?.locationId === "string"
@@ -846,6 +796,7 @@ const VehicleForm: React.FC = () => {
 																		setSearchKey(location.loc_ID);
 																		// handleLocationChange(location.loc_ID, setFieldValue);
 																		setFieldValue("locationId", location.loc_ID);
+																		setFieldValue("timeZone", location.time_zone)
 																	}}
 																	sx={{ cursor: "pointer" }}
 																>
@@ -853,7 +804,7 @@ const VehicleForm: React.FC = () => {
 																		title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
 																		placement="right"
 																	>
-																		<span style={{ fontSize: '14px' }}>{location.loc_ID}, {location.loc_desc}</span>
+																		<span style={{ fontSize: '13px' }}>{location.loc_ID}, {location.city}, {location.state}, {location.pincode}</span>
 																	</Tooltip>
 																</ListItem>
 															))}
@@ -865,7 +816,7 @@ const VehicleForm: React.FC = () => {
 												<TextField
 													fullWidth
 													disabled
-													label="Time Zone"
+													label="Time Zone*"
 													name="timeZone"
 													value={values.timeZone}
 													onChange={handleChange}
@@ -884,7 +835,8 @@ const VehicleForm: React.FC = () => {
 																const checked = e.target.checked;
 																setFieldValue("unlimitedUsage", checked);
 																if (checked) {
-																	setFieldValue("individualResources", "");
+																	setFieldValue("individualResources", null);
+																	setFieldValue("individualResources", '');
 																}
 															}}
 														/>
@@ -897,11 +849,12 @@ const VehicleForm: React.FC = () => {
 												<Grid item xs={12} sm={6} md={2.4}>
 													<TextField
 														fullWidth
-														label="Individual Resources"
+														label="Individual Resources*"
 														name="individualResources"
 														type="number"
-														value={values.individualResources ?? ""} // Ensures controlled component
-														onChange={handleChange}
+														value={values.individualResources ?? ""} 
+														// onChange={handleChange}
+														onChange={(e) => setFieldValue("individualResources", e.target.value ? Number(e.target.value) : "")} 
 														onBlur={handleBlur}
 														size="small"
 														error={touched.individualResources && Boolean(errors.individualResources)}
@@ -922,21 +875,14 @@ const VehicleForm: React.FC = () => {
 												<TextField
 													fullWidth
 													size="small"
-													label="Validity From"
+													label="Validity From*"
 													name="validityFrom"
 													type="date"
-													value={
-														values.validityFrom
-													}
+													value={values.validityFrom}
 													onChange={handleChange}
 													onBlur={handleBlur}
-													error={
-														touched.validityFrom &&
-														Boolean(errors.validityFrom)
-													}
-													helperText={
-														touched.validityFrom && errors.validityFrom
-													}
+													error={touched.validityFrom && Boolean(errors.validityFrom)}
+													helperText={touched.validityFrom && errors.validityFrom}
 													InputLabelProps={{ shrink: true }}
 												/>
 											</Grid>
@@ -944,7 +890,7 @@ const VehicleForm: React.FC = () => {
 												<TextField
 													fullWidth
 													size="small"
-													label="Validity To"
+													label="Validity To*"
 													name="validityTo"
 													type="date"
 													value={
@@ -965,9 +911,9 @@ const VehicleForm: React.FC = () => {
 											</Grid>
 											<Grid item xs={12} sm={6} md={2.4}>
 												<TextField
-													select
+													// select
 													fullWidth
-													label="Vehicle Type"
+													label="Vehicle Type (Van , Truck ...)*"
 													name="vehicleType"
 													value={values.vehicleType}
 													onChange={handleChange}
@@ -978,16 +924,16 @@ const VehicleForm: React.FC = () => {
 													helperText={touched.vehicleType && errors.vehicleType}
 													size="small"
 												>
-													<MenuItem value="Truck">Van</MenuItem>
+													{/* <MenuItem value="Truck">Van</MenuItem>
 													<MenuItem value="Truck">Truck</MenuItem>
 													<MenuItem value="Trailer">Trailer</MenuItem>
-													<MenuItem value="Container">Container</MenuItem>
+													<MenuItem value="Container">Container</MenuItem> */}
 												</TextField>
 											</Grid>
 											<Grid item xs={12} sm={6} md={2.4}>
 												<TextField
 													fullWidth
-													label="Vehicle Group"
+													label="Vehicle Group*"
 													name="vehicleGroup"
 													value={values.vehicleGroup}
 													onChange={handleChange}
@@ -1005,7 +951,7 @@ const VehicleForm: React.FC = () => {
 												<TextField
 													select
 													fullWidth
-													label="Ownership"
+													label="Ownership*"
 													name="ownership"
 													value={values.ownership}
 													onChange={handleChange}
@@ -1028,7 +974,7 @@ const VehicleForm: React.FC = () => {
 											<Grid item xs={12} sm={6} md={1.6}>
 												<TextField
 													fullWidth
-													label="Payload Weight"
+													label="Payload Weight*"
 													name="payloadWeight"
 													type="number"
 													value={values.payloadWeight}
@@ -1066,7 +1012,7 @@ const VehicleForm: React.FC = () => {
 											<Grid item xs={12} sm={6} md={1.6}>
 												<TextField
 													fullWidth
-													label="Cubic Capacity"
+													label="Cubic Capacity*"
 													name="cubicCapacity"
 													type="number"
 													value={values.cubicCapacity}
@@ -1104,7 +1050,7 @@ const VehicleForm: React.FC = () => {
 											<Grid item xs={12} sm={6} md={1.6}>
 												<TextField
 													fullWidth
-													label="Interior Length"
+													label="Interior Length*"
 													name="interiorLength"
 													type="number"
 													value={values.interiorLength}
@@ -1142,7 +1088,7 @@ const VehicleForm: React.FC = () => {
 											<Grid item xs={12} sm={6} md={1.6}>
 												<TextField
 													fullWidth
-													label="Interior Width"
+													label="Interior Width*"
 													name="interiorWidth"
 													type="number"
 													value={values.interiorWidth}
@@ -1180,7 +1126,7 @@ const VehicleForm: React.FC = () => {
 											<Grid item xs={12} sm={6} md={1.6}>
 												<TextField
 													fullWidth
-													label="Interior Height"
+													label="Interior Height*"
 													name="interiorHeight"
 													type="number"
 													value={values.interiorHeight}
@@ -1224,7 +1170,7 @@ const VehicleForm: React.FC = () => {
 											<Grid item xs={12} sm={6} md={1.6}>
 												<TextField
 													fullWidth
-													label="Max. Gross Weight"
+													label="Max. Gross Weight*"
 													name="maxGrossWeight"
 													type="number"
 													value={values.maxGrossWeight}
@@ -1262,7 +1208,7 @@ const VehicleForm: React.FC = () => {
 											<Grid item xs={12} sm={6} md={1.6}>
 												<TextField
 													fullWidth
-													label="Tare Weight"
+													label="Tare Weight*"
 													name="tareWeight"
 													type="number"
 													value={values.tareWeight}
@@ -1297,7 +1243,7 @@ const VehicleForm: React.FC = () => {
 											<Grid item xs={12} sm={6} md={1.6}>
 												<TextField
 													fullWidth
-													label="Tare Volume"
+													label="Tare Volume*"
 													name="tareVolume"
 													type="number"
 													value={values.tareVolume}
@@ -1332,7 +1278,7 @@ const VehicleForm: React.FC = () => {
 											<Grid item xs={12} sm={6} md={1.6}>
 												<TextField
 													fullWidth
-													label="Max. Length"
+													label="Max. Length*"
 													name="maxLength"
 													type="number"
 													value={values.maxLength}
@@ -1365,7 +1311,7 @@ const VehicleForm: React.FC = () => {
 											<Grid item xs={12} sm={6} md={1.6}>
 												<TextField
 													fullWidth
-													label="Max. Width"
+													label="Max. Width*"
 													name="maxWidth"
 													type="number"
 													value={values.maxWidth}
@@ -1398,7 +1344,7 @@ const VehicleForm: React.FC = () => {
 											<Grid item xs={12} sm={6} md={1.6}>
 												<TextField
 													fullWidth
-													label="Max. Height"
+													label="Max. Height*"
 													name="maxHeight"
 													type="number"
 													value={values.maxHeight}
@@ -1519,7 +1465,7 @@ const VehicleForm: React.FC = () => {
 											<Grid item xs={12} sm={6} md={2.4}>
 												<TextField
 													fullWidth
-													label="Avg. Cost of Transportation (Price Per Ton)"
+													label="Avg. Cost of Transportation (Price Per Ton)*"
 													name="avgCost"
 													type="number"
 													value={values.avgCost}
@@ -1530,6 +1476,56 @@ const VehicleForm: React.FC = () => {
 													helperText={touched.avgCost && errors.avgCost}
 												/>
 											</Grid>
+
+											<Grid item xs={12} md={2.4}>
+												<FormControlLabel
+													control={
+														<Checkbox
+															name="fragileGoods"
+															checked={values.fragileGoods}
+															onChange={(e) => setFieldValue("fragileGoods", e.target.checked)}
+														/>
+													}
+													label="Fragile Goods"
+												/>
+											</Grid>
+											<Grid item xs={12} md={2.4}>
+												<FormControlLabel
+													control={
+														<Checkbox
+															name="dangerousGoods"
+															checked={values.dangerousGoods}
+															onChange={(e) => setFieldValue("dangerousGoods", e.target.checked)}
+														/>
+													}
+													label="Dangerous Goods"
+												/>
+											</Grid>
+											<Grid item xs={12} md={2.4}>
+												<FormControlLabel
+													control={
+														<Checkbox
+															name="hazardousStorage"
+															checked={values.hazardousStorage}
+															onChange={(e) => setFieldValue("hazardousStorage", e.target.checked)}
+														/>
+													}
+													label="Hazardous Substance Storage"
+												/>
+											</Grid>
+											<Grid item xs={12} md={2.4}>
+												<FormControlLabel
+													control={
+														<Checkbox
+															name="temperatureControl"
+															checked={values.temperatureControl}
+															onChange={(e) => setFieldValue("temperatureControl", e.target.checked)}
+														/>
+													}
+													label="Temperature control"
+												/>
+											</Grid>
+										 									
 										</Grid>
 
 										<Box mt={3} textAlign="center">

@@ -56,7 +56,7 @@ const DeviceMaster: React.FC = () => {
   const [postDevice, { isLoading: postDeviceLoading, isSuccess: postSuccess, }] = usePostDeviceMasterMutation();
   const [editDevice, { isLoading: editDeviceLoading, isSuccess: editSuccess }] = useEditDeviceMasterMutation();
   const [deleteDevice, { isLoading: deleteDeviceLoading, isSuccess: deleteSuccess }] = useDeleteDeviceMasterMutation()
-  const { data: locationsData, isLoading: isLocationLoading } = useGetLocationMasterQuery({});
+  const { data: locationsData, } = useGetLocationMasterQuery({});
   const { data: carriersData, isLoading: isCarrierLoading } = useGetCarrierMasterQuery({});
   const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
   const getAllCarriers = carriersData?.carriers.length > 0 ? carriersData?.carriers : [];
@@ -137,6 +137,7 @@ const DeviceMaster: React.FC = () => {
           setIsEditing(false)
           setSnackbarSeverity("success");
           setSnackbarOpen(true);
+          setSearchKey('')
         }
       }
       else {
@@ -146,6 +147,7 @@ const DeviceMaster: React.FC = () => {
           formik.resetForm();
           setSnackbarSeverity("success");
           setSnackbarOpen(true);
+          setSearchKey('')
         }
       }
 
@@ -294,7 +296,7 @@ const DeviceMaster: React.FC = () => {
 
       });
     }
-  }, [editRow, formik]);
+  }, [editRow]);
 
   return (
     <>
