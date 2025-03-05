@@ -293,6 +293,7 @@ const Locations: React.FC = () => {
         locationContactEmail: editRow.locationContactEmail,
       });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editRow]);
   const { values, errors, touched, handleChange, handleBlur, handleSubmit } = formik;
 
@@ -565,17 +566,6 @@ const Locations: React.FC = () => {
                       helperText={touched.city && errors.city}
                     />
                   </Grid>
-                  {/* <Grid item xs={12} sm={6} md={2.4}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        label="District"
-                        name="district"
-                        value={values.district}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                      />
-                    </Grid> */}
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth
@@ -617,92 +607,6 @@ const Locations: React.FC = () => {
                   </Grid>
                 </Grid>
               </Grid>
-
-              {/* <Grid spacing={4} mt={2} ml={1}>
-                  <Typography variant="h6" mb={1}  >
-                    3. Vehicles
-                  </Typography>
-
-
-
-                  <Box sx={{ marginBottom: 2 }}>
-                    <FormControl fullWidth sx={{ minWidth: '280px' }}>
-                      <InputLabel
-                        id="vehiclesNearBy-label"
-                      >
-                        Vehicles operated at this location
-                      </InputLabel>
-                      <Select
-                        labelId="vehiclesNearBy-label"
-                        id="vehiclesNearBy"
-                        multiple
-                        value={formik.values.vehiclesNearBy}
-                        onChange={(event) => formik.setFieldValue('vehiclesNearBy', event.target.value)}
-                        input={
-                          <OutlinedInput
-                            label="Vehicles Operated Nearby"
-                          />
-                        }
-                        renderValue={(selected) => (
-                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                            {selected.map((value) => {
-                              const vehicle = vehicleOptions.find((v) => v.id === value);
-                              return vehicle ? <Chip key={value} label={vehicle.name} /> : null;
-                            })}
-                          </Box>
-                        )}
-
-                      >
-                        {vehicleOptions.map((option) => (
-                          <MenuItem key={option.id} value={option.id}>
-                            {option.name}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                      {formik.touched.vehiclesNearBy && formik.errors.vehiclesNearBy && (
-                        <Box sx={{ color: 'red', fontSize: '0.8rem', marginTop: 1 }}>
-                          {formik.errors.vehiclesNearBy}
-                        </Box>
-                      )}
-                    </FormControl>
-                  </Box>
-
-
-
-                </Grid>
-
-                <Grid container spacing={2} ml={1} mt={2}>
-                  <Typography variant="h6" align="center" gutterBottom >
-                    4. Additional details
-                  </Typography>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} sm={6} md={2.4}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        label="Location contact name"
-                        name="locationContactName"
-                        value={values.locationContactName}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={2.4}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        label="Location contact number"
-                        name="locationContactNumber"
-                        value={values.locationContactNumber}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                      />
-                    </Grid>
-
-                  </Grid>
-                </Grid> */}
-
-
               <Grid container spacing={2} ml={1} mt={2}>
                 <Typography variant="h6" align="center" gutterBottom >
                   3. Additional details
@@ -750,7 +654,9 @@ const Locations: React.FC = () => {
                 </Grid>
               </Grid>
 
-              <Box sx={{ marginTop: '24px', textAlign: 'center' }}>
+            </Grid>
+            
+            <Box sx={{ marginTop: '24px', textAlign: 'center' }}>
                 <CustomButtonFilled  >{isEditing ? "Update location" : "Create location"}</CustomButtonFilled>
                 <Button
                   variant='outlined'
@@ -763,7 +669,6 @@ const Locations: React.FC = () => {
                   style={{ marginLeft: "10px" }}>Reset
                 </Button>
               </Box>
-            </Grid>
           </Box>
         </Collapse>
       </Box>

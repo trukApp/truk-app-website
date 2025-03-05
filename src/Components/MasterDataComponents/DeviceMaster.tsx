@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Grid, TextField, Button, Box, Typography, Collapse, IconButton, Backdrop, CircularProgress, FormControl, InputLabel, Select, MenuItem, Tooltip, FormHelperText, Paper, List, ListItem } from "@mui/material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -45,6 +45,7 @@ export interface DeviceInfoBE {
 }
 
 const DeviceMaster: React.FC = () => {
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10, });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -62,8 +63,6 @@ const DeviceMaster: React.FC = () => {
   const getAllCarriers = carriersData?.carriers.length > 0 ? carriersData?.carriers : [];
   const [searchKey, setSearchKey] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
-  // const { data: locationsData } = useGetLocationMasterQuery({});
-  // const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
   const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey);
   const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
   const getLocationDetails = (loc_ID: string) => {
@@ -194,7 +193,17 @@ const DeviceMaster: React.FC = () => {
       setSnackbarOpen(true);
     }
   };
-
+    useEffect(() => {
+      function handleClickOutside(event: MouseEvent) {
+        if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+        }
+      }
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+      }, []);
   const initialValues: DeviceMasterValues = {
     id: '',
     deviceId: "",
@@ -284,6 +293,7 @@ const DeviceMaster: React.FC = () => {
 
   useEffect(() => {
     if (editRow) {
+      setSearchKey(editRow.locationId)
       formik.setValues({
         id: editRow.id || '',
         deviceId: editRow.deviceId,
@@ -296,6 +306,7 @@ const DeviceMaster: React.FC = () => {
 
       });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editRow]);
 
   return (
@@ -412,16 +423,6 @@ const DeviceMaster: React.FC = () => {
               </Grid>
 
               {/* Carrier ID */}
-              {/* <Grid item xs={12} sm={6} md={2.4}>
-                <TextField
-                  fullWidth size='small'
-                  id="carrierId"
-                  name="carrierId"
-                  label="Carrier ID"
-                  value={formik.values.carrierId}
-                  onChange={formik.handleChange}
-                />
-              </Grid> */}
               <Grid item xs={12} sm={6} md={2.4}>
                 <FormControl
                   fullWidth
@@ -464,57 +465,6 @@ const DeviceMaster: React.FC = () => {
               </Grid>
 
               {/* Location ID */}
-              {/* <Grid item xs={12} sm={6} md={2.4}>
-                <TextField
-                  fullWidth size='small'
-                  id="locationId"
-                  name="locationId"
-                  label="Location ID"
-                  value={formik.values.locationId}
-                  onChange={formik.handleChange}
-                />
-              </Grid> */}
-              {/* <Grid item xs={12} sm={6} md={2.4}>
-                <FormControl
-                  fullWidth
-                  size="small"
-                  error={
-                    formik.touched.locationId && Boolean(formik.errors.locationId)
-                  }
-                >
-                  <InputLabel>Location ID</InputLabel>
-                  <Select
-                    label="Location ID"
-                    name="locationId"
-                    value={formik.values.locationId}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                  >
-                    {isLocationLoading ? (
-                      <MenuItem disabled>
-                        <CircularProgress size={20} color="inherit" />
-                        <span style={{ marginLeft: "10px" }}>Loading...</span>
-                      </MenuItem>
-                    ) : (
-                      getAllLocations?.map((location: Location) => (
-                        <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                          <Tooltip
-                            title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                            placement="right"
-                          >
-                            <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                          </Tooltip>
-                        </MenuItem>
-                      ))
-                    )}
-                  </Select>
-                  {formik.touched.locationId && formik.errors.locationId && (
-                    <FormHelperText>{formik.errors.locationId}</FormHelperText>
-                  )}
-                </FormControl>
-              </Grid> */}
-
-
               <Grid item xs={12} sm={6} md={2.4}>
                 <TextField
                   fullWidth
@@ -532,9 +482,7 @@ const DeviceMaster: React.FC = () => {
                     setShowSuggestions(true)
                   }
                   }
-                  // onBlur={handleBlur}
-                  value={searchKey} // Display the selected location ID
-                  // error={touched?.locationId && Boolean(errors?.locationId)}
+                  value={searchKey}
                   error={
                     formik.touched.locationId && Boolean(formik.errors.locationId)
                   }
@@ -547,59 +495,46 @@ const DeviceMaster: React.FC = () => {
                     endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
                   }}
                 />
-                {showSuggestions && displayLocations?.length > 0 && (
-                  <Paper
-                    style={{
-                      maxHeight: 200,
-                      overflowY: "auto",
-                      position: "absolute",
-                      zIndex: 10,
-                      width: "18%",
-                    }}
-                  >
-                    <List>
-                      {displayLocations.map((location: Location) => (
-                        <ListItem
-                          key={location.loc_ID}
-                          component="li"
-                          onClick={() => {
-                            setShowSuggestions(false)
-                            setSearchKey(location.loc_ID);
-                            // handleLocationChange(location.loc_ID, setFieldValue);
-                            formik.setFieldValue("locationId", location.loc_ID);
-                          }}
-                          sx={{ cursor: "pointer" }}
-                        >
-                          <Tooltip
-                            title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                            placement="right"
+                <div ref={wrapperRef} >
+                  {showSuggestions && displayLocations?.length > 0 && (
+                    <Paper
+                      style={{
+                        maxHeight: 200,
+                        overflowY: "auto",
+                        position: "absolute",
+                        zIndex: 10,
+                        width: "18%",
+                      }}
+                    >
+                      <List>
+                        {displayLocations.map((location: Location) => (
+                          <ListItem
+                            key={location.loc_ID}
+                            component="li"
+                            onClick={() => {
+                              setShowSuggestions(false)
+                              setSearchKey(location.loc_ID);
+                              // handleLocationChange(location.loc_ID, setFieldValue);
+                              formik.setFieldValue("locationId", location.loc_ID);
+                            }}
+                            sx={{ cursor: "pointer" }}
                           >
-                            <span style={{ fontSize: '14px' }}>{location.loc_ID}, {location.loc_desc}</span>
-                          </Tooltip>
-                        </ListItem>
-                      ))}
-                    </List>
-                  </Paper>
-                )}
+                            <Tooltip
+                              title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                              placement="right"
+                            >
+                              <span style={{ fontSize: '14px' }}>{location.loc_ID}, {location.city}, {location.state}, {location.pincode}</span>
+                            </Tooltip>
+                          </ListItem>
+                        ))}
+                      </List>
+                    </Paper>
+                  )}
+                </div>
               </Grid>
 
             </Grid>
             <Box mt={3} textAlign="center">
-
-              {/* <Button
-                  type="submit"
-                  variant="contained"
-                  sx={{
-                    backgroundColor: "#83214F",
-                    color: "#fff",
-                    "&:hover": {
-                      backgroundColor: "#fff",
-                      color: "#83214F"
-                    }
-                  }}
-                >
-                  {isEditing ? "Update device" : "Create device"}
-                </Button> */}
               <CustomButtonFilled  >{isEditing ? "Update device" : "Create device"}</CustomButtonFilled>
 
               <Button
@@ -609,6 +544,7 @@ const DeviceMaster: React.FC = () => {
                   formik.resetForm();
                   setIsEditing(false);
                   setEditRow(null);
+                  setSearchKey('')
                 }}
                 style={{ marginLeft: "10px" }}
               >

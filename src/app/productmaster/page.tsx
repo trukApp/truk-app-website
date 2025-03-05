@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import {
@@ -20,13 +20,16 @@ import {
     Tooltip,
     CircularProgress,
     Backdrop,
+    ListItem,
+    List,
+    Paper,
 } from '@mui/material';
 import style from './productmaster.module.css';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 // import { GridColDef } from '@mui/x-data-grid';
 import { DataGridComponent } from '@/Components/GridComponent';
-import { useCreateProductMutation, useDeleteProductMutation, useEditProductMutation, useGetAllProductsQuery, useGetLocationMasterQuery, useGetPackageMasterQuery } from '@/api/apiSlice';
+import { useCreateProductMutation, useDeleteProductMutation, useEditProductMutation, useGetAllProductsQuery, useGetFilteredLocationsQuery, useGetLocationMasterQuery, useGetPackageMasterQuery } from '@/api/apiSlice';
 import { GridCellParams, GridPaginationModel } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -93,12 +96,17 @@ export interface Product {
     volume_uom: string;
 }
 
-const ProductMasterPage = () => {
+interface ProductMasterProps {
+  productsFromServer?: Product[]; 
+}
+const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer }) => {
+    const wrapperRef = useRef<HTMLDivElement>(null);
     const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10, });
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const unitsofMeasurement = useSelector((state: RootState) => state.auth.unitsofMeasurement);
+
     const productFormInitialValues = {
         productID: '',
         productName: '',
@@ -129,14 +137,19 @@ const ProductMasterPage = () => {
     const [formInitialValues, setFormInitialValues] = useState(productFormInitialValues);
     const [updateRecordData, setUpdateRecordData] = useState({});
     const [updateRecordId, setUpdateRecordId] = useState(0)
-    const { data: productsData, error: allProductsFectchingError, isLoading } = useGetAllProductsQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize })
+    const { data: productsDataFromClient, error: allProductsFectchingError, isLoading } = useGetAllProductsQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize })
+    const productsData = isLoading ? productsFromServer : productsDataFromClient;
     const [showForm, setShowForm] = useState(false);
-    const { data: locationsData, error: getLocationsError, isLoading: isLocationLoading } = useGetLocationMasterQuery({})
+    const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery({})
     const { data: packagesData, isLoading: isPackageLoading } = useGetPackageMasterQuery({})
     const [createNewProduct, { isLoading: createLoading }] = useCreateProductMutation();
     const [deleteProduct, { isLoading: deleteProductLoading }] = useDeleteProductMutation()
     const [updateProductDetails, { isLoading: updateProductLoading }] = useEditProductMutation();
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
+      const [searchKey, setSearchKey] = useState('');
+      const [showSuggestions, setShowSuggestions] = useState(false);
+      const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey);
+      const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
     const getAllPackages = packagesData?.packages.length > 0 ? packagesData?.packages : []
     const allProductsData = productsData?.products || [];
 
@@ -156,7 +169,7 @@ const ProductMasterPage = () => {
 
 
     const mapRowToInitialValues = (selectedProduct: Product) => {
-        console.log('selected pro :', selectedProduct)
+        setSearchKey(selectedProduct?.packagingType[0]?.location || '')
         const weightUnit = selectedProduct.weight.split(' ')
         const volumeUnit = selectedProduct.volume.split(' ')
         return (
@@ -368,6 +381,7 @@ const ProductMasterPage = () => {
                     setUpdateRecordData({})
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
+                    setSearchKey('')
                 }
             } else {
                 const response = await createNewProduct(createProductBody).unwrap();
@@ -380,6 +394,7 @@ const ProductMasterPage = () => {
                     setUpdateRecordData({})
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
+                    setSearchKey('')
                 }
             }
         }
@@ -390,11 +405,20 @@ const ProductMasterPage = () => {
             setSnackbarMessage("Something went wrong! please try again.");
             setSnackbarSeverity("error");
             setSnackbarOpen(true);
+            setSearchKey('')
         }
-
-
-
     };
+        useEffect(() => {
+          function handleClickOutside(event: MouseEvent) {
+            if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+            setShowSuggestions(false);
+            }
+          }
+          document.addEventListener("mousedown", handleClickOutside);
+          return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+          };
+          }, []);
 
     return (
         <>
@@ -716,49 +740,65 @@ const ProductMasterPage = () => {
                                         Location data
                                     </Typography>
                                     <Grid container spacing={2}>
-                                        <Grid item xs={12} sm={6} md={2.4}>
-                                            <FormControl fullWidth size="small" error={touched.locationId && Boolean(errors.locationId)}>
-                                                <InputLabel>Location of Source</InputLabel>
-                                                <Select
-                                                    label="Location of Source"
-                                                    name="locationOfSource"
-                                                    value={values.locationId}
-                                                    onChange={(e) => setFieldValue('locationId', e.target.value)}
-                                                    onBlur={handleBlur}
-                                                >
-                                                    {isLocationLoading ? (
-                                                        <MenuItem disabled>
-                                                            <CircularProgress size={20} color="inherit" />
-                                                            <span style={{ marginLeft: "10px" }}>Loading...</span>
-                                                        </MenuItem>
-                                                    ) : (
-                                                        getAllLocations?.map((location: Location) => (
-                                                            <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                                                                <Tooltip
-                                                                    title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                                                    placement="right"
-                                                                >
-                                                                    <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                                                                </Tooltip>
-                                                            </MenuItem>
-                                                        ))
-                                                    )}
-                                                </Select>
-                                                {touched.locationId && errors.locationId && (
-                                                    <FormHelperText>{errors.locationId}</FormHelperText>
-                                                )}
-                                            </FormControl>
-                                        </Grid>
-                                        {/* <Grid item xs={12} sm={6} md={2.4} >
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="Packaging Type"
-                                            name="packagingType"
-                                            value={values.packagingType}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                        />
-                                    </Grid> */}
+                                        
+                                         <Grid item xs={12} sm={6} md={2.4}>
+                <TextField
+                  fullWidth
+                  name="locationId"
+                  size="small"
+                  label="Location ID"
+                  onFocus={() => {
+                    if (!searchKey) {
+                      setSearchKey(values?.locationId || "");
+                      setShowSuggestions(true);
+                    }
+                  }}
+                  onChange={(e) => {
+                    setSearchKey(e.target.value)
+                    setShowSuggestions(true)
+                  }
+                  }
+                  // onBlur={handleBlur}
+                  value={searchKey}
+                  InputProps={{
+                    endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
+                  }}
+                                            />
+                <div ref={wrapperRef} >
+                {showSuggestions && displayLocations?.length > 0 && (
+                  <Paper
+                    style={{
+                      maxHeight: 200,
+                      overflowY: "auto",
+                      position: "absolute",
+                      zIndex: 10,
+                      width: "18%",
+                    }}
+                  >
+                    <List>
+                      {displayLocations.map((location: Location) => (
+                        <ListItem
+                          key={location.loc_ID}
+                          component="li"
+                          onClick={() => {
+                            setShowSuggestions(false)
+                            setSearchKey(location.loc_ID); 
+                            setFieldValue("locationId", location.loc_ID);
+                          }}
+                          sx={{ cursor: "pointer" }}
+                        >
+                          <Tooltip
+                            title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                            placement="right"
+                          >
+                                <span style={{ fontSize: '14px' }}>{location.loc_ID}, {location.city}, {location.state}, {location.pincode}</span>
+                          </Tooltip>
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Paper>
+                )} </div>
+              </Grid>
                                         <Grid item xs={12} sm={6} md={2.4}>
                                             <FormControl fullWidth size="small" error={touched.locationId && Boolean(errors.locationId)}>
                                                 <InputLabel>Packaging Type</InputLabel>
@@ -778,7 +818,7 @@ const ProductMasterPage = () => {
                                                         getAllPackages?.map((packages: Package) => (
                                                             <MenuItem key={packages.pac_ID} value={String(packages.pac_ID)}>
                                                                 <Tooltip
-                                                                    title={`${packages.packaging_type_name}, ${packages.dimensions}, ${packages.dimensions_uom}`}
+                                                                    title={`${packages.packaging_type_name}, ${packages.pack_length}*${packages.pack_width}*${packages.pack_height}, ${packages.dimensions_uom}`}
                                                                     placement="right"
                                                                 >
                                                                     <span style={{ flex: 1 }}>{packages.pac_ID}</span>
@@ -880,6 +920,7 @@ const ProductMasterPage = () => {
                                             onClick={() => {
                                                 setFormInitialValues(productFormInitialValues)
                                                 setUpdateRecord(false)
+                                                setSearchKey('')
                                                 resetForm({ values: productFormInitialValues });
                                             }}
                                             style={{ marginLeft: "10px" }}>Reset
@@ -909,5 +950,6 @@ const ProductMasterPage = () => {
         </>
     );
 };
+
 
 export default withAuthComponent(ProductMasterPage);

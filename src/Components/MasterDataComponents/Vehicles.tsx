@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import {TextField,Grid,Box,Typography,Checkbox,FormControlLabel,MenuItem,Button,Collapse,IconButton,Backdrop,CircularProgress,Tooltip,Paper,List,ListItem} from "@mui/material";
@@ -145,7 +145,7 @@ export interface VehicleDetails {
 	avgCost: string;
 }
 
-const downtimeReasons = ["Maintenance", "Breakdown", "Inspection", "Other"];
+// const downtimeReasons = ["Maintenance", "Breakdown", "Inspection", "Other"];
 const validationSchema = Yup.object({
 	locationId: Yup.string().required("Location ID is required"),
 	timeZone: Yup.string().required("Time Zone is required"),
@@ -190,10 +190,13 @@ const VehicleForm: React.FC = () => {
 	const [postVehicle, { isLoading: postVehicleLoading }] = usePostVehicleMasterMutation();
 	const [editVehicle, { isLoading: editVehicleLoading }] = useEditVehicleMasterMutation();
 	const [deleteVehicle, { isLoading: deleteVehicleLoading }] = useDeleteVehicleMasterMutation();
-	const [searchKey, setSearchKey] = useState('');
-	const [showSuggestions, setShowSuggestions] = useState(false);
+	const wrapperRef = useRef<HTMLDivElement>(null);
+
 	const { data: locationsData } = useGetLocationMasterQuery({});
 	const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
+
+	const [searchKey, setSearchKey] = useState(editRow?.locationId || editRow?.locationId || '');
+	const [showSuggestions, setShowSuggestions] = useState(false);
 	const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey);
 	const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
 	  const { data: uom, error: uomErr } = useGetUomMasterQuery([])
@@ -210,7 +213,18 @@ const VehicleForm: React.FC = () => {
 		  console.error("uom error:", uomErr);
 		}
 	  }, [uom, uomErr, dispatch]);
-
+	
+	  useEffect(() => {
+		function handleClickOutside(event: MouseEvent) {
+			if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+			setShowSuggestions(false);
+			}
+		}
+		document.addEventListener("mousedown", handleClickOutside);
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+		};
+		}, []);
 	if (error) {
 		console.log("err in loading vehicles data :", error);
 	}
@@ -296,6 +310,7 @@ const VehicleForm: React.FC = () => {
 	useEffect(() => {
 		if (editRow) {
 			console.log('edit row :', editRow)
+			setSearchKey(editRow.locationId)
 			const editPayloadWeight = editRow.payloadWeight.split(" ");
 			const editCubicCapacity = editRow?.cubicCapacity.split(" ");
 			const editInteriorLength = editRow.interiorLength.split(" ");
@@ -746,8 +761,7 @@ const VehicleForm: React.FC = () => {
 														disabled
 													/>
 												</Grid>}
-
-									        <Grid item xs={12} sm={6} md={2.4}>
+											<Grid item xs={12} sm={6} md={2.4}>
 												<TextField
 													fullWidth
 													name="locationId"
@@ -755,62 +769,63 @@ const VehicleForm: React.FC = () => {
 													label="Search Location... "
 													onFocus={() => {
 														if (!searchKey) {
-															setSearchKey(values?.locationId || "");
-															setShowSuggestions(true);
+														setSearchKey(values?.locationId || "");
+														setShowSuggestions(true);
 														}
 													}}
 													onChange={(e) => {
-														setSearchKey(e.target.value)
-														setShowSuggestions(true)
-													}
-													}
-													// onBlur={handleBlur}
-													value={editRow ? values.locationId : searchKey}
+														setSearchKey(e.target.value);
+														setShowSuggestions(true);
+													}}
+													value={searchKey}
 													error={touched?.locationId && Boolean(errors?.locationId)}
 													helperText={
 														touched?.locationId && typeof errors?.locationId === "string"
-															? errors.locationId
-															: ""
+														? errors.locationId
+														: ""
 													}
 													InputProps={{
 														endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
 													}}
 												/>
-												{showSuggestions && displayLocations?.length > 0 && (
-													<Paper
-														style={{
+												<div ref={wrapperRef} style={{ position: "relative" }}>
+													{showSuggestions && displayLocations?.length > 0 && (
+														<Paper
+															style={{
 															maxHeight: 200,
 															overflowY: "auto",
 															position: "absolute",
 															zIndex: 10,
-															width: "18%",
-														}}
-													>
-														<List>
+															width: "100%",
+															}}
+														>
+															<List>
 															{displayLocations.map((location: Location) => (
 																<ListItem
-																	key={location.loc_ID}
-																	component="li"
-																	onClick={() => {
-																		setShowSuggestions(false)
-																		setSearchKey(location.loc_ID);
-																		// handleLocationChange(location.loc_ID, setFieldValue);
-																		setFieldValue("locationId", location.loc_ID);
-																		setFieldValue("timeZone", location.time_zone)
-																	}}
-																	sx={{ cursor: "pointer" }}
+																key={location.loc_ID}
+																component="li"
+																onClick={() => {
+																	setShowSuggestions(false);
+																	setSearchKey(location.loc_ID);
+																	setFieldValue("locationId", location.loc_ID);
+																	setFieldValue("timeZone", location.time_zone);
+																}}
+																sx={{ cursor: "pointer" }}
 																>
-																	<Tooltip
-																		title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-																		placement="right"
-																	>
-																		<span style={{ fontSize: '13px' }}>{location.loc_ID}, {location.city}, {location.state}, {location.pincode}</span>
-																	</Tooltip>
+																<Tooltip
+																	title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+																	placement="right"
+																>
+																	<span style={{ fontSize: "13px" }}>
+																	{location.loc_ID}, {location.city}, {location.state}, {location.pincode}
+																	</span>
+																</Tooltip>
 																</ListItem>
 															))}
-														</List>
-													</Paper>
-												)}
+															</List>
+														</Paper>
+													)}
+												</div>
 											</Grid>
 											<Grid item xs={12} sm={6} md={2.4}>
 												<TextField
@@ -949,9 +964,8 @@ const VehicleForm: React.FC = () => {
 											</Grid>
 											<Grid item xs={12} sm={6} md={2.4}>
 												<TextField
-													select
 													fullWidth
-													label="Ownership*"
+													label="Ownership(Self, Carrier)*"
 													name="ownership"
 													value={values.ownership}
 													onChange={handleChange}
@@ -960,8 +974,8 @@ const VehicleForm: React.FC = () => {
 													helperText={touched.ownership && errors.ownership}
 													size="small"
 												>
-													<MenuItem value="Self">Self</MenuItem>
-													<MenuItem value="Carrier">Carrier</MenuItem>
+													{/* <MenuItem value="Self">Self</MenuItem>
+													<MenuItem value="Carrier">Carrier</MenuItem> */}
 												</TextField>
 											</Grid>
 										</Grid>
@@ -1440,7 +1454,7 @@ const VehicleForm: React.FC = () => {
 											<Grid item xs={12} sm={6} md={2.4}>
 												<TextField
 													fullWidth
-													select
+													// select
 													label="Reason"
 													name="downtimeReason"
 													value={values.downtimeReason}
@@ -1448,11 +1462,11 @@ const VehicleForm: React.FC = () => {
 													onBlur={handleBlur}
 													size="small"
 												>
-													{downtimeReasons.map((reason) => (
+													{/* {downtimeReasons.map((reason) => (
 														<MenuItem key={reason} value={reason}>
 															{reason}
 														</MenuItem>
-													))}
+													))} */}
 												</TextField>
 											</Grid>
 										</Grid>
@@ -1525,7 +1539,6 @@ const VehicleForm: React.FC = () => {
 													label="Temperature control"
 												/>
 											</Grid>
-										 									
 										</Grid>
 
 										<Box mt={3} textAlign="center">
@@ -1552,6 +1565,7 @@ const VehicleForm: React.FC = () => {
 													setIsEditing(false);
 													setEditRow(null);
 													resetForm();
+													setSearchKey('')
 												}}
 												style={{ marginLeft: "10px" }}
 											>

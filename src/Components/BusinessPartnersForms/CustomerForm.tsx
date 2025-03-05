@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
-import { TextField, Grid, Button, Collapse, Box, FormControlLabel, Checkbox, Select, MenuItem, FormHelperText, FormControl, InputLabel, SelectChangeEvent, Autocomplete, Backdrop, CircularProgress, Tooltip } from '@mui/material';
-import { Formik, Form, FormikProps } from 'formik';
+import React, { useEffect, useRef, useState } from 'react';
+import { TextField, Grid, Button, Collapse, Box, FormControlLabel, Checkbox, Autocomplete, Backdrop, CircularProgress, Tooltip, Paper, List, ListItem } from '@mui/material';
+import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import styles from './BusinessPartners.module.css';
 import { DataGridComponent } from '../GridComponent';
 import { GridColDef, GridPaginationModel } from '@mui/x-data-grid';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { useCustomerRegistrationMutation, useDeleteBusinessPartnerMutation, useEditBusinessPartnerMutation, useGetAllCustomersDataQuery, useGetLocationMasterQuery } from '@/api/apiSlice';
+import { useCustomerRegistrationMutation, useDeleteBusinessPartnerMutation, useEditBusinessPartnerMutation, useGetAllCustomersDataQuery, useGetFilteredLocationsQuery, useGetLocationMasterQuery } from '@/api/apiSlice';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
@@ -91,6 +91,8 @@ const initialCustomerValues = {
 
 
 const CustomerForm: React.FC = () => {
+    const wrapperRef = useRef<HTMLDivElement>(null);
+    const wrapperRefDest = useRef<HTMLDivElement>(null);
     const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10, });
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -103,13 +105,44 @@ const CustomerForm: React.FC = () => {
     const [updatePartnerDetails, { isLoading: editCustomerLoading }] = useEditBusinessPartnerMutation();
     const [customerRegistration, { isLoading: postCustomerLoading }] = useCustomerRegistrationMutation();
     const [deleteBusinessPartner, { isLoading: deleteCustomerLoading }] = useDeleteBusinessPartnerMutation()
-
+   
     const { data, error, isLoading } = useGetAllCustomersDataQuery({
         partner_type: "customer", page: paginationModel.page + 1, limit: paginationModel.pageSize
     })
-
-    const { data: locationsData, error: getLocationsError, isLoading: isLocationLoading } = useGetLocationMasterQuery([])
+    useEffect(() => {
+      function handleClickOutside(event: MouseEvent) {
+        if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+        }
+      }
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }, []);
+        useEffect(() => {
+                function handleClickOutside(event: MouseEvent) {
+                  if (wrapperRefDest.current && !wrapperRefDest.current.contains(event.target as Node)) {
+                    setShowDestinations(false)
+                  }
+                }
+                document.addEventListener("mousedown", handleClickOutside);
+                return () => {
+                  document.removeEventListener("mousedown", handleClickOutside);
+                };
+                }, []);
+    const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery([])
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
+     const [searchKey, setSearchKey] = useState('');
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey);
+    const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
+    
+    const [searchKeyDestination, setSearchKeyDestination] = useState('');
+    const [showDestinations, setShowDestinations] = useState(false);
+    const { data: destinationFilteredLocations } = useGetFilteredLocationsQuery(searchKeyDestination);
+    const displayLocationsDest = searchKeyDestination  ? destinationFilteredLocations?.results || [] : getAllLocations;
+
      const getLocationDetails = (loc_ID: string) => {
         const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
         if (!location) return "Location details not available";
@@ -135,7 +168,7 @@ const CustomerForm: React.FC = () => {
         setPaginationModel(newPaginationModel);
     };
     const mapRowToInitialValues = (rowData: Customer) => ({
-        customerId : rowData.customerId || '',
+        customerId : rowData.customer_id || '',
         name: rowData.name || '',
         locationId: rowData.loc_ID || '',
         pincode: rowData.location_pincode || '',
@@ -213,10 +246,13 @@ const CustomerForm: React.FC = () => {
     ];
 
     const handleEdit = async (rowData: Customer) => {
-        setShowForm(true)
+        setShowForm(true) 
+        console.log('rowdata :', rowData)
         setUpdateRecord(true)
         setUpdateRecordData(rowData)
         const updatedInitialValues = await mapRowToInitialValues(rowData);
+        setSearchKey(rowData.loc_ID);
+        setSearchKeyDestination(rowData.loc_of_source)
         setFormInitialValues(updatedInitialValues);
         setUpdateRecordId(rowData?.partner_id)
     };
@@ -298,6 +334,8 @@ const CustomerForm: React.FC = () => {
                     setUpdateRecordData({})
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
+                    setSearchKey('')
+                    setSearchKeyDestination('')
                 }
             } else {
                 const response = await customerRegistration(body).unwrap();
@@ -310,6 +348,9 @@ const CustomerForm: React.FC = () => {
                     setUpdateRecordData({})
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
+                    resetForm()
+                    setSearchKey('')
+                    setSearchKeyDestination('')
                 }
             }
 
@@ -321,33 +362,6 @@ const CustomerForm: React.FC = () => {
             setSnackbarOpen(true);
         }
     };
-
-    const handleLocationChange = (
-        event: SelectChangeEvent<string>,
-        setFieldValue: FormikProps<Location>['setFieldValue']
-    ) => {
-        const selectedLocationId = event.target.value;
-        setFieldValue('locationId', selectedLocationId);
-        const selectedLocation = getAllLocations.find((loc: Location) => loc.loc_ID === (selectedLocationId));
-
-        if (selectedLocation) {
-
-            setFieldValue('city', selectedLocation?.city || '');
-            setFieldValue('district', selectedLocation?.district || '');
-            setFieldValue('state', selectedLocation?.state || '');
-            setFieldValue('country', selectedLocation?.country || '');
-            setFieldValue('pincode', selectedLocation?.pincode || '');
-        } else {
-            // Clear fields if no matching location found
-            setFieldValue('locationId', '');
-            setFieldValue('city', '');
-            setFieldValue('district', '');
-            setFieldValue('state', '');
-            setFieldValue('country', '');
-            setFieldValue('pincode', '');
-        }
-    };
-
 
     return (
         <Grid >
@@ -415,39 +429,91 @@ const CustomerForm: React.FC = () => {
                                             helperText={touched.name && errors.name}
                                         />
                                     </Grid>
-
                                     <Grid item xs={12} sm={6} md={2.4}>
-                                        <FormControl fullWidth size="small" error={touched.locationId && Boolean(errors.locationId)}>
-                                            <InputLabel>Location ID</InputLabel>
-                                            <Select
-                                                label="Location ID"
-                                                name="locationId"
-                                                value={values.locationId}
-                                                onChange={(event) => handleLocationChange(event, setFieldValue)}
-                                                onBlur={handleBlur}
-                                            >
-                                                {isLocationLoading ? (
-                                                    <MenuItem disabled>
-                                                        <CircularProgress size={20} color="inherit" />
-                                                        <span style={{ marginLeft: "10px" }}>Loading...</span>
-                                                    </MenuItem>
-                                                ) : (
-                                                    getAllLocations?.map((location: Location) => (
-                                                        <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                                                            <Tooltip
-                                                                title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                                                placement="right"
-                                                            >
-                                                                <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                                                            </Tooltip>
-                                                        </MenuItem>
-                                                    ))
-                                                )}
-                                            </Select>
-                                            {touched.locationId && errors.locationId && (
-                                                <FormHelperText>{errors.locationId}</FormHelperText>
+                <TextField
+                  fullWidth
+                  name="locationId"
+                  size="small"
+                  label="Location ID"
+                  onFocus={() => {
+                    if (!searchKey) {
+                      setSearchKey(values.locationId || '');
+                      setShowSuggestions(true);
+                    }
+                  }}
+                  onChange={(e) => {
+                    setSearchKey(e.target.value)
+                    setShowSuggestions(true)
+                    }
+                  }
+                  value={searchKey}
+                  error={
+                    touched.locationId && Boolean(errors.locationId)
+                  }
+                  helperText={
+                    touched?.locationId && typeof errors?.locationId === "string"
+                      ? errors.locationId
+                      : ""
+                  }
+                  InputProps={{
+                    endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
+                  }}
+                                        />
+                        <div ref={wrapperRef} >
+                            {showSuggestions && displayLocations?.length > 0 && (
+                  <Paper
+                    style={{
+                      maxHeight: 200,
+                      overflowY: "auto",
+                      position: "absolute",
+                      zIndex: 10,
+                      width: "18%",
+                    }}
+                  >
+                    <List>
+                      {displayLocations.map((location: Location) => (
+                        <ListItem
+                          key={location.loc_ID}
+                          component="li"
+                          onClick={() => {
+                            setShowSuggestions(false)
+                            setSearchKey(location.loc_ID);
+                            // handleLocationChange(location.loc_ID, setFieldValue);
+                            setFieldValue("locationId", location.loc_ID)
+                        const matchedLocation = getAllLocations.find((loc: Location) => loc.loc_ID ===location.loc_ID);
+
+                    if (matchedLocation) {
+                      // Set corresponding fields from the matched location
+                      setFieldValue('address1', matchedLocation.address_1 || '');
+                      setFieldValue('address2', matchedLocation.address_2 || '');
+                      setFieldValue('city', matchedLocation.city || '');
+                      setFieldValue('district', matchedLocation.district || '');
+                      setFieldValue('state', matchedLocation.state || '');
+                      setFieldValue('country', matchedLocation.country || '');
+                      setFieldValue('pincode', matchedLocation.pincode || '');
+                    } else {
+                      setFieldValue('city', '');
+                      setFieldValue('district', '');
+                      setFieldValue('state', '');
+                      setFieldValue('country', '');
+                      setFieldValue('pincode', '');
+                    }
+                                  
+                          }}
+                          sx={{ cursor: "pointer" }}
+                        >
+                          <Tooltip
+                            title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                            placement="right"
+                          >
+                            <span style={{ fontSize: '13px' }}>{location.loc_ID}, {location.city}, {location.state}, {location.pincode}</span>
+                          </Tooltip>
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Paper>
                                             )}
-                                        </FormControl>
+                        </div>
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
@@ -542,39 +608,69 @@ const CustomerForm: React.FC = () => {
                                 <h3 className={styles.mainHeading}>Shipping</h3>
                                 <Grid container spacing={2} style={{ marginBottom: '30px' }}>
                                     <Grid item xs={12} sm={6} md={2.4}>
-                                        <FormControl fullWidth size="small" error={touched.locationOfSource && Boolean(errors.locationOfSource)}>
-                                            <InputLabel>Location of Source</InputLabel>
-                                            <Select
-                                                label="Location of Source"
-                                                name="locationOfSource"
-                                                value={values.locationOfSource}
-                                                onChange={(e) => setFieldValue('locationOfSource', e.target.value)}
-                                                onBlur={handleBlur}
-                                            >
-                                                {isLocationLoading ? (
-                                                    <MenuItem disabled>
-                                                        <CircularProgress size={20} color="inherit" />
-                                                        <span style={{ marginLeft: "10px" }}>Loading...</span>
-                                                    </MenuItem>
-                                                ) : (
-                                                    getAllLocations?.map((location: Location) => (
-                                                        <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                                                            <Tooltip
-                                                                title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                                                placement="right"
-                                                            >
-                                                                <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                                                            </Tooltip>
-                                                        </MenuItem>
-                                                    ))
+                                                <TextField
+                                                    fullWidth
+                                                    name="locationOfSource"
+                                                    size="small"
+                                                    label="Search for Location of Source... "
+                                                    onFocus={() => {
+                                                        if (!searchKeyDestination) {
+                                                            setSearchKeyDestination(values?.locationOfSource[0] || "");
+                                                            setShowDestinations(true);
+                                                        }
+                                                    }}
+                                                    onChange={(e) => {
+                                                        setSearchKeyDestination(e.target.value)
+                                                        setShowDestinations(true)
+                                                    }
+                                                    }
+                                                    value={searchKeyDestination}
+                                                    error={touched?.locationOfSource && Boolean(errors?.locationOfSource)}
+                                                    helperText={
+                                                        touched?.locationOfSource && typeof errors?.locationOfSource === "string"
+                                                            ? errors.locationOfSource
+                                                            : ""
+                                                    }
+                                                    InputProps={{
+                                                        endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
+                                                    }}
+                                        />
+                                        <div ref={wrapperRefDest}>
+                                                {showDestinations && displayLocationsDest?.length > 0 && (
+                                                    <Paper
+                                                        style={{
+                                                            maxHeight: 200,
+                                                            overflowY: "auto",
+                                                            position: "absolute",
+                                                            zIndex: 10,
+                                                            width: "18%",
+                                                        }}
+                                                    >
+                                                        <List>
+                                                            {displayLocationsDest.map((location: Location) => (
+                                                                <ListItem
+                                                                    key={location.loc_ID}
+                                                                    component="li"
+                                                                    onClick={() => {
+                                                                        setShowDestinations(false)
+                                                                        setSearchKeyDestination(location.loc_ID);
+                                                                        setFieldValue("locationOfSource", location.loc_ID);
+                                                                    }}
+                                                                    sx={{ cursor: "pointer" }}
+                                                                >
+                                                                    <Tooltip
+                                                                        title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                                                        placement="right"
+                                                                    >
+                                                                        <span style={{ fontSize: '13px' }}>{location.loc_ID}, {location.city}, {location.state}, {location.pincode}</span>
+                                                                    </Tooltip>
+                                                                </ListItem>
+                                                            ))}
+                                                        </List>
+                                                    </Paper>
                                                 )}
-                                            </Select>
-                                            {touched.locationOfSource && errors.locationOfSource && (
-                                                <FormHelperText>{errors.locationOfSource}</FormHelperText>
-                                            )}
-                                        </FormControl>
-                                    </Grid>
-
+                                        </div>
+                                </Grid>
                                     <Grid item xs={12}>
                                         <FormControlLabel
                                             control={
@@ -642,6 +738,8 @@ const CustomerForm: React.FC = () => {
                                             setFormInitialValues(initialCustomerValues)
                                             setUpdateRecord(false)
                                             resetForm() 
+                                            setSearchKey('')
+                                            setSearchKeyDestination('')
                                         }}
                                         style={{ marginLeft: "10px" }}>Reset
                                     </Button>

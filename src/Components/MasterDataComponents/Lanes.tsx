@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Backdrop,
   Box,
@@ -86,6 +86,8 @@ export interface Lane {
 
 }
 const TransportationLanes = () => {
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const wrapperRefDest = useRef<HTMLDivElement>(null);
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10, });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -106,7 +108,7 @@ const TransportationLanes = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showDestinations, setShowDestinations] = useState(false);
   const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey);
-    const { data: destinationFilteredLocations} = useGetFilteredLocationsQuery(searchKeyDestination);
+  const { data: destinationFilteredLocations} = useGetFilteredLocationsQuery(searchKeyDestination);
   const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
    const displayLocationsDest = searchKeyDestination  ? destinationFilteredLocations?.results || [] : getAllLocations;
    const getLocationDetails = (loc_ID: string) => {
@@ -126,6 +128,29 @@ const TransportationLanes = () => {
   if (error) {
     console.error("Error fetching lanes:", error);
   }
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+          if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node))  {
+            setShowSuggestions(false)
+          }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+          document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+  
+        useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+          if (wrapperRefDest.current && !wrapperRefDest.current.contains(event.target as Node)) {
+            setShowDestinations(false)
+          }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+          document.removeEventListener("mousedown", handleClickOutside);
+        };
+        }, []);
 
   const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
     setPaginationModel(newPaginationModel);
@@ -157,7 +182,7 @@ const TransportationLanes = () => {
           end_time: values.transportEndDate,
           transport_distance: `${values.transportDistance} ${values.transportDistanceUnits}`,
           transport_duration: `${values.transportDuration} ${values.transportDurationUnits}`,
-          transport_cost: `${values.transportCost} ${values.transportCostUnits}`
+          transport_cost: `${values.transportCost}`
         }
       }
       if (isEditing && editRow) {
@@ -170,6 +195,8 @@ const TransportationLanes = () => {
           setSnackbarSeverity("success");
           setSnackbarOpen(true);
           setShowForm(false)
+          setSearchKey("")
+          setSearchKeyDestination("")
         }
 
       }
@@ -181,6 +208,8 @@ const TransportationLanes = () => {
           setSnackbarSeverity("success");
           setSnackbarOpen(true);
           setShowForm(false)
+          setSearchKey("")
+          setSearchKeyDestination("")
         }
       }
 
@@ -285,6 +314,8 @@ const TransportationLanes = () => {
 
   useEffect(() => {
     if (editRow) {
+      setSearchKey(editRow.sourceLocationId || '')
+      setSearchKeyDestination(editRow.destinationLocationId || '')
       const editDistance = editRow.transportDistance.split(" ")
       const editDuration = editRow?.transportDuration.split(" ")
       const editCost = editRow.transportCost.split(" ");
@@ -314,6 +345,7 @@ const TransportationLanes = () => {
         carrierCost: editRow.carrierCost || '',
       });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editRow]);
 
   const rows = data?.lanes.map((lane: Lane) => ({
@@ -453,7 +485,7 @@ const TransportationLanes = () => {
                     size="small"
                   />
                 </Grid> }
-                <Grid item xs={12} sm={6} md={2.4}>
+                {/* <Grid item xs={12} sm={6} md={2.4}>
 												<TextField
 													fullWidth
 													name="sourceLocationId"
@@ -471,7 +503,7 @@ const TransportationLanes = () => {
 													}
 													}
 													// onBlur={handleBlur}
-													value={editRow ? formik.values.sourceLocationId : searchKey}
+													value={searchKey}
 													error={formik.touched?.sourceLocationId && Boolean(formik.errors?.sourceLocationId)}
 													helperText={
 														formik.touched?.sourceLocationId && typeof formik.errors?.sourceLocationId === "string"
@@ -481,7 +513,8 @@ const TransportationLanes = () => {
 													InputProps={{
 														endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
 													}}
-												/>
+                  />
+                  <div ref={wrapperRef} >
 												{showSuggestions && displayLocations?.length > 0 && (
 													<Paper
 														style={{
@@ -514,7 +547,72 @@ const TransportationLanes = () => {
 															))}
 														</List>
 													</Paper>
-												)}
+                        )}
+                  </div>
+                </Grid> */}
+                <Grid item xs={12} sm={6} md={2.4}>
+												<TextField
+													fullWidth
+													name="sourceLocationId"
+													size="small"
+													label="Search for source Location... "
+													onFocus={() => {
+														if (!searchKey) {
+															setSearchKey(formik.values?.sourceLocationId || "");
+															setShowSuggestions(true);
+														}
+													}}
+													onChange={(e) => {
+														setSearchKey(e.target.value)
+														setShowSuggestions(true)
+													}
+													}
+													value={searchKey}
+													error={formik.touched?.sourceLocationId && Boolean(formik.errors?.sourceLocationId)}
+													helperText={
+														formik.touched?.sourceLocationId && typeof formik.errors?.sourceLocationId === "string"
+															? formik.errors.sourceLocationId
+															: ""
+													}
+													InputProps={{
+														endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
+													}}
+                  />
+                  <div ref={wrapperRef} >
+												{showSuggestions && displayLocations?.length > 0 && (
+													<Paper
+														style={{
+															maxHeight: 200,
+															overflowY: "auto",
+															position: "absolute",
+															zIndex: 10,
+															width: "18%",
+														}}
+													>
+														<List>
+															{displayLocations.map((location: Location) => (
+																<ListItem
+																	key={location.loc_ID}
+																	component="li"
+																	onClick={() => {
+																		setShowSuggestions(false)
+																		setSearchKey(location.loc_ID);
+																		formik.setFieldValue("sourceLocationId", location.loc_ID);
+																	}}
+																	sx={{ cursor: "pointer" }}
+																>
+																	<Tooltip
+																		title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+																		placement="right"
+																	>
+																		<span style={{ fontSize: '13px' }}>{location.loc_ID}, {location.city}, {location.state}, {location.pincode}</span>
+																	</Tooltip>
+																</ListItem>
+															))}
+														</List>
+													</Paper>
+                    )}
+                  </div>
 								</Grid>
                 <Grid item xs={12} sm={6} md={2.4}>
 												<TextField
@@ -533,8 +631,7 @@ const TransportationLanes = () => {
 														setShowDestinations(true)
 													}
 													}
-													// onBlur={handleBlur}
-													value={editRow ? formik.values.destinationLocationId : searchKeyDestination}
+													value={searchKeyDestination}
 													error={formik.touched?.destinationLocationId && Boolean(formik.errors?.destinationLocationId)}
 													helperText={
 														formik.touched?.destinationLocationId && typeof formik.errors?.destinationLocationId === "string"
@@ -544,7 +641,8 @@ const TransportationLanes = () => {
 													InputProps={{
 														endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
 													}}
-												/>
+                  />
+                  <div ref={wrapperRefDest} >
 												{showDestinations && displayLocationsDest?.length > 0 && (
 													<Paper
 														style={{
@@ -577,7 +675,8 @@ const TransportationLanes = () => {
 															))}
 														</List>
 													</Paper>
-												)}
+                    )}
+                  </div>
 								</Grid>
               </Grid>
             </Box>
@@ -645,20 +744,6 @@ const TransportationLanes = () => {
                       InputLabelProps={{ shrink: true }}
                     />
                   </Grid>
-
-                {/* <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth
-                      id="transportDistance"
-                      name="transportDistance"
-                      label="Transport Distance* (UoM)"
-                      value={formik.values.transportDistance}
-                      onChange={formik.handleChange}
-                      error={formik.touched.transportDistance && Boolean(formik.errors.transportDistance)}
-                      helperText={formik.touched.transportDistance && formik.errors.transportDistance}
-                      size="small"
-                    />
-                  </Grid> */}
                 <Grid item xs={12} sm={6} md={1.6}>
                   <TextField
                     fullWidth
@@ -856,6 +941,8 @@ const TransportationLanes = () => {
                   formik.resetForm()
                   setIsEditing(false);
                   setEditRow(null);
+                  setSearchKey("")
+                  setSearchKeyDestination("")
                 }}
                 style={{ marginLeft: "10px" }}
               >
