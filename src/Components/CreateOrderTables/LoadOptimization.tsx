@@ -1,4 +1,4 @@
-import { useAppSelector } from '@/store';
+// import { useAppSelector } from '@/store';
 import React from 'react';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { Box, Typography, Paper } from '@mui/material';
@@ -10,7 +10,7 @@ interface LoadArrangement {
     packages: string[];
 }
 
-interface Allocation {
+interface Allocation extends Truck {
     vehicle_ID: string;
     totalWeightCapacity: number;
     leftoverWeight: number;
@@ -25,14 +25,11 @@ interface Allocation {
 interface TrucksTableProps {
     trucks: Truck[];
 }
-const LoadOptimization: React.FC<TrucksTableProps> = ({trucks} ) => {
+const LoadOptimization: React.FC<TrucksTableProps> = ({ trucks }) => {
     const selectedTrucks = trucks;
-console.log("selectedTrucks: ", selectedTrucks)
+    // console.log("selectedTrucks: ", selectedTrucks)
 
-    // if (!selectedTrucks.length || !selectedTrucks[0].allocations) {
-    //     return <Typography variant="h6">No vehicle data available.</Typography>;
-    // }
-    const getVechiles: Allocation[] = selectedTrucks;
+    const getVechiles: Allocation[] = selectedTrucks as Allocation[];
 
     return (
         <Box sx={{ p: 2 }}>

@@ -29,7 +29,7 @@ const CreateOrder: React.FC = () => {
     const [modalOpen, setModalOpen] = useState(false);
     const [noVechilePopup, setNoVechilePopup] = useState(false);
     const filters = useAppSelector((state) => state.auth.filters);
-console.log("selectTrucks: ", selectTrucks)
+    console.log("selectTrucks: ", selectTrucks)
     useEffect(() => {
         if (packageSelectErr) {
             setSnackbarMessage(`Please select the packages of same SHIP FROM location`);
@@ -130,16 +130,16 @@ console.log("selectTrucks: ", selectTrucks)
                 //     setActiveStep((prev) => prev + 1);
                 // }
                 if (response) {
-                   console.log(response?.allocations)
-                 setSelectTrucks(response?.allocations);
-                    setActiveStep((prev) => prev + 1);  
-                }
-               
-            }
-        }else {
-                    // setSelectTrucks([response?.allocations]);
+                    console.log(response?.allocations)
+                    setSelectTrucks(response?.allocations);
                     setActiveStep((prev) => prev + 1);
                 }
+
+            }
+        } else {
+            // setSelectTrucks([response?.allocations]);
+            setActiveStep((prev) => prev + 1);
+        }
     };
     const CustomStepIcon = (props: StepIconProps) => {
         const { active, completed, icon } = props;
@@ -273,19 +273,19 @@ console.log("selectTrucks: ", selectTrucks)
 
                 {activeStep === 2 && (
                     <div>
-                        <RootOptimization rootOptimization={selectedTrucks as unknown as RootOptimizationType[]} />
+                        <RootOptimization rootOptimization={selectTrucks as unknown as RootOptimizationType[]} />
                     </div>
                 )}
 
                 {activeStep === 3 && (
                     <div>
-                        <LoadOptimization trucks={selectTrucks}/>
+                        <LoadOptimization trucks={selectTrucks} />
                     </div>
                 )}
 
                 {activeStep === 4 && (
                     <div>
-                        <ReviewCreateOrder />
+                        <ReviewCreateOrder trucks={selectTrucks} />
                     </div>
                 )}
             </div>
