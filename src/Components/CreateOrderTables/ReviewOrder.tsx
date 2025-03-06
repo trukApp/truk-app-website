@@ -2,11 +2,22 @@ import { useAppSelector } from '@/store';
 import React from 'react';
 import { Box, Typography, Paper, Grid } from '@mui/material';
 import { DataGrid, } from '@mui/x-data-grid';
-import { Truck } from './TrucksTable'
+// import { Truck } from './TrucksTable'
 
 
 interface TrucksTableProps {
     trucks: Truck[];
+}
+
+interface Truck {
+    vehicle_ID: string;
+    totalWeightCapacity: number;
+    leftoverWeight: string;
+    totalVolumeCapacity: number;
+    leftoverVolume: number;
+    cost: number;
+    loadArrangement: []
+
 }
 
 const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks }) => {
@@ -55,17 +66,6 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks }) => {
                     />
                 </div>
             </Paper>
-
-            {/* <Grid>
-                {selectedTrucks.length > 0 && (
-                    <Paper sx={{ mb: 3, p: 2, borderRadius: 2, boxShadow: 3 }}>
-                        <Typography variant="h6" gutterBottom sx={{ color: '#83214F' }}>Selected Truck Details</Typography>
-                        <Typography>Label: <strong>{selectedTrucks[0].label}</strong> </Typography>
-                        <Typography>Total Estimated Cost: <strong> ₹{selectedTrucks[0].totalCost}</strong></Typography>
-                    </Paper>
-                )}
-            </Grid> */}
-
             <Grid>
                 <Paper sx={{ mb: 3, p: 2, borderRadius: 2, boxShadow: 3 }}>
                     <Typography variant="h6" gutterBottom sx={{ color: '#83214F' }}>
