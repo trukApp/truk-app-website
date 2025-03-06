@@ -726,7 +726,8 @@ const TransportationLanes = () => {
                     onBlur={formik.handleBlur}
                     error={formik.touched.transportStartDate && Boolean(formik.errors.transportStartDate)}
                     helperText={formik.touched.transportStartDate && formik.errors.transportStartDate}
-                    InputLabelProps={{ shrink: true }}
+                    InputLabelProps={{ shrink: true }} 
+                    inputProps={{ min: new Date().toISOString().split("T")[0] }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={2.4}>
@@ -741,7 +742,7 @@ const TransportationLanes = () => {
                       error={formik.touched.transportEndDate && Boolean(formik.errors.transportEndDate)}
                       helperText={formik.touched.transportEndDate && formik.errors.transportEndDate}
                       size="small"
-                      InputLabelProps={{ shrink: true }}
+                      InputLabelProps={{ shrink: true }} inputProps={{ min: new Date().toISOString().split("T")[0] }}
                     />
                   </Grid>
                 <Grid item xs={12} sm={6} md={1.6}>

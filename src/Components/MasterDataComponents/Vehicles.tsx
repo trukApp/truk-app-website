@@ -899,6 +899,7 @@ const VehicleForm: React.FC = () => {
 													error={touched.validityFrom && Boolean(errors.validityFrom)}
 													helperText={touched.validityFrom && errors.validityFrom}
 													InputLabelProps={{ shrink: true }}
+													inputProps={{ max: new Date().toISOString().split("T")[0] }}
 												/>
 											</Grid>
 											<Grid item xs={12} sm={6} md={2.4}>
@@ -922,6 +923,7 @@ const VehicleForm: React.FC = () => {
 														touched.validityTo && errors.validityTo
 													}
 													InputLabelProps={{ shrink: true }}
+													inputProps={{ min: new Date().toISOString().split("T")[0] }}
 												/>
 											</Grid>
 											<Grid item xs={12} sm={6} md={2.4}>
@@ -1407,6 +1409,7 @@ const VehicleForm: React.FC = () => {
 													onChange={handleChange}
 													onBlur={handleBlur}
 													InputLabelProps={{ shrink: true }}
+													inputProps={{ min: new Date().toISOString().split("T")[0] }}
 												/>
 											</Grid>
 
@@ -1424,6 +1427,7 @@ const VehicleForm: React.FC = () => {
 													onChange={handleChange}
 													onBlur={handleBlur}
 													InputLabelProps={{ shrink: true }}
+													inputProps={{ min: new Date().toISOString().split("T")[0] }}
 												/>
 											</Grid>
 

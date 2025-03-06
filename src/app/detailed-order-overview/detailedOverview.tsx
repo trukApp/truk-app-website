@@ -42,7 +42,7 @@ const OrderDetailedOverview: React.FC = () => {
                 </Paper>
             )}
 
-            {orderData?.allocations && <Allocations allocations={orderData.allocations} />}
+            {orderData?.allocations && <Allocations allocations={orderData.allocations} orderId={orderData.order_ID} />}
         </Box>
     );
 };
