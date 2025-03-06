@@ -29,7 +29,7 @@ const CreateOrder: React.FC = () => {
     const [modalOpen, setModalOpen] = useState(false);
     const [noVechilePopup, setNoVechilePopup] = useState(false);
     const filters = useAppSelector((state) => state.auth.filters);
-
+console.log("selectTrucks: ", selectTrucks)
     useEffect(() => {
         if (packageSelectErr) {
             setSnackbarMessage(`Please select the packages of same SHIP FROM location`);
@@ -104,35 +104,42 @@ const CreateOrder: React.FC = () => {
 
             const response = await selectTheTrucks(body).unwrap();
             if (response) {
-                let transportCounter = 1;
-                const updatedScenarioCost = {
-                    ...response.scenarioCost,
-                    allocations: response.scenarioCost.allocations.map((vehicle: Truck) => ({
-                        ...vehicle,
-                        transportNumber: `Vehicle ${transportCounter++}`
-                    }))
-                };
+                // let transportCounter = 1;
+                // const updatedScenarioCost = {
+                //     ...response.scenarioCost,
+                //     allocations: response.scenarioCost.allocations.map((vehicle: Truck) => ({
+                //         ...vehicle,
+                //         transportNumber: `Vehicle ${transportCounter++}`
+                //     }))
+                // };
 
-                transportCounter = 1;
-                const updatedScenarioEta = {
-                    ...response.scenarioEta,
-                    allocations: response.scenarioEta.allocations.map((vehicle: Truck) => ({
-                        ...vehicle,
-                        transportNumber: `Vehicle ${transportCounter++}`
-                    }))
-                };
+                // transportCounter = 1;
+                // const updatedScenarioEta = {
+                //     ...response.scenarioEta,
+                //     allocations: response.scenarioEta.allocations.map((vehicle: Truck) => ({
+                //         ...vehicle,
+                //         transportNumber: `Vehicle ${transportCounter++}`
+                //     }))
+                // };
 
-                if (updatedScenarioCost?.totalCost === 0 && updatedScenarioEta?.totalCost === 0) {
-                    console.log('There is no vehicle for selected package or packages')
-                    setNoVechilePopup(true)
-                } else {
-                    setSelectTrucks([updatedScenarioCost, updatedScenarioEta]);
+                // if (updatedScenarioCost?.totalCost === 0 && updatedScenarioEta?.totalCost === 0) {
+                //     console.log('There is no vehicle for selected package or packages')
+                //     setNoVechilePopup(true)
+                // } else {
+                //     setSelectTrucks([response?.allocations]);
+                //     setActiveStep((prev) => prev + 1);
+                // }
+                if (response) {
+                   console.log(response?.allocations)
+                 setSelectTrucks(response?.allocations);
+                    setActiveStep((prev) => prev + 1);  
+                }
+               
+            }
+        }else {
+                    // setSelectTrucks([response?.allocations]);
                     setActiveStep((prev) => prev + 1);
                 }
-            }
-        } else {
-            setActiveStep((prev) => prev + 1);
-        }
     };
     const CustomStepIcon = (props: StepIconProps) => {
         const { active, completed, icon } = props;
@@ -272,7 +279,7 @@ const CreateOrder: React.FC = () => {
 
                 {activeStep === 3 && (
                     <div>
-                        <LoadOptimization />
+                        <LoadOptimization trucks={selectTrucks}/>
                     </div>
                 )}
 

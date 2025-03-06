@@ -3,6 +3,7 @@ import { Box, Collapse, IconButton, Paper, Typography, Grid, Button, useTheme, u
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { useRouter } from 'next/navigation';
+import { useGetAllAssignedOrdersQuery } from "@/api/apiSlice";
 
 interface Allocation {
     vehicle_ID: string;
@@ -25,6 +26,9 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations }) => {
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
     const router = useRouter();
     const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({});
+    const [assignModal, setAssignModal] = useState(false);
+    const {data: assignedOrders} = useGetAllAssignedOrdersQuery({})
+    console.log("assigned orders :", assignedOrders)
 
     const handleToggle = (vehicleId: string) => {
         setExpanded((prev) => ({ ...prev, [vehicleId]: !prev[vehicleId] }));
@@ -32,11 +36,30 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations }) => {
     const handleTrack = (vehicle_ID: string) => {
         router.push(`/liveTracking?vehicle_ID=${vehicle_ID}`);
     };
+    const handleAssign = () => {
+        console.log("assign clicked ")
+        setAssignModal(true)
+    };
     return (
         <Box>
             <Typography variant="h6" gutterBottom>
                 Allocations
             </Typography>
+            {assignModal && (
+    <div 
+        className="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50"
+        onClick={() => setAssignModal(false)} 
+    >
+        <div 
+            className="bg-white p-6 rounded-lg shadow-lg w-96"
+            onClick={(e) => e.stopPropagation()}
+        >
+            hiiii
+        </div>
+    </div>
+)}
+
+
             {allocations.map((allocation) => (
                 <Paper key={allocation.vehicle_ID} sx={{ p: 2, mb: 2 }}>
                     <Grid container alignItems="center" justifyContent="space-between">
@@ -98,7 +121,14 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations }) => {
                                 </Typography>
                             </Box>
 
-                            <Box sx={{ display: "flex", justifyContent: isMobile ? "center" : "flex-end", mt: 3 }}>
+                            <Box sx={{ display: "flex", justifyContent: isMobile ? "center" : "flex-end", mt: 3, gap:3 }}>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={() => handleAssign()}
+                                >
+                                    Assign 
+                                </Button>
                                 <Button
                                     variant="contained"
                                     color="primary"

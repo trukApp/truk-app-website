@@ -99,6 +99,12 @@ const DriverMassUpload: React.FC<MassUploadProps> = ({ arrayKey }) => {
         if (arrayFields.includes(key) && value) {
           value = value.split(',').map((item) => item.trim());
         }
+        
+        const dateFields: string[] = ['expiry_date'];
+        if (dateFields.includes(key) && typeof value === 'string') {
+            const [day, month, year] = value.split('-');
+            value = `${year}-${month}-${day}`;
+        }
 
         if (nestedKey) {
           if (typeof transformedRow[nestedKey] !== 'object' || transformedRow[nestedKey] === null) {

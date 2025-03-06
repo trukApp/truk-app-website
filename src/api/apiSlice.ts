@@ -48,6 +48,7 @@ export const apiSlice = createApi({
     "CreateOrder",
     "PackagesForOrder",
     "Orders",
+    "AssignedOrders",
   ],
   endpoints: (builder) => ({
     userLogin: builder.mutation<User, { phone: string; password: string }>({
@@ -555,6 +556,26 @@ export const apiSlice = createApi({
       }),
       providesTags: [{ type: "Orders", id: "LIST" }],
     }),
+
+    getAllAssignedOrders: builder.query({
+      query: (params) => ({
+        url: `ao/assigned-orders`,
+        method: "GET",
+        params,
+      }),
+      providesTags: [{ type: "AssignedOrders", id: "LIST" }],
+    }),
+    postAssignOrder: builder.mutation({
+      query: (body) => {
+        return {
+          url: "ao/assign-order",
+          method: "POST",
+          body,
+        };
+      },
+      invalidatesTags: [{ type: "AssignedOrders", id: "LIST" }],
+    }),
+
   }),
 });
 
@@ -615,4 +636,5 @@ export const {
   useUpdateShipToDefaultLocationIdMutation,
   useUpdateBillToDefaultLocationIdMutation,
   useGetFilteredLocationsQuery,
+  useGetAllAssignedOrdersQuery,
 } = apiSlice;

@@ -120,35 +120,7 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
     products: postProductMaster,
 
   };
-
-  // type NestedRecord = Record<string, string>;
-
-  // const mapCsvToPayload = <T extends object>(
-  //   data: ParsedRow[],
-  //   columnMappings: ColumnMapping[]
-  // ): T[] => {
-  //   return data.map((row) => {
-  //     return columnMappings.reduce<T>((acc, { displayName, key, nestedKey }) => {
-  //       const value = row[displayName]?.trim();
-
-  //       if (nestedKey) {
-  //         const nestedAcc = acc as Record<string, NestedRecord>;
-  //         if (!nestedAcc[nestedKey]) {
-  //           nestedAcc[nestedKey] = {} as NestedRecord;
-  //         }
-  //         nestedAcc[nestedKey][key] = value;
-  //       } else {
-  //         (acc as Record<string, string>)[key] = value;
-  //       }
-
-  //       return acc;
-  //     }, {} as T);
-  //   });
-  // };
-
-
-  // Handle template download
-
+ 
   const mapCsvToPayload = (
     data: ParsedRow[],
     columnMappings: ColumnMapping[]
@@ -158,11 +130,16 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
 
       columnMappings.forEach(({ displayName, key, nestedKey }) => {
         let value: string | string[] | undefined = row[displayName]?.trim();
-
-        // Convert specific fields into arrays
         const arrayFields: string[] = ['carrier_loc_of_operation', 'carrier_lanes', 'vehicle_types_handling'];
+        
         if (arrayFields.includes(key) && value) {
           value = value.split(',').map((item) => item.trim());
+        }
+
+        const dateFields: string[] = ['validity_from', 'validity_to','downtime_starts_from','downtime_ends_from','start_time','end_time','expiry_date','expiration','best_before'];
+        if (dateFields.includes(key) && typeof value === 'string') {
+            const [day, month, year] = value.split('-');
+            value = `${year}-${month}-${day}`;
         }
 
         if (nestedKey) {
@@ -178,19 +155,6 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
       return transformedRow;
     });
   };
-
-  const handleDownloadTemplate = () => {
-    const columnMappings = getColumnMappings();
-    const csvContent = `data:text/csv;charset=utf-8,${columnMappings
-      .map((col) => col.displayName)
-      .join(',')}`;
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `${arrayKey}_template.csv`);
-    link.click();
-  };
-
   // Handle file upload
   const handleUpload = async () => {
     if (!file) {
@@ -228,6 +192,7 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
           return item;
         }),
       };
+      console.log("body for mass :", body)
       const response = (await postMapping[arrayKey](body)) as ApiResponse;
       const uploadedRecords = response.data.created_records.length;
       if (uploadedRecords) {
@@ -247,6 +212,20 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
       setIsUploading(false);
     }
   };
+
+  const handleDownloadTemplate = () => {
+    const columnMappings = getColumnMappings();
+    const csvContent = `data:text/csv;charset=utf-8,${columnMappings
+      .map((col) => col.displayName)
+      .join(',')}`;
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `${arrayKey}_template.csv`);
+    link.click();
+  };
+
+
 
   return (
     <Box>
