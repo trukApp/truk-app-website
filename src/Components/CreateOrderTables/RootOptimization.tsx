@@ -65,6 +65,7 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
     const [selectedTransport, setSelectedTransport] = useState('');
     const [transportOptions, setTransportOptions] = useState<string[]>([]);
     console.log("transportOptions: ", transportOptions)
+    console.log("directionsResults: ", directionsResults)
 
     useEffect(() => {
         if (rootOptimization?.length > 0) {
@@ -83,9 +84,7 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
     console.log('selectedRouteIndex', selectedRouteIndex);
     const filteredRoutes = useMemo(() => {
         if (!selectedTransport) return [];
-        return rootOptimization.flatMap(vehicle =>
-            vehicle.route
-        );
+        return rootOptimization.flatMap(vehicle => vehicle.route);
     }, [selectedTransport, rootOptimization]);
 
     const { startMarkers, endMarkers } = useMemo(() => {

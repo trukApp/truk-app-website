@@ -29,7 +29,6 @@ const CreateOrder: React.FC = () => {
     const [modalOpen, setModalOpen] = useState(false);
     const [noVechilePopup, setNoVechilePopup] = useState(false);
     const filters = useAppSelector((state) => state.auth.filters);
-    console.log("selectTrucks: ", selectTrucks)
     useEffect(() => {
         if (packageSelectErr) {
             setSnackbarMessage(`Please select the packages of same SHIP FROM location`);
@@ -62,7 +61,6 @@ const CreateOrder: React.FC = () => {
         try {
             const response = await createOrder(createOrderBody).unwrap();
             if (response) {
-                console.log("response: ", response)
                 setSnackbarMessage(`Order ID ${response?.order_ID} created successfully!`);
                 setSnackbarSeverity("success");
                 setSnackbarOpen(true);
@@ -130,7 +128,6 @@ const CreateOrder: React.FC = () => {
                 //     setActiveStep((prev) => prev + 1);
                 // }
                 if (response) {
-                    console.log(response?.allocations)
                     setSelectTrucks(response?.allocations);
                     setActiveStep((prev) => prev + 1);
                 }

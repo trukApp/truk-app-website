@@ -26,11 +26,8 @@ interface TrucksTableProps {
     trucks: Truck[];
 }
 const LoadOptimization: React.FC<TrucksTableProps> = ({ trucks }) => {
-    const selectedTrucks = trucks;
-    // console.log("selectedTrucks: ", selectedTrucks)
-
+    const selectedTrucks = trucks
     const getVechiles: Allocation[] = selectedTrucks as Allocation[];
-
     return (
         <Box sx={{ p: 2 }}>
             <Typography variant="h5" gutterBottom color='#83214F' sx={{ fontWeight: 'bold', marginTop: '30px' }}>

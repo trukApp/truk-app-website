@@ -13,7 +13,6 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks }) => {
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
     // const selectedTrucks = useAppSelector((state) => state.auth.selectedTrucks || []);
     const selectedTrucks = trucks
-    console.log(selectedPackages)
 
     const packageColumns = [
         { field: 'pack_ID', headerName: 'Package ID', flex: 1 },
