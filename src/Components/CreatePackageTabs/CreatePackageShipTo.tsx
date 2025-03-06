@@ -138,7 +138,6 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
         }
     };
 
-
     const handleDefaultLocationChange = async (locId: string, defaultValue: number | boolean) => {
         try {
             const response = await updateDefulatFromLocation({ locId: locId, defShipFrom: defaultValue ? 1 : 0 }).unwrap();
@@ -304,7 +303,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                                 }
                                                 }
                                                 onBlur={handleBlur}
-                                                value={searchKey} // Display the selected location ID
+                                                value={searchKey}
                                                 error={touched?.locationId && Boolean(errors?.locationId)}
                                                 helperText={
                                                     touched?.locationId && typeof errors?.locationId === "string"

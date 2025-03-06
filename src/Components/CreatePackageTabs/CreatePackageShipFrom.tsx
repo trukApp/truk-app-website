@@ -257,7 +257,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
 
                     }}
                 >
-                    {({ values, touched, errors, handleSubmit, setFieldValue, handleBlur }) => (
+                    {({ values, touched, errors, handleSubmit, setFieldValue }) => (
                         <Form >
                             <Typography variant="h6" sx={{ fontWeight: 'bold', textAlign: 'center', marginTop: 3 }}>Ship from Details</Typography>
                             <Grid item xs={12} sx={{ display: 'flex', flexDirection: { md: "row", xs: "column" }, gap: { md: '20px', xs: '2px' }, marginLeft: "15px" }}>
@@ -339,8 +339,8 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                                                     setFieldValue("email", "");
                                                 }
                                                 }
-                                                onBlur={handleBlur}
-                                                value={searchKey} // Display the selected location ID
+                                                // onBlur={handleBlur}
+                                                value={searchKey}
                                                 error={touched?.locationId && Boolean(errors?.locationId)}
                                                 helperText={
                                                     touched?.locationId && typeof errors?.locationId === "string"

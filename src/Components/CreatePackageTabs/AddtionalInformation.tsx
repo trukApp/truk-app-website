@@ -10,6 +10,7 @@ import {
     setPackageAddtionalInfo
 } from '@/store/authSlice';
 import { CustomButtonFilled, CustomButtonOutlined } from '../ReusableComponents/ButtonsComponent';
+import { useImageUploadingMutation } from '@/api/apiSlice';
 
 export interface AdditionalInfo {
     referenceId: string;
@@ -47,6 +48,7 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
     const dispatch = useAppDispatch();
     const packageAddtionalInfoFromRedux = useAppSelector((state) => state.auth.packageAdditionalInfo);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [imageUpload] = useImageUploadingMutation()
 
     const initialValues: FormValues = {
         additionalInfo: packageAddtionalInfoFromRedux ? packageAddtionalInfoFromRedux : {
@@ -60,17 +62,54 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
         },
     };
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, setFieldValue: (field: string, value: File | null) => void) => {
-        const file = event.target.files?.[0] || null;
-        setSelectedFile(file);
-        setFieldValue('additionalInfo.file', file);
-    };
+    // const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, setFieldValue: (field: string, value: File | null) => void) => {
+    //     const file = event.target.files?.[0] || null;
+    //     setSelectedFile(file);
+    //     setFieldValue('additionalInfo.file', file);
+    // };
+    const handleFileChange = async (
+  event: React.ChangeEvent<HTMLInputElement>,
+  setFieldValue: (field: string, value: File | string | null) => void
+) => {
+    const file = event.target.files?.[0] || null;
+    console.log("File selected:", file);
+
+    setSelectedFile(file);
+    setFieldValue("additionalInfo.file", file);
+
+    if (file) {
+        try {
+            const formData = new FormData();
+            formData.append("image", file); // Ensure the key matches the backend `req.files.image`
+            
+            // Log FormData keys & values to verify
+            for (const [key, value] of formData.entries()) {
+                console.log("FormData entry:", key, value);
+            }
+
+            const response = await imageUpload(formData).unwrap();
+            console.log("File upload response:", response);
+
+            if (response?.imageUrl) {
+                setFieldValue("additionalInfo.file", response.imageUrl);
+            }
+        } catch (error) {
+            console.error("File upload failed:", error);
+        }
+    }
+};
+
+
 
     const handleFormSubmit = (values: FormValues, actions: FormikHelpers<FormValues>) => {
-        dispatch(setPackageAddtionalInfo(values.additionalInfo));
-        // dispatch(setCompletedState(4));
-        onNext(values);
-        actions.setSubmitting(false);
+        const updatedAdditionalInfo = {
+        ...values.additionalInfo,
+        fileUrl: values.additionalInfo.file || "",
+        };
+        console.log("updated :", updatedAdditionalInfo)
+        // dispatch(setPackageAddtionalInfo(updatedAdditionalInfo));
+        // onNext(values);
+        // actions.setSubmitting(false);
     };
 
     return (
