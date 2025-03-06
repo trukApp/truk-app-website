@@ -17,7 +17,12 @@ interface Truck {
     leftoverVolume: number;
     cost: number;
     loadArrangement: []
+}
 
+interface PackageDetails {
+    stop: string;
+    location: string;
+    packages: [];
 }
 
 const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks }) => {
@@ -106,7 +111,7 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks }) => {
                                     {vehicle.loadArrangement && vehicle.loadArrangement.length > 0 ? (
                                         <Box sx={{ mt: 2, height: 300, backgroundColor: "white", borderRadius: 1, overflow: "hidden" }}>
                                             <DataGrid
-                                                rows={vehicle.loadArrangement.map((item, i) => ({
+                                                rows={vehicle.loadArrangement.map((item: PackageDetails, i) => ({
                                                     id: item.stop || i + 1,
                                                     location: item.location || "N/A",
                                                     packages: item.packages ? item.packages.join(", ") : "N/A",
