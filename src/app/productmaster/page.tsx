@@ -649,13 +649,14 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                                                     touched.expirationDate && errors.expirationDate
                                                 }
                                                 InputLabelProps={{ shrink: true }}
+                                                inputProps={{ min: new Date().toISOString().split("T")[0] }}
                                             />
                                         </Grid>
 
                                         <Grid item xs={12} sm={6} md={2.4}>
                                             <TextField
                                                 fullWidth
-                                                size="small"
+                                                size="small" inputProps={{ min: new Date().toISOString().split("T")[0] }}
                                                 label="Best Before Date"
                                                 name="bestBeforeDate"
                                                 type="date"

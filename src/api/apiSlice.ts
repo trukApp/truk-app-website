@@ -637,4 +637,5 @@ export const {
   useUpdateBillToDefaultLocationIdMutation,
   useGetFilteredLocationsQuery,
   useGetAllAssignedOrdersQuery,
+  usePostAssignOrderMutation,
 } = apiSlice;

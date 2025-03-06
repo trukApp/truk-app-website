@@ -655,6 +655,7 @@ const DriverForm: React.FC = () => {
                       error={touched.expiryDate && Boolean(errors.expiryDate)}
                       helperText={touched.expiryDate && errors.expiryDate}
                       InputLabelProps={{ shrink: true }}
+                      inputProps={{ min: new Date().toISOString().split("T")[0] }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6} md={2.4}>
