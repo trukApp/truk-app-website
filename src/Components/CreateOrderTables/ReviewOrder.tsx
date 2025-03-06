@@ -2,22 +2,22 @@ import { useAppSelector } from '@/store';
 import React from 'react';
 import { Box, Typography, Paper, Grid } from '@mui/material';
 import { DataGrid, } from '@mui/x-data-grid';
-// import { Truck } from './TrucksTable'
+import { Truck } from './TrucksTable'
 
 
 interface TrucksTableProps {
     trucks: Truck[];
 }
 
-interface Truck {
-    vehicle_ID: string;
-    totalWeightCapacity: number;
-    leftoverWeight: string;
-    totalVolumeCapacity: number;
-    leftoverVolume: number;
-    cost: number;
-    loadArrangement: []
-}
+// interface TruckDetails {
+//     vehicle_ID: string;
+//     totalWeightCapacity: number;
+//     leftoverWeight: string;
+//     totalVolumeCapacity: number;
+//     leftoverVolume: number;
+//     cost: number;
+//     loadArrangement: []
+// }
 
 interface PackageDetails {
     stop: string;

@@ -487,7 +487,10 @@ export const apiSlice = createApi({
         method: "GET",
         params,
       }),
-      providesTags: [{ type: "PackagesForOrder", id: "LIST" }],
+      providesTags: [
+        { type: "PackagesForOrder", id: "LIST" },
+        { type: "Orders", id: "LIST" },
+      ],
     }),
 
     createPackageForOrder: builder.mutation({
@@ -575,7 +578,6 @@ export const apiSlice = createApi({
       },
       invalidatesTags: [{ type: "AssignedOrders", id: "LIST" }],
     }),
-
   }),
 });
 
