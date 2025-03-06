@@ -2,6 +2,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { GoogleMap, Marker, Polyline, useJsApiLoader } from "@react-google-maps/api";
 import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { Button } from "@mui/material";
 
 const mapContainerStyle = {
     width: "100%",
@@ -25,14 +27,17 @@ const liveUrl: string = process.env.NEXT_PUBLIC_LIVE_TRACK_URL ?? '';
 
 const LiveTracking: React.FC = () => {
     const searchParams = useSearchParams();
+    const router = useRouter();
     const vehicleId = "TS08JB3663";
     const deviceId = "867232055767934";
 
     const [vehicles, setVehicles] = useState<Vehicle[]>([]);
     const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
     const [vehiclePath, setVehiclePath] = useState<{ [key: string]: { lat: number, lng: number }[] }>({});
+    const [trackedPath, setTrackedPath] = useState<{ lat: number; lng: number }[]>([]);
+    const [isTracking, setIsTracking] = useState(false);
     const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null);
-    
+
     const selectedVehicleRef = useRef<Vehicle | null>(null);
     const { isLoaded } = useJsApiLoader({ googleMapsApiKey: mapsKey });
 
@@ -41,7 +46,7 @@ const LiveTracking: React.FC = () => {
             try {
                 const response = await fetch(liveUrl);
                 const data: Vehicle[] = await response.json();
-
+                console.log('data', data);
                 if (Array.isArray(data)) {
                     const validVehicles = data.filter(vehicle => vehicle.latitude && vehicle.longitude);
                     setVehicles(validVehicles);
@@ -49,10 +54,15 @@ const LiveTracking: React.FC = () => {
                     validVehicles.forEach(vehicle => {
                         const newPoint = { lat: parseFloat(vehicle.latitude), lng: parseFloat(vehicle.longitude) };
 
+                        // setVehiclePath(prevPath => ({
+                        //     ...prevPath,
+                        //     [vehicle.deviceId]: [...(prevPath[vehicle.deviceId] || []), newPoint].slice(-50),
+                        // }));
                         setVehiclePath(prevPath => ({
                             ...prevPath,
-                            [vehicle.deviceId]: [...(prevPath[vehicle.deviceId] || []), newPoint].slice(-50),
+                            [vehicle.deviceId]: [...(prevPath[vehicle.deviceId] || []), newPoint]
                         }));
+
                     });
 
                     const dynamicVehicle = validVehicles.find(v => v.deviceId === deviceId);
@@ -80,6 +90,31 @@ const LiveTracking: React.FC = () => {
         selectedVehicleRef.current = selectedVehicle;
     }, [selectedVehicle]);
 
+    useEffect(() => {
+        selectedVehicleRef.current = selectedVehicle;
+
+        if (selectedVehicle) {
+            if (selectedVehicle.status === "moving" && !isTracking) {
+                setIsTracking(true);
+
+                // Store lat/lng every 5 minutes
+                const trackingInterval = setInterval(() => {
+                    setTrackedPath(prevPath => [
+                        ...prevPath,
+                        { lat: parseFloat(selectedVehicle.latitude), lng: parseFloat(selectedVehicle.longitude) },
+                    ]);
+                }, 5 * 60 * 1000);
+
+                return () => clearInterval(trackingInterval);
+            }
+
+            if (selectedVehicle.status === "stopped" && isTracking) {
+                setIsTracking(false);
+            }
+        }
+    }, [selectedVehicle]);
+
+
     const getVehicleIcon = (vehicleType: string) => {
         switch (vehicleType.toLowerCase()) {
             case "car":
@@ -93,6 +128,10 @@ const LiveTracking: React.FC = () => {
 
     if (!isLoaded) return <p>Loading Maps...</p>;
     if (!mapCenter) return <p>Loading vehicle data...</p>;
+
+    const handleViewRouteDetails = () => {
+        router.push('/route-details');
+    };
 
     return (
         <div>
@@ -125,6 +164,18 @@ const LiveTracking: React.FC = () => {
                         }}
                     />
                 )}
+
+                {trackedPath.length > 1 && (
+                    <Polyline
+                        path={trackedPath}
+                        options={{
+                            strokeColor: "#FF0000",
+                            strokeOpacity: 0.8,
+                            strokeWeight: 4,
+                        }}
+                    />
+                )}
+
             </GoogleMap>
 
             {selectedVehicle && (
@@ -137,6 +188,25 @@ const LiveTracking: React.FC = () => {
                     <p><strong>Vehicle ID:</strong> {selectedVehicle.vehicleId}</p>
                 </div>
             )}
+            {trackedPath.length > 0 && (
+                <div>
+                    <h3>Tracked Route (5-min intervals)</h3>
+                    <ul>
+                        {trackedPath.map((point, index) => (
+                            <li key={index}>
+                                Lat: {point.lat}, Lng: {point.lng}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+            <Button
+                variant="contained"
+                color="primary"
+                onClick={handleViewRouteDetails}
+            >
+                View Route Details
+            </Button>
         </div>
     );
 };
