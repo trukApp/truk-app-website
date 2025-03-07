@@ -6,7 +6,6 @@ import * as Yup from 'yup';
 import styles from './CreatePackage.module.css';
 import { useAppDispatch, useAppSelector } from '@/store';
 import {
-    // setCompletedState,
     setPackageAddtionalInfo
 } from '@/store/authSlice';
 import { CustomButtonFilled, CustomButtonOutlined } from '../ReusableComponents/ButtonsComponent';
@@ -80,7 +79,7 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
     if (file) {
         try {
             const formData = new FormData();
-            formData.append("image", file); // Ensure the key matches the backend `req.files.image`
+            formData.append("image", file);
             
             // Log FormData keys & values to verify
             for (const [key, value] of formData.entries()) {
@@ -107,9 +106,9 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
         fileUrl: values.additionalInfo.file || "",
         };
         console.log("updated :", updatedAdditionalInfo)
-        // dispatch(setPackageAddtionalInfo(updatedAdditionalInfo));
-        // onNext(values);
-        // actions.setSubmitting(false);
+        dispatch(setPackageAddtionalInfo(updatedAdditionalInfo));
+        onNext(values);
+        actions.setSubmitting(false);
     };
 
     return (

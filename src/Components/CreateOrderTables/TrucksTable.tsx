@@ -1,5 +1,5 @@
 import React
-// ,{ useState }
+    // ,{ useState }
 
     from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
@@ -26,13 +26,20 @@ export interface Truck {
     totalCost: number;
     allocations: Allocation[];
     unallocatedPackages: string[];
+    vehicle_ID: string;
+    totalWeightCapacity: number;
+    leftoverWeight: string;
+    totalVolumeCapacity: number;
+    leftoverVolume: number;
+    cost: number;
+    loadArrangement: []
 }
 
 interface TrucksTableProps {
     trucks: Truck[];
 }
 
-const TrucksTable: React.FC<TrucksTableProps> = ({trucks} ) => {
+const TrucksTable: React.FC<TrucksTableProps> = ({ trucks }) => {
     // const [expandedRow, setExpandedRow] = useState<string | null>(null);
     // const [selectedTruck, setSelectedTruck] = useState<Truck | null>(null);
     // const dispatch = useAppDispatch();
@@ -73,7 +80,7 @@ const TrucksTable: React.FC<TrucksTableProps> = ({trucks} ) => {
 
     return (
         <Box sx={{ height: 500, width: "100%" }}>
-            <Typography variant="h5" sx={{textAlign:'center', fontWeight:500,marginTop:3, }}>Suggested Trucks</Typography>
+            <Typography variant="h5" sx={{ textAlign: 'center', fontWeight: 500, marginTop: 3, }}>Suggested Trucks</Typography>
             <DataGrid
                 rows={rows}
                 columns={columns}

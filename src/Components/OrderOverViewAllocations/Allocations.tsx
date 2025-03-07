@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { Box, Collapse, IconButton, Paper, Typography, Grid, Button, useTheme, useMediaQuery, TextField, Modal, FormControlLabel, Checkbox } from "@mui/material";
+import { Box, Collapse, IconButton, Paper, Typography, Grid, Button, useTheme, useMediaQuery, TextField, Modal, FormControlLabel, Checkbox, MenuItem, Backdrop, CircularProgress } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { useRouter } from 'next/navigation';
-// import { usePostAssignOrderMutation } from "@/api/apiSlice";
-// import SnackbarAlert from "../ReusableComponents/SnackbarAlerts";
+import { useGetAllDriversDataQuery, usePostAssignOrderMutation } from "@/api/apiSlice";
+import SnackbarAlert from "../ReusableComponents/SnackbarAlerts";
+import { Driver } from "../BusinessPartnersForms/DriverForm";
 // import { useGetAllAssignedOrdersQuery } from "@/api/apiSlice";
 
 interface Allocation {
@@ -25,9 +26,9 @@ interface AllocationsProps {
 }
 
 const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId }) => {
-    // const [snackbarOpen, setSnackbarOpen] = useState(false);
-    // const [snackbarMessage, setSnackbarMessage] = useState("");
-    // const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     console.log('allocations :', allocations)
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -35,8 +36,12 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId }) => {
     const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({});
     const [assignModal, setAssignModal] = useState(false); 
     const [selectedAllocation, setSelectedAllocation] = useState<Allocation | null>(null);
-    // const [postAssignOrder] = usePostAssignOrderMutation()
-
+    const [postAssignOrder, {isLoading:isAssigning}] = usePostAssignOrderMutation()
+    const { data, isLoading: driverLoading } = useGetAllDriversDataQuery({})
+    const driversData = data?.drivers.length > 0 ? data?.drivers : []
+    if (driverLoading) {
+        console.log("driver loading")
+    }
       const [formData, setFormData] = useState({
             vehicleNumber: "",
             driverId: "",
@@ -71,8 +76,8 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId }) => {
             },
             vehicle_docs: {
                 insurance: "Valid",
-                registration: "XYZ123456789",
-                permit: "Valid till 2025"
+                registration: "ABC9876543",
+                permit: "Valid till 2026"
             },
             self_transport: formData.selfTransport ,
             dri_ID: formData.driverId,
@@ -86,82 +91,97 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId }) => {
         };
 
         console.log("Posting to API:", body);
-        // const response = await postAssignOrder(body).unwrap();
-        // setAssignModal(false);
-        // setSnackbarMessage(`Assined successfully!`);
-        // setSnackbarSeverity("success");
-        // setSnackbarOpen(true);
-        // console.log('response:',response)
-        // setAssignModal(false);
+        const response = await postAssignOrder(body).unwrap();
+        console.log("assign response :", response)
+        setAssignModal(false);
+        setSnackbarMessage(`Assined successfully!`);
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
+        console.log('response:',response)
+        setAssignModal(false);
     };
     return (
         <Box>
-            {/* <SnackbarAlert
+            <Backdrop
+        sx={{
+          color: "#ffffff",
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+        }}
+        open={isAssigning}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+            <SnackbarAlert
                 open={snackbarOpen}
                 message={snackbarMessage}
                 severity={snackbarSeverity}
                 onClose={() => setSnackbarOpen(false)}
-            /> */}
+            />
             <Typography variant="h6" gutterBottom>
                 Allocations
             </Typography>
             <Modal open={assignModal} onClose={() => setAssignModal(false)}>
-                <Box
-                    sx={{
-                        position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        transform: "translate(-50%, -50%)",
-                        bgcolor: "white",
-                        boxShadow: 24,
-                        p: 3,
-                        borderRadius: 2,
-                        width: {xs:'100%', md:'30%'}
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <Typography variant="h6" gutterBottom>
-                        Assign Order ({orderId}) to {selectedAllocation?.vehicle_ID}
-                    </Typography>
+      <Box
+        sx={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          bgcolor: "white",
+          boxShadow: 24,
+          p: 3,
+          borderRadius: 2,
+          width: { xs: "100%", md: "30%" },
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <Typography variant="h6" gutterBottom>
+          Assign Order ({orderId}) to {selectedAllocation?.vehicle_ID}
+        </Typography>
 
-                    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                        <TextField
-                            label="Vehicle number"
-                            name="vehicleNumber"
-                            value={formData.vehicleNumber}
-                            onChange={handleChange}
-                            variant="outlined"
-                            size="small"
-                            fullWidth
-                        />
-                        <TextField
-                            label="Driver ID"
-                            name="driverId"
-                            value={formData.driverId}
-                            onChange={handleChange}
-                            variant="outlined"
-                            size="small"
-                            fullWidth
-                        />
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={formData.selfTransport}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, selfTransport: e.target.checked })
-                                    }
-                                    name="selfTransport"
-                                    color="primary"
-                                />
-                            }
-                            label="Self Transport"
-                        />
-                        <Button variant="contained" color="primary" onClick={handleSubmit}>
-                            Submit
-                        </Button>
-                    </Box>
-                </Box>
-            </Modal>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <TextField
+            label="Vehicle number"
+            name="vehicleNumber"
+            value={formData.vehicleNumber}
+            onChange={handleChange}
+            variant="outlined"
+            size="small"
+            fullWidth
+          />
+          <TextField
+            label="Driver ID"
+            name="driverId"
+            select
+            value={formData.driverId}
+            onChange={handleChange}
+            variant="outlined"
+            size="small"
+            fullWidth
+          >
+            {driversData.map((driver:Driver) => (
+              <MenuItem key={driver.dri_ID} value={driver.dri_ID}>
+                {driver.dri_ID}
+              </MenuItem>
+            ))}
+          </TextField>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={formData.selfTransport}
+                onChange={(e) => setFormData({ ...formData, selfTransport: e.target.checked })}
+                name="selfTransport"
+                color="primary"
+              />
+            }
+            label="Self Transport"
+          />
+          <Button variant="contained" color="primary" onClick={handleSubmit}>
+            Submit
+          </Button>
+        </Box>
+      </Box>
+    </Modal>
 
             {allocations.map((allocation) => (
                 <Paper key={allocation.vehicle_ID} sx={{ p: 2, mb: 2 }}>
@@ -193,27 +213,30 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId }) => {
                             </Typography>
 
                             <Grid container spacing={2}>
-                                <Grid item xs={12} sm={6}>
+                                <Grid item xs={12} sm={4}>
+                                    <Typography variant="body2">
+                                        <strong>Total Weight Capacity:</strong> {allocation.totalWeightCapacity}
+                                    </Typography>
                                     <Typography variant="body2">
                                         <strong>Total Volume Capacity:</strong> {allocation.totalVolumeCapacity}
                                     </Typography>
+                                </Grid>
+
+                                <Grid item xs={12} sm={4}>
                                     <Typography variant="body2">
-                                        <strong>Total Weight Capacity:</strong> {allocation.totalWeightCapacity}
+                                        <strong>Occupied Weight:</strong> {allocation.occupiedWeight}
                                     </Typography>
                                     <Typography variant="body2">
                                         <strong>Occupied Volume:</strong> {allocation.occupiedVolume}
                                     </Typography>
                                 </Grid>
 
-                                <Grid item xs={12} sm={6}>
+                                <Grid item xs={12} sm={4}>
                                     <Typography variant="body2">
-                                        <strong>Occupied Weight:</strong> {allocation.occupiedWeight}
+                                        <strong>Leftover Weight:</strong> {allocation.leftoverWeight}
                                     </Typography>
                                     <Typography variant="body2">
                                         <strong>Leftover Volume:</strong> {allocation.leftoverVolume}
-                                    </Typography>
-                                    <Typography variant="body2">
-                                        <strong>Leftover Weight:</strong> {allocation.leftoverWeight}
                                     </Typography>
                                 </Grid>
                             </Grid>

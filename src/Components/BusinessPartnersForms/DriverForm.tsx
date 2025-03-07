@@ -33,7 +33,7 @@ interface DriverFormValues {
   loggedIntoApp: boolean;
 }
 
-interface Driver {
+export interface Driver {
   driverID: string;
   driverId: string;
   id: number;

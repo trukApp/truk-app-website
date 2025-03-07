@@ -15,6 +15,13 @@ import { CustomButtonFilled, CustomButtonOutlined } from '@/Components/ReusableC
 import { setSelectedPackages, setSelectedTrucks } from '@/store/authSlice';
 import { useMediaQuery, useTheme } from '@mui/material';
 
+interface ConfirmPayload {
+    message?: string;
+    totalCost?: number;
+    allocations?: [];
+    unallocatedPackages?: [];
+}
+
 const CreateOrder: React.FC = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -26,10 +33,11 @@ const CreateOrder: React.FC = () => {
     const [selectTheTrucks, { error: packageSelectErr, isLoading: truckSelectionLoading }] = useSelectTheProductsMutation();
     const [createOrder, { error: createOrderError, isLoading: confirmOrderLoading }] = useConfomOrderMutation();
     const [selectTrucks, setSelectTrucks] = useState<Truck[]>([]);
+    const [conformOrderPayload, setConformOrderPayload] = useState<ConfirmPayload>({});
     const [modalOpen, setModalOpen] = useState(false);
     const [noVechilePopup, setNoVechilePopup] = useState(false);
     const filters = useAppSelector((state) => state.auth.filters);
-console.log("selectTrucks: ", selectTrucks)
+
     useEffect(() => {
         if (packageSelectErr) {
             setSnackbarMessage(`Please select the packages of same SHIP FROM location`);
@@ -39,7 +47,7 @@ console.log("selectTrucks: ", selectTrucks)
     }, [packageSelectErr])
 
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
-    const selectedTrucks = useAppSelector((state) => state.auth.selectedTrucks || []);
+    // const selectedTrucks = useAppSelector((state) => state.auth.selectedTrucks || []);
 
 
     const { data: packagesData, error: allProductsFectchingError, isLoading: isPackagesLoading } = useGetAllPackagesForOrderQuery([]);
@@ -51,18 +59,19 @@ console.log("selectTrucks: ", selectTrucks)
 
 
     const handleCreateOrder = async () => {
-        const selectedOrderType = selectedTrucks[0]
+        // const selectedOrderType = selectedTrucks[0]
         const createOrderBody = {
-            scenario_label: selectedOrderType?.label,
-            total_cost: selectedOrderType?.totalCost,
-            allocations: selectedOrderType?.allocations,
-            unallocated_packages: selectedOrderType?.unallocatedPackages
+            scenario_label: conformOrderPayload?.message,
+            total_cost: conformOrderPayload?.totalCost,
+            allocations: conformOrderPayload?.allocations,
+            unallocated_packages: conformOrderPayload?.unallocatedPackages,
+            created_at: new Date().toISOString().split("T")[0],
         }
+        console.log(createOrderBody)
         setModalOpen(false);
         try {
             const response = await createOrder(createOrderBody).unwrap();
             if (response) {
-                console.log("response: ", response)
                 setSnackbarMessage(`Order ID ${response?.order_ID} created successfully!`);
                 setSnackbarSeverity("success");
                 setSnackbarOpen(true);
@@ -130,16 +139,17 @@ console.log("selectTrucks: ", selectTrucks)
                 //     setActiveStep((prev) => prev + 1);
                 // }
                 if (response) {
-                   console.log(response?.allocations)
-                 setSelectTrucks(response?.allocations);
-                    setActiveStep((prev) => prev + 1);  
-                }
-               
-            }
-        }else {
-                    // setSelectTrucks([response?.allocations]);
+                    setConformOrderPayload(response)
+                    // console.log('response: ', response)
+                    setSelectTrucks(response?.allocations);
                     setActiveStep((prev) => prev + 1);
                 }
+
+            }
+        } else {
+            // setSelectTrucks([response?.allocations]);
+            setActiveStep((prev) => prev + 1);
+        }
     };
     const CustomStepIcon = (props: StepIconProps) => {
         const { active, completed, icon } = props;
@@ -273,19 +283,19 @@ console.log("selectTrucks: ", selectTrucks)
 
                 {activeStep === 2 && (
                     <div>
-                        <RootOptimization rootOptimization={selectedTrucks as unknown as RootOptimizationType[]} />
+                        <RootOptimization rootOptimization={selectTrucks as unknown as RootOptimizationType[]} />
                     </div>
                 )}
 
                 {activeStep === 3 && (
                     <div>
-                        <LoadOptimization trucks={selectTrucks}/>
+                        <LoadOptimization trucks={selectTrucks} />
                     </div>
                 )}
 
                 {activeStep === 4 && (
                     <div>
-                        <ReviewCreateOrder />
+                        <ReviewCreateOrder trucks={selectTrucks} />
                     </div>
                 )}
             </div>

@@ -1,4 +1,4 @@
-import { useAppSelector } from '@/store';
+// import { useAppSelector } from '@/store';
 import React from 'react';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { Box, Typography, Paper } from '@mui/material';
@@ -10,30 +10,24 @@ interface LoadArrangement {
     packages: string[];
 }
 
-interface Allocation {
-    vehicle_ID: string;
-    totalWeightCapacity: number;
-    leftoverWeight: number;
-    totalVolumeCapacity: number;
-    leftoverVolume: number;
-    cost: number;
-    loadArrangement?: LoadArrangement[];
-    // occupiedWeight: number;
-    // occupiedVolume: number;
-}
+// interface Allocation {
+//     vehicle_ID: string;
+//     totalWeightCapacity: number;
+//     leftoverWeight: number;
+//     totalVolumeCapacity: number;
+//     leftoverVolume: number;
+//     cost: number;
+//     loadArrangement?: LoadArrangement[];
+//     // occupiedWeight: number;
+//     // occupiedVolume: number;
+// }
 
 interface TrucksTableProps {
     trucks: Truck[];
 }
-const LoadOptimization: React.FC<TrucksTableProps> = ({trucks} ) => {
-    const selectedTrucks = trucks;
-console.log("selectedTrucks: ", selectedTrucks)
-
-    // if (!selectedTrucks.length || !selectedTrucks[0].allocations) {
-    //     return <Typography variant="h6">No vehicle data available.</Typography>;
-    // }
-    const getVechiles: Allocation[] = selectedTrucks;
-
+const LoadOptimization: React.FC<TrucksTableProps> = ({ trucks }) => {
+    const selectedTrucks = trucks
+    const getVechiles = selectedTrucks;
     return (
         <Box sx={{ p: 2 }}>
             <Typography variant="h5" gutterBottom color='#83214F' sx={{ fontWeight: 'bold', marginTop: '30px' }}>
@@ -47,7 +41,7 @@ console.log("selectedTrucks: ", selectedTrucks)
                         { field: 'packages', headerName: 'Packages', width: 250 },
                     ];
 
-                    const rows = (vehicle.loadArrangement ?? []).map((item, i) => ({
+                    const rows = (vehicle.loadArrangement ?? []).map((item: LoadArrangement, i) => ({
                         id: item.stop || i + 1,
                         location: item.location || 'N/A',
                         packages: item.packages ? item.packages.join(', ') : 'N/A',

@@ -2,26 +2,33 @@ import { useAppSelector } from '@/store';
 import React from 'react';
 import { Box, Typography, Paper, Grid } from '@mui/material';
 import { DataGrid, } from '@mui/x-data-grid';
-interface Allocation {
-    vehicle_ID: string;
-    totalWeightCapacity: number;
-    leftoverWeight: number;
-    totalVolumeCapacity: number;
-    leftoverVolume: number;
-    cost: number;
-    loadArrangement?: LoadArrangement[];
+import { Truck } from './TrucksTable'
+
+
+interface TrucksTableProps {
+    trucks: Truck[];
 }
 
-interface LoadArrangement {
-    stop: number;
+// interface TruckDetails {
+//     vehicle_ID: string;
+//     totalWeightCapacity: number;
+//     leftoverWeight: string;
+//     totalVolumeCapacity: number;
+//     leftoverVolume: number;
+//     cost: number;
+//     loadArrangement: []
+// }
+
+interface PackageDetails {
+    stop: string;
     location: string;
-    packages: string[];
+    packages: [];
 }
 
-const ReviewCreateOrder = () => {
+const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks }) => {
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
-    const selectedTrucks = useAppSelector((state) => state.auth.selectedTrucks || []);
-
+    // const selectedTrucks = useAppSelector((state) => state.auth.selectedTrucks || []);
+    const selectedTrucks = trucks
 
     const packageColumns = [
         { field: 'pack_ID', headerName: 'Package ID', flex: 1 },
@@ -52,50 +59,6 @@ const ReviewCreateOrder = () => {
 
     return (
         <Box sx={{ p: 3 }}>
-            {/* <Paper sx={{ mb: 3, p: 2, borderRadius: 2, boxShadow: 3 }}>
-                <Typography variant="h6" gutterBottom sx={{ color: '#83214F' }}>Selected Packages</Typography>
-                <TableContainer>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Package ID</TableCell>
-                                <TableCell>Ship From</TableCell>
-                                <TableCell>Ship To</TableCell>
-                                <TableCell>Products</TableCell>
-                                <TableCell>Invoice</TableCell>
-                                <TableCell>Reference ID</TableCell>
-                                <TableCell>Pickup Date & Time</TableCell>
-                                <TableCell>Dropoff Date & Time</TableCell>
-                                <TableCell>Tax Info</TableCell>
-                                <TableCell>Return Label</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {selectedPackages.map((pkg) => (
-                                <TableRow key={pkg.pac_id}>
-                                    <TableCell>{pkg.pack_ID}</TableCell>
-                                    <TableCell>{pkg.ship_from}</TableCell>
-                                    <TableCell>{pkg.ship_to}</TableCell>
-                                    <TableCell>
-                                        {pkg.product_ID.map((product) => (
-                                            <div key={product.prod_ID}>
-                                                {product.prod_ID} (Qty: {product.quantity})
-                                            </div>
-                                        ))}
-                                    </TableCell>
-                                    <TableCell>{pkg.additional_info?.invoice || 'N/A'}</TableCell>
-                                    <TableCell>{pkg.additional_info?.reference_id || 'N/A'}</TableCell>
-                                    <TableCell>{pkg.pickup_date_time}</TableCell>
-                                    <TableCell>{pkg.dropoff_date_time}</TableCell>
-                                    <TableCell>{pkg.tax_info?.tax_rate || 'N/A'}</TableCell>
-                                    <TableCell>{pkg.return_label ? 'Yes' : 'No'}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            </Paper> */}
-
             <Paper sx={{ mb: 3, p: 2, borderRadius: 2, boxShadow: 3 }}>
                 <Typography variant="h6" gutterBottom sx={{ color: '#83214F' }}>Selected Packages</Typography>
                 <div style={{ height: 400, width: '100%' }}>
@@ -108,25 +71,14 @@ const ReviewCreateOrder = () => {
                     />
                 </div>
             </Paper>
-
-            <Grid>
-                {selectedTrucks.length > 0 && (
-                    <Paper sx={{ mb: 3, p: 2, borderRadius: 2, boxShadow: 3 }}>
-                        <Typography variant="h6" gutterBottom sx={{ color: '#83214F' }}>Selected Truck Details</Typography>
-                        <Typography>Label: <strong>{selectedTrucks[0].label}</strong> </Typography>
-                        <Typography>Total Estimated Cost: <strong> ₹{selectedTrucks[0].totalCost}</strong></Typography>
-                    </Paper>
-                )}
-            </Grid>
-
             <Grid>
                 <Paper sx={{ mb: 3, p: 2, borderRadius: 2, boxShadow: 3 }}>
                     <Typography variant="h6" gutterBottom sx={{ color: '#83214F' }}>
-                        Load and Route Optimised vehicles : {selectedTrucks[0]?.allocations?.length}
+                        Load and Route Optimised vehicles
                     </Typography>
 
                     <Grid container spacing={2}>
-                        {selectedTrucks[0]?.allocations?.map((vehicle: Allocation, index: number) => (
+                        {selectedTrucks?.map((vehicle: Truck, index: number) => (
                             <Grid item xs={12} md={6} key={index}>
                                 <Box
                                     sx={{
@@ -159,7 +111,7 @@ const ReviewCreateOrder = () => {
                                     {vehicle.loadArrangement && vehicle.loadArrangement.length > 0 ? (
                                         <Box sx={{ mt: 2, height: 300, backgroundColor: "white", borderRadius: 1, overflow: "hidden" }}>
                                             <DataGrid
-                                                rows={vehicle.loadArrangement.map((item, i) => ({
+                                                rows={vehicle.loadArrangement.map((item: PackageDetails, i) => ({
                                                     id: item.stop || i + 1,
                                                     location: item.location || "N/A",
                                                     packages: item.packages ? item.packages.join(", ") : "N/A",
@@ -194,6 +146,7 @@ const ReviewCreateOrder = () => {
                             </Grid>
                         ))}
                     </Grid>
+
                 </Paper>
 
             </Grid>

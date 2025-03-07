@@ -61,7 +61,7 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
         eachLocation?.def_bill_to === 1)
         const [searchKey, setSearchKey] = useState(billToReduxValues?.locationId || defaultLocationData?.loc_ID || '');
         const [showSuggestions, setShowSuggestions] = useState(false);
-        const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey);
+        const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
         
         const displayLocations = searchKey ? filteredLocations?.results || [] : allLocations;
         console.log("display:", displayLocations)
@@ -72,7 +72,7 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
     const [postLocation, { isLoading: postLocationLoading }] = usePostLocationMasterMutation({})
   
     const shipFromReduxValues = useAppSelector((state) => state.auth.packageShipFrom)
-    const getAllLocations = allLocations.filter(
+    const getAllLocations = displayLocations.filter(
         (location: Location) => location.loc_ID !== shipFromReduxValues?.locationId
     );
 
@@ -331,9 +331,9 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
             textAlign: "center",
         }}
     >
-        {displayLocations.length > 0 ? (
+        {getAllLocations.length > 0 ? (
             <List>
-                {displayLocations.map((location: Location) => (
+                {getAllLocations.map((location: Location) => (
                     <ListItem
                         key={location.loc_ID}
                         component="li"
@@ -350,7 +350,7 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                             placement="right"
                         >
                             <span style={{ fontSize: "14px" }}>
-                                {location.loc_ID}, {location.loc_desc}
+                                {location.loc_ID}, {location.city}, {location.state}, {location.country}, {location.pincode}
                             </span>
                         </Tooltip>
                     </ListItem>
@@ -446,7 +446,7 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                                 <Grid item xs={12} md={2.4}>
                                     <Field
                                         name="addressLine1"
-                                        as={TextField}
+                                        as={TextField} disabled
                                         label="Address Line 1*"
                                         InputLabelProps={{ shrink: true }} size='small' fullWidth
 

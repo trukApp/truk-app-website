@@ -49,7 +49,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
         eachLocation?.def_ship_from === 1)
     const [searchKey, setSearchKey] = useState(shipFromReduxValues?.locationId || defaultLocationData?.loc_ID || '');
     const [showSuggestions, setShowSuggestions] = useState(false);
-    const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey);
+    const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
     
     const displayLocations = searchKey ? filteredLocations?.results || [] : allLocations;
     console.log("display:", displayLocations)
@@ -88,7 +88,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
         locationType: shipFromReduxValues?.locationType || defaultLocationData?.loc_type || ''
     }
 
-    const getAllLocations = allLocations.filter((location: Location) => {
+    const getAllLocations = displayLocations.filter((location: Location) => {
         if (shipToReduxValues?.locationId && billToReduxValues?.locationId) {
             return (
                 location.loc_ID !== shipToReduxValues.locationId &&
@@ -363,14 +363,15 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
             textAlign: "center",
         }}
     >
-        {displayLocations.length > 0 ? (
+        {getAllLocations.length > 0 ? (
             <List>
-                {displayLocations.map((location: Location) => (
+                {getAllLocations.map((location: Location) => (
                     <ListItem
                         key={location.loc_ID}
                         component="li"
                         onClick={() => {
                             setShowSuggestions(false);
+
                             setSearchKey(location.loc_ID);
                             handleLocationChange(location.loc_ID, setFieldValue);
                             setFieldValue("locationId", location.loc_ID);
@@ -382,7 +383,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                             placement="right"
                         >
                             <span style={{ fontSize: "14px" }}>
-                                {location.loc_ID}, {location.loc_desc}
+                                {location.loc_ID}, {location.city}, {location.state}, {location.country}, {location.pincode}
                             </span>
                         </Tooltip>
                     </ListItem>
