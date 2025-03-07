@@ -578,6 +578,17 @@ export const apiSlice = createApi({
       },
       invalidatesTags: [{ type: "AssignedOrders", id: "LIST" }],
     }),
+    
+    // image uploading
+    imageUploading: builder.mutation({
+      query: (formData) => {
+        return {
+          url: "image/upload",
+          method: "POST",
+          body:formData,
+        };
+      },
+    }),
   }),
 });
 
@@ -640,4 +651,6 @@ export const {
   useGetFilteredLocationsQuery,
   useGetAllAssignedOrdersQuery,
   usePostAssignOrderMutation,
+  useImageUploadingMutation,
+
 } = apiSlice;

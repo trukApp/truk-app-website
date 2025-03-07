@@ -74,11 +74,14 @@ const PickupDropoff: React.FC<PickupDropTab> = ({ onNext, onBack }) => {
                                 InputLabelProps={{ shrink: true }}
                                 error={touched.pickupDateTime && Boolean(errors.pickupDateTime)}
                                 helperText={touched.pickupDateTime && errors.pickupDateTime}
+                                inputProps={{
+            min: new Date().toISOString().slice(0, 16), 
+        }}
                             />
                         </Grid>
 
                         {/* Drop off Date & Time */}
-                        <Grid  item xs={12} md={3}>
+                        {/* <Grid  item xs={12} md={3}>
                             <Field
                                 as={TextField}
                                 type="datetime-local"
@@ -88,8 +91,28 @@ const PickupDropoff: React.FC<PickupDropTab> = ({ onNext, onBack }) => {
                                 InputLabelProps={{ shrink: true }}
                                 error={touched.dropoffDateTime && Boolean(errors.dropoffDateTime)}
                                 helperText={touched.dropoffDateTime && errors.dropoffDateTime}
+                                inputProps={{
+            min: new Date().toISOString().slice(0, 16),  
+        }}
                             />
-                        </Grid>
+                        </Grid> */}
+                            <Grid item xs={12} md={3}>
+    <Field
+        as={TextField}
+        type="datetime-local"
+        name="dropoffDateTime"
+        label="Drop off Date & Time (Estimated)"
+        fullWidth
+        size="small"
+        InputLabelProps={{ shrink: true }}
+        error={touched.dropoffDateTime && Boolean(errors.dropoffDateTime)}
+        helperText={(touched.dropoffDateTime && errors.dropoffDateTime)}
+        inputProps={{
+            min: new Date().toISOString().slice(0, 16),
+        }}
+    />
+</Grid>
+
 
                         {/* Optional Notes */}
                         <Grid item xs={12} md={6}>

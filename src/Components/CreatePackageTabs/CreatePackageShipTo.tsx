@@ -56,10 +56,10 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
     const shipFromReduxValues = useAppSelector((state) => state.auth.packageShipFrom)
     const [searchKey, setSearchKey] = useState(shipToReduxValues?.locationId || defaultLocationData?.loc_ID || '');
     const [showSuggestions, setShowSuggestions] = useState(false);
-    const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey);
+    const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
     const displayLocations = searchKey ? filteredLocations?.results || [] : allLocations;
 
-    const getAllLocations = allLocations.filter(
+    const getAllLocations = displayLocations.filter(
         (location: Location) => location.loc_ID !== shipFromReduxValues?.locationId
     );
 
@@ -137,7 +137,6 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
             setFieldValue("email", "");
         }
     };
-
 
     const handleDefaultLocationChange = async (locId: string, defaultValue: number | boolean) => {
         try {
@@ -304,7 +303,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                                 }
                                                 }
                                                 onBlur={handleBlur}
-                                                value={searchKey} // Display the selected location ID
+                                                value={searchKey}
                                                 error={touched?.locationId && Boolean(errors?.locationId)}
                                                 helperText={
                                                     touched?.locationId && typeof errors?.locationId === "string"
@@ -315,7 +314,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                                     endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
                                                 }}
                                             />
-                                            {showSuggestions && displayLocations?.length > 0 && (
+                                            {showSuggestions && getAllLocations?.length > 0 && (
                                                 <Paper
                                                     style={{
                                                         maxHeight: 200,
@@ -326,7 +325,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                                     }}
                                                 >
                                                     <List>
-                                                        {displayLocations.map((location: Location) => (
+                                                        {getAllLocations.map((location: Location) => (
                                                             <ListItem
                                                                 key={location.loc_ID}
                                                                 component="li"
@@ -342,7 +341,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                                                     title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
                                                                     placement="right"
                                                                 >
-                                                                    <span style={{ fontSize: '14px' }}>{location.loc_ID}, {location.loc_desc}</span>
+                                                                    <span style={{ fontSize: '14px' }}>{location.loc_ID}, {location.city}, {location.state}, {location.country}, {location.pincode}</span>
                                                                 </Tooltip>
                                                             </ListItem>
                                                         ))}
