@@ -76,7 +76,7 @@ interface Driver {
 const DriverForm: React.FC = () => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const initialDriverValues = {
-    driverId:'',
+    driverId: '',
     driverName: '',
     locations: [] as string[],
     // address: '',
@@ -106,29 +106,31 @@ const DriverForm: React.FC = () => {
   const [updateRecordId, setUpdateRecordId] = useState(0)
   const { data, error, isLoading } = useGetAllDriversDataQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize })
   const driversData = data?.drivers.length > 0 ? data?.drivers : []
-  const { data: locationsData} = useGetLocationMasterQuery({})
+  const { data: locationsData } = useGetLocationMasterQuery({})
   const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
-    const [searchKey, setSearchKey] = useState('');
-    const [showSuggestions, setShowSuggestions] = useState(false);
-    const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey);
-    const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
+  const [searchKey, setSearchKey] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  // const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey);
+  const { data: filteredLocations, isLoading: filteredLocationLoading } =
+    useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
 
-   const getLocationDetails = (loc_ID: string) => {
-      const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
-      if (!location) return "Location details not available";
-        const details = [
-          location.address_1,
-          location.address_2,
-          location.city,
-          location.state,
-          location.country,
-          location.pincode
-        ].filter(Boolean);
-  
-        return details.length > 0 ? details.join(", ") : "Location details not available";
+  const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
+
+  const getLocationDetails = (loc_ID: string) => {
+    const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
+    if (!location) return "Location details not available";
+    const details = [
+      location.address_1,
+      location.address_2,
+      location.city,
+      location.state,
+      location.country,
+      location.pincode
+    ].filter(Boolean);
+
+    return details.length > 0 ? details.join(", ") : "Location details not available";
   };
-  console.log('location details :', getAllLocations)
- console.log('get drivers :', driversData)
+
   if (error) {
     console.error("getting error while fetching the drivers data:", error);
   }
@@ -148,13 +150,13 @@ const DriverForm: React.FC = () => {
 
   const mapRowToInitialValues = (rowData: Driver) => {
     console.log('rowData  :', rowData)
-  
+
     const matchedLocation = getAllLocations.find((loc: Location) => loc.loc_ID === rowData?.locations[0]);
     console.log("matched location :", matchedLocation)
     setSearchKey(matchedLocation.loc_ID)
 
     return {
-      driverId:rowData?.driverID || '',
+      driverId: rowData?.driverID || '',
       driverName: rowData?.driverName || '',
       locations: matchedLocation.loc_ID,
       drivingLicense: rowData?.drivingLicense || '',
@@ -171,17 +173,17 @@ const DriverForm: React.FC = () => {
       pincode: matchedLocation?.pincode || '',
     };
   };
-    useEffect(() => {
-      function handleClickOutside(event: MouseEvent) {
-        if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
         setShowSuggestions(false);
-        }
       }
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
-      };
-      }, []);
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleEdit = async (rowData: Driver) => {
     setShowForm(true)
@@ -228,21 +230,21 @@ const DriverForm: React.FC = () => {
     { field: 'driverID', headerName: 'Driver ID', width: 150 },
     { field: 'driverName', headerName: 'Name', width: 200 },
     // { field: 'locations', headerName: 'Location ID', width: 200 },
-{
-  field: "locations",
-  headerName: "Location ID",
-  width: 200,
-  renderCell: (params) => {
-    const location = Array.isArray(params.value) ? params.value[0] : params.value; 
+    {
+      field: "locations",
+      headerName: "Location ID",
+      width: 200,
+      renderCell: (params) => {
+        const location = Array.isArray(params.value) ? params.value[0] : params.value;
 
-    return (
-      <Tooltip title={getLocationDetails(location)} arrow>
-        <span>{location || "N/A"}</span>
-      </Tooltip>
-    );
-  },
-}
-,
+        return (
+          <Tooltip title={getLocationDetails(location)} arrow>
+            <span>{location || "N/A"}</span>
+          </Tooltip>
+        );
+      },
+    }
+    ,
     { field: 'address', headerName: 'Address', width: 300 },
     { field: 'drivingLicense', headerName: 'Driving License', width: 200 },
     {
@@ -329,7 +331,7 @@ const DriverForm: React.FC = () => {
         },
         vehicle_types: values?.vehicleTypes,
         logged_in: values?.loggedIntoApp,
-      }; 
+      };
       if (updateRecord) {
         const response = await editDriverDetails({ body: editBody, driverId: updateRecordId }).unwrap();
         if (response?.updated_record) {
@@ -341,7 +343,7 @@ const DriverForm: React.FC = () => {
           setSnackbarSeverity("success");
           setSnackbarOpen(true);
           setSearchKey('')
-          
+
         }
       } else {
         const response = await driverRegistration(body).unwrap();
@@ -355,7 +357,7 @@ const DriverForm: React.FC = () => {
           setSnackbarOpen(true);
           setSearchKey('')
         }
-      } 
+      }
 
     } catch (error) {
       console.error('API Error:', error);
@@ -407,18 +409,18 @@ const DriverForm: React.FC = () => {
               <Form>
                 <h4 className={styles.mainHeading}>General Data</h4>
                 <Grid container spacing={2} style={{ marginBottom: '30px' }}>
-                  {updateRecord && 
+                  {updateRecord &&
                     <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth size='small'
-                      label="Driver ID" disabled
-                      name="driverId"
-                      value={values.driverId}
-                      onChange={handleChange}
-                      onBlur={handleBlur} 
-                    />
-                  </Grid> }
-                
+                      <TextField
+                        fullWidth size='small'
+                        label="Driver ID" disabled
+                        name="driverId"
+                        value={values.driverId}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                      />
+                    </Grid>}
+
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth size='small'
@@ -426,7 +428,7 @@ const DriverForm: React.FC = () => {
                       name="driverName"
                       value={values.driverName}
                       onChange={handleChange}
-                      onBlur={handleBlur} 
+                      onBlur={handleBlur}
                       error={touched.driverName && Boolean(errors.driverName)}
                       helperText={touched.driverName && errors.driverName}
                     />
@@ -466,34 +468,34 @@ const DriverForm: React.FC = () => {
 
                   </Grid> */}
                   <Grid item xs={12} sm={6} md={2.4}>
-                <TextField
-                  fullWidth
-                  name="locations"
-                  size="small"
-                  label="Location ID"
-                  onFocus={() => {
-                    if (!searchKey) {
-                      setSearchKey(values.locations[0] || '');
-                      setShowSuggestions(true);
-                    }
-                  }}
-                  onChange={(e) => {
-                    setSearchKey(e.target.value)
-                    setShowSuggestions(true)
-                    }
-                  }
-                  value={searchKey}
-                  error={
-                    touched.locations && Boolean(errors.locations)
-                  }
-                  helperText={
-                    touched?.locations && typeof errors?.locations === "string"
-                      ? errors.locations
-                      : ""
-                  }
-                  InputProps={{
-                    endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
-                  }}
+                    <TextField
+                      fullWidth
+                      name="locations"
+                      size="small"
+                      label="Location ID"
+                      onFocus={() => {
+                        if (!searchKey) {
+                          setSearchKey(values.locations[0] || '');
+                          setShowSuggestions(true);
+                        }
+                      }}
+                      onChange={(e) => {
+                        setSearchKey(e.target.value)
+                        setShowSuggestions(true)
+                      }
+                      }
+                      value={searchKey}
+                      error={
+                        touched.locations && Boolean(errors.locations)
+                      }
+                      helperText={
+                        touched?.locations && typeof errors?.locations === "string"
+                          ? errors.locations
+                          : ""
+                      }
+                      InputProps={{
+                        endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
+                      }}
                     />
                     <div ref={wrapperRef} >
                       {showSuggestions && displayLocations?.length > 0 && (
@@ -516,25 +518,24 @@ const DriverForm: React.FC = () => {
                                   setSearchKey(location.loc_ID);
                                   // handleLocationChange(location.loc_ID, setFieldValue);
                                   setFieldValue("locations", location.loc_ID)
-                              const matchedLocation = getAllLocations.find((loc: Location) => loc.loc_ID ===location.loc_ID);
+                                  const matchedLocation = getAllLocations.find((loc: Location) => loc.loc_ID === location.loc_ID);
 
-                          if (matchedLocation) {
-                            // Set corresponding fields from the matched location
-                            setFieldValue('address1', matchedLocation.address_1 || '');
-                            setFieldValue('address2', matchedLocation.address_2 || '');
-                            setFieldValue('city', matchedLocation.city || '');
-                            setFieldValue('district', matchedLocation.district || '');
-                            setFieldValue('state', matchedLocation.state || '');
-                            setFieldValue('country', matchedLocation.country || '');
-                            setFieldValue('pincode', matchedLocation.pincode || '');
-                          } else {
-                            setFieldValue('city', '');
-                            setFieldValue('district', '');
-                            setFieldValue('state', '');
-                            setFieldValue('country', '');
-                            setFieldValue('pincode', '');
-                          }
-                                        
+                                  if (matchedLocation) {
+                                    // Set corresponding fields from the matched location
+                                    setFieldValue('address1', matchedLocation.address_1 || '');
+                                    setFieldValue('address2', matchedLocation.address_2 || '');
+                                    setFieldValue('city', matchedLocation.city || '');
+                                    setFieldValue('district', matchedLocation.district || '');
+                                    setFieldValue('state', matchedLocation.state || '');
+                                    setFieldValue('country', matchedLocation.country || '');
+                                    setFieldValue('pincode', matchedLocation.pincode || '');
+                                  } else {
+                                    setFieldValue('city', '');
+                                    setFieldValue('district', '');
+                                    setFieldValue('state', '');
+                                    setFieldValue('country', '');
+                                    setFieldValue('pincode', '');
+                                  }
                                 }}
                                 sx={{ cursor: "pointer" }}
                               >
@@ -542,14 +543,14 @@ const DriverForm: React.FC = () => {
                                   title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
                                   placement="right"
                                 >
-                                    <span style={{ fontSize: '14px' }}>{location.loc_ID}, {location.city}, {location.state}, {location.pincode}</span>
+                                  <span style={{ fontSize: '14px' }}>{location.loc_ID}, {location.city}, {location.state}, {location.pincode}</span>
                                 </Tooltip>
                               </ListItem>
                             ))}
                           </List>
                         </Paper>
-                            )}
-                      </div>
+                      )}
+                    </div>
                   </Grid>
 
                   <Grid item xs={12} sm={6} md={2.4}>
@@ -664,7 +665,7 @@ const DriverForm: React.FC = () => {
                       label="Contact Number"
                       name="driverContactNumber"
                       value={values.driverContactNumber}
-                      onChange={handleChange}  inputProps={{ maxLength: 10 }} 
+                      onChange={handleChange} inputProps={{ maxLength: 10 }}
                       onBlur={handleBlur}
                       error={touched.driverContactNumber && Boolean(errors.driverContactNumber)}
                       helperText={touched.driverContactNumber && errors.driverContactNumber}

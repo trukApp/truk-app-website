@@ -14,7 +14,7 @@ import AgentForm from '@/Components/BusinessPartnersForms/AgentForm';
 import { withAuthComponent } from '@/Components/WithAuthComponent';
 
 const BusinessPartnersPage: React.FC = () => {
-    const [businessPartnerType, setBusinessPartnerType] = useState('drivers');
+    const [businessPartnerType, setBusinessPartnerType] = useState('customers');
 
     const handleDropdownChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setBusinessPartnerType(event.target.value);
@@ -45,7 +45,7 @@ const BusinessPartnersPage: React.FC = () => {
                 </Grid>
             </Grid>
 
-            <Grid container  sx={{ marginTop: 2 }}>
+            <Grid container sx={{ marginTop: 2 }}>
                 {/* Responsive rendering of forms */}
                 <Grid item xs={12}  >
                     {businessPartnerType === 'customers' && <CustomerForm />}

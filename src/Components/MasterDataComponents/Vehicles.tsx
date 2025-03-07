@@ -3,13 +3,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
-import {TextField,Grid,Box,Typography,Checkbox,FormControlLabel,MenuItem,Button,Collapse,IconButton,Backdrop,CircularProgress,Tooltip,Paper,List,ListItem} from "@mui/material";
+import { TextField, Grid, Box, Typography, Checkbox, FormControlLabel, MenuItem, Button, Collapse, IconButton, Backdrop, CircularProgress, Tooltip, Paper, List, ListItem } from "@mui/material";
 import { DataGridComponent } from "../GridComponent";
 import { GridColDef, GridPaginationModel } from "@mui/x-data-grid";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import styles from "./MasterData.module.css";
-import {useDeleteVehicleMasterMutation,useEditVehicleMasterMutation,useGetFilteredLocationsQuery,useGetLocationMasterQuery,useGetUomMasterQuery,useGetVehicleMasterQuery,usePostVehicleMasterMutation,} from "@/api/apiSlice";
+import { useDeleteVehicleMasterMutation, useEditVehicleMasterMutation, useGetFilteredLocationsQuery, useGetLocationMasterQuery, useGetUomMasterQuery, useGetVehicleMasterQuery, usePostVehicleMasterMutation, } from "@/api/apiSlice";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MassUpload from "../MassUpload/MassUpload";
@@ -151,12 +151,12 @@ const validationSchema = Yup.object({
 	timeZone: Yup.string().required("Time Zone is required"),
 	unlimitedUsage: Yup.boolean(),
 	individualResources: Yup.number()
-    .typeError("Must be a number")
-    .when("unlimitedUsage", {
-        is: false,
-        then: (schema) => schema.required("Individual Resources is required"),
-        otherwise: (schema) => schema.notRequired().nullable(),
-    }),
+		.typeError("Must be a number")
+		.when("unlimitedUsage", {
+			is: false,
+			then: (schema) => schema.required("Individual Resources is required"),
+			otherwise: (schema) => schema.notRequired().nullable(),
+		}),
 	validityFrom: Yup.string().required("Validity start date is required"),
 	validityTo: Yup.string().required("Validity end date is required"),
 	vehicleType: Yup.string().required("Vehicle Type is required"),
@@ -197,34 +197,34 @@ const VehicleForm: React.FC = () => {
 
 	const [searchKey, setSearchKey] = useState(editRow?.locationId || editRow?.locationId || '');
 	const [showSuggestions, setShowSuggestions] = useState(false);
-	const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey);
+	const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
 	const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
-	  const { data: uom, error: uomErr } = useGetUomMasterQuery([])
-	  if (uomErr) {
+	const { data: uom, error: uomErr } = useGetUomMasterQuery([])
+	if (uomErr) {
 		console.log("uom err:", uomErr)
-	  }
-	  useEffect(() => {
+	}
+	useEffect(() => {
 		if (uom && uom.uomList) {
-		  const unitsofMeasure = uom.uomList.map((item: { unit_name: string }) => item.unit_name);
-		  dispatch(setUnitsofMeasurement(unitsofMeasure));
+			const unitsofMeasure = uom.uomList.map((item: { unit_name: string }) => item.unit_name);
+			dispatch(setUnitsofMeasurement(unitsofMeasure));
 		}
-	
+
 		if (uomErr) {
-		  console.error("uom error:", uomErr);
+			console.error("uom error:", uomErr);
 		}
-	  }, [uom, uomErr, dispatch]);
-	
-	  useEffect(() => {
+	}, [uom, uomErr, dispatch]);
+
+	useEffect(() => {
 		function handleClickOutside(event: MouseEvent) {
 			if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
-			setShowSuggestions(false);
+				setShowSuggestions(false);
 			}
 		}
 		document.addEventListener("mousedown", handleClickOutside);
 		return () => {
 			document.removeEventListener("mousedown", handleClickOutside);
 		};
-		}, []);
+	}, []);
 	if (error) {
 		console.log("err in loading vehicles data :", error);
 	}
@@ -242,7 +242,7 @@ const VehicleForm: React.FC = () => {
 
 		return details.length > 0 ? details.join(", ") : "Location details not available";
 	};
-	const vehiclesMaster = data?.vehicles; 
+	const vehiclesMaster = data?.vehicles;
 	const unitsofMeasurement = useSelector(
 		(state: RootState) => state.auth.unitsofMeasurement
 	);
@@ -303,7 +303,7 @@ const VehicleForm: React.FC = () => {
 		fragileGoods: false,
 		dangerousGoods: false,
 		temperatureControl: false,
-		hazardousStorage : false
+		hazardousStorage: false
 	};
 
 	const [initialValues, setInitialValues] = useState(initialFormValues);
@@ -374,9 +374,9 @@ const VehicleForm: React.FC = () => {
 				downtimeDescription: editRow.downtimeDescription,
 				downtimeReason: editRow.downtimeReason,
 				fragileGoods: editRow.fragileGoods,
-		dangerousGoods: editRow.dangerousGoods,
-		temperatureControl: editRow.temperatureControl,
-		hazardousStorage : editRow.hazardousStorage
+				dangerousGoods: editRow.dangerousGoods,
+				temperatureControl: editRow.temperatureControl,
+				hazardousStorage: editRow.hazardousStorage
 			}));
 		}
 	}, [editRow]);
@@ -428,7 +428,6 @@ const VehicleForm: React.FC = () => {
 
 	const columns: GridColDef[] = [
 		{ field: "vehicleId", headerName: "Vehicle ID", width: 150 },
-		// { field: "locationId", headerName: "Location ID", width: 150 },
 		{
 			field: "locationId",
 			headerName: "Location ID",
@@ -593,11 +592,11 @@ const VehicleForm: React.FC = () => {
 					cost_per_ton: values.avgCost,
 				},
 				fragile_vehicle: values.fragileGoods,
-      			danger_proof: values.dangerousGoods,
-      			hazardous_proof: values.hazardousStorage,
-      			temp_controlled_vehicle: values.temperatureControl,
+				danger_proof: values.dangerousGoods,
+				hazardous_proof: values.hazardousStorage,
+				temp_controlled_vehicle: values.temperatureControl,
 			};
-			 
+
 			if (isEditing && editRow) {
 				console.log('qwerty')
 				const vehicleId = editRow.id;
@@ -769,8 +768,8 @@ const VehicleForm: React.FC = () => {
 													label="Search Location... "
 													onFocus={() => {
 														if (!searchKey) {
-														setSearchKey(values?.locationId || "");
-														setShowSuggestions(true);
+															setSearchKey(values?.locationId || "");
+															setShowSuggestions(true);
 														}
 													}}
 													onChange={(e) => {
@@ -781,8 +780,8 @@ const VehicleForm: React.FC = () => {
 													error={touched?.locationId && Boolean(errors?.locationId)}
 													helperText={
 														touched?.locationId && typeof errors?.locationId === "string"
-														? errors.locationId
-														: ""
+															? errors.locationId
+															: ""
 													}
 													InputProps={{
 														endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
@@ -792,36 +791,36 @@ const VehicleForm: React.FC = () => {
 													{showSuggestions && displayLocations?.length > 0 && (
 														<Paper
 															style={{
-															maxHeight: 200,
-															overflowY: "auto",
-															position: "absolute",
-															zIndex: 10,
-															width: "100%",
+																maxHeight: 200,
+																overflowY: "auto",
+																position: "absolute",
+																zIndex: 10,
+																width: "100%",
 															}}
 														>
 															<List>
-															{displayLocations.map((location: Location) => (
-																<ListItem
-																key={location.loc_ID}
-																component="li"
-																onClick={() => {
-																	setShowSuggestions(false);
-																	setSearchKey(location.loc_ID);
-																	setFieldValue("locationId", location.loc_ID);
-																	setFieldValue("timeZone", location.time_zone);
-																}}
-																sx={{ cursor: "pointer" }}
-																>
-																<Tooltip
-																	title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-																	placement="right"
-																>
-																	<span style={{ fontSize: "13px" }}>
-																	{location.loc_ID}, {location.city}, {location.state}, {location.pincode}
-																	</span>
-																</Tooltip>
-																</ListItem>
-															))}
+																{displayLocations.map((location: Location) => (
+																	<ListItem
+																		key={location.loc_ID}
+																		component="li"
+																		onClick={() => {
+																			setShowSuggestions(false);
+																			setSearchKey(location.loc_ID);
+																			setFieldValue("locationId", location.loc_ID);
+																			setFieldValue("timeZone", location.time_zone);
+																		}}
+																		sx={{ cursor: "pointer" }}
+																	>
+																		<Tooltip
+																			title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+																			placement="right"
+																		>
+																			<span style={{ fontSize: "13px" }}>
+																				{location.loc_ID}, {location.city}, {location.state}, {location.pincode}
+																			</span>
+																		</Tooltip>
+																	</ListItem>
+																))}
 															</List>
 														</Paper>
 													)}
@@ -867,9 +866,9 @@ const VehicleForm: React.FC = () => {
 														label="Individual Resources*"
 														name="individualResources"
 														type="number"
-														value={values.individualResources ?? ""} 
+														value={values.individualResources ?? ""}
 														// onChange={handleChange}
-														onChange={(e) => setFieldValue("individualResources", e.target.value ? Number(e.target.value) : "")} 
+														onChange={(e) => setFieldValue("individualResources", e.target.value ? Number(e.target.value) : "")}
 														onBlur={handleBlur}
 														size="small"
 														error={touched.individualResources && Boolean(errors.individualResources)}
@@ -941,10 +940,6 @@ const VehicleForm: React.FC = () => {
 													helperText={touched.vehicleType && errors.vehicleType}
 													size="small"
 												>
-													{/* <MenuItem value="Truck">Van</MenuItem>
-													<MenuItem value="Truck">Truck</MenuItem>
-													<MenuItem value="Trailer">Trailer</MenuItem>
-													<MenuItem value="Container">Container</MenuItem> */}
 												</TextField>
 											</Grid>
 											<Grid item xs={12} sm={6} md={2.4}>
@@ -976,8 +971,6 @@ const VehicleForm: React.FC = () => {
 													helperText={touched.ownership && errors.ownership}
 													size="small"
 												>
-													{/* <MenuItem value="Self">Self</MenuItem>
-													<MenuItem value="Carrier">Carrier</MenuItem> */}
 												</TextField>
 											</Grid>
 										</Grid>
@@ -1466,11 +1459,6 @@ const VehicleForm: React.FC = () => {
 													onBlur={handleBlur}
 													size="small"
 												>
-													{/* {downtimeReasons.map((reason) => (
-														<MenuItem key={reason} value={reason}>
-															{reason}
-														</MenuItem>
-													))} */}
 												</TextField>
 											</Grid>
 										</Grid>

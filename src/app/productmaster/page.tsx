@@ -97,7 +97,7 @@ export interface Product {
 }
 
 interface ProductMasterProps {
-  productsFromServer?: Product[]; 
+    productsFromServer?: Product[];
 }
 const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer }) => {
     const wrapperRef = useRef<HTMLDivElement>(null);
@@ -146,10 +146,10 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
     const [deleteProduct, { isLoading: deleteProductLoading }] = useDeleteProductMutation()
     const [updateProductDetails, { isLoading: updateProductLoading }] = useEditProductMutation();
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
-      const [searchKey, setSearchKey] = useState('');
-      const [showSuggestions, setShowSuggestions] = useState(false);
-      const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey);
-      const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
+    const [searchKey, setSearchKey] = useState('');
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
+    const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
     const getAllPackages = packagesData?.packages.length > 0 ? packagesData?.packages : []
     const allProductsData = productsData?.products || [];
 
@@ -339,7 +339,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
 
             const editProductBody = {
                 ...updateRecordData,
-            
+
                 product_name: values?.productName,
                 product_desc: values?.productDescription,
                 basic_uom: values?.basicUoM,
@@ -408,17 +408,17 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
             setSearchKey('')
         }
     };
-        useEffect(() => {
-          function handleClickOutside(event: MouseEvent) {
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
             if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
-            setShowSuggestions(false);
+                setShowSuggestions(false);
             }
-          }
-          document.addEventListener("mousedown", handleClickOutside);
-          return () => {
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
             document.removeEventListener("mousedown", handleClickOutside);
-          };
-          }, []);
+        };
+    }, []);
 
     return (
         <>
@@ -519,18 +519,6 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                                                 ))}
                                             </TextField>
                                         </Grid>
-                                        {/* <Grid item xs={12} sm={6} md={2.4} >
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="Sales Unit of Measure*"
-                                            name="salesUoM"
-                                            value={values.salesUoM}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.salesUoM && Boolean(errors.salesUoM)}
-                                            helperText={touched.salesUoM && errors.salesUoM}
-                                        />
-                                    </Grid> */}
                                         <Grid item xs={12} sm={6} md={2.4}   >
                                             <TextField
                                                 fullWidth size='small'
@@ -741,65 +729,65 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                                         Location data
                                     </Typography>
                                     <Grid container spacing={2}>
-                                        
-                                         <Grid item xs={12} sm={6} md={2.4}>
-                <TextField
-                  fullWidth
-                  name="locationId"
-                  size="small"
-                  label="Location ID"
-                  onFocus={() => {
-                    if (!searchKey) {
-                      setSearchKey(values?.locationId || "");
-                      setShowSuggestions(true);
-                    }
-                  }}
-                  onChange={(e) => {
-                    setSearchKey(e.target.value)
-                    setShowSuggestions(true)
-                  }
-                  }
-                  // onBlur={handleBlur}
-                  value={searchKey}
-                  InputProps={{
-                    endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
-                  }}
+
+                                        <Grid item xs={12} sm={6} md={2.4}>
+                                            <TextField
+                                                fullWidth
+                                                name="locationId"
+                                                size="small"
+                                                label="Location ID"
+                                                onFocus={() => {
+                                                    if (!searchKey) {
+                                                        setSearchKey(values?.locationId || "");
+                                                        setShowSuggestions(true);
+                                                    }
+                                                }}
+                                                onChange={(e) => {
+                                                    setSearchKey(e.target.value)
+                                                    setShowSuggestions(true)
+                                                }
+                                                }
+                                                // onBlur={handleBlur}
+                                                value={searchKey}
+                                                InputProps={{
+                                                    endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
+                                                }}
                                             />
-                <div ref={wrapperRef} >
-                {showSuggestions && displayLocations?.length > 0 && (
-                  <Paper
-                    style={{
-                      maxHeight: 200,
-                      overflowY: "auto",
-                      position: "absolute",
-                      zIndex: 10,
-                      width: "18%",
-                    }}
-                  >
-                    <List>
-                      {displayLocations.map((location: Location) => (
-                        <ListItem
-                          key={location.loc_ID}
-                          component="li"
-                          onClick={() => {
-                            setShowSuggestions(false)
-                            setSearchKey(location.loc_ID); 
-                            setFieldValue("locationId", location.loc_ID);
-                          }}
-                          sx={{ cursor: "pointer" }}
-                        >
-                          <Tooltip
-                            title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                            placement="right"
-                          >
-                                <span style={{ fontSize: '14px' }}>{location.loc_ID}, {location.city}, {location.state}, {location.pincode}</span>
-                          </Tooltip>
-                        </ListItem>
-                      ))}
-                    </List>
-                  </Paper>
-                )} </div>
-              </Grid>
+                                            <div ref={wrapperRef} >
+                                                {showSuggestions && displayLocations?.length > 0 && (
+                                                    <Paper
+                                                        style={{
+                                                            maxHeight: 200,
+                                                            overflowY: "auto",
+                                                            position: "absolute",
+                                                            zIndex: 10,
+                                                            width: "18%",
+                                                        }}
+                                                    >
+                                                        <List>
+                                                            {displayLocations.map((location: Location) => (
+                                                                <ListItem
+                                                                    key={location.loc_ID}
+                                                                    component="li"
+                                                                    onClick={() => {
+                                                                        setShowSuggestions(false)
+                                                                        setSearchKey(location.loc_ID);
+                                                                        setFieldValue("locationId", location.loc_ID);
+                                                                    }}
+                                                                    sx={{ cursor: "pointer" }}
+                                                                >
+                                                                    <Tooltip
+                                                                        title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                                                        placement="right"
+                                                                    >
+                                                                        <span style={{ fontSize: '14px' }}>{location.loc_ID}, {location.city}, {location.state}, {location.pincode}</span>
+                                                                    </Tooltip>
+                                                                </ListItem>
+                                                            ))}
+                                                        </List>
+                                                    </Paper>
+                                                )} </div>
+                                        </Grid>
                                         <Grid item xs={12} sm={6} md={2.4}>
                                             <FormControl fullWidth size="small" error={touched.locationId && Boolean(errors.locationId)}>
                                                 <InputLabel>Packaging Type</InputLabel>

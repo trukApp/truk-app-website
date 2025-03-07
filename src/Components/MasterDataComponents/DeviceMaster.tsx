@@ -63,7 +63,7 @@ const DeviceMaster: React.FC = () => {
   const getAllCarriers = carriersData?.carriers.length > 0 ? carriersData?.carriers : [];
   const [searchKey, setSearchKey] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey);
+  const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
   const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
   const getLocationDetails = (loc_ID: string) => {
     const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
@@ -87,8 +87,6 @@ const DeviceMaster: React.FC = () => {
     const locationDetails = carrier_loc_of_operation && carrier_loc_of_operation.length > 0
       ? carrier_loc_of_operation.join(", ")
       : "No locations available";
-
-    // Format and return the details
     return `${carrier_name}, ${carrier_address}, Locations: ${locationDetails}`;
   };
 
@@ -193,17 +191,17 @@ const DeviceMaster: React.FC = () => {
       setSnackbarOpen(true);
     }
   };
-    useEffect(() => {
-      function handleClickOutside(event: MouseEvent) {
-        if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
         setShowSuggestions(false);
-        }
       }
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
-      };
-      }, []);
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
   const initialValues: DeviceMasterValues = {
     id: '',
     deviceId: "",
@@ -246,7 +244,6 @@ const DeviceMaster: React.FC = () => {
     { field: "deviceUID", headerName: "Device UID", width: 200 },
     { field: "simImeiNumber", headerName: "SIM IMEI Number", width: 200 },
     { field: "vehicleNumber", headerName: "Vehicle Number", width: 150 },
-    // { field: "carrierId", headerName: "Carrier ID", width: 150 },
     {
       field: "carrierId",
       headerName: "Carrier ID",
@@ -306,7 +303,7 @@ const DeviceMaster: React.FC = () => {
 
       });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editRow]);
 
   return (
