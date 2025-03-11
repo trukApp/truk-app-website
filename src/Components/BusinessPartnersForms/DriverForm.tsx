@@ -69,7 +69,7 @@ export interface Driver {
   locationState: string;
   locationCity: string;
   locationCountry: string;
-  driver_availability: boolean
+  driver_availability: number
 }
 
 

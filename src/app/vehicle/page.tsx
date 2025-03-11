@@ -3,7 +3,8 @@ import React, { useEffect, useState } from "react";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import { TextField, Grid, Box, Typography, Checkbox, FormControlLabel, Button, Collapse, IconButton, Backdrop, CircularProgress, FormControl, InputLabel, Select, MenuItem, FormHelperText } from "@mui/material";
-import {DataGridNoPagination ,
+import {
+    DataGridNoPagination,
     // DataGridComponent
 } from "@/Components/GridComponent";
 import {
@@ -12,7 +13,7 @@ import {
 } from "@mui/x-data-grid";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import { useDeleteSingleVehicleMasterMutation, useEditSingleVehicleMasterMutation,useGetSingleVehicleMasterQuery, useGetVehicleMasterQuery, usePostSingleVehicleMasterMutation, } from "@/api/apiSlice";
+import { useDeleteSingleVehicleMasterMutation, useEditSingleVehicleMasterMutation, useGetSingleVehicleMasterQuery, useGetVehicleMasterQuery, usePostSingleVehicleMasterMutation, } from "@/api/apiSlice";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 // import MassUpload from "@/Components/MassUpload/MassUpload";
@@ -21,33 +22,33 @@ import SnackbarAlert from "@/Components/ReusableComponents/SnackbarAlerts";
 import { VehicleDetails } from "@/Components/MasterDataComponents/Vehicles";
 export interface TruckFormDetails {
     truckId: string;
-    id: string; 
+    id: string;
     vehicleId: string;
-    isAvailable: boolean; 
+    isAvailable: boolean;
     costing: string;
-    insurance: string; 
-    registration: string; 
+    insurance: string;
+    registration: string;
     permit: string;
     vehicleNumber: string;
 }
 export interface TruckDetails {
-    id: string; 
+    id: string;
     vehicle_ID: string;
     act_truk_ID: string;
     act_vehicle_num: string;
-    available: boolean;
+    available: number;
     costing: string;
-    truk_id: string; 
+    truk_id: string;
     vehicle_docs: {
         insurance: string;
         permit: string;
-        registration : string
+        registration: string
     }
- 
+
 }
-const validationSchema = Yup.object({ 
+const validationSchema = Yup.object({
     vehicleId: Yup.string().required("Vehicle id is required"),
-    vehicleNumber :Yup.string().required("Vehicle number is required"),
+    vehicleNumber: Yup.string().required("Vehicle number is required"),
     isAvailable: Yup.boolean(),
     costing: Yup.string().required("Cost is required"),
     insurance: Yup.string().required("Insurance is required"),
@@ -66,7 +67,7 @@ const VehicleOnly: React.FC = () => {
     const { data, error, isLoading } = useGetSingleVehicleMasterQuery({
         // page: paginationModel.page + 1, limit: paginationModel.pageSize
     });
-    const { data : vehiclesData, isLoading:isVehiclesLoading } = useGetVehicleMasterQuery({ });
+    const { data: vehiclesData, isLoading: isVehiclesLoading } = useGetVehicleMasterQuery({});
     const [postVehicle, { isLoading: postVehicleLoading }] = usePostSingleVehicleMasterMutation();
     const [editVehicle, { isLoading: editVehicleLoading }] = useEditSingleVehicleMasterMutation();
     const [deleteVehicle, { isLoading: deleteVehicleLoading }] = useDeleteSingleVehicleMasterMutation();
@@ -83,53 +84,53 @@ const VehicleOnly: React.FC = () => {
     const [showForm, setShowForm] = useState(false);
     const initialFormValues = {
         id: "",
-        truckId: "", 
+        truckId: "",
         vehicleId: "",
-        vehicleNumber:"",
-        isAvailable: false, 
+        vehicleNumber: "",
+        isAvailable: false,
         costing: "",
-        insurance: "", 
-        registration: "", 
-        permit: "", 
+        insurance: "",
+        registration: "",
+        permit: "",
     };
 
     const [initialValues, setInitialValues] = useState(initialFormValues);
-   useEffect(() => {
-    if (editRow) {
-        console.log('edit row :', editRow);
-        setInitialValues({
-            id: editRow?.id || "",  
-            truckId: editRow?.truckId || "", 
-            vehicleId: editRow?.vehicleId || "",
-            vehicleNumber: editRow?.vehicleNumber || "",
-            isAvailable: editRow?.isAvailable ?? false,
-            costing: editRow?.costing || "",
-            insurance: editRow?.insurance || "",
-            registration: editRow?.registration || "",
-            permit: editRow?.permit || "",
-        });
-    } else { 
-        setInitialValues({
-            id: "",
-            truckId: "",
-            vehicleId: "",
-            vehicleNumber: "",
-            isAvailable: false,
-            costing: "",
-            insurance: "",
-            registration: "",
-            permit: "",
-        });
-    }
-}, [editRow]);
+    useEffect(() => {
+        if (editRow) {
+            console.log('edit row :', editRow);
+            setInitialValues({
+                id: editRow?.id || "",
+                truckId: editRow?.truckId || "",
+                vehicleId: editRow?.vehicleId || "",
+                vehicleNumber: editRow?.vehicleNumber || "",
+                isAvailable: editRow?.isAvailable ?? false,
+                costing: editRow?.costing || "",
+                insurance: editRow?.insurance || "",
+                registration: editRow?.registration || "",
+                permit: editRow?.permit || "",
+            });
+        } else {
+            setInitialValues({
+                id: "",
+                truckId: "",
+                vehicleId: "",
+                vehicleNumber: "",
+                isAvailable: false,
+                costing: "",
+                insurance: "",
+                registration: "",
+                permit: "",
+            });
+        }
+    }, [editRow]);
 
 
     const rows = vehiclesMaster?.map((vehicle: TruckDetails) => ({
         id: vehicle?.truk_id,
         truckId: vehicle?.act_truk_ID,
         vehicleId: vehicle?.vehicle_ID,
-        vehicleNumber:vehicle?.act_vehicle_num,
-        isAvailable: vehicle?.available ,
+        vehicleNumber: vehicle?.act_vehicle_num,
+        isAvailable: vehicle?.available,
         costing: vehicle?.costing,
         insurance: vehicle?.vehicle_docs?.insurance,
         registration: vehicle?.vehicle_docs?.registration,
@@ -141,7 +142,7 @@ const VehicleOnly: React.FC = () => {
         { field: "vehicleId", headerName: "Vehicle Id", width: 150 },
         { field: "vehicleNumber", headerName: "Vehicle number", width: 150 },
         { field: "costing", headerName: "Costing", width: 150 },
-         { field: "isAvailable", headerName: "Is available", width: 150 },
+        { field: "isAvailable", headerName: "Is available", width: 150 },
         { field: "insurance", headerName: "Insurance", width: 150 },
         { field: "registration", headerName: "Registration", width: 150 },
         { field: "permit", headerName: "Permit", width: 150 },
@@ -169,30 +170,30 @@ const VehicleOnly: React.FC = () => {
         try {
             const body = {
                 vehicles: [
-                            {
-                            vehicle_ID: values.vehicleId,
-                            act_vehicle_num: values.vehicleNumber  ,
-                            available: values.isAvailable,
-                            costing: values.costing ,
-                            vehicle_docs: {
-                                insurance: values.insurance,
-                                registration: values.registration  ,
-                                permit: values.permit
-                            }
-                        },
+                    {
+                        vehicle_ID: values.vehicleId,
+                        act_vehicle_num: values.vehicleNumber,
+                        available: values.isAvailable,
+                        costing: values.costing,
+                        vehicle_docs: {
+                            insurance: values.insurance,
+                            registration: values.registration,
+                            permit: values.permit
+                        }
+                    },
                 ],
             };
-            const editBody =  {
-                            vehicle_ID: values.vehicleId,
-                            act_vehicle_num: values.vehicleNumber  ,
-                            available: values.isAvailable,
-                            costing: values.costing ,
-                            vehicle_docs: {
-                                insurance: values.insurance,
-                                registration: values.registration  ,
-                                permit: values.permit
-                            }
-                        }
+            const editBody = {
+                vehicle_ID: values.vehicleId,
+                act_vehicle_num: values.vehicleNumber,
+                available: values.isAvailable,
+                costing: values.costing,
+                vehicle_docs: {
+                    insurance: values.insurance,
+                    registration: values.registration,
+                    permit: values.permit
+                }
+            }
             if (isEditing && editRow) {
                 console.log('qwerty')
                 const truckId = editRow.id;
@@ -221,7 +222,7 @@ const VehicleOnly: React.FC = () => {
                     setIsEditing(false)
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
-                    
+
                 }
 
             }
@@ -233,7 +234,7 @@ const VehicleOnly: React.FC = () => {
             setShowForm(false);
             resetForm();
             setIsEditing(false)
-            
+
         }
     };
 
@@ -354,43 +355,43 @@ const VehicleOnly: React.FC = () => {
                                                     />
                                                 </Grid>}
                                             <Grid item xs={12} sm={6} md={2.4}>
-                                                            <FormControl
-                                                            fullWidth
-                                                            size="small"
-                                                            error={touched.vehicleId && Boolean(errors.vehicleId)}
-                                                            >
-                                                            <InputLabel>Vehicle ID</InputLabel>
-                                                            <Select
-                                                                label="Vehicle ID*"
-                                                                name="vehicleId"
-                                                                value={values.vehicleId}
-                                                                onChange={handleChange}
-                                                                onBlur={handleBlur}
-                                                            >
-                                                                {isVehiclesLoading ? (
-                                                                <MenuItem disabled>
-                                                                    <CircularProgress size={20} color="inherit" />
-                                                                    <span style={{ marginLeft: "10px" }}>Loading...</span>
-                                                                </MenuItem>
-                                                                ) : (
-                                                                getAllVehicles?.map((vehicle: VehicleDetails) => (
-                                                                    <MenuItem key={vehicle?.vehicle_ID} value={String(vehicle.vehicle_ID)}>
+                                                <FormControl
+                                                    fullWidth
+                                                    size="small"
+                                                    error={touched.vehicleId && Boolean(errors.vehicleId)}
+                                                >
+                                                    <InputLabel>Vehicle ID</InputLabel>
+                                                    <Select
+                                                        label="Vehicle ID*"
+                                                        name="vehicleId"
+                                                        value={values.vehicleId}
+                                                        onChange={handleChange}
+                                                        onBlur={handleBlur}
+                                                    >
+                                                        {isVehiclesLoading ? (
+                                                            <MenuItem disabled>
+                                                                <CircularProgress size={20} color="inherit" />
+                                                                <span style={{ marginLeft: "10px" }}>Loading...</span>
+                                                            </MenuItem>
+                                                        ) : (
+                                                            getAllVehicles?.map((vehicle: VehicleDetails) => (
+                                                                <MenuItem key={vehicle?.vehicle_ID} value={String(vehicle.vehicle_ID)}>
                                                                     {/* <Tooltip
                                                                         title={`${vehicle?.avgCost}`}
                                                                         placement="right"
                                                                     >
                                                                         <span style={{ flex: 1 }}>{vehicle?.vehicle_ID}</span>
                                                                       </Tooltip> */}
-                                                                        <span style={{ flex: 1 }}>{vehicle?.vehicle_ID}</span>
-                                                                    </MenuItem>
-                                                                ))
-                                                                )}
-                                                            </Select>
-                                                            {touched.vehicleId && errors.vehicleId && (
-                                                                <FormHelperText>{errors.vehicleId}</FormHelperText>
-                                                            )}
-                                                            </FormControl>
-                                                        </Grid>
+                                                                    <span style={{ flex: 1 }}>{vehicle?.vehicle_ID}</span>
+                                                                </MenuItem>
+                                                            ))
+                                                        )}
+                                                    </Select>
+                                                    {touched.vehicleId && errors.vehicleId && (
+                                                        <FormHelperText>{errors.vehicleId}</FormHelperText>
+                                                    )}
+                                                </FormControl>
+                                            </Grid>
                                             <Grid item xs={12} sm={6} md={2.4}>
                                                 <TextField
                                                     fullWidth
@@ -489,7 +490,7 @@ const VehicleOnly: React.FC = () => {
                                                     }
                                                     size="small"
                                                 />
-                                            </Grid> 
+                                            </Grid>
                                         </Grid>
 
                                         <Box mt={3} textAlign="center">
@@ -538,8 +539,8 @@ const VehicleOnly: React.FC = () => {
                     <DataGridNoPagination
                         columns={columns}
                         rows={rows}
-                        isLoading={isLoading} 
-                        // activeEntity="vehicles" 
+                        isLoading={isLoading}
+                    // activeEntity="vehicles" 
                     />
                 )}
             </div>

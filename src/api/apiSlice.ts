@@ -579,6 +579,15 @@ export const apiSlice = createApi({
       },
       invalidatesTags: [{ type: "AssignedOrders", id: "LIST" }],
     }),
+
+    editAssignOrderOrder: builder.mutation({
+      query: ({ body, id }) => ({
+        url: `ao/update-assigned-order?assigning_id=1${id}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: [{ type: "AssignedOrders", id: "LIST" }],
+    }),
     
     // image uploading
     imageUploading: builder.mutation({
@@ -628,6 +637,15 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: [{ type: "SingleVehicleMaster", id: "LIST" }],
     }),
+
+    getAssignedOrderById: builder.query({
+      query: (params) => ({
+        url: `ao/assigned-order`,
+        method: "GET",
+        params,
+      }),
+    }),
+
   }),
 });
 
@@ -690,10 +708,12 @@ export const {
   useGetFilteredLocationsQuery,
   useGetAllAssignedOrdersQuery,
   usePostAssignOrderMutation,
+  useEditAssignOrderOrderMutation,
   useImageUploadingMutation,
   useGetSingleVehicleMasterQuery,
   usePostSingleVehicleMasterMutation,
   useEditSingleVehicleMasterMutation,
   useDeleteSingleVehicleMasterMutation,
+  useGetAssignedOrderByIdQuery
 
 } = apiSlice;
