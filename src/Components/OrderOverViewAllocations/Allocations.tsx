@@ -3,14 +3,15 @@ import { Box, Collapse, IconButton, Paper, Typography, Grid, Button, useTheme, u
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { useRouter } from 'next/navigation';
-import { useGetAllDriversDataQuery, usePostAssignOrderMutation } from "@/api/apiSlice";
+import { useEditAssignOrderOrderMutation, useGetAllDriversDataQuery, useGetAssignedOrderByIdQuery, useGetDeviceMasterQuery, useGetSingleVehicleMasterQuery, usePostAssignOrderMutation } from "@/api/apiSlice";
 import SnackbarAlert from "../ReusableComponents/SnackbarAlerts";
 import { Driver } from "../BusinessPartnersForms/DriverForm";
 import moment from 'moment';
 import Image from "next/image";
-
+import { TruckDetails } from "@/app/vehicle/page";
 // import { useGetAllAssignedOrdersQuery } from "@/api/apiSlice";
 import AdditionalInformation from '@/Components/CreatePackageTabs/AddtionalInformation';
+import { DeviceInfoBE } from "../MasterDataComponents/DeviceMaster";
 
 interface Allocation {
     vehicle_ID: string;
@@ -82,14 +83,26 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
     const [assignModal, setAssignModal] = useState(false);
     const [selectedAllocation, setSelectedAllocation] = useState<Allocation | null>(null);
     const [postAssignOrder, { isLoading: isAssigning }] = usePostAssignOrderMutation()
+        const [editAssignOrder, { isLoading: editAssignLoading }] = useEditAssignOrderOrderMutation()
     const { data, isLoading: driverLoading } = useGetAllDriversDataQuery({})
+    const { data: assignedOrder } = useGetAssignedOrderByIdQuery({ order_ID: orderId })
+    const { data : allDevices, isLoading: deviceLoading } = useGetDeviceMasterQuery({})
+    console.log("order id assigned :", assignedOrder)
     const driversData = data?.drivers.length > 0 ? data?.drivers : []
+    const devicesData = allDevices?.devices.length > 0 ? allDevices?.devices : []
     if (driverLoading) {
         console.log("driver loading")
     }
+     const { data : trucksData, isLoading:trucksLoading } = useGetSingleVehicleMasterQuery({});
+     if (trucksLoading) {
+        console.log("driver loading")
+    }
+    const allTrucksData = trucksData?.data
+
     const [formData, setFormData] = useState({
-        vehicleNumber: "",
+        truckId: "",
         driverId: "",
+        deviceId : "",
         selfTransport: false
     });
 
@@ -112,39 +125,66 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
     };
 
     const handleSubmit = async () => {
-        if (!selectedAllocation) return;
-        const body = {
-            order_ID: orderId,
-            assigned_vehicle_data: {
-                vehicle_number: formData.vehicleNumber,
-                // vehicle_type: "Truck"
-            },
-            vehicle_docs: {
-                insurance: "Valid",
-                registration: "ABC9876543",
-                permit: "Valid till 2026"
-            },
-            self_transport: formData.selfTransport,
-            dri_ID: formData.driverId,
-            pod: {
-                status: "",
-                timestamp: Date.now(),
-                delivery_image: "",
-                digital_signature: ""
-            },
-            pod_doc: "https://example.com/pod-doc.jpg"
-        };
+        try {
+               if (assignedOrder.data.length === 0) {
+            if (!selectedAllocation) return;
+                const body = {
+                    order_ID: orderId,
+                    assigned_vehicle_data: [
+                            {
+                                act_truk_ID: formData.truckId ,
+                                dri_ID: formData.driverId,
+                            dev_ID: formData.deviceId,
+                                vehicle_ID: selectedAllocation?.vehicle_ID
+                            },
+                        ],
+                    self_transport: formData.selfTransport,
+                    pod: {},
+                    pod_doc: ""
+                };
+                console.log("Posting to API:", body);
+                const response = await postAssignOrder(body).unwrap();
+                console.log("assign response :", response)
+                setAssignModal(false);
+                setSnackbarMessage(`Assined successfully!`);
+                setSnackbarSeverity("success");
+                setSnackbarOpen(true);
+                console.log('response:', response)
+                setAssignModal(false);
+                setFormData({
+                    truckId: "",
+                    driverId: "",
+                    deviceId : "",
+                    selfTransport: false
+                })
+               } else {
+                   const newVehicle =  {
+                                act_truk_ID: formData.truckId  ,
+                                dri_ID: formData.driverId,
+                       dev_ID: formData.deviceId,
+                                vehicle_ID: selectedAllocation?.vehicle_ID
+                            }
+                   const editBody = {
+                    assigned_vehicle_data: [...assignedOrder?.data[0]?.assigned_vehicle_data, newVehicle]
+                   }
+                   console.log("edit API body:", editBody);
+                   const response = await editAssignOrder(editBody).unwrap();
+                   console.log("Edit Response: ", response)
+                   setFormData({
+                        truckId: "",
+                        driverId: "",
+                        deviceId : "",
+                        selfTransport: false
+                    })
+                }
+            
+        } catch (error) {
+            console.log("Getting error while assiging the vechile: ", error)
+        }
+     
+    }
 
-        console.log("Posting to API:", body);
-        const response = await postAssignOrder(body).unwrap();
-        console.log("assign response :", response)
-        setAssignModal(false);
-        setSnackbarMessage(`Assined successfully!`);
-        setSnackbarSeverity("success");
-        setSnackbarOpen(true);
-        console.log('response:', response)
-        setAssignModal(false);
-    };
+    
     return (
         <Box>
             <Backdrop
@@ -152,7 +192,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                     color: "#ffffff",
                     zIndex: (theme) => theme.zIndex.drawer + 1,
                 }}
-                open={isAssigning}
+                open={isAssigning || editAssignLoading || deviceLoading}
             >
                 <CircularProgress color="inherit" />
             </Backdrop>
@@ -165,7 +205,11 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
             <Typography variant="h6" gutterBottom color="#83214F" style={{ fontWeight: 'bold' }}>
                 Allocations
             </Typography>
-            <Modal open={assignModal} onClose={() => setAssignModal(false)}>
+            <Modal open={assignModal} onClose={() => {
+                setAssignModal(false)
+                setFormData({ truckId: "", driverId: "", deviceId: "", selfTransport: false });
+                setSelectedAllocation(null);
+            }}>
                 <Box
                     sx={{
                         position: "absolute",
@@ -187,13 +231,19 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                         <TextField
                             label="Vehicle number"
-                            name="vehicleNumber"
-                            value={formData.vehicleNumber}
+                            name="truckId"
+                            value={formData.truckId}
                             onChange={handleChange}
                             variant="outlined"
                             size="small"
-                            fullWidth
-                        />
+                            fullWidth select
+                        >
+                            {allTrucksData?.map((truck: TruckDetails) => (
+                                <MenuItem key={truck?.act_truk_ID} value={truck.act_truk_ID}>
+                                    {truck.act_truk_ID}
+                                </MenuItem>
+                            ))}
+                        </TextField>
                         <TextField
                             label="Driver ID"
                             name="driverId"
@@ -205,8 +255,24 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                             fullWidth
                         >
                             {driversData.map((driver: Driver) => (
-                                <MenuItem key={driver.dri_ID} value={driver.dri_ID}>
+                                <MenuItem key={driver?.dri_ID} value={driver.dri_ID}>
                                     {driver.dri_ID}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+                        <TextField
+                            label="Device ID"
+                            name="deviceId"
+                            select
+                            value={formData.deviceId}
+                            onChange={handleChange}
+                            variant="outlined"
+                            size="small"
+                            fullWidth
+                        >
+                            {devicesData?.map((device: DeviceInfoBE) => (
+                                <MenuItem key={device?.device_id} value={device.device_id}>
+                                    {device.dev_ID}
                                 </MenuItem>
                             ))}
                         </TextField>
@@ -258,7 +324,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                             </Typography>
 
                             <Grid container spacing={2}>
-                                <Grid item xs={12} sm={4}>
+                                <Grid item xs={12} md={4}>
                                     <Typography variant="body2">
                                         <strong>Total Weight Capacity:</strong> {allocation.totalWeightCapacity}
                                     </Typography>
@@ -267,7 +333,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                                     </Typography>
                                 </Grid>
 
-                                <Grid item xs={12} sm={4}>
+                                <Grid item xs={12} md={4}>
                                     <Typography variant="body2">
                                         <strong>Occupied Weight:</strong> {allocation.occupiedWeight}
                                     </Typography>
@@ -276,7 +342,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                                     </Typography>
                                 </Grid>
 
-                                <Grid item xs={12} sm={4}>
+                                <Grid item xs={12} md={4}>
                                     <Typography variant="body2">
                                         <strong>Leftover Weight:</strong> {allocation.leftoverWeight}
                                     </Typography>
@@ -295,16 +361,18 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                             {allocatedPackageDetails
                                 .filter((pkg: PackageDetail) => allocation.packages.includes(pkg.pack_ID))
                                 .map((pkg: PackageDetail) => (
-                                    <Paper key={pkg.pac_id} sx={{ mt: 2, p: 2, backgroundColor: "#f9f9f9" }}>
+                                    <Grid item xs={12} md={6} key={pkg.pac_id}>
+                                        <Grid xs={12} md={6} key={pkg.pac_id} sx={{ m: 2, p: 2 }}>
                                         <Typography variant="subtitle2" gutterBottom>
                                             <strong>Package ID: {pkg.pack_ID}</strong>
                                         </Typography>
 
                                         <Typography variant="body2">
                                             <strong>Status:</strong> {pkg.package_status}
-                                        </Typography>
-                                        <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '18px', marginTop: '15px', marginBottom: '5px' }}>Billing Details</Typography>
-                                        <Grid item xs={12} sm={4}>
+                                            </Typography>
+                                            <Grid>
+                                                <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '18px', marginTop: '15px', marginBottom: '5px' }}>Billing Details</Typography>
+                                        <Grid item xs={12} md={4}>
                                             <Typography variant="body2">
                                                 <strong>Ship From:</strong> {pkg.ship_from}
                                             </Typography>
@@ -315,9 +383,11 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                                                 <strong>Bill To:</strong> {pkg.bill_to}
                                             </Typography>
                                         </Grid>
+                                        </Grid>
+                                        
 
                                         <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '18px', marginTop: '15px', marginBottom: '5px' }}>Date & Timings</Typography>
-                                        <Grid item xs={12} sm={4}>
+                                        <Grid item xs={12} md={4}>
                                             <Typography variant="body2">
                                                 <strong>Pickup Date:</strong> {moment(pkg.pickup_date_time).format("DD/MM/YYYY HH:mm")}
                                             </Typography>
@@ -328,7 +398,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
 
 
                                         <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '18px', marginTop: '15px', marginBottom: '5px' }}>Additional Information</Typography>
-                                        <Grid item xs={12} sm={4}>
+                                        <Grid item xs={12} md={4}>
                                             <Typography variant="body2">
                                                 <strong>Refernce ID:</strong> {pkg.additional_info?.reference_id}
                                             </Typography>
@@ -366,7 +436,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                                         </Grid>
 
                                         <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '18px', marginTop: '15px', marginBottom: '5px' }}>Tax Information</Typography>
-                                        <Grid item xs={12} sm={4}>
+                                        <Grid item xs={12} md={4}>
                                             <Typography variant="body2">
                                                 <strong>Refernce ID:</strong> {pkg.tax_info?.sender_gst}
                                             </Typography>
@@ -399,17 +469,27 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                                                 </Typography>
                                             ))}
                                         </Box>
-                                    </Paper>
+                                    </Grid>
+                                    </Grid>
+                                    
                                 ))}
 
                             <Box sx={{ display: "flex", justifyContent: isMobile ? "center" : "flex-end", mt: 3, gap: 3 }}>
-                                <Button
+                                {!assignedOrder?.data[0]?.allocated_vehicles?.some(
+                                (vehicle:string) => vehicle === allocation.vehicle_ID
+                                ) && (
+                                        <Button
                                     variant="contained"
                                     color="primary"
                                     onClick={() => handleAssign(allocation)}
                                 >
                                     Assign
-                                </Button>
+                                </Button>)
+                             }
+                              
+                                {assignedOrder?.data[0]?.allocated_vehicles?.some(
+                                (vehicle:string) => vehicle === allocation.vehicle_ID
+                            ) && (
                                 <Button
                                     variant="contained"
                                     color="primary"
@@ -417,6 +497,8 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                                 >
                                     View Track
                                 </Button>
+                                )}
+
                             </Box>
                         </Box>
                     </Collapse>
