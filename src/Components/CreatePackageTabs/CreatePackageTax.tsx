@@ -1,12 +1,14 @@
 'use client';
-import React from 'react';
-import { Formik, Form, Field, FormikHelpers, } from 'formik';
+import React, { useState } from 'react';
+import { Formik, Form, Field } from 'formik';
 import { Grid, TextField, Typography, } from '@mui/material';
 import * as Yup from 'yup';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setPackageTax } from '@/store/authSlice';
 import { CustomButtonFilled, CustomButtonOutlined } from '../ReusableComponents/ButtonsComponent';
 import styles from './CreatePackage.module.css';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
+
 
 interface TaxInfoValues {
     taxInfo: {
@@ -40,8 +42,11 @@ const validationSchema = Yup.object().shape({
 const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
     const dispatch = useAppDispatch()
     const packageTaxFromRedux = useAppSelector((state) => state.auth.packageTax)
+    const [openConfirm, setOpenConfirm] = useState(false);
+    const [formValues, setFormValues] = useState<TaxInfoValues | null>(null);
+
     const initialValues: TaxInfoValues = {
-        taxInfo: packageTaxFromRedux ? packageTaxFromRedux : {
+        taxInfo: packageTaxFromRedux || {
             senderGSTN: '',
             receiverGSTN: '',
             carrierGSTN: '',
@@ -50,20 +55,45 @@ const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
         },
     };
 
-    const handleSubmit = async (values: TaxInfoValues, actions: FormikHelpers<TaxInfoValues>, onSubmit: (values: TaxInfoValues) => void) => {
-        dispatch(setPackageTax(values.taxInfo))
-        // dispatch(setCompletedState(5));
-        actions.setSubmitting(false);
-        onSubmit(values);
 
+    // const initialValues: TaxInfoValues = {
+    //     taxInfo: packageTaxFromRedux ? packageTaxFromRedux : {
+    //         senderGSTN: '',
+    //         receiverGSTN: '',
+    //         carrierGSTN: '',
+    //         isSelfTransport: '',
+    //         taxRate: '',
+    //     },
+    // };
+
+    const handleCreatePackageClick = (values: TaxInfoValues) => {
+        dispatch(setPackageTax(values.taxInfo)); // Save to Redux
+        setFormValues(values); // Temporarily store
+        setOpenConfirm(true);  // Show popup
     };
+
+    const handleFinalSubmit = () => {
+        if (formValues) {
+            onSubmit(formValues);
+            setOpenConfirm(false);
+        }
+    };
+
+    // const handleSubmit = async (values: TaxInfoValues, actions: FormikHelpers<TaxInfoValues>, onSubmit: (values: TaxInfoValues) => void) => {
+    //     dispatch(setPackageTax(values.taxInfo))
+    //     // dispatch(setCompletedState(5));
+    //     actions.setSubmitting(false);
+    //     onSubmit(values);
+
+    // };
 
     return (
         <>
             <Formik
                 initialValues={initialValues}
                 validationSchema={validationSchema}
-                onSubmit={(values, actions) => handleSubmit(values, actions, onSubmit)}
+                // onSubmit={(values, actions) => handleSubmit(values, actions, onSubmit)}
+                onSubmit={(values) => handleCreatePackageClick(values)}
             >
                 {({ touched, errors }) => (
                     <Form style={{ width: '100%' }}>
@@ -135,13 +165,30 @@ const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
                                     {/* <Button type="submit" variant="contained" color="primary">
                                         Submit
                                     </Button> */}
-                                    <CustomButtonFilled >Submit</CustomButtonFilled>
+                                    {/* <CustomButtonFilled >Submit</CustomButtonFilled> */}
+                                    <CustomButtonFilled type="submit">Create Package</CustomButtonFilled>
                                 </Grid>
                             </Grid>
                         </Grid>
                     </Form>
                 )}
             </Formik>
+
+            <Dialog open={openConfirm} onClose={() => setOpenConfirm(false)}>
+                <DialogTitle>Confirm Submission</DialogTitle>
+                <DialogContent>
+                    Are you sure you want to submit the tax info?
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setOpenConfirm(false)} color="secondary">
+                        Cancel
+                    </Button>
+                    <Button onClick={handleFinalSubmit} color="primary" variant="contained">
+                        Submit
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
 
         </>
     );

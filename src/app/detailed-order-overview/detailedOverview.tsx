@@ -10,7 +10,9 @@ const OrderDetailedOverview: React.FC = () => {
     const orderId = searchParams.get('order_ID') || '';
     const { data: order, isLoading } = useGetOrderByIdQuery({ orderId });
     const orderData = order?.order;
-    console.log("orderData: ", orderData);
+    const allocatedPackageDetails = order?.allocated_packages_details
+    // console.log("orderData: ", orderData);
+    console.log("allocatedPackageDetails: ", allocatedPackageDetails)
 
     return (
         <Box sx={{ p: 3 }}>
@@ -35,14 +37,11 @@ const OrderDetailedOverview: React.FC = () => {
                         <Grid item xs={12} sm={6}>
                             <Typography variant="body1">Created (Date & Time):  <strong>{new Date(orderData.created_at).toLocaleString()}</strong></Typography>
                         </Grid>
-                        {/* <Grid item xs={12} sm={6}>
-                            <Typography variant="body1">Updated (Date & Time):  <strong>{new Date(orderData.updated_at).toLocaleString()}</strong></Typography>
-                        </Grid> */}
                     </Grid>
                 </Paper>
             )}
 
-            {orderData?.allocations && <Allocations allocations={orderData.allocations} orderId={orderData.order_ID} />}
+            {orderData?.allocations && <Allocations allocations={orderData.allocations} orderId={orderData.order_ID} allocatedPackageDetails={allocatedPackageDetails} />}
         </Box>
     );
 };
