@@ -224,9 +224,6 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
     link.setAttribute('download', `${arrayKey}_template.csv`);
     link.click();
   };
-
-
-
   return (
     <Box>
       <SnackbarAlert

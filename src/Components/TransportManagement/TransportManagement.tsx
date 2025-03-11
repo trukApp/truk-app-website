@@ -40,6 +40,11 @@ const TransportManagement = () => {
       // onClick: () => router.push('/masterdata'),
       onClick: () => handleNavigation('/masterdata'),
     },
+        {
+      title: 'Vehicle',
+      icon: <StorageIcon sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
+      onClick: () => router.push('/vehicle'),
+    },
   ];
 
   return (

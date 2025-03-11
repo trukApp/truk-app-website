@@ -191,7 +191,7 @@ const VehicleForm: React.FC = () => {
 	const [editVehicle, { isLoading: editVehicleLoading }] = useEditVehicleMasterMutation();
 	const [deleteVehicle, { isLoading: deleteVehicleLoading }] = useDeleteVehicleMasterMutation();
 	const wrapperRef = useRef<HTMLDivElement>(null);
-
+	console.log('all vehs :', data)
 	const { data: locationsData } = useGetLocationMasterQuery({});
 	const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
 
@@ -387,19 +387,17 @@ const VehicleForm: React.FC = () => {
 		locationId: vehicle.loc_ID,
 		timeZone: vehicle.time_zone,
 		unlimitedUsage: vehicle?.unlimited_usage,
-		individualResources: vehicle.individual_resource,
+		individualResources: vehicle?.individual_resource == null ? ''  : vehicle?.individual_resource ,
 		validityFrom: vehicle.transportation_details.validity_from,
 		validityTo: vehicle.transportation_details.validity_to,
 		vehicleType: vehicle.transportation_details.vehicle_type,
 		vehicleGroup: vehicle.transportation_details.vehicle_group,
 		ownership: vehicle.transportation_details.ownership,
-
 		payloadWeight: `${vehicle?.capacity?.payload_weight} ${vehicle?.capacity?.payload_weight_unit}`,
 		cubicCapacity: `${vehicle?.capacity?.cubic_capacity} ${vehicle?.capacity?.cubic_capacity_unit}`,
 		interiorLength: vehicle?.capacity?.interior_length,
 		interiorWidth: vehicle?.capacity?.interior_width,
 		interiorHeight: vehicle?.capacity?.interior_height,
-
 		tareWeight: vehicle?.physical_properties?.tare_weight,
 		maxGrossWeight: vehicle?.physical_properties?.max_gross_weight,
 		tareVolume: vehicle?.physical_properties?.tare_volume,
@@ -503,7 +501,7 @@ const VehicleForm: React.FC = () => {
 					{
 						loc_ID: values.locationId,
 						unlimited_usage: `${values.unlimitedUsage ? 1 : 0}`,
-						individual_resource: values.individualResources,
+						individual_resource: `${values.unlimitedUsage ?  null : values.individualResources }`,
 						transportation_details: {
 							validity_from: values.validityFrom,
 							validity_to: values.validityTo,
@@ -552,7 +550,7 @@ const VehicleForm: React.FC = () => {
 			const editBody = {
 				loc_ID: values.locationId,
 				unlimited_usage: `${values.unlimitedUsage ? 1 : 0}`,
-				individual_resource: values.individualResources,
+				individual_resource: `${values.unlimitedUsage ?  null : values.individualResources }`,
 				transportation_details: {
 					validity_from: values.validityFrom,
 					validity_to: values.validityTo,
@@ -699,7 +697,7 @@ const VehicleForm: React.FC = () => {
 					sx={{ fontWeight: "bold", fontSize: { xs: "20px", md: "24px" } }}
 					gutterBottom
 				>
-					Vehicle master
+					Vehicle group master
 				</Typography>
 				<Box display="flex" justifyContent="flex-end">
 					<Box>
@@ -708,7 +706,7 @@ const VehicleForm: React.FC = () => {
 							onClick={() => setShowForm((prev) => !prev)}
 							className={styles.createButton}
 						>
-							Create Vehicle
+							Create Vehicle group
 							{showForm ? (
 								<KeyboardArrowUpIcon style={{ marginLeft: 4 }} />
 							) : (
@@ -848,7 +846,9 @@ const VehicleForm: React.FC = () => {
 															onChange={(e) => {
 																const checked = e.target.checked;
 																setFieldValue("unlimitedUsage", checked);
+																console.log("unlimited checked ", checked)
 																if (checked) {
+																	console.log("inidvidual resources :", values.individualResources)
 																	setFieldValue("individualResources", null);
 																	setFieldValue("individualResources", '');
 																}
@@ -866,9 +866,8 @@ const VehicleForm: React.FC = () => {
 														label="Individual Resources*"
 														name="individualResources"
 														type="number"
-														value={values.individualResources ?? ""}
-														// onChange={handleChange}
-														onChange={(e) => setFieldValue("individualResources", e.target.value ? Number(e.target.value) : "")}
+														value={!values.unlimitedUsage ? values.individualResources :   "" }
+														onChange={(e) => setFieldValue("individualResources", e.target.value ? Number(e.target.value) :   "")}
 														onBlur={handleBlur}
 														size="small"
 														error={touched.individualResources && Boolean(errors.individualResources)}

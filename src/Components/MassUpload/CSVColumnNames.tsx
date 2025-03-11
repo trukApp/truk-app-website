@@ -12,7 +12,6 @@ export const locationColumnNames = [
   { displayName: 'State*', key: 'state' },
   { displayName: 'Country*', key: 'country' },
   { displayName: 'Pincode (6 digits)*', key: 'pincode' },
-
   { displayName: 'Contact person name*', key: 'contact_name' },
   { displayName: 'Contact phone number*', key: 'contact_phone_number' },
   { displayName: 'Contact email*', key: 'contact_email' },
@@ -72,7 +71,9 @@ export const deviceColumnNames = [
 export const packageColumnNames =[
   { displayName: 'Packaging Type Name*', key: 'packaging_type_name' },
   { displayName: 'Dimensions UOM', key: 'dimensions_uom' },
-  { displayName: 'Dimensions*', key: 'dimensions' },
+  { displayName: 'Package length*', key: 'pack_length'},
+  { displayName: 'Package Width*', key: 'pack_width' },
+  { displayName: 'Package height*', key: 'pack_height' },
   { displayName: 'Handling Unit Type*', key: 'handling_unit_type' }
 ]
 

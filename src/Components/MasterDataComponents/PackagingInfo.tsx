@@ -163,9 +163,7 @@ const PackagingForm = () => {
       });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editRow]);
-  // const handlingUnitOptions = ['Pallet', 'Container', 'Crate', 'Box', 'Drum', 'Bag', 'Sack'];
-
+  }, [editRow]); 
   const handleEdit = (row: PackageInfo) => {
     setShowForm(true)
     setIsEditing(true)
@@ -375,7 +373,7 @@ const PackagingForm = () => {
               </Grid>
                 <Grid item xs={12} md={2.4}>
                 <TextField 
-                  fullWidth size='small'
+                  fullWidth size='small' disabled
                   label="Volume"
                   value={
                     Number(formik.values.packagingLength || 1) *
@@ -387,31 +385,6 @@ const PackagingForm = () => {
                 />
               </Grid>
               {/* Handling Unit Type Dropdown */}
-              {/* <Grid item xs={12} md={2.4}>
-                <FormControl fullWidth size="small">
-                  <InputLabel id="handlingUnitType-label">Handling Unit Type</InputLabel>
-                  <Select
-                    labelId="handlingUnitType-label"
-                    id="handlingUnitType"
-                    name="handlingUnitType"
-                    value={formik.values.handlingUnitType}
-                    onChange={(event) => formik.setFieldValue('handlingUnitType', event.target.value)}
-                    input={<OutlinedInput label="Handling Unit Type" />}
-                    error={formik.touched.handlingUnitType && Boolean(formik.errors.handlingUnitType)}
-                  >
-                    {handlingUnitOptions.map((option) => (
-                      <MenuItem key={option} value={option}>
-                        {option}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {formik.touched.handlingUnitType && formik.errors.handlingUnitType && (
-                    <Box sx={{ color: 'red', fontSize: '0.8rem', marginTop: 0.5 }}>
-                      {formik.errors.handlingUnitType}
-                    </Box>
-                  )}
-                </FormControl>
-              </Grid> */}
               <Grid item xs={12} md={2.4}>
                 <TextField
                   fullWidth
