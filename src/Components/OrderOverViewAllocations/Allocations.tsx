@@ -83,6 +83,10 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
     const [selectedAllocation, setSelectedAllocation] = useState<Allocation | null>(null);
     const [postAssignOrder, { isLoading: isAssigning }] = usePostAssignOrderMutation()
     const { data, isLoading: driverLoading } = useGetAllDriversDataQuery({})
+    const getAvailableDrivers = data.drivers.filter((eachDriver: Driver) => {
+        return eachDriver?.driver_availability === true
+    })
+    console.log(getAvailableDrivers)
     const driversData = data?.drivers.length > 0 ? data?.drivers : []
     if (driverLoading) {
         console.log("driver loading")
