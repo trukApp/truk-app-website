@@ -49,6 +49,7 @@ export const apiSlice = createApi({
     "PackagesForOrder",
     "Orders",
     "AssignedOrders",
+    'SingleVehicleMaster'
   ],
   endpoints: (builder) => ({
     userLogin: builder.mutation<User, { phone: string; password: string }>({
@@ -589,6 +590,44 @@ export const apiSlice = createApi({
         };
       },
     }),
+
+        //single vehciles master
+    getSingleVehicleMaster: builder.query({
+      query: (params) => {
+        return {
+          url: `veh/all-vehicles`,
+          method: "GET",
+          params,
+        };
+      },
+      providesTags: [{ type: "SingleVehicleMaster", id: "LIST" }],
+    }),
+
+    postSingleVehicleMaster: builder.mutation({
+      query: (body) => ({
+        url: "veh/add-vehicles",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "SingleVehicleMaster", id: "LIST" }],
+    }),
+
+    editSingleVehicleMaster: builder.mutation({
+      query: ({ body, truckId }) => ({
+        url: `veh/edit-vehicle?truk_id=${truckId}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: [{ type: "SingleVehicleMaster", id: "LIST" }],
+    }),
+
+    deleteSingleVehicleMaster: builder.mutation({
+      query: (truckId) => ({
+        url: `veh/delete-vehicle?truk_id=${truckId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [{ type: "SingleVehicleMaster", id: "LIST" }],
+    }),
   }),
 });
 
@@ -652,5 +691,9 @@ export const {
   useGetAllAssignedOrdersQuery,
   usePostAssignOrderMutation,
   useImageUploadingMutation,
+  useGetSingleVehicleMasterQuery,
+  usePostSingleVehicleMasterMutation,
+  useEditSingleVehicleMasterMutation,
+  useDeleteSingleVehicleMasterMutation,
 
 } = apiSlice;

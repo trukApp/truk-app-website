@@ -188,10 +188,10 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                 documents: '',
                 locationId: selectedProduct?.packagingType[0]?.location || '',
                 packagingType: selectedProduct?.packagingType[0]?.pac_ID || '',
-                generatePackagingLabel: selectedProduct.packingLabel || false,
-                specialInstructions: selectedProduct.specialInstructions || '',
-                fragileGoods: selectedProduct.fragile_goods || false,
-                dangerousGoods: selectedProduct.dangerous_goods || false,
+                generatePackagingLabel: selectedProduct?.packingLabel || false,
+                specialInstructions: selectedProduct?.specialInstructions || '',
+                fragileGoods: selectedProduct?.fragile_goods || false,
+                dangerousGoods: selectedProduct?.dangerous_goods || false,
                 hazardousStorage: selectedProduct?.hazardous || false,
                 skuNumber: selectedProduct.sku_num || '',
                 hsncode: selectedProduct.hsn_code || '',
@@ -827,7 +827,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                                                     <Checkbox
                                                         name="generatePackagingLabel"
                                                         checked={values.generatePackagingLabel}
-                                                        onChange={handleChange}
+                                                        onChange={(e) => setFieldValue("generatePackagingLabel", e.target.checked)}
                                                     />
                                                 }
                                                 label="Generate Packaging Label"
@@ -857,7 +857,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                                                     <Checkbox
                                                         name="fragileGoods"
                                                         checked={values.fragileGoods}
-                                                        onChange={handleChange}
+                                                        onChange={(e) => setFieldValue("fragileGoods", e.target.checked)}
                                                     />
                                                 }
                                                 label="Fragile Goods"
@@ -869,7 +869,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                                                     <Checkbox
                                                         name="dangerousGoods"
                                                         checked={values.dangerousGoods}
-                                                        onChange={handleChange}
+                                                        onChange={(e) => setFieldValue("dangerousGoods", e.target.checked)}
                                                     />
                                                 }
                                                 label="Dangerous Goods"
@@ -881,7 +881,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                                                     <Checkbox
                                                         name="hazardousStorage"
                                                         checked={values.hazardousStorage}
-                                                        onChange={handleChange}
+                                                        onChange={(e) => setFieldValue("hazardousStorage", e.target.checked)}
                                                     />
                                                 }
                                                 label="Hazardous Substance Storage"
@@ -893,7 +893,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                                                     <Checkbox
                                                         name="temperatureControl"
                                                         checked={values.temperatureControl}
-                                                        onChange={handleChange}
+                                                        onChange={(e) => setFieldValue("temperatureControl", e.target.checked)}
                                                     />
                                                 }
                                                 label="Temperature control"
