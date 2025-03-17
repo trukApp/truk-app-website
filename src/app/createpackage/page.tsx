@@ -109,7 +109,7 @@ const CreatePackage = () => {
         const firstUnfilledIndex = completedSteps.findIndex((step) => !step);
         console.log("firstunfilled ", firstUnfilledIndex)
         if (firstUnfilledIndex !== -1) {
-            setSnackbarMessage("Some steps are unfilled!");
+            setSnackbarMessage("Some steps are unfilled! Navigating to first unfilled step...");
             setSnackbarSeverity("warning");
             setSnackbarOpen(true);
             setActiveStep(firstUnfilledIndex);

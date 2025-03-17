@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { DataGrid, GridCellParams, GridColDef } from '@mui/x-data-grid';
 import { useAppSelector, useAppDispatch } from '@/store';
 import { setSelectedPackages } from '@/store/authSlice';
-import { Grid, Tooltip } from '@mui/material';
+import { Grid } from '@mui/material';
 import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
 import { useGetLocationMasterQuery, useGetPackageMasterQuery } from '@/api/apiSlice';
 import { Location } from '../MasterDataComponents/Locations';
+import moment from 'moment';
 
 
 export interface Product {
@@ -62,16 +63,32 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
         (eachPackage) => eachPackage?.package_status !== "ordered"
     );
 
-    const getLocationDetails = (loc_ID: string) => {
+    // const getLocationDetails = (loc_ID: string) => {
+    //     const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
+    //     if (!location) return "Location details not available";
+    //     const details = [
+    //         location.address_1,
+    //         location.address_2,
+    //         location.city,
+    //         location.state,
+    //         location.country,
+    //         location.pincode
+    //     ].filter(Boolean);
+
+    //     return details.length > 0 ? details.join(", ") : "Location details not available";
+    // };
+    const getLocationDescription = (loc_ID: string) => {
         const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
         if (!location) return "Location details not available";
         const details = [
+            location.loc_desc,
             location.address_1,
-            location.address_2,
             location.city,
             location.state,
             location.country,
-            location.pincode
+            location.pincode, 
+            location.loc_ID
+            
         ].filter(Boolean);
 
         return details.length > 0 ? details.join(", ") : "Location details not available";
@@ -85,14 +102,16 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
         const details = [
             packageInfo.packaging_type_name,
             packageInfo.dimensions,
-            // packageInfo.dimensions_uom,
             packageInfo.handling_unit_type,
+            packageInfo.pac_ID
 
         ].filter(Boolean);
 
         return details.length > 0 ? details.join(", ") : "Package details not available";
     };
-
+const formatPickupDateTime = (pickupDateTime: string) => {
+  return moment(pickupDateTime).format("MMM DD, YYYY h:mm A");
+};
     useEffect(() => {
         const selectedIds = selectedPackages.map((pkg) => pkg.pac_id);
         setSelectionModel(selectedIds);
@@ -109,46 +128,43 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
         {
             field: "ship_from",
             headerName: "Ship from",
-            width: 150,
-            renderCell: (params) => (
-                <Tooltip title={getLocationDetails(params.value)} arrow>
-                    <span>{params.value}</span>
-                </Tooltip>
-            ),
+            width: 250,
+            // renderCell: (params) => (
+            //     <Tooltip title={getLocationDetails(params.value)} arrow>
+            //         <span>{params.value}</span>
+            //     </Tooltip>
+            // ),
         },
         // { field: 'ship_to', headerName: 'Ship To', width: 150 },
         {
             field: "ship_to",
             headerName: "Ship to",
-            width: 150,
-            renderCell: (params) => (
-                <Tooltip title={getLocationDetails(params.value)} arrow>
-                    <span>{params.value}</span>
-                </Tooltip>
-            ),
+            width: 250,
+            // renderCell: (params) => (
+            //     <Tooltip title={getLocationDetails(params.value)} arrow>
+            //         <span>{params.value}</span>
+            //     </Tooltip>
+            // ),
         },
-        // { field: 'package_info', headerName: 'Package Info', width: 150 },
         {
             field: "package_info",
             headerName: "Package Info",
-            width: 150,
-            renderCell: (params) => (
-                <Tooltip title={getPackageDetails(params.value)} arrow>
-                    <span>{params.value}</span>
-                </Tooltip>
-            ),
+            width: 250,
+            // renderCell: (params) => (
+            //     <Tooltip title={getPackageDetails(params.value)} arrow>
+            //         <span>{params.value}</span>
+            //     </Tooltip>
+            // ),
         },
-
-        // { field: 'bill_to', headerName: 'Bill To', width: 150 },
         {
             field: "bill_to",
             headerName: "Bill to",
-            width: 150,
-            renderCell: (params) => (
-                <Tooltip title={getLocationDetails(params.value)} arrow>
-                    <span>{params.value}</span>
-                </Tooltip>
-            ),
+            width: 250,
+            // renderCell: (params) => (
+            //     <Tooltip title={getLocationDetails(params.value)} arrow>
+            //         <span>{params.value}</span>
+            //     </Tooltip>
+            // ),
         },
         { field: 'return_label', headerName: 'Return Label', width: 150 },
         { field: 'pickup_date_time', headerName: 'Pickup Date & Time', width: 200 },
@@ -184,17 +200,16 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
             },
         },
     ];
-
     const rows = unorderedPackages.map((pkg: Package) => ({
         id: pkg.pac_id,
         pack_ID: pkg.pack_ID,
-        ship_from: pkg.ship_from,
-        ship_to: pkg.ship_to,
-        package_info: pkg.package_info,
-        bill_to: pkg.bill_to,
+        ship_from : getLocationDescription(pkg.ship_from),
+        ship_to: getLocationDescription(pkg.ship_to),
+        package_info:getPackageDetails(pkg.package_info),
+        bill_to: getLocationDescription(pkg.bill_to),
         return_label: pkg.return_label,
-        pickup_date_time: pkg.pickup_date_time,
-        dropoff_date_time: pkg.dropoff_date_time,
+        pickup_date_time: formatPickupDateTime(pkg.pickup_date_time),
+        dropoff_date_time: formatPickupDateTime(pkg.dropoff_date_time),
         tax_rate: pkg.tax_info.tax_rate,
         product_details: pkg.product_ID,
         additional_info: pkg.additional_info,
