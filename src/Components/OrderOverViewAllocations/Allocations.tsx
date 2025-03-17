@@ -107,7 +107,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
     // console.log("getAvailableDrivers: ", getAvailableDrivers);
     const allTrucksData = trucksData?.data
 
-    const getAllAvailableVehicles = allTrucksData.filter((eachVehicle: TruckDetails) => {
+    const getAllAvailableVehicles = allTrucksData?.filter((eachVehicle: TruckDetails) => {
         return eachVehicle?.available === 1
     })
     // console.log("getAllAvailableVehicles: ", getAllAvailableVehicles)
