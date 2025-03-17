@@ -3,6 +3,9 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { GoogleMap, useLoadScript, Marker, InfoWindow, DirectionsRenderer } from '@react-google-maps/api';
 import { MenuItem, Select, FormControl, InputLabel, Box } from '@mui/material';
+import { useDispatch, useSelector } from "react-redux";
+import { setSelectedRoutes } from '@/store/authSlice';
+import { RootState } from '@/store';
 
 const mapsKey: string = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? '';
 
@@ -57,14 +60,27 @@ interface RootOptimizationProps {
 const routeColors = ['#FF0000', '#0000FF', '#0096FF', '#00FF00', '#FF00FF', '#FFA500'];
 
 const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization }) => {
-    console.log('rootOptimization', rootOptimization);
+    const dispatch = useDispatch();
+    const selectedRoutes = useSelector((state: RootState) => state.auth.selectedRoutes);
+    console.log('selectedRoutesFromRedux: ', selectedRoutes);
     const { isLoaded } = useLoadScript({ googleMapsApiKey: mapsKey });
     const [activeMarker, setActiveMarker] = useState<number | null>(null);
     const [directionsResults, setDirectionsResults] = useState<google.maps.DirectionsResult[]>([]);
-    const [selectedRouteIndex, setSelectedRouteIndex] = useState<number | null>(null);
     const [selectedTransport, setSelectedTransport] = useState('');
     const [transportOptions, setTransportOptions] = useState<string[]>([]);
-    const [selectedRouteData, setSelectedRouteData] = useState<{ vehicle: string; route: any } | null>(null);
+    const [selectedRoutesData, setSelectedRoutesData] = useState<{ vehicle: string, route: any, routeIndex: number | null }[]>([]);
+
+    useEffect(() => {
+        if (selectedRoutes && selectedRoutes.length > 0) {
+            setSelectedRoutesData(selectedRoutes.map(route => ({
+                vehicle: route.vehicle,
+                route: route.route,
+                routeIndex: route.routeIndex,
+            })));
+        } else {
+            setSelectedRoutesData([]);
+        }
+    }, [selectedRoutes]);
 
     useEffect(() => {
         if (rootOptimization?.length > 0) {
@@ -84,6 +100,7 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
     const { startMarkers, endMarkers } = useMemo(() => {
         const startSet = new Map();
         const endSet = new Map();
+        const selectedRouteIndex = selectedRoutesData?.find(r => r.vehicle === selectedTransport)?.routeIndex ?? null;
         const routesToShow = selectedRouteIndex !== null
             ? [filteredRoutes[selectedRouteIndex]]
             : filteredRoutes;
@@ -115,8 +132,7 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
             startMarkers: Array.from(startSet.values()),
             endMarkers: Array.from(endSet.values()),
         };
-    }, [filteredRoutes, selectedRouteIndex]);
-
+    }, [filteredRoutes, selectedRoutesData, selectedTransport]);
 
     const fetchDirections = useCallback(async () => {
         if (!isLoaded || typeof google === 'undefined' || !google.maps) return;
@@ -135,7 +151,6 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
                             origin: { lat: route.start.latitude, lng: route.start.longitude },
                             destination: { lat: route.end.latitude, lng: route.end.longitude },
                             travelMode: google.maps.TravelMode.DRIVING,
-                            // provideRouteAlternatives: true,
                         },
                         (result, status) => {
                             if (status === google.maps.DirectionsStatus.OK && result) {
@@ -165,38 +180,45 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
 
     if (!isLoaded) return <p>Loading Maps...</p>;
 
-    // const handleRouteSelection = (value: string) => {
-    //     setSelectedRouteIndex(value === 'all' ? null : Number(value));
+    // const handleRouteSelection = (vehicleID: string, routeIndex: number | null) => {
+    //     const vehicle = rootOptimization?.find(v => v.vehicle_ID === vehicleID);
+    //     const selectedRoute = vehicle?.route?.[routeIndex ?? 0];
+
+    //     if (selectedRoute) {
+    //         setSelectedRoutesData(prevRoutes => {
+    //             const updatedRoutes = prevRoutes?.filter(r => r.vehicle !== vehicleID);
+    //             return [...updatedRoutes, { vehicle: vehicleID, route: selectedRoute, routeIndex }];
+    //         });
+    //     }
     // };
+    const handleRouteSelection = (vehicleID: string, routeIndex: number | null) => {
+        const vehicle = rootOptimization?.find(v => v.vehicle_ID === vehicleID);
+        const selectedRoute = vehicle?.route?.[routeIndex ?? 0];
 
-
-    const handleRouteSelection = (value: string) => {
-        if (value === 'all') {
-            setSelectedRouteIndex(null);
-            setSelectedRouteData(null);
-        } else {
-            const index = Number(value);
-            setSelectedRouteIndex(index);
-            setSelectedRouteData({
-                vehicle: selectedTransport,
-                route: directionsResults[index]?.routes || null,
+        if (selectedRoute) {
+            setSelectedRoutesData(prevRoutes => {
+                const updatedRoutes = prevRoutes?.filter(r => r.vehicle !== vehicleID);
+                const newRoute = { vehicle: vehicleID, route: selectedRoute, routeIndex };
+                dispatch(setSelectedRoutes([...updatedRoutes, newRoute]));
+                return [...updatedRoutes, newRoute];
             });
         }
     };
-    // console.log('directionsResults', directionsResults);
-    // console.log('selectedRouteData', selectedRouteData);
+    const handleVehicleSelection = (vehicleID: string) => {
+        setSelectedTransport(vehicleID);
+    };
+
+    const currentSelectedRouteIndex = selectedRoutesData?.find(r => r.vehicle === selectedTransport)?.routeIndex ?? null;
+    console.log('selected Routes:', selectedRoutesData);
     return (
         <div style={{ width: '100%' }}>
-            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', margin: '1rem' }}>
+            {/* <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '1rem' }}> */}
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, flexWrap: 'wrap', margin: '1rem', width: '100%' }}>
                 <FormControl sx={{ minWidth: 250 }} size="small">
                     <InputLabel>Vehicles</InputLabel>
                     <Select
                         value={selectedTransport}
-                        onChange={(e) => {
-                            setSelectedTransport(e.target.value);
-                            setSelectedRouteIndex(null);
-                            setSelectedRouteData(null);
-                        }}
+                        onChange={(e) => handleVehicleSelection(e.target.value)}
                         label="Transport"
                     >
                         {transportOptions.map((option, index) => (
@@ -206,12 +228,13 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
                         ))}
                     </Select>
                 </FormControl>
+
                 <FormControl sx={{ minWidth: 250 }} size="small">
                     <InputLabel>Select Route</InputLabel>
                     <Select
-                        value={selectedRouteIndex !== null ? selectedRouteIndex.toString() : 'all'}
+                        value={currentSelectedRouteIndex !== null ? currentSelectedRouteIndex.toString() : 'all'}
                         label="Select Route"
-                        onChange={(e) => handleRouteSelection(e.target.value)}
+                        onChange={(e) => handleRouteSelection(selectedTransport, e.target.value === 'all' ? null : Number(e.target.value))}
                         disabled={!selectedTransport}
                     >
                         <MenuItem value="all">All Routes</MenuItem>
@@ -226,7 +249,26 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
                         })}
                     </Select>
                 </FormControl>
+                <div
+                    style={{
+                        padding: '1rem',
+                        border: '1px solid #ccc',
+                        borderRadius: '8px',
+                        marginBottom: '1rem',
+                        gap: 1,
+                    }}
+                >
+                    <p style={{ display: 'flex', alignItems: 'center', flexDirection: 'row' }}>
+                        <img src="https://maps.google.com/mapfiles/ms/icons/red-dot.png" alt="Start" width="25" />
+                        &nbsp; Start Location
+                    </p>
+                    <p style={{ display: 'flex', alignItems: 'center', flexDirection: 'row' }}>
+                        <img src="https://maps.google.com/mapfiles/ms/icons/green-dot.png" alt="End" width="25" />
+                        &nbsp; End Location
+                    </p>
+                </div>
             </Box>
+            {/* </div> */}
 
             <GoogleMap
                 onClick={() => setActiveMarker(null)}
@@ -235,10 +277,7 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
                 zoom={5}
             >
                 {startMarkers.map(({ id, position }) => {
-                    // Find matching end marker
                     const endMarker = endMarkers.find(marker => marker.position.lat === position.lat && marker.position.lng === position.lng);
-
-                    // Apply a small offset if the end marker exists at the same position
                     const adjustedPosition = endMarker
                         ? { lat: position.lat + 0.0001, lng: position.lng + 0.0001 }
                         : position;
@@ -260,10 +299,7 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
                 })}
 
                 {endMarkers.map(({ id, position }) => {
-                    // Find matching start marker
                     const startMarker = startMarkers.find(marker => marker.position.lat === position.lat && marker.position.lng === position.lng);
-
-                    // Apply a small offset if the start marker exists at the same position
                     const adjustedPosition = startMarker
                         ? { lat: position.lat - 0.0001, lng: position.lng - 0.0001 }
                         : position;
@@ -284,8 +320,7 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
                     );
                 })}
 
-
-                {selectedRouteIndex === null
+                {currentSelectedRouteIndex === null
                     ? directionsResults.map((result, index) =>
                         result.routes.map((route, routeIndex) => (
                             <React.Fragment key={`${index}-${routeIndex}`}>
@@ -296,23 +331,25 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
                                             strokeColor: routeColors[index % routeColors.length],
                                             strokeWeight: 5,
                                         },
-                                        suppressMarkers: true, // Suppress default markers
+                                        suppressMarkers: true,
                                     }}
                                 />
                             </React.Fragment>
                         ))
                     )
-                    : <DirectionsRenderer
-                        directions={directionsResults[selectedRouteIndex]}
-                        options={{
-                            polylineOptions: {
-                                strokeColor: routeColors[selectedRouteIndex % routeColors.length],
-                                strokeWeight: 5,
-                            },
-                            suppressMarkers: true,
-                        }}
-                    />
-                }
+                    : currentSelectedRouteIndex !== null &&
+                    directionsResults[currentSelectedRouteIndex] && (
+                        <DirectionsRenderer
+                            directions={directionsResults[currentSelectedRouteIndex]}
+                            options={{
+                                polylineOptions: {
+                                    strokeColor: routeColors[currentSelectedRouteIndex % routeColors.length],
+                                    strokeWeight: 5,
+                                },
+                                suppressMarkers: true,
+                            }}
+                        />
+                    )}
             </GoogleMap>
         </div>
     );

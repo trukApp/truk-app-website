@@ -447,6 +447,15 @@ export const apiSlice = createApi({
       providesTags: [{ type: "ProductMaster", id: "LIST" }],
     }),
 
+    getFilteredProducts: builder.query({
+      query: (searchKey) => ({
+        url: `masterProducts/search-products`,
+        method: "GET",
+        params: { searchKey },
+      }),
+      providesTags: [{ type: "ProductMaster", id: "SEARCH" }],
+    }),
+
     createProduct: builder.mutation({
       query: (body) => ({
         url: "masterProducts/add-products",
@@ -690,6 +699,7 @@ export const {
   useEditUomMasterMutation,
   useDeleteUomMasterMutation,
   useGetAllProductsQuery,
+  useGetFilteredProductsQuery,
   useCreateProductMutation,
   useDeleteProductMutation,
   useEditProductMutation,
