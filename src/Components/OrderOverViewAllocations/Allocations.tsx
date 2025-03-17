@@ -92,9 +92,19 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
 
 
     const driversData = data?.drivers.length > 0 ? data?.drivers : []
-    const getAvailableDrivers = driversData.filter((eachDriver: Driver) => {
-        return eachDriver?.driver_availability === 1;
-    });
+    // const getAvailableDrivers = driversData.filter((eachDriver: Driver) => {
+    //     return eachDriver?.driver_availability === 1;
+    // });
+
+    const getAvailableDrivers = Array.isArray(driversData)
+        ? driversData.reduce((acc: Driver[], eachDriver: Driver) => {
+            if (eachDriver?.driver_availability === 1) {
+                acc.push(eachDriver);
+            }
+            return acc;
+        }, [])
+        : [];
+
     const devicesData = allDevices?.devices.length > 0 ? allDevices?.devices : []
     if (driverLoading) {
         console.log("driver loading")
@@ -107,9 +117,17 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
     // console.log("getAvailableDrivers: ", getAvailableDrivers);
     const allTrucksData = trucksData?.data
 
-    const getAllAvailableVehicles = allTrucksData?.filter((eachVehicle: TruckDetails) => {
-        return eachVehicle?.available === 1
-    })
+    // const getAllAvailableVehicles = allTrucksData?.filter((eachVehicle: TruckDetails) => {
+    //     return eachVehicle?.available === 1
+    // })
+
+    const getAllAvailableVehicles = Array.isArray(allTrucksData)
+        ? allTrucksData.reduce((acc: TruckDetails[], vehicle: TruckDetails) => {
+            if (vehicle?.available === 1) acc.push(vehicle);
+            return acc;
+        }, [])
+        : [];
+
     // console.log("getAllAvailableVehicles: ", getAllAvailableVehicles)
     const [formData, setFormData] = useState({
         truckId: "",
@@ -370,151 +388,151 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                                 </Typography>
                             </Box>
 
-                             {allocatedPackageDetails
+                            {allocatedPackageDetails
                                 .filter((pkg: PackageDetail) => allocation.packages.includes(pkg.pack_ID))
                                 .map((pkg: PackageDetail) => (
-                                    <Grid key={pkg.pac_id} sx={{ m: 2, p: 2, backgroundColor:'#e9e7e7',borderRadius:1 }}>
+                                    <Grid key={pkg.pac_id} sx={{ m: 2, p: 2, backgroundColor: '#e9e7e7', borderRadius: 1 }}>
                                         <Typography variant="subtitle2" gutterBottom>
                                             <strong>Package ID: {pkg.pack_ID}</strong>
                                         </Typography>
 
                                         <Typography variant="body2">
                                             <strong>Status:</strong> {pkg.package_status}
-                                            </Typography>
+                                        </Typography>
                                         <Grid container spacing={2} item >
-                                        <Grid item xs={12} md={2.4}>
+                                            <Grid item xs={12} md={2.4}>
                                                 <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '18px', marginTop: '15px', marginBottom: '5px' }}>Billing Details</Typography>
-                                        <Grid  >
-                                            <Typography variant="body2">
-                                                <strong>Ship From:</strong> {pkg.ship_from}
-                                            </Typography>
-                                            <Typography variant="body2">
-                                                <strong>Ship To:</strong> {pkg.ship_to}
-                                            </Typography>
-                                            <Typography variant="body2">
-                                                <strong>Bill To:</strong> {pkg.bill_to}
-                                            </Typography>
-                                        </Grid>
-                                        </Grid>
-                                        
-                                        <Grid item xs={12} md={2.4}>
-                                            <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '18px', marginTop: '15px', marginBottom: '5px' }}>Date & Timings</Typography>
-                                            <Grid >
-                                                <Typography variant="body2">
-                                                    <strong>Pickup Date:</strong> {moment(pkg.pickup_date_time).format("DD/MM/YYYY HH:mm")}
-                                                </Typography>
-                                                <Typography variant="body2">
-                                                    <strong>Dropoff Date:</strong> {moment(pkg.dropoff_date_time).format("DD/MM/YYYY HH:mm")}
-                                                </Typography>
+                                                <Grid  >
+                                                    <Typography variant="body2">
+                                                        <strong>Ship From:</strong> {pkg.ship_from}
+                                                    </Typography>
+                                                    <Typography variant="body2">
+                                                        <strong>Ship To:</strong> {pkg.ship_to}
+                                                    </Typography>
+                                                    <Typography variant="body2">
+                                                        <strong>Bill To:</strong> {pkg.bill_to}
+                                                    </Typography>
+                                                </Grid>
                                             </Grid>
-                                        </Grid>
-                                            
-                                        <Grid item xs={12} md={2.4}>
+
+                                            <Grid item xs={12} md={2.4}>
+                                                <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '18px', marginTop: '15px', marginBottom: '5px' }}>Date & Timings</Typography>
+                                                <Grid >
+                                                    <Typography variant="body2">
+                                                        <strong>Pickup Date:</strong> {moment(pkg.pickup_date_time).format("DD/MM/YYYY HH:mm")}
+                                                    </Typography>
+                                                    <Typography variant="body2">
+                                                        <strong>Dropoff Date:</strong> {moment(pkg.dropoff_date_time).format("DD/MM/YYYY HH:mm")}
+                                                    </Typography>
+                                                </Grid>
+                                            </Grid>
+
+                                            <Grid item xs={12} md={2.4}>
                                                 <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '18px', marginTop: '15px', marginBottom: '5px' }}>Additional Information</Typography>
                                                 <Grid >
                                                     {pkg.additional_info?.reference_id && (
                                                         <Typography variant="body2">
-                                                <strong>Refernce ID:</strong> {pkg.additional_info?.reference_id}
-                                                    </Typography>
+                                                            <strong>Refernce ID:</strong> {pkg.additional_info?.reference_id}
+                                                        </Typography>
                                                     )}
-                                            
+
                                                     {pkg.additional_info?.invoice && (
-                                                         <Typography variant="body2">
-                                                <strong>Invoice:</strong> {pkg.additional_info?.invoice}
-                                                    </Typography>
-                                            )}
-                                           
-                                            {pkg.additional_info?.department && (
-                                                <Typography variant="body2">
-                                                <strong>Department:</strong> {pkg.additional_info?.department}
-                                                    </Typography>
+                                                        <Typography variant="body2">
+                                                            <strong>Invoice:</strong> {pkg.additional_info?.invoice}
+                                                        </Typography>
                                                     )}
-                                           
-                                            {pkg.additional_info?.sales_order_number && (
-                                            <Typography variant="body2">
-                                                <strong>Sales order number:</strong> {pkg.additional_info?.sales_order_number}
-                                            </Typography>
+
+                                                    {pkg.additional_info?.department && (
+                                                        <Typography variant="body2">
+                                                            <strong>Department:</strong> {pkg.additional_info?.department}
+                                                        </Typography>
                                                     )}
-                                          
-                                            {pkg.additional_info?.po_number && (
-                                                         <Typography variant="body2">
-                                                <strong>Po number:</strong> {pkg.additional_info?.po_number}
-                                            </Typography>
+
+                                                    {pkg.additional_info?.sales_order_number && (
+                                                        <Typography variant="body2">
+                                                            <strong>Sales order number:</strong> {pkg.additional_info?.sales_order_number}
+                                                        </Typography>
+                                                    )}
+
+                                                    {pkg.additional_info?.po_number && (
+                                                        <Typography variant="body2">
+                                                            <strong>Po number:</strong> {pkg.additional_info?.po_number}
+                                                        </Typography>
                                                     )
                                                     }
-                                            {pkg.additional_info?.attachment && (
-                                                <div style={{ display:"flex" }}>
-                                                    <Typography variant="body2" style={{ fontWeight: 'bold' }}>
-                                                        Attachment:
-                                                    </Typography>
-                                                    <div style={{ position: 'relative', width: '50px', height: '45px', marginTop: '5px' }}>
-                                                        <Image
-                                                            src={pkg.additional_info.attachment}
-                                                            alt="Attachment"
-                                                            fill
-                                                            sizes="(max-width: 768px) 100vw, 300px"
-                                                            style={{ objectFit: 'contain' }}
-                                                        />
+                                                    {pkg.additional_info?.attachment && (
+                                                        <div style={{ display: "flex" }}>
+                                                            <Typography variant="body2" style={{ fontWeight: 'bold' }}>
+                                                                Attachment:
+                                                            </Typography>
+                                                            <div style={{ position: 'relative', width: '50px', height: '45px', marginTop: '5px' }}>
+                                                                <Image
+                                                                    src={pkg.additional_info.attachment}
+                                                                    alt="Attachment"
+                                                                    fill
+                                                                    sizes="(max-width: 768px) 100vw, 300px"
+                                                                    style={{ objectFit: 'contain' }}
+                                                                />
 
-                                                    </div>
-                                                </div>
-                                            )}
+                                                            </div>
+                                                        </div>
+                                                    )}
 
+                                                </Grid>
                                             </Grid>
-                                        </Grid>
-                                        
-                                        <Grid item xs={12} md={2.4}>
+
+                                            <Grid item xs={12} md={2.4}>
                                                 <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '18px', marginTop: '15px', marginBottom: '5px' }}>Tax Information</Typography>
                                                 <Grid >
-                                            {pkg.tax_info?.sender_gst && (
-                                                         <Typography variant="body2">
-                                                <strong>GSTN of sender:</strong> {pkg.tax_info?.sender_gst}
-                                            </Typography>
-                                                    )}
-                                           
-                                            {pkg.tax_info?.receiver_gst && (
-                                                         <Typography variant="body2">
-                                                <strong>GSTN of receiver:</strong> {pkg.tax_info?.receiver_gst}
-                                            </Typography>
-                                            )}
-                                           
-                                            {pkg.tax_info?.carrier_gst && (
+                                                    {pkg.tax_info?.sender_gst && (
                                                         <Typography variant="body2">
-                                                <strong>GSTN of carrier:</strong> {pkg.tax_info?.carrier_gst}
-                                            </Typography>
-                                            )}
-                                            {pkg.tax_info?.self_transport && (
-                                                        <Typography variant="body2">
-                                                <strong>Is self transport:</strong> {pkg.tax_info?.self_transport}
-                                            </Typography>
+                                                            <strong>GSTN of sender:</strong> {pkg.tax_info?.sender_gst}
+                                                        </Typography>
                                                     )}
-                                            {pkg.tax_info?.tax_rate && (
-                                                <Typography variant="body2">
-                                                    <strong>Tax rate:</strong> {pkg.tax_info?.tax_rate}
-                                                </Typography>
-                                                )}
-                                            
-                                            {pkg.return_label && (
-                                                    <Typography variant="body2">
-                                                    <strong>Return Label:</strong> {pkg.return_label ? "Yes" : "No"}
-                                                </Typography>
-                                            ) }
-                                       
-                                        </Grid>
-                                        </Grid>
-                                        <Grid item xs={12} md={2.4}>
+
+                                                    {pkg.tax_info?.receiver_gst && (
+                                                        <Typography variant="body2">
+                                                            <strong>GSTN of receiver:</strong> {pkg.tax_info?.receiver_gst}
+                                                        </Typography>
+                                                    )}
+
+                                                    {pkg.tax_info?.carrier_gst && (
+                                                        <Typography variant="body2">
+                                                            <strong>GSTN of carrier:</strong> {pkg.tax_info?.carrier_gst}
+                                                        </Typography>
+                                                    )}
+                                                    {pkg.tax_info?.self_transport && (
+                                                        <Typography variant="body2">
+                                                            <strong>Is self transport:</strong> {pkg.tax_info?.self_transport}
+                                                        </Typography>
+                                                    )}
+                                                    {pkg.tax_info?.tax_rate && (
+                                                        <Typography variant="body2">
+                                                            <strong>Tax rate:</strong> {pkg.tax_info?.tax_rate}
+                                                        </Typography>
+                                                    )}
+
+                                                    {pkg.return_label && (
+                                                        <Typography variant="body2">
+                                                            <strong>Return Label:</strong> {pkg.return_label ? "Yes" : "No"}
+                                                        </Typography>
+                                                    )}
+
+                                                </Grid>
+                                            </Grid>
+                                            <Grid item xs={12} md={2.4}>
                                                 <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '18px', marginTop: '15px', marginBottom: '5px' }}>Product Details</Typography>
-                                            <Box sx={{ mt: 1 }}>
-                                            <Typography variant="body2" sx={{ fontWeight: "bold" }}>
-                                                Products:
-                                            </Typography>
-                                            {pkg.product_ID.map((prod: Product, index: number) => (
-                                                <Typography key={index} variant="body2" sx={{ ml: 2 }}>
-                                                    - {prod.prod_ID} (Qty: {prod.quantity}) {prod.package_info}
-                                                </Typography>
-                                            ))}
-                                        </Box>
-                                        </Grid>
+                                                <Box sx={{ mt: 1 }}>
+                                                    <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+                                                        Products:
+                                                    </Typography>
+                                                    {pkg.product_ID.map((prod: Product, index: number) => (
+                                                        <Typography key={index} variant="body2" sx={{ ml: 2 }}>
+                                                            - {prod.prod_ID} (Qty: {prod.quantity}) {prod.package_info}
+                                                        </Typography>
+                                                    ))}
+                                                </Box>
+                                            </Grid>
                                         </Grid>
                                     </Grid>
                                 ))}

@@ -113,34 +113,12 @@ const CreateOrder: React.FC = () => {
 
             const response = await selectTheTrucks(body).unwrap();
             if (response) {
-                // let transportCounter = 1;
-                // const updatedScenarioCost = {
-                //     ...response.scenarioCost,
-                //     allocations: response.scenarioCost.allocations.map((vehicle: Truck) => ({
-                //         ...vehicle,
-                //         transportNumber: `Vehicle ${transportCounter++}`
-                //     }))
-                // };
-
-                // transportCounter = 1;
-                // const updatedScenarioEta = {
-                //     ...response.scenarioEta,
-                //     allocations: response.scenarioEta.allocations.map((vehicle: Truck) => ({
-                //         ...vehicle,
-                //         transportNumber: `Vehicle ${transportCounter++}`
-                //     }))
-                // };
-
-                // if (updatedScenarioCost?.totalCost === 0 && updatedScenarioEta?.totalCost === 0) {
-                //     console.log('There is no vehicle for selected package or packages')
-                //     setNoVechilePopup(true)
-                // } else {
-                //     setSelectTrucks([response?.allocations]);
-                //     setActiveStep((prev) => prev + 1);
-                // }
-                if (response) {
+                if (response?.message === "No suitable vehicles found for these package(s). Possibly special conditions or capacity mismatch.") {
+                    console.log("I am wrong")
+                    setNoVechilePopup(true)
+                } else {
                     setConformOrderPayload(response)
-                    // console.log('response: ', response)
+                    console.log('response: ', response)
                     setSelectTrucks(response?.allocations);
                     setActiveStep((prev) => prev + 1);
                 }
@@ -214,6 +192,7 @@ const CreateOrder: React.FC = () => {
                     </DialogActions>
                 </Dialog>
             )}
+
 
             {noVechilePopup && (
                 <Dialog open={noVechilePopup} onClose={() => setNoVechilePopup(false)} >
