@@ -34,14 +34,19 @@ interface AdditionalInformationProps {
 const validationSchema = Yup.object().shape({
     additionalInfo: Yup.object().shape({
         referenceId: Yup.string().required('Reference ID is required'),
-        invoiceNumber: Yup.string().required('Invoice # is required'),
-        // poNumber: Yup.string().required('PO # is required'),
-        // salesOrderNumber: Yup.string().required('Sales Order # is required'),
-        // department: Yup.string().required('Department is required'),
-        // returnLabel: Yup.boolean(),
-        // file: Yup.mixed().nullable().required('File is required'),
-    }),
+        invoiceNumber: Yup.string(),
+        poNumber: Yup.string(),
+        salesOrderNumber: Yup.string(),
+    }).test(
+        "at-least-one-required",
+        "At least one of Invoice #, PO #, or Sales Order # is required",
+        function (values) {
+            return !!(values?.invoiceNumber || values?.poNumber || values?.salesOrderNumber);
+        }
+    ),
 });
+
+
 
 const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, onBack }) => {
     const dispatch = useAppDispatch();
@@ -110,13 +115,15 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
         actions.setSubmitting(false);
     };
 
+ 
+
     return (
         <Formik
             initialValues={initialValues}
             validationSchema={validationSchema}
             onSubmit={handleFormSubmit}
         >
-            {({ touched, errors, setFieldValue }) => (
+            {({ touched, errors, setFieldValue , setFieldTouched }) => (
                 <Form>
                     <Typography variant="h6" sx={{ fontWeight: 'bold', textAlign: 'center', marginTop: 3 }}>Additional Details</Typography>
                     <Grid className={styles.formsBgContainer}>
@@ -203,12 +210,12 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
                                                             component="label"
                                                             sx={{
                                                                 minWidth: "auto",
-                                                                padding: "6px 12px",
-                                                                margin: 0, // Removes unwanted margin
+                                                                // padding: "6px 12px",
+                                                                margin: 0,
                                                                 height: '100%', // Makes sure button aligns with TextField height
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center',
+                                                                // display: 'flex',
+                                                                // alignItems: 'center',
+                                                                // justifyContent: 'center',
                                                             }}
                                                         >
                                                             Browse
@@ -238,19 +245,29 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
                                 </Field>
                             </Grid>
 
+                            <Grid item xs={12} sx={{textAlign:'center' ,marginTop:'15px'}}>
+                                    {errors.additionalInfo && typeof errors.additionalInfo === "string" && (
+                                        <Typography color="error" sx={{fontSize:'13px'}}>{errors.additionalInfo}</Typography>
+                                    )}
+                            </Grid>
                             {/* Navigation Buttons */}
-                            <Grid container spacing={2} justifyContent="center" marginTop={2}>
+                            <Grid container spacing={2} justifyContent="center" >
                                 <Grid item>
-                                    {/* <Button variant="outlined" onClick={onBack}>
-                                        Back
-                                    </Button> */}
                                     <CustomButtonOutlined onClick={onBack}>Back</CustomButtonOutlined>
                                 </Grid>
-                                <Grid item>
-                                    {/* <Button type="submit" variant="contained" color="primary">
-                                        Next
-                                    </Button> */}
+                                {/* <Grid item>
                                     <CustomButtonFilled >Next</CustomButtonFilled>
+                                </Grid> */}
+                                <Grid item>
+                                    <CustomButtonFilled
+                                        onClick={() => {
+                                        setFieldTouched("additionalInfo.invoiceNumber", true);
+                                        setFieldTouched("additionalInfo.poNumber", true);
+                                        setFieldTouched("additionalInfo.salesOrderNumber", true);
+                                        }}
+                                    >
+                                        Next
+                                    </CustomButtonFilled>
                                 </Grid>
                             </Grid>
                         </Grid>

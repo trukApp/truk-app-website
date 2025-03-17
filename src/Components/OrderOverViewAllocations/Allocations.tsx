@@ -325,7 +325,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
             </Modal>
 
             {allocations.map((allocation) => (
-                <Paper key={allocation.vehicle_ID} sx={{ p: 2, mb: 2 }}>
+                <Paper key={allocation.vehicle_ID} sx={{ p: 1, mb: 2 }}>
                     <Grid container alignItems="center" justifyContent="space-between">
                         <Grid item>
                             <Typography variant="subtitle1" color="#83214F" style={{ fontWeight: 'bold' }}>
@@ -390,18 +390,20 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
 
                             {allocatedPackageDetails
                                 .filter((pkg: PackageDetail) => allocation.packages.includes(pkg.pack_ID))
-                                .map((pkg: PackageDetail) => (
-                                    <Grid key={pkg.pac_id} sx={{ m: 2, p: 2, backgroundColor: '#e9e7e7', borderRadius: 1 }}>
+                                .map((pkg: PackageDetail) => ( 
+                                    <Box key={pkg.pac_id} >
+                                    <Grid key={pkg.pac_id} sx={{ mt: {xs:1 , md:2}, p: 2, backgroundColor: '#e9e7e7', borderRadius: 1}}>
                                         <Typography variant="subtitle2" gutterBottom>
                                             <strong>Package ID: {pkg.pack_ID}</strong>
                                         </Typography>
 
                                         <Typography variant="body2">
                                             <strong>Status:</strong> {pkg.package_status}
-                                        </Typography>
-                                        <Grid container spacing={2} item >
-                                            <Grid item xs={12} md={2.4}>
-                                                <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '18px', marginTop: '15px', marginBottom: '5px' }}>Billing Details</Typography>
+                                            </Typography>
+                                        <Grid sx={{ overflowX: "auto", whiteSpace: "nowrap" }}>
+                                        <Grid container spacing={2} sx={{minWidth:'1000px'}}  item >
+                                            <Grid item >
+                                                <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '16px', marginTop: '15px', marginBottom: '5px' }}>Billing Details</Typography>
                                                 <Grid  >
                                                     <Typography variant="body2">
                                                         <strong>Ship From:</strong> {pkg.ship_from}
@@ -415,8 +417,8 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                                                 </Grid>
                                             </Grid>
 
-                                            <Grid item xs={12} md={2.4}>
-                                                <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '18px', marginTop: '15px', marginBottom: '5px' }}>Date & Timings</Typography>
+                                            <Grid item >
+                                                <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '16px', marginTop: '15px', marginBottom: '5px' }}>Date & Timings</Typography>
                                                 <Grid >
                                                     <Typography variant="body2">
                                                         <strong>Pickup Date:</strong> {moment(pkg.pickup_date_time).format("DD/MM/YYYY HH:mm")}
@@ -427,8 +429,8 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                                                 </Grid>
                                             </Grid>
 
-                                            <Grid item xs={12} md={2.4}>
-                                                <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '18px', marginTop: '15px', marginBottom: '5px' }}>Additional Information</Typography>
+                                            <Grid item >
+                                                <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '16px', marginTop: '15px', marginBottom: '5px' }}>Additional Information</Typography>
                                                 <Grid >
                                                     {pkg.additional_info?.reference_id && (
                                                         <Typography variant="body2">
@@ -481,8 +483,8 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                                                 </Grid>
                                             </Grid>
 
-                                            <Grid item xs={12} md={2.4}>
-                                                <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '18px', marginTop: '15px', marginBottom: '5px' }}>Tax Information</Typography>
+                                            <Grid item >
+                                                <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '16px', marginTop: '15px', marginBottom: '5px' }}>Tax Information</Typography>
                                                 <Grid >
                                                     {pkg.tax_info?.sender_gst && (
                                                         <Typography variant="body2">
@@ -520,8 +522,8 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
 
                                                 </Grid>
                                             </Grid>
-                                            <Grid item xs={12} md={2.4}>
-                                                <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '18px', marginTop: '15px', marginBottom: '5px' }}>Product Details</Typography>
+                                            <Grid item >
+                                                <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '16px', marginTop: '15px', marginBottom: '5px' }}>Product Details</Typography>
                                                 <Box sx={{ mt: 1 }}>
                                                     <Typography variant="body2" sx={{ fontWeight: "bold" }}>
                                                         Products:
@@ -533,8 +535,9 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                                                     ))}
                                                 </Box>
                                             </Grid>
-                                        </Grid>
-                                    </Grid>
+                                        </Grid></Grid>
+                                        </Grid> 
+                                        </Box>
                                 ))}
                             <Box sx={{ display: "flex", justifyContent: isMobile ? "center" : "flex-end", mt: 3, gap: 3 }}>
                                 {!assignedOrder?.data[0]?.allocated_vehicles?.some(

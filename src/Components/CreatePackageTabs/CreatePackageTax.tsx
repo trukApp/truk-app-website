@@ -177,7 +177,7 @@ const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
             <Dialog open={openConfirm} onClose={() => setOpenConfirm(false)}>
                 <DialogTitle>Confirm Submission</DialogTitle>
                 <DialogContent>
-                    Are you sure you want to submit the tax info?
+                    Are you sure you want to create the package ?
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setOpenConfirm(false)} color="secondary">

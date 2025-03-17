@@ -137,7 +137,7 @@ const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
                                 productIdOptions?.map((product: Product) => (
                                   <MenuItem key={product.product_ID} value={String(product.product_ID)}>
                                     <Tooltip title={`${product.product_name}, ${product.product_desc}`} placement="right">
-                                      <span style={{ flex: 1 }}>{product.product_ID}</span>
+                                      <span style={{ flex: 1 }}>{product.product_name}, {product.product_ID},</span>
                                     </Tooltip>
                                   </MenuItem>
                                 ))

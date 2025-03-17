@@ -20,6 +20,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import DataGridSkeletonLoader from "@/Components/ReusableComponents/DataGridSkeletonLoader";
 import SnackbarAlert from "@/Components/ReusableComponents/SnackbarAlerts";
 import { VehicleDetails } from "@/Components/MasterDataComponents/Vehicles";
+import { withAuthComponent } from "@/Components/WithAuthComponent";
 export interface TruckFormDetails {
     truckId: string;
     id: string;
@@ -302,9 +303,16 @@ const VehicleOnly: React.FC = () => {
                 </Typography>
                 <Box display="flex" justifyContent="flex-end">
                     <Box>
-                        <Button
-                            variant="outlined"
-                            onClick={() => setShowForm((prev) => !prev)}
+                        <Button 
+                            onClick={() => setShowForm((prev) => !prev)} 
+                            style={{
+                                textTransform: "capitalize",
+                                textDecoration: "underline",
+                                backgroundColor: "transparent",
+                                boxShadow: "none",
+                                color: "inherit",
+                                fontWeight: "bold"
+                            }}
                         >
                             Create Vehicle
                             {showForm ? (
@@ -429,7 +437,7 @@ const VehicleOnly: React.FC = () => {
                                                             }}
                                                         />
                                                     }
-                                                    label="Is available"
+                                                    label="Is vehicle available"
                                                 />
                                             </Grid>
                                         </Grid>
@@ -548,4 +556,4 @@ const VehicleOnly: React.FC = () => {
     );
 };
 
-export default VehicleOnly;
+export default withAuthComponent(VehicleOnly);
