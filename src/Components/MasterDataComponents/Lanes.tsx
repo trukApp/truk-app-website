@@ -112,15 +112,15 @@ const TransportationLanes = () => {
   const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
   const displayLocationsDest = searchKeyDestination ? destinationFilteredLocations?.results || [] : getAllLocations;
   const getLocationDetails = (loc_ID: string) => {
-    const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
+    const location = getAllLocations.find((loc: Location) => loc?.loc_ID === loc_ID);
     if (!location) return "Location details not available";
     const details = [
       location.address_1,
-      location.address_2,
       location.city,
       location.state,
       location.country,
-      location.pincode
+      location.pincode,
+      location.loc_ID
     ].filter(Boolean);
 
     return details.length > 0 ? details.join(", ") : "Location details not available";
@@ -306,18 +306,18 @@ const TransportationLanes = () => {
 
   useEffect(() => {
     if (editRow) {
-      setSearchKey(editRow.sourceLocationId || '')
-      setSearchKeyDestination(editRow.destinationLocationId || '')
+      const sourceLocId = editRow?.sourceLocationId ? editRow.sourceLocationId.split(", ").at(-1) ?? "" : "";
+       const destiLocId = editRow?.destinationLocationId ? editRow.destinationLocationId.split(", ").at(-1) ?? "" : "";
+      setSearchKey(sourceLocId || '')
+      setSearchKeyDestination(destiLocId|| '')
       const editDistance = editRow.transportDistance.split(" ")
       const editDuration = editRow?.transportDuration.split(" ")
       const editCost = editRow.transportCost.split(" ");
       formik.setValues({
         id: editRow.id || '',
         laneId: editRow.laneId || '',
-        sourceLocationId: editRow.sourceLocationId || '',
-        destinationLocationId: editRow.destinationLocationId || '',
-
-        // Transport Data
+        sourceLocationId: sourceLocId || '',
+        destinationLocationId: destiLocId || '',
         vehicleType: editRow.vehicleType || '',
         transportStartDate: editRow.transportStartDate || '',
         transportEndDate: editRow.transportEndDate || '',
@@ -343,8 +343,8 @@ const TransportationLanes = () => {
   const rows = data?.lanes.map((lane: Lane) => ({
     id: lane?.ln_id,
     laneId: lane?.lane_ID,
-    sourceLocationId: lane?.src_loc_ID,
-    destinationLocationId: lane?.des_loc_ID,
+    sourceLocationId : getLocationDetails(lane?.src_loc_ID),
+    destinationLocationId: getLocationDetails(lane?.des_loc_ID),
     vehicleType: lane.lane_transport_data?.vehcle_type || "Unknown",
     transportStartDate: lane?.lane_transport_data?.start_time || "N/A",
     transportEndDate: lane?.lane_transport_data?.end_time || "N/A",
@@ -360,26 +360,8 @@ const TransportationLanes = () => {
 
   const columns: GridColDef[] = [
     { field: "laneId", headerName: "Lane ID", width: 150 },
-    {
-      field: "sourceLocationId",
-      headerName: "Source Location ID",
-      width: 150,
-      renderCell: (params) => (
-        <Tooltip title={getLocationDetails(params.value)} arrow>
-          <span>{params.value}</span>
-        </Tooltip>
-      ),
-    },
-    {
-      field: "destinationLocationId",
-      headerName: "Destination Location",
-      width: 150,
-      renderCell: (params) => (
-        <Tooltip title={getLocationDetails(params.value)} arrow>
-          <span>{params.value}</span>
-        </Tooltip>
-      ),
-    },
+    {field: "sourceLocationId",headerName: "Source Location ID",width: 250},
+    {field: "destinationLocationId",headerName: "Destination Location",width: 250},
     { field: "vehicleType", headerName: "Vehicle Type", width: 150 },
     { field: "transportStartDate", headerName: "Transport Start Date", width: 180 },
     { field: "transportEndDate", headerName: "Transport End Date", width: 180 },

@@ -195,7 +195,7 @@ const VehicleForm: React.FC = () => {
 	const { data: locationsData } = useGetLocationMasterQuery({});
 	const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
 
-	const [searchKey, setSearchKey] = useState(editRow?.locationId || editRow?.locationId || '');
+	const [searchKey, setSearchKey] = useState('');
 	const [showSuggestions, setShowSuggestions] = useState(false);
 	const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
 	const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
@@ -232,12 +232,12 @@ const VehicleForm: React.FC = () => {
 		const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
 		if (!location) return "Location details not available";
 		const details = [
-			location.address_1,
-			location.address_2,
+			location.address_1 ,
 			location.city,
 			location.state,
 			location.country,
-			location.pincode
+			location.pincode,
+			location.loc_ID
 		].filter(Boolean);
 
 		return details.length > 0 ? details.join(", ") : "Location details not available";
@@ -310,7 +310,6 @@ const VehicleForm: React.FC = () => {
 	useEffect(() => {
 		if (editRow) {
 			console.log('edit row :', editRow)
-			setSearchKey(editRow.locationId)
 			const editPayloadWeight = editRow.payloadWeight.split(" ");
 			const editCubicCapacity = editRow?.cubicCapacity.split(" ");
 			const editInteriorLength = editRow.interiorLength.split(" ");
@@ -322,11 +321,13 @@ const VehicleForm: React.FC = () => {
 			const editMaxLength = editRow.maxLength.split(" ");
 			const editMaxWidth = editRow.maxWidth.split(" ");
 			const editMaxHeight = editRow.maxHeight.split(" ");
-
+			const locId = editRow?.locationId ? editRow.locationId.split(", ").at(-1) ?? "" : "";
+			console.log("locID :", locId)
+			setSearchKey(locId)
 			setInitialValues(() => ({
 				id: "",
 				vehicleId: editRow?.vehicleId,
-				locationId: editRow?.locationId,
+				locationId: locId ,
 				timeZone: editRow?.timeZone,
 				unlimitedUsage: editRow.unlimitedUsage,
 				individualResources: editRow.individualResources,
@@ -384,7 +385,7 @@ const VehicleForm: React.FC = () => {
 	const rows = vehiclesMaster?.map((vehicle: VehicleDetails) => ({
 		id: vehicle?.veh_id,
 		vehicleId: vehicle.vehicle_ID,
-		locationId: vehicle.loc_ID,
+		locationId : getLocationDetails(vehicle.loc_ID),
 		timeZone: vehicle.time_zone,
 		unlimitedUsage: vehicle?.unlimited_usage,
 		individualResources: vehicle?.individual_resource == null ? ''  : vehicle?.individual_resource ,
@@ -428,13 +429,13 @@ const VehicleForm: React.FC = () => {
 		{ field: "vehicleId", headerName: "Vehicle ID", width: 150 },
 		{
 			field: "locationId",
-			headerName: "Location ID",
-			width: 150,
-			renderCell: (params) => (
-				<Tooltip title={getLocationDetails(params.value)} arrow>
-					<span>{params.value}</span>
-				</Tooltip>
-			),
+			headerName: "Location",
+			width: 250,
+			// renderCell: (params) => (
+			// 	<Tooltip title={getLocationDetails(params.value)} arrow>
+			// 		<span>{params.value}</span>
+			// 	</Tooltip>
+			// ),
 		},
 		{ field: "timeZone", headerName: "Time Zone", width: 150 },
 		{
@@ -446,7 +447,7 @@ const VehicleForm: React.FC = () => {
 		{
 			field: "individualResources",
 			headerName: "Individual Resources",
-			width: 200,
+			width: 150,
 		},
 		{ field: "validityFrom", headerName: "Validity From", width: 150 },
 		{ field: "validityTo", headerName: "Validity To", width: 150 },
