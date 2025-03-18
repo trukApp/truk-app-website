@@ -148,16 +148,18 @@ const CustomerForm: React.FC = () => {
         if (!location) return "Location details not available";
         const details = [
             location.address_1,
-            location.address_2,
             location.city,
             location.state,
             location.country,
-            location.pincode
+            location.pincode,
+            location.loc_ID
         ].filter(Boolean);
 
         return details.length > 0 ? details.join(", ") : "Location details not available";
     };
-    console.log("getLocationsError: ", getLocationsError)
+    if (getLocationsError) {
+        console.log("getLocationsError: ", getLocationsError)
+    }
     const customersData = data?.partners.length > 0 ? data?.partners : []
 
 
@@ -190,6 +192,8 @@ const CustomerForm: React.FC = () => {
     const rows = customersData.map((item: Customer) => ({
         id: item.partner_id,
         ...item,
+        loc_of_source: getLocationDetails(item?.loc_of_source),
+        loc_ID: getLocationDetails(item?.loc_ID)
     }));
 
     const columns: GridColDef[] = [
@@ -199,18 +203,12 @@ const CustomerForm: React.FC = () => {
         {
             field: "loc_ID",
             headerName: "Custmer Location ID",
-            width: 150,
-            renderCell: (params) => (
-                <Tooltip title={getLocationDetails(params.value)} arrow>
-                    <span>{params.value}</span>
-                </Tooltip>
-            ),
+            width: 250,
         },
         { field: 'location_pincode', headerName: 'Customer Pincode', width: 100 },
         { field: 'location_city', headerName: 'Customer City', width: 150 },
         { field: 'location_state', headerName: 'Customer State', width: 150 },
         { field: 'location_country', headerName: 'Customer Country', width: 150 },
-        // { field: 'loc_of_source', headerName: 'Source Location ID', width: 150 },
         {
             field: "loc_of_source",
             headerName: "Source Location ID",
@@ -221,7 +219,6 @@ const CustomerForm: React.FC = () => {
                 </Tooltip>
             ),
         },
-        // { field: 'pod_relevant', headerName: 'Pod relevant', width: 150 },
         {
             field: 'actions',
             headerName: 'Actions',
@@ -251,8 +248,10 @@ const CustomerForm: React.FC = () => {
         setUpdateRecord(true)
         setUpdateRecordData(rowData)
         const updatedInitialValues = await mapRowToInitialValues(rowData);
-        setSearchKey(rowData.loc_ID);
-        setSearchKeyDestination(rowData.loc_of_source)
+        const locId = rowData?.loc_ID ? rowData.loc_ID.split(", ").at(-1) ?? "" : "";
+        const sourceLocationId = rowData?.loc_of_source ? rowData.loc_of_source.split(", ").at(-1) ?? "" : "";
+        setSearchKey(locId);
+        setSearchKeyDestination(sourceLocationId)
         setFormInitialValues(updatedInitialValues);
         setUpdateRecordId(rowData?.partner_id)
     };
