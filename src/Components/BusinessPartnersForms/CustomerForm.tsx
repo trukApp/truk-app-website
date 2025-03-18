@@ -193,36 +193,87 @@ const CustomerForm: React.FC = () => {
     });
 
 
-    const rows = customersData.map((item: Customer) => ({
-        id: item.partner_id,
-        ...item,
-        loc_of_source: getLocationDetails(item?.loc_of_source),
-        loc_ID: getLocationDetails(item?.loc_ID)
-    }));
+    // const rows = customersData.map((item: Customer) => ({
+    //     id: item.partner_id,
+    //     ...item,
+    //     loc_of_source: getLocationDetails(item?.loc_of_source),
+    //     loc_ID: getLocationDetails(item?.loc_ID)
+    // }));
+
+    // const columns: GridColDef[] = [
+    //     { field: 'customer_id', headerName: 'Customer ID', width: 150 },
+    //     { field: 'name', headerName: 'Name', width: 200 },
+    //     // { field: 'loc_ID', headerName: 'Customer Location ID', width: 150 },
+    //     {
+    //         field: "loc_ID",
+    //         headerName: "Custmer Location ID",
+    //         width: 250,
+    //     },
+    //     { field: 'location_pincode', headerName: 'Customer Pincode', width: 100 },
+    //     { field: 'location_city', headerName: 'Customer City', width: 150 },
+    //     { field: 'location_state', headerName: 'Customer State', width: 150 },
+    //     { field: 'location_country', headerName: 'Customer Country', width: 150 },
+    //     {
+    //         field: "loc_of_source",
+    //         headerName: "Source Location ID",
+    //         width: 150,
+    //         renderCell: (params) => (
+    //             <Tooltip title={getLocationDetails(params.value)} arrow>
+    //                 <span>{params.value}</span>
+    //             </Tooltip>
+    //         ),
+    //     },
+    //     {
+    //         field: 'actions',
+    //         headerName: 'Actions',
+    //         width: 150,
+    //         renderCell: (params) => (
+    //             <>
+    //                 <IconButton
+    //                     color="primary"
+    //                     onClick={() => handleEdit(params.row)}
+    //                 >
+    //                     <EditIcon />
+    //                 </IconButton>
+    //                 <IconButton
+    //                     color="secondary"
+    //                     onClick={() => handleDelete(params.row)}
+    //                 >
+    //                     <DeleteIcon />
+    //                 </IconButton>
+    //             </>
+    //         ),
+    //     },
+    // ];
+
+    const rows = customersData.map((item: Customer) => {
+        console.log('item', item);
+
+        return {
+            id: item.partner_id,
+            ...item,
+            loc_of_source: getLocationDetails(item?.loc_of_source),
+            loc_ID: getLocationDetails(item?.loc_ID),
+            contact_person: item.correspondence?.contact_person || "",
+            contact_number: item.correspondence?.contact_number || "",
+            email: item.correspondence?.email || "",
+            bill_to_party: item.partner_functions?.bill_to_party || "",
+            ship_to_party: item.partner_functions?.ship_to_party || "",
+            sold_to_party: item.partner_functions?.sold_to_party || "",
+        };
+    });
 
     const columns: GridColDef[] = [
         { field: 'customer_id', headerName: 'Customer ID', width: 150 },
         { field: 'name', headerName: 'Name', width: 200 },
-        // { field: 'loc_ID', headerName: 'Customer Location ID', width: 150 },
-        {
-            field: "loc_ID",
-            headerName: "Custmer Location ID",
-            width: 250,
-        },
-        { field: 'location_pincode', headerName: 'Customer Pincode', width: 100 },
-        { field: 'location_city', headerName: 'Customer City', width: 150 },
-        { field: 'location_state', headerName: 'Customer State', width: 150 },
-        { field: 'location_country', headerName: 'Customer Country', width: 150 },
-        {
-            field: "loc_of_source",
-            headerName: "Source Location ID",
-            width: 150,
-            renderCell: (params) => (
-                <Tooltip title={getLocationDetails(params.value)} arrow>
-                    <span>{params.value}</span>
-                </Tooltip>
-            ),
-        },
+        { field: "loc_ID", headerName: "Customer Location ID", width: 250 },
+        { field: "loc_of_source", headerName: "Source Location ID", width: 250 },
+        { field: "contact_person", headerName: "Contact Person", width: 200 },
+        { field: "contact_number", headerName: "Contact Number", width: 150 },
+        { field: "email", headerName: "Email", width: 200 },
+        { field: "bill_to_party", headerName: "Bill To Party", width: 150 },
+        { field: "ship_to_party", headerName: "Ship To Party", width: 150 },
+        { field: "sold_to_party", headerName: "Sold To Party", width: 150 },
         {
             field: 'actions',
             headerName: 'Actions',

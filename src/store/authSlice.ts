@@ -230,7 +230,7 @@ export const {
   setCompletedState,
   resetCompletedSteps,
   setFilters,
-  setSelectedRoutes
+  setSelectedRoutes,
 } = authSlice.actions;
 
 export const authReducer = authSlice.reducer;

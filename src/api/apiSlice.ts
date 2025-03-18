@@ -718,7 +718,6 @@ export const {
   useEditUomMasterMutation,
   useDeleteUomMasterMutation,
   useGetAllProductsQuery,
-  useGetFilteredProductsQuery,
   useCreateProductMutation,
   useDeleteProductMutation,
   useEditProductMutation,
