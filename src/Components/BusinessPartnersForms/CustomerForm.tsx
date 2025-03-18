@@ -62,7 +62,9 @@ interface Customer {
     loc_of_source_country: string;
     partner_functions: PartnerFunctions;
     correspondence: Correspondence;
-    loc_ID: string
+    loc_ID: string;
+    location_loc_ID: string;
+    loc_of_source_loc_ID: string
 }
 
 const initialCustomerValues = {
@@ -77,11 +79,12 @@ const initialCustomerValues = {
     contactPerson: '',
     contactNumber: '',
     emailId: '',
-    locationOfSource: [] as string[],
+    locationOfSource: '',
     podRelevant: false,
     shipToParty: '',
     soldToParty: '',
     billToParty: '',
+
 };
 
 
@@ -95,7 +98,8 @@ const CustomerForm: React.FC = () => {
     const [showForm, setShowForm] = useState(false);
     const [updateRecord, setUpdateRecord] = useState(false);
     const [formInitialValues, setFormInitialValues] = useState(initialCustomerValues);
-    const [updateRecordData, setUpdateRecordData] = useState({});
+    // const [updateRecordData, setUpdateRecordData] = useState({});
+    const [updateRecordData, setUpdateRecordData] = useState<Customer | null>(null);
     const [updateRecordId, setUpdateRecordId] = useState(0)
     const [updatePartnerDetails, { isLoading: editCustomerLoading }] = useEditBusinessPartnerMutation();
     const [customerRegistration, { isLoading: postCustomerLoading }] = useCustomerRegistrationMutation();
@@ -191,7 +195,7 @@ const CustomerForm: React.FC = () => {
     return {
         customerId: rowData.customer_id || '',
         name: rowData.name || '',
-        locationId: rowData.loc_ID || '',
+        locationId: rowData.location_loc_ID || '',
         pincode: rowData.location_pincode || '',
         state: rowData.location_state || '',
         city: rowData.location_city || '',
@@ -200,7 +204,7 @@ const CustomerForm: React.FC = () => {
         contactPerson: rowData?.correspondence?.contact_person || '',
         contactNumber: rowData?.correspondence?.contact_number || '',
         emailId: rowData?.correspondence?.email || '',
-        locationOfSource: [rowData.loc_of_source],
+        locationOfSource: rowData.loc_of_source_loc_ID,
         podRelevant: rowData?.pod_relevant === 1,
         shipToParty: rowData?.partner_functions?.ship_to_party || '',
         soldToParty: rowData?.partner_functions?.sold_to_party || '',
@@ -258,7 +262,6 @@ const columns: GridColDef[] = [
         ),
     },
 ];
-
 
     const handleEdit = async (rowData: Customer) => {
         setShowForm(true)
@@ -320,14 +323,10 @@ const columns: GridColDef[] = [
                     }
                 ]
             }
-
-            // const locationOfSourceId = values?.locationOfSource ? values.locationOfSource: "";
-            // console.log("values?.locationOfSource: ", locationOfSourceId)
-// const locationArray =  values?.locationOfSource[0].split(", "); // Split by comma and space
-// const sourcelocationId = locationArray[locationArray.length - 1];
-// console.log("values?.locationOfSource: ", sourcelocationId)
+            console.log("values: ", values)
             const editBody = {
-                ...updateRecordData,
+                // ...updateRecordData,
+                customer_id: updateRecordData?.customer_id,
                 name: values?.name,
                 partner_type: "customer",
                 loc_ID: values?.locationId,
@@ -344,22 +343,23 @@ const columns: GridColDef[] = [
                     bill_to_party: values?.billToParty
                 }
             }
+            console.log("editBody: ", editBody)
             if (updateRecord) {
-                console.log("editBody: ", editBody)
-                // const response = await updatePartnerDetails({ body: editBody, partnerId: updateRecordId }).unwrap();
-                // if (response?.updated_record) {
-                //     setSnackbarMessage(`Customer ID ${response.updated_record} updated successfully!`);
-                //     resetForm();
-                //     setShowForm(false)
-                //     setUpdateRecord(false)
-                //     setFormInitialValues(initialCustomerValues)
-                //     setUpdateRecordId(0)
-                //     setUpdateRecordData({})
-                //     setSnackbarSeverity("success");
-                //     setSnackbarOpen(true);
-                //     setSearchKey('')
-                //     setSearchKeyDestination('')
-                // }
+
+                const response = await updatePartnerDetails({ body: editBody, partnerId: updateRecordId }).unwrap();
+                if (response?.updated_record) {
+                    setSnackbarMessage(`Customer ID ${response.updated_record} updated successfully!`);
+                    resetForm();
+                    setShowForm(false)
+                    setUpdateRecord(false)
+                    setFormInitialValues(initialCustomerValues)
+                    setUpdateRecordId(0)
+                    setUpdateRecordData(null)
+                    setSnackbarSeverity("success");
+                    setSnackbarOpen(true);
+                    setSearchKey('')
+                    setSearchKeyDestination('')
+                }
             } else {
                 const response = await customerRegistration(body).unwrap();
                 if (response?.created_records) {
@@ -368,7 +368,7 @@ const columns: GridColDef[] = [
                     setShowForm(false)
                     setUpdateRecord(false)
                     setUpdateRecordId(0)
-                    setUpdateRecordData({})
+                    setUpdateRecordData(null)
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
                     resetForm()
