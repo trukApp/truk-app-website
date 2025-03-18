@@ -43,12 +43,14 @@ import { Package } from '@/Components/MasterDataComponents/PackagingInfo';
 import { CustomButtonFilled } from '@/Components/ReusableComponents/ButtonsComponent';
 import { withAuthComponent } from '@/Components/WithAuthComponent';
 
+
 export interface PackagingType {
     pac_ID: string;
     location: string;
 
 }
 export interface Product {
+    locationId: string;
     weight_uom: string;
     productID: string;
     productName: string;
@@ -86,7 +88,7 @@ export interface Product {
     temp_controlled: boolean
     hazardous: boolean;
     product_name: string;
-    packagingType: PackagingType[];
+    packagingType: string;
     packing_label: boolean;
     special_instructions: string;
     tempControl: boolean;
@@ -162,14 +164,42 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
     const validationSchema = Yup.object({
         productName: Yup.string().required('Product name is required'),
         productDescription: Yup.string().required('Product Description is required'),
+        weightUoM: Yup.string().required('Weight is required'),
+        volumeUoM: Yup.string().required('Volume is required'),
         basicUoM: Yup.string().required('Basic Unit of Measure is required'),
         salesUoM: Yup.string().required('Sales Unit of Measure is required'),
+        locationId: Yup.string().required('Location id is required'),
         packagingType: Yup.string().required('packaging type is required'),
     });
 
+    const getLocationDetails = (loc_ID: string) => {
+            const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
+            if (!location) return "Location details not available";
+            const details = [
+                location.address_1 ,
+                location.city,
+                location.state,
+                location.country,
+                location.pincode,
+                location.loc_ID
+            ].filter(Boolean);
+    
+            return details.length > 0 ? details.join(", ") : "Location details not available";
+    };
+const getPackageDetails = (pack_ID: string) => {
+    const packageData = getAllPackages.find((pack: Package) => pack.pac_ID === pack_ID);
+    console.log("packageData : ", packageData)
+    return packageData 
+        ? `${packageData.packaging_type_name}, ${packageData.pac_ID}` 
+        : "NA";
+};
+
 
     const mapRowToInitialValues = (selectedProduct: Product) => {
-        setSearchKey(selectedProduct?.packagingType[0]?.location || '')
+        const locId = selectedProduct?.locationId ? selectedProduct?.locationId.split(", ").at(-1) ?? "" : "";
+        const packIdd = selectedProduct?.packagingType ? selectedProduct?.packagingType.split(", ").at(-1) ?? "" : "";
+        console.log('package det :' , selectedProduct )
+        setSearchKey(locId || '')
         const weightUnit = selectedProduct.weight.split(' ')
         const volumeUnit = selectedProduct.volume.split(' ')
         return (
@@ -185,9 +215,9 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                 expirationDate: selectedProduct.expiration || '',
                 bestBeforeDate: selectedProduct.best_before || '',
                 stackingFactor: selectedProduct?.stacking_factor || '',
-                documents: '',
-                locationId: selectedProduct?.packagingType[0]?.location || '',
-                packagingType: selectedProduct?.packagingType[0]?.pac_ID || '',
+                documents: selectedProduct.documents || '' ,
+                locationId: locId || '',
+                packagingType: packIdd || '',
                 generatePackagingLabel: selectedProduct?.packingLabel || false,
                 specialInstructions: selectedProduct?.specialInstructions || '',
                 fragileGoods: selectedProduct?.fragile_goods || false,
@@ -200,7 +230,6 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                 temperatureControl: selectedProduct?.tempControl || false,
             });
     }
-
 
     const handleEdit = async (rowData: Product) => {
         setShowForm(true)
@@ -238,16 +267,18 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
         { field: 'product_ID', headerName: 'Product ID', width: 150 },
         { field: 'productName', headerName: 'Product Name', width: 150 },
         { field: 'product_desc', headerName: 'Product Description', width: 200 },
-        { field: 'sales_uom', headerName: 'Sales UOM', width: 150 },
-        { field: 'basic_uom', headerName: 'Basic UOM', width: 150 },
+        // { field: 'sales_uom', headerName: 'Sales UOM', width: 150 },
+        // { field: 'basic_uom', headerName: 'Basic UOM', width: 150 },
         { field: 'weight', headerName: 'Weight', width: 150 },
         { field: 'volume', headerName: 'Volume', width: 150 },
-        { field: 'expiration', headerName: 'Expiration Date', width: 180 },
-        { field: 'best_before', headerName: 'Best Before Date', width: 180 },
+        { field: 'expiration', headerName: 'Expiration Date', width: 150 },
+        { field: 'best_before', headerName: 'Best Before Date', width: 150 },
+        { field: 'locationId', headerName: 'Location', width: 250 },
+        { field: 'packagingType', headerName: 'Packaging type', width: 250 },
         { field: 'hsn_code', headerName: 'HSN Code', width: 150 },
         { field: 'sku_num', headerName: 'SKU Number', width: 150 },
-        { field: 'fragile_goods', headerName: 'Fragile Goods', width: 180, valueFormatter: (params: GridCellParams) => params.value ? 'Yes' : 'No' },
-        { field: 'dangerous_goods', headerName: 'Dangerous Goods', width: 180, valueFormatter: (params: GridCellParams) => params.value ? 'Yes' : 'No' },
+        { field: 'fragile_goods', headerName: 'Fragile Goods', width: 150, valueFormatter: (params: GridCellParams) => params.value ? 'Yes' : 'No' },
+        { field: 'dangerous_goods', headerName: 'Dangerous Goods', width: 150, valueFormatter: (params: GridCellParams) => params.value ? 'Yes' : 'No' },
         {
             field: 'actions',
             headerName: 'Actions',
@@ -270,8 +301,6 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
             ),
         },
     ];
-
-
     const rows = allProductsData.map((product: Product) => ({
         id: product.prod_id,
         product_ID: product.product_ID,
@@ -288,8 +317,8 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
         dangerous_goods: product.dangerous_goods,
         documents: product.documents,
         stacking_factor: product.stacking_factor,
-        locationId: product.loc_ID,
-        packagingType: product.packaging_type,
+        locationId: getLocationDetails(product.loc_ID),
+        packagingType: getPackageDetails(product.packaging_type[0].pac_ID),
         specialInstructions: product.special_instructions,
         hazardousStorage: product.hazardous,
         tempControl: product.temp_controlled,
@@ -486,6 +515,8 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                                                 value={values.productName}
                                                 onChange={handleChange}
                                                 onBlur={handleBlur}
+                                                error={touched.productName && Boolean(errors.productName)}
+                                                helperText={touched.productName && errors.productName}
                                             />
                                         </Grid>
                                         <Grid item xs={12} sm={6} md={2.4} >
@@ -547,6 +578,8 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                                                 value={values.weightUoM}
                                                 onChange={handleChange}
                                                 onBlur={handleBlur}
+                                                error={touched.weightUoM && Boolean(errors.weightUoM)}
+                                                helperText={touched.weightUoM && errors.weightUoM}
                                             />
                                         </Grid>
                                         <Grid item xs={12} sm={6} md={2.4}   >
@@ -574,6 +607,8 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                                                 value={values.volumeUoM}
                                                 onChange={handleChange}
                                                 onBlur={handleBlur}
+                                                error={touched.volumeUoM && Boolean(errors.volumeUoM)}
+                                                helperText={touched.volumeUoM && errors.volumeUoM}
                                             />
                                         </Grid>
                                         <Grid item xs={12} sm={6} md={2.4}  >
@@ -732,7 +767,9 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
 
                                         <Grid item xs={12} sm={6} md={2.4}>
                                             <TextField
-                                                fullWidth
+                                                fullWidth 
+                                                error={touched.locationId && Boolean(errors.locationId)}
+                                                helperText={touched.locationId && errors.locationId}
                                                 name="locationId"
                                                 size="small"
                                                 label="Location ID"
@@ -789,7 +826,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                                                 )} </div>
                                         </Grid>
                                         <Grid item xs={12} sm={6} md={2.4}>
-                                            <FormControl fullWidth size="small" error={touched.locationId && Boolean(errors.locationId)}>
+                                            <FormControl fullWidth size="small" error={touched.packagingType && Boolean(errors.packagingType)}>
                                                 <InputLabel>Packaging Type</InputLabel>
                                                 <Select
                                                     label="Packaging Type"
@@ -797,6 +834,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                                                     value={values.packagingType}
                                                     onChange={(e) => setFieldValue('packagingType', e.target.value)}
                                                     onBlur={handleBlur}
+                                                    renderValue={(selected) => selected}
                                                 >
                                                     {isPackageLoading ? (
                                                         <MenuItem disabled>
@@ -810,14 +848,14 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                                                                     title={`${packages.packaging_type_name}, ${packages.pack_length}*${packages.pack_width}*${packages.pack_height}, ${packages.dimensions_uom}`}
                                                                     placement="right"
                                                                 >
-                                                                    <span style={{ flex: 1 }}>{packages.pac_ID}</span>
+                                                                    <span>{packages.packaging_type_name}, {packages.pack_length}*{packages.pack_width}*{packages.pack_height} {packages.dimensions_uom}, {packages.pac_ID} </span>
                                                                 </Tooltip>
                                                             </MenuItem>
                                                         ))
                                                     )}
                                                 </Select>
                                                 {touched.packagingType && errors.packagingType && (
-                                                    <FormHelperText>{errors.packagingType}</FormHelperText>
+                                                    <FormHelperText style={{color:'red'}}>{errors.packagingType}</FormHelperText>
                                                 )}
                                             </FormControl>
                                         </Grid>

@@ -1,17 +1,16 @@
-import React, { useState } from "react";
-import { Box, Collapse, IconButton, Paper, Typography, Grid, Button, useTheme, useMediaQuery, TextField, Modal, FormControlLabel, Checkbox, MenuItem, Backdrop, CircularProgress } from "@mui/material";
+import React, { useEffect, useRef, useState } from "react";
+import { Box, Collapse, IconButton, Paper, Typography, Grid, Button, useTheme, useMediaQuery, TextField, Modal, MenuItem, Backdrop, CircularProgress, List, ListItem, Tooltip } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { useRouter } from 'next/navigation';
-import { useEditAssignOrderOrderMutation, useGetAllDriversDataQuery, useGetAssignedOrderByIdQuery, useGetDeviceMasterQuery, useGetSingleVehicleMasterQuery, usePostAssignOrderMutation } from "@/api/apiSlice";
+import { useEditAssignOrderOrderMutation, useGetAllDriversDataQuery, useGetAllProductsQuery, useGetAssignedOrderByIdQuery, useGetDeviceMasterQuery, useGetFilteredDriversQuery, useGetLocationMasterQuery, usePostAssignOrderMutation } from "@/api/apiSlice";
 import SnackbarAlert from "../ReusableComponents/SnackbarAlerts";
 import { Driver } from "../BusinessPartnersForms/DriverForm";
 import moment from 'moment';
 import Image from "next/image";
-import { TruckDetails } from "@/app/vehicle/page";
-// import { useGetAllAssignedOrdersQuery } from "@/api/apiSlice";
 import AdditionalInformation from '@/Components/CreatePackageTabs/AddtionalInformation';
 import { DeviceInfoBE } from "../MasterDataComponents/DeviceMaster";
+import { Location } from "../MasterDataComponents/Locations";
 
 interface Allocation {
     vehicle_ID: string;
@@ -24,19 +23,16 @@ interface Allocation {
     leftoverWeight: number;
     packages: string[];
 }
-
 interface AllocationsProps {
     allocations: Allocation[];
     orderId: string;
     allocatedPackageDetails: []
 }
-
 interface Product {
     prod_ID: string;
     quantity: number;
     package_info: string
 }
-
 interface AdditionalInformation {
     reference_id: string;
     invoice: string;
@@ -68,34 +64,27 @@ interface PackageDetail {
     additional_info: AdditionalInformation;
     tax_info: TaxInformation;
 }
+export interface ProductDetails {
+    product_ID: string;
+    product_desc: string;
+    product_name: string;
+    weight: string;
+}
 
 
 const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocatedPackageDetails }) => {
+    const wrapperRef = useRef<HTMLDivElement>(null);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
-    // console.log('allocations :', allocations)
-    // console.log("allocatedPackageDetails: ", allocatedPackageDetails)
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
     const router = useRouter();
     const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({});
-    const [assignModal, setAssignModal] = useState(false);
-    const [selectedAllocation, setSelectedAllocation] = useState<Allocation | null>(null);
-    const [postAssignOrder, { isLoading: isAssigning }] = usePostAssignOrderMutation()
-    const [editAssignOrder, { isLoading: editAssignLoading }] = useEditAssignOrderOrderMutation()
     const { data, isLoading: driverLoading } = useGetAllDriversDataQuery({})
-    const { data: assignedOrder } = useGetAssignedOrderByIdQuery({ order_ID: orderId })
-    const { data: allDevices, isLoading: deviceLoading } = useGetDeviceMasterQuery({})
-    // console.log("order id assigned :", assignedOrder)
-
-
-
-    const driversData = data?.drivers.length > 0 ? data?.drivers : []
-    // const getAvailableDrivers = driversData.filter((eachDriver: Driver) => {
-    //     return eachDriver?.driver_availability === 1;
-    // });
-
+    const [searchKey, setSearchKey] = useState('');
+    const [showSuggestions, setShowSuggestions] = useState(false);
+       const driversData = data?.drivers.length > 0 ? data?.drivers : []
     const getAvailableDrivers = Array.isArray(driversData)
         ? driversData.reduce((acc: Driver[], eachDriver: Driver) => {
             if (eachDriver?.driver_availability === 1) {
@@ -104,44 +93,59 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
             return acc;
         }, [])
         : [];
+    const { data: filteredDrivers, isLoading: filteredDriversLoading} = useGetFilteredDriversQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
+    const displayDrivers = searchKey ? filteredDrivers?.results || [] : getAvailableDrivers;
+    console.log('display drivrs :', displayDrivers)
+    const [assignModal, setAssignModal] = useState(false);
+    const [selectedAllocation, setSelectedAllocation] = useState<Allocation | null>(null);
+    const [postAssignOrder, { isLoading: isAssigning }] = usePostAssignOrderMutation()
+    const [editAssignOrder, { isLoading: editAssignLoading }] = useEditAssignOrderOrderMutation()
+    const { data: assignedOrder } = useGetAssignedOrderByIdQuery({ order_ID: orderId })
+    const { data: allDevices, isLoading: deviceLoading } = useGetDeviceMasterQuery({})
+    const { data: productsData } = useGetAllProductsQuery({})
+    const allProductsData = productsData?.products || [];
+    const { data: locationsData  } = useGetLocationMasterQuery({});
+    const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
+    const getLocationDetails = (loc_ID: string) => {
+        const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
+        if (!location) return "Location details not available";
+        const details = [
+            location.address_1 ,
+            location.city,
+            location.state,
+            location.country,
+            location.pincode,
+            // location.loc_ID
+        ].filter(Boolean);
 
+        return details.length > 0 ? details.join(", ") : "Location details not available";
+    };
+
+    const getProductDetails = (productID: string) => {
+        const productInfo = allProductsData.find((product: ProductDetails) => product.product_ID === productID);
+        if (!productInfo) return "Package details not available";
+        const details = [
+            productInfo.product_name,
+            productInfo.product_ID,
+        ].filter(Boolean);
+        return details.length > 0 ? details.join("-") : "Product details not available";
+    };
+ 
     const devicesData = allDevices?.devices.length > 0 ? allDevices?.devices : []
     if (driverLoading) {
         console.log("driver loading")
     }
-    const { data: trucksData, isLoading: trucksLoading } = useGetSingleVehicleMasterQuery({});
-    if (trucksLoading) {
-        console.log("driver loading")
-    }
+    
 
-    // console.log("getAvailableDrivers: ", getAvailableDrivers);
-    const allTrucksData = trucksData?.data
-
-    // const getAllAvailableVehicles = allTrucksData?.filter((eachVehicle: TruckDetails) => {
-    //     return eachVehicle?.available === 1
-    // })
-
-    const getAllAvailableVehicles = Array.isArray(allTrucksData)
-        ? allTrucksData.reduce((acc: TruckDetails[], vehicle: TruckDetails) => {
-            if (vehicle?.available === 1) acc.push(vehicle);
-            return acc;
-        }, [])
-        : [];
-
-    // console.log("getAllAvailableVehicles: ", getAllAvailableVehicles)
     const [formData, setFormData] = useState({
         truckId: "",
         driverId: "",
         deviceId: "",
-        selfTransport: false
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
-
-    // const {data: assignedOrders} = useGetAllAssignedOrdersQuery({})
-    // console.log("assigned orders :", assignedOrders)
 
     const handleToggle = (vehicleId: string) => {
         setExpanded((prev) => ({ ...prev, [vehicleId]: !prev[vehicleId] }));
@@ -168,7 +172,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                             vehicle_ID: selectedAllocation?.vehicle_ID
                         },
                     ],
-                    self_transport: formData.selfTransport,
+                    self_transport: '',
                     pod: {},
                     pod_doc: ""
                 };
@@ -185,7 +189,6 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                     truckId: "",
                     driverId: "",
                     deviceId: "",
-                    selfTransport: false
                 })
             } else {
                 const newVehicle = {
@@ -204,7 +207,6 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                     truckId: "",
                     driverId: "",
                     deviceId: "",
-                    selfTransport: false
                 })
             }
 
@@ -213,6 +215,17 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
         }
 
     }
+        useEffect(() => {
+            function handleClickOutside(event: MouseEvent) {
+                if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+                    setShowSuggestions(false);
+                }
+            }
+            document.addEventListener("mousedown", handleClickOutside);
+            return () => {
+                document.removeEventListener("mousedown", handleClickOutside);
+            };
+        }, []);
 
 
     return (
@@ -237,7 +250,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
             </Typography>
             <Modal open={assignModal} onClose={() => {
                 setAssignModal(false)
-                setFormData({ truckId: "", driverId: "", deviceId: "", selfTransport: false });
+                setFormData({ truckId: "", driverId: "", deviceId: "" });
                 setSelectedAllocation(null);
             }}>
                 <Box
@@ -255,7 +268,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                     onClick={(e) => e.stopPropagation()}
                 >
                     <Typography variant="h6" gutterBottom>
-                        Assign Order ({orderId}) to {selectedAllocation?.vehicle_ID}
+                        Assign Order ({orderId}) to self transport
                     </Typography>
 
                     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -266,15 +279,10 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                             onChange={handleChange}
                             variant="outlined"
                             size="small"
-                            fullWidth select
+                            fullWidth
                         >
-                            {getAllAvailableVehicles?.map((truck: TruckDetails) => (
-                                <MenuItem key={truck?.act_truk_ID} value={truck.act_truk_ID}>
-                                    {truck.act_truk_ID}
-                                </MenuItem>
-                            ))}
                         </TextField>
-                        <TextField
+                        {/* <TextField
                             label="Driver ID"
                             name="driverId"
                             select
@@ -289,7 +297,74 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                                     {driver.dri_ID}
                                 </MenuItem>
                             ))}
-                        </TextField>
+                        </TextField> */}
+                        <Grid item xs={12} sm={6} md={2.4}>
+                            <TextField
+                                fullWidth
+                                name="driverId"
+                                size="small"
+                                label="Search drivers... "
+                                onFocus={() => {
+                                if (!searchKey) {
+                                    setSearchKey(formData.driverId || "");
+                                    setShowSuggestions(true);
+                                }
+                                }}
+                                onChange={(e) => {
+                                setSearchKey(e.target.value);
+                                setShowSuggestions(true);
+                                }}
+                                value={searchKey}
+                                InputProps={{
+                                endAdornment: filteredDriversLoading ? <CircularProgress size={20} /> : null,
+                                }}
+                            />
+                            <div ref={wrapperRef} style={{ position: "relative" }}>
+                                {showSuggestions && (
+                                <Paper
+                                    style={{
+                                    maxHeight: 200,
+                                    overflowY: "auto",
+                                    position: "absolute",
+                                    zIndex: 10,
+                                    width: "100%",
+                                    }}
+                                >
+                                    <List>
+                                    {filteredDriversLoading ? (
+                                        <ListItem>
+                                        <CircularProgress size={20} />
+                                        </ListItem>
+                                    ) : displayDrivers.length === 0   ? (
+                                        <ListItem component="li">
+                                        <Typography variant="body2" sx={{ color: "gray", textAlign: "center", width: "100%" }}>
+                                            No results found
+                                        </Typography>
+                                        </ListItem>
+                                    ) : (
+                                        displayDrivers.map((driver: Driver) => (
+                                        <ListItem
+                                            key={driver.dri_ID}
+                                            component="li"
+                                            onClick={() => {
+                                            setShowSuggestions(false);
+                                            setSearchKey(driver.dri_ID);
+                                            }}
+                                            sx={{ cursor: "pointer" }}
+                                        >
+                                            <Tooltip title={`${driver.driver_name}, ${driver.dri_ID}`} placement="right">
+                                            <span style={{ fontSize: "13px" }}>
+                                                {driver.driver_name}, {driver?.driver_correspondence?.phone}
+                                            </span>
+                                            </Tooltip>
+                                        </ListItem>
+                                        ))
+                                    )}
+                                    </List>
+                                </Paper>
+                                )}
+                            </div>
+                        </Grid>
                         <TextField
                             label="Device ID"
                             name="deviceId"
@@ -306,7 +381,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                                 </MenuItem>
                             ))}
                         </TextField>
-                        <FormControlLabel
+                        {/* <FormControlLabel
                             control={
                                 <Checkbox
                                     checked={formData.selfTransport}
@@ -316,7 +391,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                                 />
                             }
                             label="Self Transport"
-                        />
+                        /> */}
                         <Button variant="contained" color="primary" onClick={handleSubmit}>
                             Submit
                         </Button>
@@ -329,7 +404,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                     <Grid container alignItems="center" justifyContent="space-between">
                         <Grid item>
                             <Typography variant="subtitle1" color="#83214F" style={{ fontWeight: 'bold' }}>
-                                Vehicle: {allocation.vehicle_ID} | Cost: ₹{allocation.cost}
+                                Vehicle: {allocation.vehicle_ID} | Cost: ₹{allocation.cost.toFixed(2)}
                             </Typography>
                         </Grid>
                         <Grid item>
@@ -355,29 +430,28 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
 
                             <Grid container spacing={2}>
                                 <Grid item xs={12} md={4}>
-                                    <Typography variant="body2">
-                                        <strong>Total Weight Capacity:</strong> {allocation.totalWeightCapacity}
+                                    <Typography variant="body2" >
+                                        Total Weight Capacity: <strong> {allocation.totalWeightCapacity.toFixed(2)}</strong>
                                     </Typography>
                                     <Typography variant="body2">
-                                        <strong>Total Volume Capacity:</strong> {allocation.totalVolumeCapacity}
+                                        Total Volume Capacity: <strong>  {allocation.totalVolumeCapacity.toFixed(2)}</strong>
+                                    </Typography>
+                                </Grid>
+                                <Grid item xs={12} md={4}>
+                                    <Typography variant="body2">
+                                        Occupied Weight:<strong>{allocation.occupiedWeight.toFixed(2)}</strong>
+                                    </Typography>
+                                    <Typography variant="body2">
+                                        Occupied Volume: <strong>{allocation.occupiedVolume ? (allocation?.occupiedVolume).toFixed(2) : "0.00"}</strong>
                                     </Typography>
                                 </Grid>
 
                                 <Grid item xs={12} md={4}>
                                     <Typography variant="body2">
-                                        <strong>Occupied Weight:</strong> {allocation.occupiedWeight}
+                                        Leftover Weight: <strong> {allocation.leftoverWeight.toFixed(2)}</strong>
                                     </Typography>
                                     <Typography variant="body2">
-                                        <strong>Occupied Volume:</strong> {allocation.occupiedVolume}
-                                    </Typography>
-                                </Grid>
-
-                                <Grid item xs={12} md={4}>
-                                    <Typography variant="body2">
-                                        <strong>Leftover Weight:</strong> {allocation.leftoverWeight}
-                                    </Typography>
-                                    <Typography variant="body2">
-                                        <strong>Leftover Volume:</strong> {allocation.leftoverVolume}
+                                        Leftover Volume: <strong> {allocation.leftoverVolume.toFixed(2)}</strong> 
                                     </Typography>
                                 </Grid>
                             </Grid>
@@ -387,12 +461,11 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                                     <strong>Packages:</strong> {allocation.packages.join(", ")}
                                 </Typography>
                             </Box>
-
                             {allocatedPackageDetails
                                 .filter((pkg: PackageDetail) => allocation.packages.includes(pkg.pack_ID))
                                 .map((pkg: PackageDetail) => ( 
                                     <Box key={pkg.pac_id} >
-                                    <Grid key={pkg.pac_id} sx={{ mt: {xs:1 , md:2}, p: 2, backgroundColor: '#e9e7e7', borderRadius: 1}}>
+                                    <Grid key={pkg.pac_id} sx={{ mt: {xs:1 , md:2}, p: 2, backgroundColor: '#e9e7e7', borderRadius: 1 , }}>
                                         <Typography variant="subtitle2" gutterBottom>
                                             <strong>Package ID: {pkg.pack_ID}</strong>
                                         </Typography>
@@ -401,75 +474,73 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                                             <strong>Status:</strong> {pkg.package_status}
                                             </Typography>
                                         <Grid sx={{ overflowX: "auto", whiteSpace: "nowrap" }}>
-                                        <Grid container spacing={2} sx={{minWidth:'1000px'}}  item >
+                                        <Grid container spacing={2} sx={{minWidth:'1000px',display:'flex',justifyContent:'space-between'}}  item >
                                             <Grid item >
-                                                <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '16px', marginTop: '15px', marginBottom: '5px' }}>Billing Details</Typography>
+                                                <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '15px', marginTop: '15px', marginBottom: '5px' }}>Billing Details</Typography>
                                                 <Grid  >
                                                     <Typography variant="body2">
-                                                        <strong>Ship From:</strong> {pkg.ship_from}
+                                                        Ship From: <strong> {getLocationDetails(pkg.ship_from)}</strong>
                                                     </Typography>
                                                     <Typography variant="body2">
-                                                        <strong>Ship To:</strong> {pkg.ship_to}
+                                                        Ship To: <strong>  {getLocationDetails(pkg.ship_to)}</strong>
                                                     </Typography>
                                                     <Typography variant="body2">
-                                                        <strong>Bill To:</strong> {pkg.bill_to}
+                                                        Bill To: <strong> {getLocationDetails(pkg.bill_to)}</strong> 
                                                     </Typography>
                                                 </Grid>
                                             </Grid>
-
                                             <Grid item >
-                                                <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '16px', marginTop: '15px', marginBottom: '5px' }}>Date & Timings</Typography>
+                                                <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '15px', marginTop: '15px', marginBottom: '5px' }}>Date & Timings</Typography>
                                                 <Grid >
                                                     <Typography variant="body2">
-                                                        <strong>Pickup Date:</strong> {moment(pkg.pickup_date_time).format("DD/MM/YYYY HH:mm")}
+                                                        Pickup Date:<strong>  {moment(pkg.pickup_date_time).format("DD MMM YYYY, hh:mm A")}</strong>
                                                     </Typography>
                                                     <Typography variant="body2">
-                                                        <strong>Dropoff Date:</strong> {moment(pkg.dropoff_date_time).format("DD/MM/YYYY HH:mm")}
+                                                        Dropoff Date:<strong>  {moment(pkg.dropoff_date_time).format("DD MMM YYYY, hh:mm A")}</strong>
                                                     </Typography>
                                                 </Grid>
                                             </Grid>
-
                                             <Grid item >
-                                                <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '16px', marginTop: '15px', marginBottom: '5px' }}>Additional Information</Typography>
+                                                <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '15px', marginTop: '15px', marginBottom: '5px' }}>Additional Info</Typography>
                                                 <Grid >
                                                     {pkg.additional_info?.reference_id && (
                                                         <Typography variant="body2">
-                                                            <strong>Refernce ID:</strong> {pkg.additional_info?.reference_id}
+                                                            Refernce ID: <strong>  {pkg.additional_info?.reference_id}</strong>
                                                         </Typography>
                                                     )}
 
                                                     {pkg.additional_info?.invoice && (
                                                         <Typography variant="body2">
-                                                            <strong>Invoice:</strong> {pkg.additional_info?.invoice}
+                                                            Invoice:<strong>  {pkg.additional_info?.invoice}</strong>
                                                         </Typography>
                                                     )}
 
                                                     {pkg.additional_info?.department && (
                                                         <Typography variant="body2">
-                                                            <strong>Department:</strong> {pkg.additional_info?.department}
+                                                            Department:<strong>  {pkg.additional_info?.department}</strong>
                                                         </Typography>
                                                     )}
 
                                                     {pkg.additional_info?.sales_order_number && (
                                                         <Typography variant="body2">
-                                                            <strong>Sales order number:</strong> {pkg.additional_info?.sales_order_number}
+                                                            Sales order number: <strong>  {pkg.additional_info?.sales_order_number}</strong>
                                                         </Typography>
                                                     )}
 
                                                     {pkg.additional_info?.po_number && (
                                                         <Typography variant="body2">
-                                                            <strong>Po number:</strong> {pkg.additional_info?.po_number}
+                                                            Po number: <strong>  {pkg.additional_info?.po_number}</strong>
                                                         </Typography>
                                                     )
                                                     }
-                                                    {pkg.additional_info?.attachment && (
+                                                    {pkg?.additional_info?.attachment && (
                                                         <div style={{ display: "flex" }}>
                                                             <Typography variant="body2" style={{ fontWeight: 'bold' }}>
                                                                 Attachment:
                                                             </Typography>
                                                             <div style={{ position: 'relative', width: '50px', height: '45px', marginTop: '5px' }}>
                                                                 <Image
-                                                                    src={pkg.additional_info.attachment}
+                                                                    src={pkg?.additional_info?.attachment}
                                                                     alt="Attachment"
                                                                     fill
                                                                     sizes="(max-width: 768px) 100vw, 300px"
@@ -484,53 +555,53 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                                             </Grid>
 
                                             <Grid item >
-                                                <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '16px', marginTop: '15px', marginBottom: '5px' }}>Tax Information</Typography>
+                                                <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '15px', marginTop: '15px', marginBottom: '5px' }}>Tax Info</Typography>
                                                 <Grid >
                                                     {pkg.tax_info?.sender_gst && (
                                                         <Typography variant="body2">
-                                                            <strong>GSTN of sender:</strong> {pkg.tax_info?.sender_gst}
+                                                            GSTN of sender:<strong>  {pkg.tax_info?.sender_gst}</strong>
                                                         </Typography>
                                                     )}
 
                                                     {pkg.tax_info?.receiver_gst && (
                                                         <Typography variant="body2">
-                                                            <strong>GSTN of receiver:</strong> {pkg.tax_info?.receiver_gst}
+                                                            GSTN of receiver: <strong>  {pkg.tax_info?.receiver_gst}</strong>
                                                         </Typography>
                                                     )}
 
                                                     {pkg.tax_info?.carrier_gst && (
                                                         <Typography variant="body2">
-                                                            <strong>GSTN of carrier:</strong> {pkg.tax_info?.carrier_gst}
+                                                            GSTN of carrier: <strong>  {pkg.tax_info?.carrier_gst}</strong>
                                                         </Typography>
                                                     )}
                                                     {pkg.tax_info?.self_transport && (
                                                         <Typography variant="body2">
-                                                            <strong>Is self transport:</strong> {pkg.tax_info?.self_transport}
+                                                            Is self transport: <strong>  {pkg.tax_info?.self_transport}</strong>
                                                         </Typography>
                                                     )}
                                                     {pkg.tax_info?.tax_rate && (
                                                         <Typography variant="body2">
-                                                            <strong>Tax rate:</strong> {pkg.tax_info?.tax_rate}
+                                                            Tax rate: <strong>  {pkg.tax_info?.tax_rate}</strong>
                                                         </Typography>
                                                     )}
 
                                                     {pkg.return_label && (
                                                         <Typography variant="body2">
-                                                            <strong>Return Label:</strong> {pkg.return_label ? "Yes" : "No"}
+                                                            Return Label:<strong>  {pkg.return_label ? "Yes" : "No"}</strong>
                                                         </Typography>
                                                     )}
 
                                                 </Grid>
                                             </Grid>
                                             <Grid item >
-                                                <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '16px', marginTop: '15px', marginBottom: '5px' }}>Product Details</Typography>
+                                                <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '15px', marginTop: '15px', marginBottom: '5px' }}>Product Details</Typography>
                                                 <Box sx={{ mt: 1 }}>
                                                     <Typography variant="body2" sx={{ fontWeight: "bold" }}>
                                                         Products:
                                                     </Typography>
                                                     {pkg.product_ID.map((prod: Product, index: number) => (
                                                         <Typography key={index} variant="body2" sx={{ ml: 2 }}>
-                                                            - {prod.prod_ID} (Qty: {prod.quantity}) {prod.package_info}
+                                                            - {getProductDetails(prod.prod_ID)} (Qty: {prod.quantity})
                                                         </Typography>
                                                     ))}
                                                 </Box>

@@ -132,6 +132,15 @@ export const apiSlice = createApi({
       invalidatesTags: [{ type: "DRIVERS", id: "LIST" }],
     }),
 
+    getFilteredDrivers: builder.query({
+      query: (searchKey) => ({
+        url: `driver/search-drivers`,
+        method: "GET",
+        params: { searchKey },
+      }),
+      providesTags: [{ type: "DRIVERS", id: "SEARCH" }],
+    }),
+
     editDriver: builder.mutation({
       query: ({ body, driverId }) => ({
         url: `driver/edit-driver?driver_id=${driverId}`,
@@ -657,6 +666,7 @@ export const {
   useGetAllCustomersDataQuery,
   useGetAllVendorsDataQuery,
   useGetAllDriversDataQuery,
+  useGetFilteredDriversQuery,
   useEditBusinessPartnerMutation,
   useDeleteBusinessPartnerMutation,
   useEditDriverMutation,

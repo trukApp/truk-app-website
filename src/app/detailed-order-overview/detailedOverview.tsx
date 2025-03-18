@@ -4,6 +4,7 @@ import { useGetOrderByIdQuery } from "@/api/apiSlice";
 import { Backdrop, CircularProgress, Grid, Paper, Typography, Box } from "@mui/material";
 import Allocations from "@/Components/OrderOverViewAllocations/Allocations";
 import { useSearchParams } from 'next/navigation';
+import moment from "moment";
 
 const OrderDetailedOverview: React.FC = () => {
     const searchParams = useSearchParams();
@@ -32,10 +33,10 @@ const OrderDetailedOverview: React.FC = () => {
                             <Typography variant="body1" sx={{fontSize:{xs:'15px', md:'17px'}}}>Scenario:  <strong>{orderData.scenario_label}</strong> </Typography>
                         </Grid>
                         <Grid item xs={12} sm={6}>
-                            <Typography variant="body1" sx={{fontSize:{xs:'15px', md:'17px'}}}>Total Cost: <strong>₹{orderData.total_cost}</strong> </Typography>
+                            <Typography variant="body1" sx={{ fontSize: { xs: '15px', md: '17px' } }}>Total Cost: <strong>₹{parseFloat(orderData.total_cost).toFixed(2)}</strong></Typography>
                         </Grid>
                         <Grid item xs={12} sm={6}>
-                            <Typography variant="body1" sx={{fontSize:{xs:'15px', md:'17px'}}}>Created at:  <strong>{new Date(orderData.created_at).toLocaleString()}</strong></Typography>
+                            <Typography variant="body1" sx={{ fontSize: { xs: '15px', md: '17px' } }}>Created at: <strong>{moment(orderData.created_at).format("DD MMM YYYY, hh:mm A")}</strong></Typography>
                         </Grid>
                     </Grid>
                 </Paper>
