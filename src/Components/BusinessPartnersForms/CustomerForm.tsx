@@ -165,7 +165,22 @@ const CustomerForm: React.FC = () => {
         console.log("getLocationsError: ", getLocationsError)
     }
     const customersData = data?.partners.length > 0 ? data?.partners : []
+    console.log("all customers :", customersData)
+    const getCustomerDetails = (customer_id: string) => {
+        console.log('customer id :', customer_id)
+        const customer = customersData.find((customer: Customer) => customer.customer_id === customer_id);
+        if (!location) return "Customer details not available";
+        const details = [
+            customer.name,
+            customer.location_city,
+            customer.location_state,
+            customer.location_country,
+            customer.location_pincode,
+            customer.customer_id
+        ].filter(Boolean);
 
+        return details.length > 0 ? details.join(", ") : "Customer details not available";
+    };
 
     if (error) {
         console.error("getting error while fetching the customers data:", error);
@@ -192,60 +207,6 @@ const CustomerForm: React.FC = () => {
         billToParty: rowData?.partner_functions?.bill_to_party || '',
     });
 
-
-    // const rows = customersData.map((item: Customer) => ({
-    //     id: item.partner_id,
-    //     ...item,
-    //     loc_of_source: getLocationDetails(item?.loc_of_source),
-    //     loc_ID: getLocationDetails(item?.loc_ID)
-    // }));
-
-    // const columns: GridColDef[] = [
-    //     { field: 'customer_id', headerName: 'Customer ID', width: 150 },
-    //     { field: 'name', headerName: 'Name', width: 200 },
-    //     // { field: 'loc_ID', headerName: 'Customer Location ID', width: 150 },
-    //     {
-    //         field: "loc_ID",
-    //         headerName: "Custmer Location ID",
-    //         width: 250,
-    //     },
-    //     { field: 'location_pincode', headerName: 'Customer Pincode', width: 100 },
-    //     { field: 'location_city', headerName: 'Customer City', width: 150 },
-    //     { field: 'location_state', headerName: 'Customer State', width: 150 },
-    //     { field: 'location_country', headerName: 'Customer Country', width: 150 },
-    //     {
-    //         field: "loc_of_source",
-    //         headerName: "Source Location ID",
-    //         width: 150,
-    //         renderCell: (params) => (
-    //             <Tooltip title={getLocationDetails(params.value)} arrow>
-    //                 <span>{params.value}</span>
-    //             </Tooltip>
-    //         ),
-    //     },
-    //     {
-    //         field: 'actions',
-    //         headerName: 'Actions',
-    //         width: 150,
-    //         renderCell: (params) => (
-    //             <>
-    //                 <IconButton
-    //                     color="primary"
-    //                     onClick={() => handleEdit(params.row)}
-    //                 >
-    //                     <EditIcon />
-    //                 </IconButton>
-    //                 <IconButton
-    //                     color="secondary"
-    //                     onClick={() => handleDelete(params.row)}
-    //                 >
-    //                     <DeleteIcon />
-    //                 </IconButton>
-    //             </>
-    //         ),
-    //     },
-    // ];
-
     const rows = customersData.map((item: Customer) => {
         console.log('item', item);
 
@@ -257,9 +218,9 @@ const CustomerForm: React.FC = () => {
             contact_person: item.correspondence?.contact_person || "",
             contact_number: item.correspondence?.contact_number || "",
             email: item.correspondence?.email || "",
-            bill_to_party: item.partner_functions?.bill_to_party || "",
-            ship_to_party: item.partner_functions?.ship_to_party || "",
-            sold_to_party: item.partner_functions?.sold_to_party || "",
+            bill_to_party: getCustomerDetails(item.partner_functions?.bill_to_party) || "",
+            ship_to_party: getCustomerDetails(item.partner_functions?.ship_to_party) || "",
+            sold_to_party: getCustomerDetails(item.partner_functions?.sold_to_party) || "",
         };
     });
 
