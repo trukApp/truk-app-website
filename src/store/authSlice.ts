@@ -5,18 +5,23 @@ import { FormValues } from "@/Components/CreatePackageTabs/PickUpAndDropOffDetai
 import { Truck } from "@/Components/CreateOrderTables/TrucksTable";
 import { Package } from "@/Components/CreateOrderTables/PackagesTable";
 
-export interface ISelectedRoute {
-  vehicle: string;
-  route: {
-    start: any;
-    end: any;
-    distance: string;
-    duration: string;
-    loadAfterStop: number;
-  };
-  routeIndex: number | null;
+export interface Address {
+  address: string;
+  latitude: number;
+  longitude: number;
 }
-
+export interface Route {
+  distance: string;
+  duration: string;
+  start: Address;
+  end: Address;
+  loadAfterStop: number;
+}
+export interface ISelectedRoute {
+  route: Route;
+  routeIndex: number | null;
+  vehicle: string;
+}
 export interface IShipFrom {
   addressLine1: string;
   addressLine2: string;

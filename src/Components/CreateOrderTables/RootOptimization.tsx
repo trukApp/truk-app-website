@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { GoogleMap, useLoadScript, Marker, InfoWindow, DirectionsRenderer } from '@react-google-maps/api';
-import { MenuItem, Select, FormControl, InputLabel, Box } from '@mui/material';
+import { MenuItem, Select, FormControl, InputLabel, Box, Typography } from '@mui/material';
 import { useDispatch, useSelector } from "react-redux";
 import { setSelectedRoutes } from '@/store/authSlice';
 import { RootState } from '@/store';
+import Image from 'next/image';
 
 const mapsKey: string = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? '';
 
@@ -60,15 +61,16 @@ interface RootOptimizationProps {
 const routeColors = ['#FF0000', '#0000FF', '#0096FF', '#00FF00', '#FF00FF', '#FFA500'];
 
 const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization }) => {
+    console.log('rootOptimization', rootOptimization);
     const dispatch = useDispatch();
-    const selectedRoutes = useSelector((state: RootState) => state.auth.selectedRoutes);
-    console.log('selectedRoutesFromRedux: ', selectedRoutes);
     const { isLoaded } = useLoadScript({ googleMapsApiKey: mapsKey });
+    const selectedRoutes = useSelector((state: RootState) => state.auth.selectedRoutes);
+
     const [activeMarker, setActiveMarker] = useState<number | null>(null);
     const [directionsResults, setDirectionsResults] = useState<google.maps.DirectionsResult[]>([]);
     const [selectedTransport, setSelectedTransport] = useState('');
-    const [transportOptions, setTransportOptions] = useState<string[]>([]);
-    const [selectedRoutesData, setSelectedRoutesData] = useState<{ vehicle: string, route: any, routeIndex: number | null }[]>([]);
+    // const [transportOptions, setTransportOptions] = useState<string[]>([]);
+    const [selectedRoutesData, setSelectedRoutesData] = useState<{ vehicle: string, route: Route, routeIndex: number | null }[]>([]);
 
     useEffect(() => {
         if (selectedRoutes && selectedRoutes.length > 0) {
@@ -86,7 +88,7 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
         if (rootOptimization?.length > 0) {
             const transports = rootOptimization.map((allocation) => allocation.vehicle_ID)
                 .filter((t): t is string => t !== undefined);
-            setTransportOptions(transports);
+            // setTransportOptions(transports);
             setSelectedTransport(transports[0] ?? '');
         }
     }, [rootOptimization]);
@@ -151,6 +153,7 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
                             origin: { lat: route.start.latitude, lng: route.start.longitude },
                             destination: { lat: route.end.latitude, lng: route.end.longitude },
                             travelMode: google.maps.TravelMode.DRIVING,
+                            // provideRouteAlternatives: true,
                         },
                         (result, status) => {
                             if (status === google.maps.DirectionsStatus.OK && result) {
@@ -180,95 +183,130 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
 
     if (!isLoaded) return <p>Loading Maps...</p>;
 
-    // const handleRouteSelection = (vehicleID: string, routeIndex: number | null) => {
-    //     const vehicle = rootOptimization?.find(v => v.vehicle_ID === vehicleID);
-    //     const selectedRoute = vehicle?.route?.[routeIndex ?? 0];
-
-    //     if (selectedRoute) {
-    //         setSelectedRoutesData(prevRoutes => {
-    //             const updatedRoutes = prevRoutes?.filter(r => r.vehicle !== vehicleID);
-    //             return [...updatedRoutes, { vehicle: vehicleID, route: selectedRoute, routeIndex }];
-    //         });
-    //     }
-    // };
     const handleRouteSelection = (vehicleID: string, routeIndex: number | null) => {
         const vehicle = rootOptimization?.find(v => v.vehicle_ID === vehicleID);
-        const selectedRoute = vehicle?.route?.[routeIndex ?? 0];
 
-        if (selectedRoute) {
+        if (routeIndex === null) {
             setSelectedRoutesData(prevRoutes => {
                 const updatedRoutes = prevRoutes?.filter(r => r.vehicle !== vehicleID);
-                const newRoute = { vehicle: vehicleID, route: selectedRoute, routeIndex };
-                dispatch(setSelectedRoutes([...updatedRoutes, newRoute]));
-                return [...updatedRoutes, newRoute];
+                dispatch(setSelectedRoutes(updatedRoutes));
+                return updatedRoutes;
             });
+        } else {
+            const selectedRoute = vehicle?.route?.[routeIndex];
+            if (selectedRoute) {
+                setSelectedRoutesData(prevRoutes => {
+                    const updatedRoutes = prevRoutes?.filter(r => r.vehicle !== vehicleID);
+                    const newRoute = { vehicle: vehicleID, route: selectedRoute, routeIndex };
+                    dispatch(setSelectedRoutes([...updatedRoutes, newRoute]));
+                    return [...updatedRoutes, newRoute];
+                });
+            }
         }
     };
+
     const handleVehicleSelection = (vehicleID: string) => {
         setSelectedTransport(vehicleID);
     };
 
     const currentSelectedRouteIndex = selectedRoutesData?.find(r => r.vehicle === selectedTransport)?.routeIndex ?? null;
-    console.log('selected Routes:', selectedRoutesData);
     return (
         <div style={{ width: '100%' }}>
-            {/* <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '1rem' }}> */}
-            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, flexWrap: 'wrap', margin: '1rem', width: '100%' }}>
-                <FormControl sx={{ minWidth: 250 }} size="small">
-                    <InputLabel>Vehicles</InputLabel>
-                    <Select
-                        value={selectedTransport}
-                        onChange={(e) => handleVehicleSelection(e.target.value)}
-                        label="Transport"
-                    >
-                        {transportOptions.map((option, index) => (
-                            <MenuItem key={index} value={option}>
-                                {option}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-
-                <FormControl sx={{ minWidth: 250 }} size="small">
-                    <InputLabel>Select Route</InputLabel>
-                    <Select
-                        value={currentSelectedRouteIndex !== null ? currentSelectedRouteIndex.toString() : 'all'}
-                        label="Select Route"
-                        onChange={(e) => handleRouteSelection(selectedTransport, e.target.value === 'all' ? null : Number(e.target.value))}
-                        disabled={!selectedTransport}
-                    >
-                        <MenuItem value="all">All Routes</MenuItem>
-                        {directionsResults.map((result, idx) => {
-                            const route = result.routes[0];
-                            const leg = route.legs[0];
-                            return (
-                                <MenuItem key={idx} value={idx} style={{ color: 'blue' }}>
-                                    Route {idx + 1}: {leg.distance?.text} ({leg.duration?.text})
-                                </MenuItem>
-                            );
-                        })}
-                    </Select>
-                </FormControl>
-                <div
-                    style={{
-                        padding: '1rem',
-                        border: '1px solid #ccc',
-                        borderRadius: '8px',
+            {rootOptimization.map((vehicle, vehicleIndex) => (
+                <Box
+                    key={vehicleIndex}
+                    sx={{
+                        display: 'flex',
+                        flexDirection: { xs: 'column', sm: 'row' },
+                        alignItems: 'center',
+                        gap: 2,
                         marginBottom: '1rem',
-                        gap: 1,
                     }}
                 >
-                    <p style={{ display: 'flex', alignItems: 'center', flexDirection: 'row' }}>
-                        <img src="https://maps.google.com/mapfiles/ms/icons/red-dot.png" alt="Start" width="25" />
-                        &nbsp; Start Location
-                    </p>
-                    <p style={{ display: 'flex', alignItems: 'center', flexDirection: 'row' }}>
-                        <img src="https://maps.google.com/mapfiles/ms/icons/green-dot.png" alt="End" width="25" />
-                        &nbsp; End Location
-                    </p>
-                </div>
+                    <Box
+                        onClick={() => handleVehicleSelection(vehicle.vehicle_ID)}
+                        sx={{
+                            padding: '1rem',
+                            border: '1px solid',
+                            borderColor: selectedTransport === vehicle.vehicle_ID ? '#83214F' : '#ccc',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            backgroundColor: selectedTransport === vehicle.vehicle_ID ? '#83214F' : 'transparent',
+                            minWidth: '150px',
+                            textAlign: 'center',
+                            color: selectedTransport === vehicle.vehicle_ID ? '#fff' : '#000',
+                            width: { xs: '100%', sm: 'auto' },
+                        }}
+                    >
+                        {vehicle.vehicle_ID}
+                    </Box>
+
+                    <FormControl
+                        sx={{
+                            minWidth: 250,
+                            width: { xs: '100%', sm: 'auto' },
+                        }}
+                        size="medium"
+                        disabled={selectedTransport !== vehicle.vehicle_ID}
+                    >
+                        <InputLabel>Select Route</InputLabel>
+                        <Select
+                            value={selectedRoutesData.find(r => r.vehicle === vehicle.vehicle_ID)?.routeIndex?.toString() ?? 'all'}
+                            label="Select Route"
+                            onChange={(e) =>
+                                handleRouteSelection(
+                                    vehicle.vehicle_ID,
+                                    e.target.value === 'all' ? null : Number(e.target.value)
+                                )
+                            }
+                        >
+                            <MenuItem value="all">All Routes</MenuItem>
+                            {vehicle.route.map((route, idx) => (
+                                <MenuItem
+                                    key={idx}
+                                    value={idx}
+                                    style={{
+                                        color: selectedTransport === vehicle.vehicle_ID ? 'blue' : '#999',
+                                    }}
+                                >
+                                    Route {idx + 1}: {route.distance} ({route.duration})
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                </Box>
+            ))}
+            <Box
+                sx={{
+                    padding: '1rem',
+                    border: '1px solid #ccc',
+                    borderRadius: '8px',
+                    marginBottom: '1rem',
+                    width: { xs: '100%', sm: '60%', md: '30%' },
+                }}
+            >
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Image
+                        src="https://maps.google.com/mapfiles/ms/icons/red-dot.png"
+                        alt="Start"
+                        width={25}
+                        height={25}
+                        unoptimized
+                    />
+                    <Typography sx={{ ml: 1 }}>Start Location</Typography>
+                </Box>
+
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Image
+                        src="https://maps.google.com/mapfiles/ms/icons/green-dot.png"
+                        alt="End"
+                        width={25}
+                        height={25}
+                        unoptimized
+                    />
+                    <Typography sx={{ ml: 1 }}>End Location</Typography>
+                </Box>
             </Box>
-            {/* </div> */}
 
             <GoogleMap
                 onClick={() => setActiveMarker(null)}
@@ -277,10 +315,10 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
                 zoom={5}
             >
                 {startMarkers.map(({ id, position }) => {
-                    const endMarker = endMarkers.find(marker => marker.position.lat === position.lat && marker.position.lng === position.lng);
-                    const adjustedPosition = endMarker
-                        ? { lat: position.lat + 0.0001, lng: position.lng + 0.0001 }
-                        : position;
+                    // const endMarker = endMarkers.find(marker => marker.position.lat === position.lat && marker.position.lng === position.lng);
+                    // const adjustedPosition = endMarker
+                    //     ? { lat: position.lat + 0.0001, lng: position.lng + 0.0001 }
+                    //     : position;
 
                     return (
                         <Marker
