@@ -217,8 +217,20 @@ const SupplierForm: React.FC = () => {
     const columns: GridColDef[] = [
         { field: 'supplier_id', headerName: 'Supplier ID', width: 150 },
         { field: 'name', headerName: 'Name', width: 200 },
-        {field: "loc_ID",headerName: "Supplier Location ID",width: 250},
-        {field: "loc_of_source",headerName: "Source Location ID",width: 250},
+        {
+            field: "loc_ID",
+            headerName: "Supplier Location ID",
+            width: 150,
+        },
+        { field: 'location_pincode', headerName: 'Supplier Pincode', width: 100 },
+        { field: 'location_city', headerName: 'Supplier City', width: 150 },
+        { field: 'location_state', headerName: 'Supplier State', width: 150 },
+        { field: 'location_country', headerName: 'Supplier Country', width: 150 },
+        {
+            field: "loc_of_source",
+            headerName: "Source Location ID",
+            width: 200,
+        },
         {
             field: 'actions',
             headerName: 'Actions',
@@ -253,9 +265,9 @@ const SupplierForm: React.FC = () => {
         // supplierId: Yup.string().required('Supplier ID is required'),
         name: Yup.string().required('Name is required'),
         locationId: Yup.string().required('Location ID is required'),
-        // pincode: Yup.string().required('Pincode is required'),
-        // city: Yup.string().required('City is required'),
-        // country: Yup.string().required('Country is required'),
+        pincode: Yup.string().required('Pincode is required'),
+        city: Yup.string().required('City is required'),
+        country: Yup.string().required('Country is required'),
         contactPerson: Yup.string().required('Contact Person is required'),
         contactNumber: Yup.string().required('Contact Number is required'),
         emailId: Yup.string().email('Invalid email format').required('Email ID is required'),
@@ -508,6 +520,8 @@ const SupplierForm: React.FC = () => {
                                             value={values.pincode}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
+                                            error={touched.pincode && Boolean(errors.pincode)}
+                                            helperText={touched.pincode && errors.pincode}
                                         />
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={2.4}>
@@ -518,8 +532,22 @@ const SupplierForm: React.FC = () => {
                                             value={values.city}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
+                                            error={touched.city && Boolean(errors.city)}
+                                            helperText={touched.city && errors.city}
                                         />
                                     </Grid>
+                                    {/* <Grid item xs={12} sm={6} md={2.4}>
+                                        <TextField
+                                            fullWidth size='small'
+                                            label="District"
+                                            name="district"
+                                            value={values.district}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.district && Boolean(errors.district)}
+                                            helperText={touched.district && errors.district}
+                                        />
+                                    </Grid> */}
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small' disabled
@@ -528,6 +556,8 @@ const SupplierForm: React.FC = () => {
                                             value={values.country}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
+                                            error={touched.country && Boolean(errors.country)}
+                                            helperText={touched.country && errors.country}
                                         />
                                     </Grid>
                                 </Grid>
@@ -747,4 +777,3 @@ const SupplierForm: React.FC = () => {
 };
 
 export default SupplierForm;
-

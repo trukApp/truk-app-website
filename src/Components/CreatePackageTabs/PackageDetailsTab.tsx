@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
-  Formik, Form, FieldArray, FieldProps,
-  Field
+  Formik, Form, FieldArray, FieldProps, Field
 } from "formik";
 import * as Yup from "yup";
 import {
@@ -26,7 +25,7 @@ interface PackageDetails {
   quantity: string;
   weight: string;
   packagingType: string;
-  product_ID: string
+  product_ID: string;
 }
 
 interface FormValues {
@@ -41,9 +40,10 @@ interface PackingDetailsTab {
 const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
   const dispatch = useAppDispatch();
   const productListFromRedux = useAppSelector((state) => state.auth.packagesDetails);
-  console.log("productListFromRedux: ", productListFromRedux)
+
   const { data: allProducts, isLoading: isAllProductsLoading } = useGetAllProductsQuery({});
   const [searchKey, setSearchKey] = useState("");
+
   const {
     data: filteredProductsData,
     isFetching: isFilteredLoading
@@ -68,9 +68,26 @@ const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
     ),
   });
 
+  // const initialValues: FormValues = {
+  //   packageDetails: productListFromRedux.length > 0
+  //     ? productListFromRedux
+  //     : [{
+  //       productId: "",
+  //       productName: "",
+  //       hsnCode: "",
+  //       rfid: "",
+  //       dimensions: "",
+  //       quantity: "",
+  //       weight: "",
+  //       packagingType: "",
+  //     }],
+  // };
   const initialValues: FormValues = {
     packageDetails: productListFromRedux.length > 0
-      ? productListFromRedux
+      ? productListFromRedux.map((p) => ({
+        ...p,
+        product_ID: p.productId || "",
+      }))
       : [{
         product_ID: "",
         productId: "",
@@ -102,108 +119,107 @@ const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
                 <>
                   {values.packageDetails.map((_, index) => (
                     <Grid container spacing={2} sx={{ marginTop: 1 }} key={index}>
-                      {Object.keys(initialValues.packageDetails[0]).map((fieldName) => (
-                        <Grid item xs={12} md={2.4} key={fieldName}>
-                          {(fieldName === "productId") ? (
-                            <Autocomplete
-                              freeSolo
-                              options={productOptions}
-                              loading={isAllProductsLoading || isFilteredLoading}
-                              value={
-                                allProductList.find(
-                                  (p: PackageDetails) => p.product_ID === values.packageDetails[index].productId
-                                ) || null
-                              }
-                              getOptionLabel={(option: Product | string) => {
-                                if (typeof option === "string") return option;
-                                return option.product_ID;
+                      <Grid item xs={12} md={2.4}>
+                        <Autocomplete
+                          freeSolo
+                          options={productOptions}
+                          loading={isAllProductsLoading || isFilteredLoading}
+                          value={
+                            allProductList.find(
+                              (p: Product) => p.product_ID === values.packageDetails[index].productId
+                            ) || null
+                          }
+                          getOptionLabel={(option: Product | string) => {
+                            if (typeof option === "string") return option;
+                            return option.product_ID;
+                          }}
+                          renderOption={(props, option) => (
+                            <li {...props} key={typeof option === "string" ? option : option.product_ID}>
+                              {typeof option === "string"
+                                ? option
+                                : `${option.product_ID} - ${option.product_name}`}
+                            </li>
+                          )}
+                          filterOptions={(options, { inputValue }) =>
+                            options.filter((option) => {
+                              const label = typeof option === "string"
+                                ? option
+                                : `${option.product_ID} ${option.product_name}`.toLowerCase();
+                              return label.includes(inputValue.toLowerCase());
+                            })
+                          }
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="Product ID *"
+                              variant="outlined"
+                              size="small"
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                setSearchKey(value);
                               }}
-                              renderOption={(props, option) => (
-                                <li {...props} key={typeof option === "string" ? option : option.product_ID}>
-                                  {typeof option === "string"
-                                    ? option
-                                    : `${option.product_ID} - ${option.product_name}`}
-                                </li>
-                              )}
-                              filterOptions={(options, { inputValue }) =>
-                                options.filter((option) => {
-                                  const label = typeof option === "string" ? option : (
-                                    `${option.product_ID} ${option.product_name}`.toLowerCase()
-                                  );
-                                  return label.includes(inputValue.toLowerCase());
-                                })
-                              }
-                              renderInput={(params) => (
-                                <TextField
-                                  {...params}
-                                  label="Product ID *"
-                                  variant="outlined"
-                                  size="small"
-                                  onChange={(e) => {
-                                    const value = e.target.value;
-                                    setSearchKey(value);
-                                  }}
-                                  InputProps={{
-                                    ...params.InputProps,
-                                    endAdornment: (
-                                      <>
-                                        {(isAllProductsLoading || isFilteredLoading) ? (
-                                          <CircularProgress color="inherit" size={20} />
-                                        ) : null}
-                                        {params.InputProps.endAdornment}
-                                      </>
-                                    ),
-                                  }}
-                                />
-                              )}
-                              onChange={(e, selectedOption) => {
-                                if (!selectedOption) {
-                                  setFieldValue(`packageDetails.${index}.productId`, '');
-                                  setFieldValue(`packageDetails.${index}.productName`, '');
-                                  setFieldValue(`packageDetails.${index}.hsnCode`, '');
-                                  setFieldValue(`packageDetails.${index}.weight`, '');
-                                  setFieldValue(`packageDetails.${index}.dimensions`, '');
-                                  setFieldValue(`packageDetails.${index}.packagingType`, '');
-                                  return;
-                                }
-
-                                const selected =
-                                  typeof selectedOption === "string"
-                                    ? allProductList.find((p: PackageDetails) => p.product_ID === selectedOption)
-                                    : selectedOption;
-
-                                if (selected) {
-                                  setFieldValue(`packageDetails.${index}.productId`, selected.product_ID);
-                                  setFieldValue(`packageDetails.${index}.productName`, selected.product_name);
-                                  setFieldValue(`packageDetails.${index}.hsnCode`, selected.hsn_code);
-                                  setFieldValue(`packageDetails.${index}.weight`, `${selected.weight} ${selected.weight_uom}`);
-                                  setFieldValue(`packageDetails.${index}.dimensions`, `${selected.volume} ${selected.volume_uom}`);
-                                  setFieldValue(`packageDetails.${index}.packagingType`, selected.packaging_type[0]?.pac_ID);
-                                }
+                              InputProps={{
+                                ...params.InputProps,
+                                endAdornment: (
+                                  <>
+                                    {(isAllProductsLoading || isFilteredLoading) ? (
+                                      <CircularProgress color="inherit" size={20} />
+                                    ) : null}
+                                    {params.InputProps.endAdornment}
+                                  </>
+                                ),
                               }}
                             />
-
-
-                          ) : (
-                            <Field name={`packageDetails.${index}.${fieldName}`}>
-                              {({ field, meta }: FieldProps) => (
-                                <TextField
-                                  {...field}
-                                  disabled={fieldName !== "rfid" && fieldName !== "quantity"}
-                                  label={
-                                    fieldName.replace(/([A-Z])/g, " $1").replace(/^./, str => str.toUpperCase()) + " *"
-                                  }
-                                  fullWidth
-                                  size="small"
-                                  type={fieldName === "quantity" ? "number" : "text"}
-                                  error={meta.touched && Boolean(meta.error)}
-                                  helperText={meta.touched && meta.error}
-                                />
-                              )}
-                            </Field>
                           )}
+                          onChange={(e, selectedOption) => {
+                            if (!selectedOption) {
+                              setFieldValue(`packageDetails.${index}.productId`, '');
+                              setFieldValue(`packageDetails.${index}.productName`, '');
+                              setFieldValue(`packageDetails.${index}.hsnCode`, '');
+                              setFieldValue(`packageDetails.${index}.weight`, '');
+                              setFieldValue(`packageDetails.${index}.dimensions`, '');
+                              setFieldValue(`packageDetails.${index}.packagingType`, '');
+                              return;
+                            }
+
+                            const selected =
+                              typeof selectedOption === "string"
+                                ? allProductList.find((p: Product) => p.product_ID === selectedOption)
+                                : selectedOption;
+
+                            if (selected) {
+                              setFieldValue(`packageDetails.${index}.productId`, selected.product_ID);
+                              setFieldValue(`packageDetails.${index}.productName`, selected.product_name);
+                              setFieldValue(`packageDetails.${index}.hsnCode`, selected.hsn_code);
+                              setFieldValue(`packageDetails.${index}.weight`, `${selected.weight} ${selected.weight_uom}`);
+                              setFieldValue(`packageDetails.${index}.dimensions`, `${selected.volume} ${selected.volume_uom}`);
+                              setFieldValue(`packageDetails.${index}.packagingType`, selected.packaging_type[0]?.pac_ID);
+                            }
+                          }}
+                        />
+                      </Grid>
+
+                      {["productName", "hsnCode", "rfid", "dimensions", "quantity", "weight", "packagingType"].map((fieldName) => (
+                        <Grid item xs={12} md={2.4} key={fieldName}>
+                          <Field name={`packageDetails.${index}.${fieldName}`}>
+                            {({ field, meta }: FieldProps) => (
+                              <TextField
+                                {...field}
+                                disabled={fieldName !== "rfid" && fieldName !== "quantity"}
+                                label={
+                                  fieldName.replace(/([A-Z])/g, " $1").replace(/^./, str => str.toUpperCase()) + " *"
+                                }
+                                fullWidth
+                                size="small"
+                                type={fieldName === "quantity" ? "number" : "text"}
+                                error={meta.touched && Boolean(meta.error)}
+                                helperText={meta.touched && meta.error}
+                              />
+                            )}
+                          </Field>
                         </Grid>
                       ))}
+
                       {values.packageDetails.length > 1 && (
                         <Grid item xs={12}>
                           <CustomButtonOutlined size="small" onClick={() => remove(index)}>

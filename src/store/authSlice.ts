@@ -5,6 +5,23 @@ import { FormValues } from "@/Components/CreatePackageTabs/PickUpAndDropOffDetai
 import { Truck } from "@/Components/CreateOrderTables/TrucksTable";
 import { Package } from "@/Components/CreateOrderTables/PackagesTable";
 
+export interface Address {
+  address: string;
+  latitude: number;
+  longitude: number;
+}
+export interface Route {
+  distance: string;
+  duration: string;
+  start: Address;
+  end: Address;
+  loadAfterStop: number;
+}
+export interface ISelectedRoute {
+  route: Route;
+  routeIndex: number | null;
+  vehicle: string;
+}
 export interface IShipFrom {
   addressLine1: string;
   addressLine2: string;
@@ -74,6 +91,7 @@ export interface IAuthState {
   unitsofMeasurement: string[];
   selectedPackages: Array<Package>;
   createOrderDesination: string;
+  selectedRoutes: ISelectedRoute[];
   packageShipFrom: IShipFrom | null;
   packageShipTo: IShipTo | null;
   packagesDetails: Array<IProductDetail>;
@@ -109,6 +127,7 @@ const initialState: IAuthState = {
   packagePickAndDropTimings: null,
   packageTax: null,
   completedState: [],
+  selectedRoutes: [],
   filters: {
     checkValidity: true,
     checkDowntime: true,
@@ -185,6 +204,9 @@ export const authSlice = createSlice({
     setFilters: (state, action: PayloadAction<ConfigFilters>) => {
       state.filters = action.payload;
     },
+    setSelectedRoutes: (state, action: PayloadAction<ISelectedRoute[]>) => {
+      state.selectedRoutes = action.payload;
+    },
   },
 });
 
@@ -208,6 +230,7 @@ export const {
   setCompletedState,
   resetCompletedSteps,
   setFilters,
+  setSelectedRoutes,
 } = authSlice.actions;
 
 export const authReducer = authSlice.reducer;

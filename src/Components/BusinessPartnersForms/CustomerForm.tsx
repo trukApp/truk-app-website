@@ -22,7 +22,12 @@ import { Location } from '../MasterDataComponents/Locations';
 const customerValidationSchema = Yup.object().shape({
     name: Yup.string().required('Name is required'),
     locationId: Yup.string().required('Location ID is required'),
-    contactPerson: Yup.string().required('Contact person name is required'),
+    pincode: Yup.string()
+        .matches(/^\d{6}$/, 'Pincode must be 6 digits')
+        .required('Pincode is required'),
+    city: Yup.string().required('City is required'),
+    // district: Yup.string().required('District is required'),
+    country: Yup.string().required('Country is required'),
     contactNumber: Yup.string()
         .matches(/^\d{10}$/, 'Contact number must be 10 digits')
         .required('Contact number is required'),
@@ -139,7 +144,7 @@ const CustomerForm: React.FC = () => {
 
     const [searchKeyDestination, setSearchKeyDestination] = useState('');
     const [showDestinations, setShowDestinations] = useState(false);
-    const { data: destinationFilteredLocations,isLoading: filteredDestLoading  } = useGetFilteredLocationsQuery(searchKeyDestination.length >= 3 ? searchKeyDestination : null, { skip: searchKeyDestination.length < 3 });
+    const { data: destinationFilteredLocations } = useGetFilteredLocationsQuery(searchKeyDestination.length >= 3 ? searchKeyDestination : null, { skip: searchKeyDestination.length < 3 });
     const displayLocationsDest = searchKeyDestination ? destinationFilteredLocations?.results || [] : getAllLocations;
 
     const getLocationDetails = (loc_ID: string) => {
@@ -168,31 +173,7 @@ const CustomerForm: React.FC = () => {
     const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
         setPaginationModel(newPaginationModel);
     };
-    // const mapRowToInitialValues = (rowData: Customer) => ({
-    //     customerId: rowData.customer_id || '',
-    //     name: rowData.name || '',
-    //     locationId: rowData.loc_ID || '',
-    //     pincode: rowData.location_pincode || '',
-    //     state: rowData.location_state || '',
-    //     city: rowData.location_city || '',
-    //     district: '',
-    //     country: rowData.location_country || '',
-    //     contactPerson: rowData?.correspondence?.contact_person || '',
-    //     contactNumber: rowData?.correspondence?.contact_number || '',
-    //     emailId: rowData?.correspondence?.email || '',
-    //     locationOfSource: [rowData.loc_of_source],
-    //     podRelevant: rowData?.pod_relevant === 1,
-    //     shipToParty: rowData?.partner_functions?.ship_to_party || '',
-    //     soldToParty: rowData?.partner_functions?.sold_to_party || '',
-    //     billToParty: rowData?.partner_functions?.bill_to_party || '',
-    // });
-
-    const mapRowToInitialValues = (rowData: Customer) => {
-        console.log("rowData:", rowData);
-        const locId = rowData.loc_ID.split(", ")
-        console.log('locId :', locId)
-
-    return {
+    const mapRowToInitialValues = (rowData: Customer) => ({
         customerId: rowData.customer_id || '',
         name: rowData.name || '',
         locationId: rowData.location_loc_ID || '',
@@ -209,59 +190,112 @@ const CustomerForm: React.FC = () => {
         shipToParty: rowData?.partner_functions?.ship_to_party || '',
         soldToParty: rowData?.partner_functions?.sold_to_party || '',
         billToParty: rowData?.partner_functions?.bill_to_party || '',
-    };
-};
+    });
+
+
+    // const rows = customersData.map((item: Customer) => ({
+    //     id: item.partner_id,
+    //     ...item,
+    //     loc_of_source: getLocationDetails(item?.loc_of_source),
+    //     loc_ID: getLocationDetails(item?.loc_ID)
+    // }));
+
+    // const columns: GridColDef[] = [
+    //     { field: 'customer_id', headerName: 'Customer ID', width: 150 },
+    //     { field: 'name', headerName: 'Name', width: 200 },
+    //     // { field: 'loc_ID', headerName: 'Customer Location ID', width: 150 },
+    //     {
+    //         field: "loc_ID",
+    //         headerName: "Custmer Location ID",
+    //         width: 250,
+    //     },
+    //     { field: 'location_pincode', headerName: 'Customer Pincode', width: 100 },
+    //     { field: 'location_city', headerName: 'Customer City', width: 150 },
+    //     { field: 'location_state', headerName: 'Customer State', width: 150 },
+    //     { field: 'location_country', headerName: 'Customer Country', width: 150 },
+    //     {
+    //         field: "loc_of_source",
+    //         headerName: "Source Location ID",
+    //         width: 150,
+    //         renderCell: (params) => (
+    //             <Tooltip title={getLocationDetails(params.value)} arrow>
+    //                 <span>{params.value}</span>
+    //             </Tooltip>
+    //         ),
+    //     },
+    //     {
+    //         field: 'actions',
+    //         headerName: 'Actions',
+    //         width: 150,
+    //         renderCell: (params) => (
+    //             <>
+    //                 <IconButton
+    //                     color="primary"
+    //                     onClick={() => handleEdit(params.row)}
+    //                 >
+    //                     <EditIcon />
+    //                 </IconButton>
+    //                 <IconButton
+    //                     color="secondary"
+    //                     onClick={() => handleDelete(params.row)}
+    //                 >
+    //                     <DeleteIcon />
+    //                 </IconButton>
+    //             </>
+    //         ),
+    //     },
+    // ];
 
     const rows = customersData.map((item: Customer) => {
-    console.log('item', item);
+        console.log('item', item);
 
-    return {
-        id: item.partner_id,
-        ...item,
-        loc_of_source: getLocationDetails(item?.loc_of_source),
-        loc_ID: getLocationDetails(item?.loc_ID),
-        contact_person: item.correspondence?.contact_person || "",
-        contact_number: item.correspondence?.contact_number || "",
-        email: item.correspondence?.email || "",
-        bill_to_party: item.partner_functions?.bill_to_party || "",
-        ship_to_party: item.partner_functions?.ship_to_party || "",
-        sold_to_party: item.partner_functions?.sold_to_party || "",
-    };
-});
+        return {
+            id: item.partner_id,
+            ...item,
+            loc_of_source: getLocationDetails(item?.loc_of_source),
+            loc_ID: getLocationDetails(item?.loc_ID),
+            contact_person: item.correspondence?.contact_person || "",
+            contact_number: item.correspondence?.contact_number || "",
+            email: item.correspondence?.email || "",
+            bill_to_party: item.partner_functions?.bill_to_party || "",
+            ship_to_party: item.partner_functions?.ship_to_party || "",
+            sold_to_party: item.partner_functions?.sold_to_party || "",
+        };
+    });
 
-const columns: GridColDef[] = [
-    { field: 'customer_id', headerName: 'Customer ID', width: 150 },
-    { field: 'name', headerName: 'Name', width: 200 },
-    { field: "loc_ID", headerName: "Customer Location ID", width: 250 },
-    { field: "loc_of_source", headerName: "Source Location ID", width: 250 },
-    { field: "contact_person", headerName: "Contact Person", width: 200 },
-    { field: "contact_number", headerName: "Contact Number", width: 150 },
-    { field: "email", headerName: "Email", width: 200 },
-    { field: "bill_to_party", headerName: "Bill To Party", width: 150 },
-    { field: "ship_to_party", headerName: "Ship To Party", width: 150 },
-    { field: "sold_to_party", headerName: "Sold To Party", width: 150 },
-    {
-        field: 'actions',
-        headerName: 'Actions',
-        width: 150,
-        renderCell: (params) => (
-            <>
-                <IconButton
-                    color="primary"
-                    onClick={() => handleEdit(params.row)}
-                >
-                    <EditIcon />
-                </IconButton>
-                <IconButton
-                    color="secondary"
-                    onClick={() => handleDelete(params.row)}
-                >
-                    <DeleteIcon />
-                </IconButton>
-            </>
-        ),
-    },
-];
+    const columns: GridColDef[] = [
+        { field: 'customer_id', headerName: 'Customer ID', width: 150 },
+        { field: 'name', headerName: 'Name', width: 200 },
+        { field: "loc_ID", headerName: "Customer Location ID", width: 250 },
+        { field: "loc_of_source", headerName: "Source Location ID", width: 250 },
+        { field: "contact_person", headerName: "Contact Person", width: 200 },
+        { field: "contact_number", headerName: "Contact Number", width: 150 },
+        { field: "email", headerName: "Email", width: 200 },
+        { field: "bill_to_party", headerName: "Bill To Party", width: 150 },
+        { field: "ship_to_party", headerName: "Ship To Party", width: 150 },
+        { field: "sold_to_party", headerName: "Sold To Party", width: 150 },
+        {
+            field: 'actions',
+            headerName: 'Actions',
+            width: 150,
+            renderCell: (params) => (
+                <>
+                    <IconButton
+                        color="primary"
+                        onClick={() => handleEdit(params.row)}
+                    >
+                        <EditIcon />
+                    </IconButton>
+                    <IconButton
+                        color="secondary"
+                        onClick={() => handleDelete(params.row)}
+                    >
+                        <DeleteIcon />
+                    </IconButton>
+                </>
+            ),
+        },
+    ];
 
     const handleEdit = async (rowData: Customer) => {
         setShowForm(true)
@@ -335,7 +369,7 @@ const columns: GridColDef[] = [
                     contact_number: values?.contactNumber,
                     email: values?.emailId
                 },
-                loc_of_source: values.locationOfSource,
+                loc_of_source: values?.locationOfSource,
                 pod_relevant: values?.podRelevant,
                 partner_functions: {
                     ship_to_party: values?.shipToParty,
@@ -546,6 +580,8 @@ const columns: GridColDef[] = [
                                             value={values.pincode}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
+                                            error={touched.pincode && Boolean(errors.pincode)}
+                                            helperText={touched.pincode && errors.pincode}
                                         />
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={2.4}>
@@ -556,6 +592,8 @@ const columns: GridColDef[] = [
                                             value={values.city}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
+                                            error={touched.city && Boolean(errors.city)}
+                                            helperText={touched.city && errors.city}
                                         />
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={2.4}>
@@ -566,6 +604,8 @@ const columns: GridColDef[] = [
                                             value={values.state}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
+                                            error={touched.state && Boolean(errors.state)}
+                                            helperText={touched.state && errors.state}
                                         />
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={2.4}>
@@ -576,6 +616,8 @@ const columns: GridColDef[] = [
                                             value={values.country}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
+                                            error={touched.country && Boolean(errors.country)}
+                                            helperText={touched.country && errors.country}
                                         />
                                     </Grid>
                                 </Grid>
@@ -647,7 +689,7 @@ const columns: GridColDef[] = [
                                                     : ""
                                             }
                                             InputProps={{
-                                                endAdornment: filteredDestLoading ? <CircularProgress size={20} /> : null,
+                                                endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
                                             }}
                                         />
                                         <div ref={wrapperRefDest}>
@@ -704,7 +746,7 @@ const columns: GridColDef[] = [
                                     {['shipToParty', 'soldToParty', 'billToParty'].map((field) => (
                                         <Grid item xs={12} sm={6} md={2.4} key={field}>
                                             <Autocomplete
-                                                options={customersData} 
+                                                options={customersData}
                                                 getOptionLabel={(option) => `${option.customer_id}`}
                                                 renderOption={(props, option) => (
                                                     <Tooltip placement='right' title={`${option.name}, ${option.location_city}, ${option.location_state}, ${option.location_country}, ${option.location_pincode}`} arrow>
@@ -785,4 +827,3 @@ const columns: GridColDef[] = [
 };
 
 export default CustomerForm;
-
