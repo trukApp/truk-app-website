@@ -49,7 +49,7 @@ export const apiSlice = createApi({
     "PackagesForOrder",
     "Orders",
     "AssignedOrders",
-    'SingleVehicleMaster'
+    "SingleVehicleMaster",
   ],
   endpoints: (builder) => ({
     userLogin: builder.mutation<User, { phone: string; password: string }>({
@@ -130,6 +130,15 @@ export const apiSlice = createApi({
         method: "DELETE",
       }),
       invalidatesTags: [{ type: "DRIVERS", id: "LIST" }],
+    }),
+
+    getFilteredDrivers: builder.query({
+      query: (searchKey) => ({
+        url: `driver/search-drivers`,
+        method: "GET",
+        params: { searchKey },
+      }),
+      providesTags: [{ type: "DRIVERS", id: "SEARCH" }],
     }),
 
     editDriver: builder.mutation({
@@ -265,6 +274,15 @@ export const apiSlice = createApi({
         };
       },
       providesTags: [{ type: "VehicleMaster", id: "LIST" }],
+    }),
+
+    getFilteredVehicles: builder.query({
+      query: (searchKey) => ({
+        url: `veh/search-trucks`,
+        method: "GET",
+        params: { searchKey },
+      }),
+      providesTags: [{ type: "VehicleMaster", id: "SEARCH" }],
     }),
 
     postVehicleMaster: builder.mutation({
@@ -453,7 +471,7 @@ export const apiSlice = createApi({
         method: "GET",
         params: { searchKey },
       }),
-      providesTags: [{ type: "ProductMaster", id: "SEARCH" }],
+      providesTags: [{ type: "ProductMaster", id: "LIST" }],
     }),
 
     createProduct: builder.mutation({
@@ -597,19 +615,19 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: [{ type: "AssignedOrders", id: "LIST" }],
     }),
-    
+
     // image uploading
     imageUploading: builder.mutation({
       query: (formData) => {
         return {
           url: "image/upload",
           method: "POST",
-          body:formData,
+          body: formData,
         };
       },
     }),
 
-        //single vehciles master
+    //single vehciles master
     getSingleVehicleMaster: builder.query({
       query: (params) => {
         return {
@@ -654,7 +672,6 @@ export const apiSlice = createApi({
         params,
       }),
     }),
-
   }),
 });
 
@@ -666,6 +683,7 @@ export const {
   useGetAllCustomersDataQuery,
   useGetAllVendorsDataQuery,
   useGetAllDriversDataQuery,
+  useGetFilteredDriversQuery,
   useEditBusinessPartnerMutation,
   useDeleteBusinessPartnerMutation,
   useEditDriverMutation,
@@ -679,6 +697,7 @@ export const {
   useEditLocationMasterMutation,
   useDeleteLocationMasterMutation,
   useGetVehicleMasterQuery,
+  useGetFilteredVehiclesQuery,
   usePostVehicleMasterMutation,
   useEditVehicleMasterMutation,
   useDeleteVehicleMasterMutation,
@@ -724,6 +743,6 @@ export const {
   usePostSingleVehicleMasterMutation,
   useEditSingleVehicleMasterMutation,
   useDeleteSingleVehicleMasterMutation,
-  useGetAssignedOrderByIdQuery
-
+  useGetAssignedOrderByIdQuery,
+  useGetFilteredProductsQuery,
 } = apiSlice;

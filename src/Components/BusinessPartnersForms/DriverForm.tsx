@@ -72,8 +72,6 @@ export interface Driver {
   driver_availability: number
 }
 
-
-
 const DriverForm: React.FC = () => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const initialDriverValues = {
@@ -111,10 +109,8 @@ const DriverForm: React.FC = () => {
   const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
   const [searchKey, setSearchKey] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
-  // const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey);
   const { data: filteredLocations, isLoading: filteredLocationLoading } =
     useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
-
   const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
 
   const getLocationDetails = (loc_ID: string) => {
@@ -122,11 +118,11 @@ const DriverForm: React.FC = () => {
     if (!location) return "Location details not available";
     const details = [
       location.address_1,
-      location.address_2,
       location.city,
       location.state,
       location.country,
-      location.pincode
+      location.pincode,
+      location.loc_ID
     ].filter(Boolean);
 
     return details.length > 0 ? details.join(", ") : "Location details not available";
@@ -140,7 +136,6 @@ const DriverForm: React.FC = () => {
   };
   const driverValidationSchema = Yup.object({
     driverName: Yup.string().required('Driver Name is required'),
-    // locations: Yup.array().of(Yup.string()).min(1, 'Location id is required'),
     locations: Yup.string().required('Location is required'),
     drivingLicense: Yup.string().required('Driving License is required'),
     expiryDate: Yup.string().required('Expiry Date is required'),
@@ -150,11 +145,15 @@ const DriverForm: React.FC = () => {
 
 
   const mapRowToInitialValues = (rowData: Driver) => {
-    console.log('rowData  :', rowData)
+    const locationString = Array.isArray(rowData.locations)
+      ? rowData.locations[0]
+      : rowData.locations;
 
-    const matchedLocation = getAllLocations.find((loc: Location) => loc.loc_ID === rowData?.locations[0]);
-    console.log("matched location :", matchedLocation)
-    setSearchKey(matchedLocation.loc_ID)
+    const locId = locationString?.split(",").at(-1)?.trim() ?? "";
+    setSearchKey(locId)
+
+    const matchedLocation = getAllLocations.find((loc: Location) => loc.loc_ID === locId);
+
 
     return {
       driverId: rowData?.driverID || '',
@@ -187,6 +186,7 @@ const DriverForm: React.FC = () => {
   }, []);
 
   const handleEdit = async (rowData: Driver) => {
+    console.log("edit: ", rowData)
     setShowForm(true)
     setUpdateRecord(true)
     const updatedInitialValues = await mapRowToInitialValues(rowData);
@@ -230,20 +230,10 @@ const DriverForm: React.FC = () => {
   const columns: GridColDef[] = [
     { field: 'driverID', headerName: 'Driver ID', width: 150 },
     { field: 'driverName', headerName: 'Name', width: 200 },
-    // { field: 'locations', headerName: 'Location ID', width: 200 },
     {
       field: "locations",
-      headerName: "Location ID",
-      width: 200,
-      renderCell: (params) => {
-        const location = Array.isArray(params.value) ? params.value[0] : params.value;
-
-        return (
-          <Tooltip title={getLocationDetails(location)} arrow>
-            <span>{location || "N/A"}</span>
-          </Tooltip>
-        );
-      },
+      headerName: "Location",
+      width: 250,
     }
     ,
     { field: 'address', headerName: 'Address', width: 300 },
@@ -252,12 +242,10 @@ const DriverForm: React.FC = () => {
       field: 'expiryDate',
       headerName: 'Expiry Date',
       width: 150,
-      // Format the date or show 'N/A' if missing
     },
     { field: 'driverContactNumber', headerName: 'Contact Number', width: 150 },
     { field: 'emailID', headerName: 'Email ID', width: 200 },
     { field: 'vehicleTypes', headerName: 'Vehicle Types', width: 200 },
-    // { field: 'loggedIntoApp', headerName: 'Logged In', width: 100 },
 
     {
       field: 'actions',
@@ -281,14 +269,7 @@ const DriverForm: React.FC = () => {
     id: driver?.driver_id,
     driverID: driver?.dri_ID,
     driverName: driver?.driver_name,
-    locations: driver?.locations,
-    // locationCity: driver?.location_city,
-    // locationCountry: driver?.location_country,
-    // locationState: driver?.location_state,
-    // locationPincode: driver?.location_pincode,
-    // locationLongitude: driver?.location_longitude,
-    // locationLatitude: driver?.location_latitude,
-    // locationDescription: driver?.location_loc_desc,
+    locations: getLocationDetails(driver?.locations[0]),
     locationType: driver?.location_loc_type,
     drivingLicense: driver?.driver_correspondence?.driving_license,
     expiryDate: driver?.driver_correspondence?.expiry_date,

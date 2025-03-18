@@ -40,22 +40,6 @@ interface TrucksTableProps {
 }
 
 const TrucksTable: React.FC<TrucksTableProps> = ({ trucks }) => {
-    // const [expandedRow, setExpandedRow] = useState<string | null>(null);
-    // const [selectedTruck, setSelectedTruck] = useState<Truck | null>(null);
-    // const dispatch = useAppDispatch();
-    // const selectedTrucks = useAppSelector((state) => state.auth.selectedTrucks || []);
-    // const toggleExpandRow = (label: string) => {
-    //     setExpandedRow(expandedRow === label ? null : label);
-    // };
-    // console.log("trucks: ", trucks)
-
-    // const handleSelectTruck = (truck: Truck) => {
-    //     const isSelected = selectedTruck?.label === truck.label;
-    //     const newSelectedTruck = isSelected ? null : truck;
-    //     setSelectedTruck(newSelectedTruck);
-    //     dispatch(setSelectedTrucks(newSelectedTruck ? [newSelectedTruck] : []));
-    // };
-
     const columns: GridColDef[] = [
         { field: "vehicle_ID", headerName: "Vehicle ID", width: 180 },
         { field: "cost", headerName: "Total cost", width: 180 },
@@ -66,9 +50,7 @@ const TrucksTable: React.FC<TrucksTableProps> = ({ trucks }) => {
         { field: "leftoverWeight", headerName: "Left over weight", width: 180 },
         { field: "leftoverVolume", headerName: "Left over volume", width: 180 },
         { field: "unallocatedPackages", headerName: "Unallocated Packages", width: 180 },
-
     ];
-
 
     const rows = trucks.flatMap((truck, index) => [
         {
@@ -76,7 +58,6 @@ const TrucksTable: React.FC<TrucksTableProps> = ({ trucks }) => {
             ...truck
         },
     ]);
-
 
     return (
         <Box sx={{ height: 500, width: "100%" }}>

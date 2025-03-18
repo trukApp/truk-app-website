@@ -56,15 +56,6 @@ const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
     };
 
 
-    // const initialValues: TaxInfoValues = {
-    //     taxInfo: packageTaxFromRedux ? packageTaxFromRedux : {
-    //         senderGSTN: '',
-    //         receiverGSTN: '',
-    //         carrierGSTN: '',
-    //         isSelfTransport: '',
-    //         taxRate: '',
-    //     },
-    // };
 
     const handleCreatePackageClick = (values: TaxInfoValues) => {
         dispatch(setPackageTax(values.taxInfo)); // Save to Redux
@@ -79,20 +70,11 @@ const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
         }
     };
 
-    // const handleSubmit = async (values: TaxInfoValues, actions: FormikHelpers<TaxInfoValues>, onSubmit: (values: TaxInfoValues) => void) => {
-    //     dispatch(setPackageTax(values.taxInfo))
-    //     // dispatch(setCompletedState(5));
-    //     actions.setSubmitting(false);
-    //     onSubmit(values);
-
-    // };
-
     return (
         <>
             <Formik
                 initialValues={initialValues}
                 validationSchema={validationSchema}
-                // onSubmit={(values, actions) => handleSubmit(values, actions, onSubmit)}
                 onSubmit={(values) => handleCreatePackageClick(values)}
             >
                 {({ touched, errors }) => (
@@ -156,16 +138,9 @@ const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
                             {/* Navigation Buttons */}
                             <Grid container spacing={2} justifyContent="center" marginTop={2}>
                                 <Grid item>
-                                    {/* <Button variant="outlined" onClick={onBack}>
-                                        Back
-                                    </Button> */}
                                     <CustomButtonOutlined onClick={onBack}>Back</CustomButtonOutlined>
                                 </Grid>
                                 <Grid item>
-                                    {/* <Button type="submit" variant="contained" color="primary">
-                                        Submit
-                                    </Button> */}
-                                    {/* <CustomButtonFilled >Submit</CustomButtonFilled> */}
                                     <CustomButtonFilled type="submit">Create Package</CustomButtonFilled>
                                 </Grid>
                             </Grid>

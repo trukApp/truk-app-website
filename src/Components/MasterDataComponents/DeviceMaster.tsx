@@ -70,11 +70,12 @@ const DeviceMaster: React.FC = () => {
     if (!location) return "Location details not available";
     const details = [
       location.address_1,
-      location.address_2,
       location.city,
       location.state,
       location.country,
-      location.pincode
+      location.pincode,
+      location.loc_ID
+      
     ].filter(Boolean);
 
     return details.length > 0 ? details.join(", ") : "Location details not available";
@@ -82,12 +83,12 @@ const DeviceMaster: React.FC = () => {
 
   const getCarriersDetails = (carrier_ID: string) => {
     const carrier = getAllCarriers.find((carr: CarrierFormBE) => carr.carrier_ID === carrier_ID);
-    if (!carrier) return "Location details not available";
+    if (!carrier) return "NA";
     const { carrier_name, carrier_address, carrier_loc_of_operation } = carrier;
     const locationDetails = carrier_loc_of_operation && carrier_loc_of_operation.length > 0
       ? carrier_loc_of_operation.join(", ")
       : "No locations available";
-    return `${carrier_name}, ${carrier_address}, Locations: ${locationDetails}`;
+    return `${carrier_name}, ${carrier_address}, Locations: ${locationDetails}, ${carrier.carrier_ID}`;
   };
 
   console.log('getAll carriers :', getAllCarriers)
@@ -233,9 +234,9 @@ const DeviceMaster: React.FC = () => {
     deviceType: device.device_type,
     deviceUID: device.device_UID,
     simImeiNumber: device.sim_imei_num,
-    vehicleNumber: device.vehicle_number,
-    carrierId: device.carrier_ID,
-    locationId: device.loc_ID,
+    vehicleNumber: device?.vehicle_number,
+    carrierId : getCarriersDetails(device?.carrier_ID),
+    locationId:getLocationDetails(device?.loc_ID)
   }));
 
   const columns: GridColDef[] = [
@@ -244,27 +245,8 @@ const DeviceMaster: React.FC = () => {
     { field: "deviceUID", headerName: "Device UID", width: 200 },
     { field: "simImeiNumber", headerName: "SIM IMEI Number", width: 200 },
     { field: "vehicleNumber", headerName: "Vehicle Number", width: 150 },
-    {
-      field: "carrierId",
-      headerName: "Carrier ID",
-      width: 150,
-      renderCell: (params) => (
-        <Tooltip title={getCarriersDetails(params.value)} arrow>
-          <span>{params.value}</span>
-        </Tooltip>
-      ),
-    },
-    {
-      field: "locationId",
-      headerName: "Location ID",
-      width: 150,
-      renderCell: (params) => (
-        <Tooltip title={getLocationDetails(params.value)} arrow>
-          <span>{params.value}</span>
-        </Tooltip>
-      ),
-    },
-
+    {field: "carrierId",headerName: "Carrier",width: 250},
+    {field: "locationId",headerName: "Location", width: 250,},
     {
       field: "actions",
       headerName: "Actions",
@@ -290,7 +272,9 @@ const DeviceMaster: React.FC = () => {
 
   useEffect(() => {
     if (editRow) {
-      setSearchKey(editRow.locationId)
+      const locId = editRow?.locationId ? editRow.locationId.split(", ").at(-1) ?? "" : "";
+       const carrId = editRow?.carrierId ? editRow.carrierId.split(", ").at(-1) ?? "" : "";
+      setSearchKey(locId)
       formik.setValues({
         id: editRow.id || '',
         deviceId: editRow.deviceId,
@@ -298,9 +282,8 @@ const DeviceMaster: React.FC = () => {
         deviceUID: editRow.deviceUID,
         simImeiNumber: editRow.simImeiNumber,
         vehicleNumber: editRow.vehicleNumber,
-        carrierId: editRow.carrierId,
-        locationId: editRow.locationId,
-
+        carrierId: carrId,
+        locationId: locId,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -338,7 +321,6 @@ const DeviceMaster: React.FC = () => {
         <MassUpload arrayKey="devices" />
       </Box>
 
-
       <Collapse in={showForm}>
         <Box marginBottom={4} padding={2} border="1px solid #ccc" borderRadius={2}>
           <form onSubmit={formik.handleSubmit}>
@@ -357,7 +339,6 @@ const DeviceMaster: React.FC = () => {
                     disabled
                   />
                 </Grid>}
-
 
               {/* Device Type */}
               <Grid item xs={12} sm={6} md={2.4}>
@@ -429,7 +410,7 @@ const DeviceMaster: React.FC = () => {
                   }
                 >
                   <InputLabel>Carrier ID</InputLabel>
-                  <Select
+                  <Select fullWidth renderValue={(selected) => selected}
                     label="Carrier ID"
                     name="carrierId"
                     value={formik.values.carrierId}
@@ -447,9 +428,12 @@ const DeviceMaster: React.FC = () => {
                         <MenuItem key={carrier?.carrier_ID} value={String(carrier.carrier_ID)}>
                           <Tooltip
                             title={`${carrier?.carrier_name}, ${carrier?.carrier_address}`}
-                            placement="right"
+                            placement="right" arrow
                           >
-                            <span style={{ flex: 1 }}>{carrier?.carrier_ID}</span>
+                            {/* <span style={{ flex: 1 }}>{carrier?.carrier_name}, {carrier?.carrier_address}, {carrier?.carrier_ID}</span> */}
+                             <Typography noWrap>
+                                {carrier?.carrier_name}, {carrier?.carrier_address}, {carrier?.carrier_ID}
+                              </Typography>
                           </Tooltip>
                         </MenuItem>
                       ))

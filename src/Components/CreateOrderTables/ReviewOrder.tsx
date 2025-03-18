@@ -1,23 +1,14 @@
 import { useAppSelector } from '@/store';
 import React from 'react';
 import { Box, Typography, Paper, Grid } from '@mui/material';
-import { DataGrid, } from '@mui/x-data-grid';
+import { DataGrid, GridCellParams, } from '@mui/x-data-grid';
 import { Truck } from './TrucksTable'
-
+import { Product } from './PackagesTable';
+import { useGetAllProductsQuery } from '@/api/apiSlice';
 
 interface TrucksTableProps {
     trucks: Truck[];
 }
-
-// interface TruckDetails {
-//     vehicle_ID: string;
-//     totalWeightCapacity: number;
-//     leftoverWeight: string;
-//     totalVolumeCapacity: number;
-//     leftoverVolume: number;
-//     cost: number;
-//     loadArrangement: []
-// }
 
 interface PackageDetails {
     stop: string;
@@ -27,20 +18,67 @@ interface PackageDetails {
 
 const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks }) => {
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
-    // const selectedTrucks = useAppSelector((state) => state.auth.selectedTrucks || []);
     const selectedTrucks = trucks
+
+    console.log("selectedPackages: ", selectedPackages)
+
+    const { data: productsData } = useGetAllProductsQuery({})
+    const allProductsData = productsData?.products || [];
+
+    const getProductDetails = (productID: string) => {
+        const productInfo = allProductsData.find((product: Product) => product.product_ID === productID);
+        if (!productInfo) return "Package details not available";
+        const details = [
+            productInfo.product_name,
+            productInfo.weight,
+            productInfo.product_ID,
+        ].filter(Boolean);
+        return details.length > 0 ? details.join("-") : "Product details not available";
+    };
 
     const packageColumns = [
         { field: 'pack_ID', headerName: 'Package ID', flex: 1 },
         { field: 'ship_from', headerName: 'Ship From', flex: 1 },
         { field: 'ship_to', headerName: 'Ship To', flex: 1 },
-        { field: 'products', headerName: 'Products', flex: 2 },
+        {
+            field: 'products',
+            headerName: 'Product Details',
+            width: 400,
+            renderCell: (params: GridCellParams) => {
+                console.log("params.value: ", params.value)
+                const products = Array.isArray(params.value) ? params.value : [];
+
+                if (!products.length) return <div>No products</div>;
+
+                const productText = products
+                    .map((prod: Product) => {
+                        const detail = getProductDetails(prod.prod_ID);
+                        return `${detail} (Qty: ${prod.quantity})`;
+                    })
+                    .join(', ');
+
+                return (
+                    <div style={{ whiteSpace: 'normal', wordWrap: 'break-word' }}>
+                        {productText}
+                    </div>
+                );
+            },
+        },
         { field: 'invoice', headerName: 'Invoice', flex: 1 },
         { field: 'reference_id', headerName: 'Reference ID', flex: 1 },
         { field: 'pickup_date_time', headerName: 'Pickup Date & Time', flex: 1 },
         { field: 'dropoff_date_time', headerName: 'Dropoff Date & Time', flex: 1 },
         { field: 'tax_info', headerName: 'Tax Info', flex: 1 },
-        { field: 'return_label', headerName: 'Return Label', flex: 1 }
+        // { field: 'return_label', headerName: 'Return Label', flex: 1 }
+        {
+            field: 'return_label',
+            headerName: 'Return Label',
+            width: 150,
+            renderCell: (params: GridCellParams) => {
+                const value = params.value === 1;
+                return <span>{value ? 'True' : 'False'}</span>;
+            },
+        },
     ];
 
     const packageRows = selectedPackages.map((pkg, index) => ({
@@ -48,7 +86,7 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks }) => {
         pack_ID: pkg.pack_ID,
         ship_from: pkg.ship_from,
         ship_to: pkg.ship_to,
-        products: pkg.product_ID.map(product => `${product.prod_ID} (Qty: ${product.quantity})`).join(', '),
+        products: pkg.product_ID || [],
         invoice: pkg.additional_info?.invoice || 'N/A',
         reference_id: pkg.additional_info?.reference_id || 'N/A',
         pickup_date_time: pkg.pickup_date_time,

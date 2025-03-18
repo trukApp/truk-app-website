@@ -12,18 +12,6 @@ interface LoadArrangement {
     packages: string[];
 }
 
-// interface Allocation {
-//     vehicle_ID: string;
-//     totalWeightCapacity: number;
-//     leftoverWeight: number;
-//     totalVolumeCapacity: number;
-//     leftoverVolume: number;
-//     cost: number;
-//     loadArrangement?: LoadArrangement[];
-//     // occupiedWeight: number;
-//     // occupiedVolume: number;
-// }
-
 interface TrucksTableProps {
     trucks: Truck[];
 }
@@ -61,10 +49,6 @@ const LoadOptimization: React.FC<TrucksTableProps> = ({ trucks }) => {
                                 Total Weight Capacity:  <strong>{vehicle.totalWeightCapacity} kg</strong>
                             </Typography>
 
-                            {/* <Typography variant="body1" sx={{ mb: 1 }}>
-                            Occupied Weight:   <strong>{vehicle.occupiedWeight} kg</strong>
-                            </Typography> */}
-
                             <Typography variant="body1" sx={{ mb: 1 }}>
                                 Leftover Weight: <strong>{vehicle.leftoverWeight} kg</strong>
                             </Typography>
@@ -72,10 +56,6 @@ const LoadOptimization: React.FC<TrucksTableProps> = ({ trucks }) => {
                             <Typography variant="body1" sx={{ mb: 1 }}>
                                 Total Volume Capacity: <strong>{vehicle.totalVolumeCapacity} m³</strong>
                             </Typography>
-
-                            {/* <Typography variant="body1" sx={{ mb: 1 }}>
-                            Occupied Volume:   <strong> {vehicle.occupiedVolume} kg</strong>
-                            </Typography> */}
 
                             <Typography variant="body1" sx={{ mb: 1 }}>
                                 Leftover Volume:   <strong>{vehicle.leftoverVolume} m³</strong>
