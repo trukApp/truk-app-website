@@ -39,7 +39,25 @@ import { Location } from '@/Components/MasterDataComponents/Locations';
 import { Package } from '@/Components/MasterDataComponents/PackagingInfo';
 import { CustomButtonFilled } from '@/Components/ReusableComponents/ButtonsComponent';
 import { withAuthComponent } from '@/Components/WithAuthComponent';
+import { GraphQLClient, gql } from 'graphql-request';
 
+const client = new GraphQLClient('https://truk-be.onrender.com/graphql', {
+//   headers: {
+//     Authorization: `Bearer ${localStorage.getItem("token")}`, 
+//   },
+});
+
+const GET_ALL_PRODUCTS = gql`
+  query GetAllProducts($page: Int, $limit: Int) {
+    getAllProducts(page: $page, limit: $limit) {
+      message
+      products {
+        product_name
+        price
+      }
+    }
+  }
+`;
 export interface PackagingType {
     pac_ID: string;
     location: string;
@@ -143,6 +161,36 @@ const ProductMasterPage = () => {
 
     console.log("Getting all product errors: ", allProductsFectchingError)
     console.log("getLocationsError: ", getLocationsError)
+
+
+      const fetchProducts =async () =>{
+        try {
+          const data:any = await client.request(GET_ALL_PRODUCTS, { page:1, limit:10 });
+        // const allProducts = data.getAllProducts.products;
+        console.log(data)
+        } catch (error) {
+          console.error('Error fetching products:', error);
+          return [];
+        }
+      }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
         setPaginationModel(newPaginationModel);
     };
@@ -416,6 +464,7 @@ const ProductMasterPage = () => {
                 <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md: '24px' } }} align="center" gutterBottom>
                     Product master
                 </Typography>
+                <button onClick={fetchProducts}>getdata</button>
                 <Box display="flex" justifyContent="flex-end" gap={2}>
                     <Button
                         variant="contained"
