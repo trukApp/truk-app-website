@@ -276,6 +276,15 @@ export const apiSlice = createApi({
       providesTags: [{ type: "VehicleMaster", id: "LIST" }],
     }),
 
+    getFilteredVehicles: builder.query({
+      query: (searchKey) => ({
+        url: `veh/search-trucks`,
+        method: "GET",
+        params: { searchKey },
+      }),
+      providesTags: [{ type: "VehicleMaster", id: "SEARCH" }],
+    }),
+
     postVehicleMaster: builder.mutation({
       query: (body) => ({
         url: "vehicle/add-vehicle",
@@ -680,6 +689,7 @@ export const {
   useEditLocationMasterMutation,
   useDeleteLocationMasterMutation,
   useGetVehicleMasterQuery,
+  useGetFilteredVehiclesQuery,
   usePostVehicleMasterMutation,
   useEditVehicleMasterMutation,
   useDeleteVehicleMasterMutation,

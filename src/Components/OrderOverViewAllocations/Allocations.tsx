@@ -3,7 +3,7 @@ import { Box, Collapse, IconButton, Paper, Typography, Grid, Button, useTheme, u
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { useRouter } from 'next/navigation';
-import { useEditAssignOrderOrderMutation, useGetAllDriversDataQuery, useGetAllProductsQuery, useGetAssignedOrderByIdQuery, useGetDeviceMasterQuery, useGetFilteredDriversQuery, useGetLocationMasterQuery, usePostAssignOrderMutation } from "@/api/apiSlice";
+import { useEditAssignOrderOrderMutation, useGetAllDriversDataQuery, useGetAllProductsQuery, useGetAssignedOrderByIdQuery, useGetDeviceMasterQuery, useGetFilteredDriversQuery, useGetFilteredVehiclesQuery, useGetLocationMasterQuery, useGetSingleVehicleMasterQuery, usePostAssignOrderMutation } from "@/api/apiSlice";
 import SnackbarAlert from "../ReusableComponents/SnackbarAlerts";
 import { Driver } from "../BusinessPartnersForms/DriverForm";
 import moment from 'moment';
@@ -71,7 +71,6 @@ export interface ProductDetails {
     weight: string;
 }
 
-
 const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocatedPackageDetails }) => {
     const wrapperRef = useRef<HTMLDivElement>(null);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -82,9 +81,11 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
     const router = useRouter();
     const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({});
     const { data, isLoading: driverLoading } = useGetAllDriversDataQuery({})
+    const { data: allVehicleTrucks, isLoading: vehTrucksLoading } = useGetSingleVehicleMasterQuery({})
+    console.log('allveh trucks : ', allVehicleTrucks)
     const [searchKey, setSearchKey] = useState('');
     const [showSuggestions, setShowSuggestions] = useState(false);
-       const driversData = data?.drivers.length > 0 ? data?.drivers : []
+    const driversData = data?.drivers.length > 0 ? data?.drivers : []
     const getAvailableDrivers = Array.isArray(driversData)
         ? driversData.reduce((acc: Driver[], eachDriver: Driver) => {
             if (eachDriver?.driver_availability === 1) {
@@ -93,9 +94,24 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
             return acc;
         }, [])
         : [];
-    const { data: filteredDrivers, isLoading: filteredDriversLoading} = useGetFilteredDriversQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
+    const { data: filteredDrivers, isLoading: filteredDriversLoading } = useGetFilteredDriversQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
     const displayDrivers = searchKey ? filteredDrivers?.results || [] : getAvailableDrivers;
     console.log('display drivrs :', displayDrivers)
+
+    const [searchKeyVehicle, setSearchKeyVehicle] = useState('');
+    const [showSuggestionsVehicle, setShowSuggestionsVehicle] = useState(false);
+   const vehiclesData = allVehicleTrucks?.data.length > 0 ? allVehicleTrucks?.data : []
+    // const getAvailableDrivers = Array.isArray(driversData)
+    //     ? driversData.reduce((acc: Driver[], eachDriver: Driver) => {
+    //         if (eachDriver?.driver_availability === 1) {
+    //             acc.push(eachDriver);
+    //         }
+    //         return acc;
+    //     }, [])
+    //     : [];
+    const { data: filteredVehicles, isLoading: filteredVehicleLoading } = useGetFilteredVehiclesQuery(searchKeyVehicle.length >= 3 ? searchKeyVehicle : null, { skip: searchKeyVehicle.length < 3 });
+    const displayVehicles = searchKeyVehicle ? filteredVehicles?.results || [] : vehiclesData;
+console.log("display vehicles :", displayVehicles)
     const [assignModal, setAssignModal] = useState(false);
     const [selectedAllocation, setSelectedAllocation] = useState<Allocation | null>(null);
     const [postAssignOrder, { isLoading: isAssigning }] = usePostAssignOrderMutation()
@@ -120,6 +136,12 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
 
         return details.length > 0 ? details.join(", ") : "Location details not available";
     };
+useEffect(() => {
+    if (!searchKey) {
+        setShowSuggestions(false);
+        
+    }
+}, [searchKey]);
 
     const getProductDetails = (productID: string) => {
         const productInfo = allProductsData.find((product: ProductDetails) => product.product_ID === productID);
@@ -132,7 +154,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
     };
  
     const devicesData = allDevices?.devices.length > 0 ? allDevices?.devices : []
-    if (driverLoading) {
+    if (driverLoading || vehTrucksLoading) {
         console.log("driver loading")
     }
     
@@ -227,7 +249,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
             };
         }, []);
 
-
+console.log('allo',allocations)
     return (
         <Box>
             <Backdrop
@@ -272,7 +294,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                     </Typography>
 
                     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                        <TextField
+                        {/* <TextField
                             label="Vehicle number"
                             name="truckId"
                             value={formData.truckId}
@@ -281,23 +303,74 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                             size="small"
                             fullWidth
                         >
-                        </TextField>
-                        {/* <TextField
-                            label="Driver ID"
-                            name="driverId"
-                            select
-                            value={formData.driverId}
-                            onChange={handleChange}
-                            variant="outlined"
-                            size="small"
-                            fullWidth
-                        >
-                            {getAvailableDrivers.map((driver: Driver) => (
-                                <MenuItem key={driver?.dri_ID} value={driver.dri_ID}>
-                                    {driver.dri_ID}
-                                </MenuItem>
-                            ))}
                         </TextField> */}
+
+                         <Grid item xs={12} sm={6} md={2.4}>
+                            <TextField
+                                fullWidth
+                                name="truckId"
+                                size="small"
+                                label="Search truck... "
+                                onFocus={() => {
+                                if (!searchKey) {
+                                    setSearchKey(formData.truckId || "");
+                                    setShowSuggestionsVehicle(true);
+                                }
+                                }}
+                                onChange={(e) => {
+                                setSearchKeyVehicle(e.target.value);
+                                setShowSuggestionsVehicle(true);
+                                }}
+                                value={searchKeyVehicle}
+                                InputProps={{
+                                // endAdornment: filteredVehicleLoading ? <CircularProgress size={20} /> : null,
+                                }}
+                            />
+                            <div style={{ position: "relative" }}>
+                                {showSuggestionsVehicle && (
+                                <Paper
+                                    style={{
+                                    maxHeight: 200,
+                                    overflowY: "auto",
+                                    position: "absolute",
+                                    zIndex: 10,
+                                    width: "100%",
+                                    }}
+                                >
+                                    <List>
+                                    {filteredVehicleLoading ? (
+                                        <ListItem>
+                                        <CircularProgress size={20} />
+                                        </ListItem>
+                                    ) : displayVehicles.length === 0   ? (
+                                        <ListItem component="li">
+                                        <Typography variant="body2" sx={{ color: "gray", textAlign: "center", width: "100%" }}>
+                                            No results found
+                                        </Typography>
+                                        </ListItem>
+                                    ) : (
+                                        displayVehicles.map((truck: {act_truk_ID:string,act_vehicle_num :string}) => (
+                                        <ListItem
+                                            key={truck?.act_truk_ID}
+                                            component="li"
+                                            onClick={() => {
+                                            setShowSuggestionsVehicle(false);
+                                            setSearchKeyVehicle(truck?.act_vehicle_num);
+                                            }}
+                                            sx={{ cursor: "pointer" }}
+                                        >
+                                            <span style={{ fontSize: "13px" }}>
+                                                {truck?.act_vehicle_num}, {truck?.act_truk_ID}
+                                            </span>
+                                        </ListItem>
+                                        ))
+                                    )}
+                                    </List>
+                                </Paper>
+                                )}
+                            </div>
+                        </Grid>
+
                         <Grid item xs={12} sm={6} md={2.4}>
                             <TextField
                                 fullWidth
@@ -316,7 +389,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                                 }}
                                 value={searchKey}
                                 InputProps={{
-                                endAdornment: filteredDriversLoading ? <CircularProgress size={20} /> : null,
+                                // endAdornment: filteredDriversLoading ? <CircularProgress size={20} /> : null,
                                 }}
                             />
                             <div ref={wrapperRef} style={{ position: "relative" }}>
@@ -344,17 +417,17 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                                     ) : (
                                         displayDrivers.map((driver: Driver) => (
                                         <ListItem
-                                            key={driver.dri_ID}
+                                            key={driver?.dri_ID}
                                             component="li"
                                             onClick={() => {
                                             setShowSuggestions(false);
-                                            setSearchKey(driver.dri_ID);
+                                            setSearchKey(driver?.dri_ID);
                                             }}
                                             sx={{ cursor: "pointer" }}
                                         >
-                                            <Tooltip title={`${driver.driver_name}, ${driver.dri_ID}`} placement="right">
+                                            <Tooltip title={`${driver?.driver_name}, ${driver?.dri_ID}`} placement="right">
                                             <span style={{ fontSize: "13px" }}>
-                                                {driver.driver_name}, {driver?.driver_correspondence?.phone}
+                                                {driver?.driver_name}, {driver?.driver_correspondence?.phone}
                                             </span>
                                             </Tooltip>
                                         </ListItem>
