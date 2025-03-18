@@ -331,7 +331,7 @@ const SupplierForm: React.FC = () => {
                     setShowForm(false)
                     setUpdateRecord(false)
                     setUpdateRecordId(0)
-                    setUpdateRecordData({})
+                    setUpdateRecordData(null)
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
                     setSearchKey('')
