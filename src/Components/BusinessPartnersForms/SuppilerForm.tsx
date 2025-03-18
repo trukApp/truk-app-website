@@ -21,7 +21,6 @@ interface PartnerFunctions {
     goods_supplier: string;
     ordering_address: string;
 }
-
 interface Correspondence {
     contact_person: string;
     contact_number: string;
@@ -47,6 +46,8 @@ export interface Customer {
     loc_of_source_country: string;
     partner_functions: PartnerFunctions;
     correspondence: Correspondence;
+    location_loc_ID: string;
+    loc_of_source_loc_ID: string
 }
 
 const initialSupplierValues = {
@@ -111,7 +112,9 @@ const SupplierForm: React.FC = () => {
 
         return details.length > 0 ? details.join(", ") : "Location details not available";
     };
-    console.log("getLocationsError: ", getLocationsError)
+    if (getLocationsError) {
+        console.log("getLocationsError: ", getLocationsError)
+    }
     const vendorsData = data?.partners.length > 0 ? data?.partners : []
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -199,9 +202,12 @@ const SupplierForm: React.FC = () => {
         setUpdateRecordData(rowData)
         setUpdateRecordId(rowData?.partner_id)
         const updatedInitialValues = await mapRowToInitialValues(rowData);
+        const locId = rowData?.location_loc_ID ? rowData.location_loc_ID.split(", ").at(-1) ?? "" : "";
+        const sourceLocationId = rowData?.loc_of_source_loc_ID ? rowData.loc_of_source_loc_ID.split(", ").at(-1) ?? "" : "";
+        console.log("locId: ", sourceLocationId, locId)
         setFormInitialValues(updatedInitialValues);
-        setSearchKey(rowData.loc_ID)
-        setSearchKeyDestination(rowData.loc_of_source)
+        setSearchKey(locId)
+        setSearchKeyDestination(sourceLocationId)
     };
 
 
@@ -213,11 +219,11 @@ const SupplierForm: React.FC = () => {
             field: "loc_ID",
             headerName: "Supplier Location ID",
             width: 150,
-            renderCell: (params) => (
-                <Tooltip title={getLocationDetails(params.value)} arrow>
-                    <span>{params.value}</span>
-                </Tooltip>
-            ),
+            // renderCell: (params) => (
+            //     <Tooltip title={getLocationDetails(params.value)} arrow>
+            //         <span>{params.value}</span>
+            //     </Tooltip>
+            // ),
         },
         { field: 'location_pincode', headerName: 'Supplier Pincode', width: 100 },
         { field: 'location_city', headerName: 'Supplier City', width: 150 },
@@ -228,11 +234,11 @@ const SupplierForm: React.FC = () => {
             field: "loc_of_source",
             headerName: "Source Location ID",
             width: 200,
-            renderCell: (params) => (
-                <Tooltip title={getLocationDetails(params.value)} arrow>
-                    <span>{params.value}</span>
-                </Tooltip>
-            ),
+            // renderCell: (params) => (
+            //     <Tooltip title={getLocationDetails(params.value)} arrow>
+            //         <span>{params.value}</span>
+            //     </Tooltip>
+            // ),
         },
         // { field: 'pod_relevant', headerName: 'Pod relevant', width: 150 },
         {
@@ -258,9 +264,17 @@ const SupplierForm: React.FC = () => {
         },
     ];
 
+    // const rows = vendorsData.map((item: Customer) => ({
+    //     id: item.partner_id,
+    //     ...item,
+
+    // }));
+
     const rows = vendorsData.map((item: Customer) => ({
         id: item.partner_id,
         ...item,
+        loc_of_source: getLocationDetails(item?.loc_of_source),
+        loc_ID: getLocationDetails(item?.loc_ID)
     }));
 
 

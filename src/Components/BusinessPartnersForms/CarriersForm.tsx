@@ -11,7 +11,6 @@ import {
     FormControlLabel,
     Checkbox,
     Tooltip,
-    // Checkbox, FormControlLabel,
 } from '@mui/material';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
@@ -91,8 +90,6 @@ const CarrierForm: React.FC = () => {
     };
 
     const getAllLanes = lanesData?.lanes.length > 0 ? lanesData?.lanes : []
-    console.log('carriers :', data)
-    console.log('lanes :', lanesData)
     if (error) {
         console.log("err while getting carrier info :", error)
     }
@@ -106,7 +103,9 @@ const CarrierForm: React.FC = () => {
             lane.src_city,
             lane.src_state,
             lane.src_latitude,
-            lane.src_longitude
+            lane.src_longitude,
+            lane_ID
+
         ].filter(Boolean).join(", ");
 
         const destinationLocationDetails = [
@@ -115,7 +114,8 @@ const CarrierForm: React.FC = () => {
             lane.des_city,
             lane.des_state,
             lane.des_latitude,
-            lane.des_longitude
+            lane.des_longitude,
+            lane_ID
         ].filter(Boolean).join(", ");
         return `Source: ${sourceLocationDetails} | Destination: ${destinationLocationDetails}`;
     };
@@ -133,7 +133,6 @@ const CarrierForm: React.FC = () => {
     const handleDelete = async (row: CarrierFormFE) => {
         const packageId = row?.id;
         if (!packageId) {
-            console.error("Row ID is missing");
             setSnackbarMessage("Error: Vehicle ID is missing!");
             setSnackbarSeverity("error");
             setSnackbarOpen(true);
@@ -206,9 +205,6 @@ const CarrierForm: React.FC = () => {
         vehicleTypes: Yup.array().of(Yup.string()).min(1, 'Select at least one vehicle type'),
         locationIds: Yup.array().of(Yup.string()).min(1, 'Select at least one location').required('Location is required'),
         laneIds: Yup.array().of(Yup.string()).min(1, 'Select at least one lane').required('Lane IDs are required'),
-        // deviceDetails: Yup.string().required('Device Details are required'),
-        // enrollSpotAuction: Yup.boolean(),
-        // preferredCarrier: Yup.boolean(),
     });
 
     const handleCarrierSubmit = async (values: CarrierFormFE) => {
@@ -274,21 +270,40 @@ const CarrierForm: React.FC = () => {
             setSnackbarOpen(true);
         }
     };
-    const rows = data?.carriers.map((carrier: CarrierFormBE) => ({
-        id: carrier.cr_id,
-        carrierId: carrier.carrier_ID,
-        name: carrier.carrier_name,
-        address: carrier.carrier_address,
-        contactPerson: carrier.carrier_correspondence.name,
-        contactNumber: carrier.carrier_correspondence.phone,
-        emailId: carrier.carrier_correspondence.email,
-        vehicleTypes: carrier.vehicle_types_handling,
-        locationIds: carrier.carrier_loc_of_operation,
-        laneIds: carrier.carrier_lanes,
-        // deviceDetails: carrier.deviceDetails,
-        // enrollSpotAuction: carrier.enrollSpotAuction,
-        preferredCarrier: carrier.carrier_network_portal,
-    }));
+
+    const rows = data?.carriers.map((carrier: CarrierFormBE) => {
+        const locationIds = Array.isArray(carrier.carrier_loc_of_operation)
+            ? carrier.carrier_loc_of_operation
+            : [carrier.carrier_loc_of_operation];
+
+        const laneIds = Array.isArray(carrier.carrier_lanes)
+            ? carrier.carrier_lanes
+            : [carrier.carrier_lanes];
+
+        const locationDetails = locationIds
+            .map((id) => getLocationDetails(id))
+            .join(" | ");
+
+        const laneDetails = laneIds
+            .map((id) => getLaneDetails(id))
+            .join(" || ");
+
+        return {
+            id: carrier.cr_id,
+            carrierId: carrier.carrier_ID,
+            name: carrier.carrier_name,
+            address: carrier.carrier_address,
+            contactPerson: carrier.carrier_correspondence.name,
+            contactNumber: carrier.carrier_correspondence.phone,
+            emailId: carrier.carrier_correspondence.email,
+            vehicleTypes: carrier.vehicle_types_handling,
+            allLocationIdsDetails: locationDetails,
+            allLaneIdsDetails: laneDetails,
+            preferredCarrier: carrier.carrier_network_portal,
+            locationIds: locationIds,
+            laneIds: laneIds
+        };
+    }) || [];
 
     const columns: GridColDef[] = [
         { field: 'carrierId', headerName: 'Carrier ID', width: 150 },
@@ -299,41 +314,14 @@ const CarrierForm: React.FC = () => {
         { field: 'emailId', headerName: 'Email ID', width: 150 },
         { field: 'vehicleTypes', headerName: 'Vehicle Types', width: 150 },
         {
-            field: "locationIds",
+            field: "allLocationIdsDetails",
             headerName: "Locations",
-            width: 150,
-            renderCell: (params) => {
-                const locationIds = Array.isArray(params.value) ? params.value : [params.value];
-                const allLocs = locationIds.join(" | ")
-                const locationDetails = locationIds
-                    .map((id) => getLocationDetails(id))
-                    .join(" | ");
-
-                return (
-                    <Tooltip title={locationDetails} arrow>
-                        <span>{allLocs}</span>
-                    </Tooltip>
-                );
-            },
+            width: 250,
         },
         {
-            field: "lane_ID",
+            field: "allLaneIdsDetails",
             headerName: "Lane Details",
-            width: 200,
-            renderCell: (params) => {
-                const laneIDs = Array.isArray(params.row.laneIds) ? params.row.laneIds : [params.row.laneIds];
-                const allLanes = laneIDs.join(" | ")
-                console.log('lane id s :', laneIDs)
-                const laneDetails = laneIDs
-                    .map((id: string) => getLaneDetails(id))
-                    .join(" | ");
-
-                return (
-                    <Tooltip title={laneDetails} arrow>
-                        <span>{allLanes}</span>
-                    </Tooltip>
-                );
-            },
+            width: 250,
         },
         {
             field: 'preferredCarrier',
