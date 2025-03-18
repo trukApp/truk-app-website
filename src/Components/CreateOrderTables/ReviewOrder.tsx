@@ -40,7 +40,6 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks }) => {
         { field: 'pack_ID', headerName: 'Package ID', flex: 1 },
         { field: 'ship_from', headerName: 'Ship From', flex: 1 },
         { field: 'ship_to', headerName: 'Ship To', flex: 1 },
-        // { field: 'products', headerName: 'Products', flex: 2 },
         {
             field: 'products',
             headerName: 'Product Details',
@@ -70,7 +69,16 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks }) => {
         { field: 'pickup_date_time', headerName: 'Pickup Date & Time', flex: 1 },
         { field: 'dropoff_date_time', headerName: 'Dropoff Date & Time', flex: 1 },
         { field: 'tax_info', headerName: 'Tax Info', flex: 1 },
-        { field: 'return_label', headerName: 'Return Label', flex: 1 }
+        // { field: 'return_label', headerName: 'Return Label', flex: 1 }
+        {
+            field: 'return_label',
+            headerName: 'Return Label',
+            width: 150,
+            renderCell: (params: GridCellParams) => {
+                const value = params.value === 1;
+                return <span>{value ? 'True' : 'False'}</span>;
+            },
+        },
     ];
 
     const packageRows = selectedPackages.map((pkg, index) => ({
