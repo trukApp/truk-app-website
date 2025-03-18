@@ -105,67 +105,6 @@ const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
                       {Object.keys(initialValues.packageDetails[0]).map((fieldName) => (
                         <Grid item xs={12} md={2.4} key={fieldName}>
                           {(fieldName === "productId") ? (
-                            // <Autocomplete
-                            //   freeSolo
-                            //   options={productOptions}
-                            //   loading={isAllProductsLoading || isFilteredLoading}
-                            //   value={
-                            //     allProductList.find(
-                            //       (p: PackageDetails) => p.product_ID === values.packageDetails[index].productId
-                            //     ) || null
-                            //   }
-                            //   getOptionLabel={(option: Product | string) =>
-                            //     typeof option === "string" ? option : `${option.product_ID} - ${option.product_name}`
-                            //   }
-                            //   renderInput={(params) => (
-                            //     <TextField
-                            //       {...params}
-                            //       label="Product ID *"
-                            //       variant="outlined"
-                            //       size="small"
-                            //       onChange={(e) => {
-                            //         const value = e.target.value;
-                            //         setSearchKey(value);
-                            //       }}
-                            //       InputProps={{
-                            //         ...params.InputProps,
-                            //         endAdornment: (
-                            //           <>
-                            //             {(isAllProductsLoading || isFilteredLoading) ? (
-                            //               <CircularProgress color="inherit" size={20} />
-                            //             ) : null}
-                            //             {params.InputProps.endAdornment}
-                            //           </>
-                            //         ),
-                            //       }}
-                            //     />
-                            //   )}
-                            //   onChange={(e, selectedOption) => {
-                            //     if (!selectedOption) {
-                            //       setFieldValue(`packageDetails.${index}.productId`, '');
-                            //       setFieldValue(`packageDetails.${index}.productName`, '');
-                            //       setFieldValue(`packageDetails.${index}.hsnCode`, '');
-                            //       setFieldValue(`packageDetails.${index}.weight`, '');
-                            //       setFieldValue(`packageDetails.${index}.dimensions`, '');
-                            //       setFieldValue(`packageDetails.${index}.packagingType`, '');
-                            //       return;
-                            //     }
-
-                            //     const selected =
-                            //       typeof selectedOption === "string"
-                            //         ? allProductList.find((p: PackageDetails) => p.product_ID === selectedOption)
-                            //         : selectedOption;
-
-                            //     if (selected) {
-                            //       setFieldValue(`packageDetails.${index}.productId`, selected.product_ID);
-                            //       setFieldValue(`packageDetails.${index}.productName`, selected.product_name);
-                            //       setFieldValue(`packageDetails.${index}.hsnCode`, selected.hsn_code);
-                            //       setFieldValue(`packageDetails.${index}.weight`, `${selected.weight} ${selected.weight_uom}`);
-                            //       setFieldValue(`packageDetails.${index}.dimensions`, `${selected.volume} ${selected.volume_uom}`);
-                            //       setFieldValue(`packageDetails.${index}.packagingType`, selected.packaging_type[0]?.pac_ID);
-                            //     }
-                            //   }}
-                            // />
                             <Autocomplete
                               freeSolo
                               options={productOptions}

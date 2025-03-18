@@ -47,7 +47,7 @@ export interface Customer {
     partner_functions: PartnerFunctions;
     correspondence: Correspondence;
     location_loc_ID: string;
-    loc_of_source_loc_ID: string
+    loc_of_source_loc_ID: string;
 }
 
 const initialSupplierValues = {
@@ -65,7 +65,8 @@ const initialSupplierValues = {
     podRelevant: false,
     orderingAddress: '',
     goodsSupplier: '',
-    forwardingAgent: ''
+    forwardingAgent: '',
+    supplier_id: ''
 };
 
 
@@ -79,7 +80,7 @@ const SupplierForm: React.FC = () => {
     const [showForm, setShowForm] = useState(false);
     const [updateRecord, setUpdateRecord] = useState(false);
     const [formInitialValues, setFormInitialValues] = useState(initialSupplierValues);
-    const [updateRecordData, setUpdateRecordData] = useState({});
+    const [updateRecordData, setUpdateRecordData] = useState<Customer | null>(null);
     const [updateRecordId, setUpdateRecordId] = useState(0)
     const [updatePartnerDetails, { isLoading: postVendorLoading }] = useEditBusinessPartnerMutation();
     const [customerRegistration, { isLoading: editVendorLoading }] = useCustomerRegistrationMutation();
@@ -148,7 +149,7 @@ const SupplierForm: React.FC = () => {
     const mapRowToInitialValues = (rowData: Customer) => ({
         supplierID: rowData.supplier_id || '',
         name: rowData.name || '',
-        locationId: rowData.loc_ID || '',
+        locationId: rowData.location_loc_ID || '',
         pincode: rowData.location_pincode || '',
         state: rowData.location_state || '',
         city: rowData.location_city || '',
@@ -157,11 +158,13 @@ const SupplierForm: React.FC = () => {
         contactPerson: rowData?.correspondence?.contact_person || '',
         contactNumber: rowData?.correspondence?.contact_number || '',
         emailId: rowData?.correspondence?.email || '',
-        locationOfSource: rowData.loc_of_source,
+        locationOfSource: rowData.loc_of_source_loc_ID,
         podRelevant: rowData?.pod_relevant === 1,
         forwardingAgent: rowData?.partner_functions?.forwarding_agent || '',
         goodsSupplier: rowData?.partner_functions?.goods_supplier || '',
         orderingAddress: rowData?.partner_functions?.ordering_address || '',
+        supplier_id: rowData.supplier_id || '',
+
     });
 
     const handleDelete = async (rowData: Customer) => {
@@ -209,38 +212,25 @@ const SupplierForm: React.FC = () => {
         setSearchKey(locId)
         setSearchKeyDestination(sourceLocationId)
     };
-
+    console.log("formInitialValues: ", formInitialValues)
 
     const columns: GridColDef[] = [
         { field: 'supplier_id', headerName: 'Supplier ID', width: 150 },
         { field: 'name', headerName: 'Name', width: 200 },
-        // { field: 'loc_ID', headerName: 'Supplier Location ID', width: 150 },
         {
             field: "loc_ID",
             headerName: "Supplier Location ID",
             width: 150,
-            // renderCell: (params) => (
-            //     <Tooltip title={getLocationDetails(params.value)} arrow>
-            //         <span>{params.value}</span>
-            //     </Tooltip>
-            // ),
         },
         { field: 'location_pincode', headerName: 'Supplier Pincode', width: 100 },
         { field: 'location_city', headerName: 'Supplier City', width: 150 },
         { field: 'location_state', headerName: 'Supplier State', width: 150 },
         { field: 'location_country', headerName: 'Supplier Country', width: 150 },
-        // { field: 'loc_of_source', headerName: 'Source Location ID', width: 150 },
         {
             field: "loc_of_source",
             headerName: "Source Location ID",
             width: 200,
-            // renderCell: (params) => (
-            //     <Tooltip title={getLocationDetails(params.value)} arrow>
-            //         <span>{params.value}</span>
-            //     </Tooltip>
-            // ),
         },
-        // { field: 'pod_relevant', headerName: 'Pod relevant', width: 150 },
         {
             field: 'actions',
             headerName: 'Actions',
@@ -264,20 +254,12 @@ const SupplierForm: React.FC = () => {
         },
     ];
 
-    // const rows = vendorsData.map((item: Customer) => ({
-    //     id: item.partner_id,
-    //     ...item,
-
-    // }));
-
     const rows = vendorsData.map((item: Customer) => ({
         id: item.partner_id,
         ...item,
         loc_of_source: getLocationDetails(item?.loc_of_source),
         loc_ID: getLocationDetails(item?.loc_ID)
     }));
-
-
 
     const supplierValidationSchema = Yup.object({
         // supplierId: Yup.string().required('Supplier ID is required'),
@@ -318,8 +300,10 @@ const SupplierForm: React.FC = () => {
                     }
                 ]
             }
+            console.log("values: ", updateRecordData)
             const editBody = {
-                ...updateRecordData,
+                // ...updateRecordData,
+                supplier_id: updateRecordData?.supplier_id,
                 name: values?.name,
                 partner_type: "vendor",
                 loc_ID: values?.locationId,
@@ -336,6 +320,9 @@ const SupplierForm: React.FC = () => {
                     forwarding_agent: values?.forwardingAgent
                 }
             }
+
+
+            console.log("editBody: ", editBody)
             if (updateRecord) {
                 const response = await updatePartnerDetails({ body: editBody, partnerId: updateRecordId }).unwrap();
                 if (response?.updated_record) {
@@ -359,7 +346,7 @@ const SupplierForm: React.FC = () => {
                     setShowForm(false)
                     setUpdateRecord(false)
                     setUpdateRecordId(0)
-                    setUpdateRecordData({})
+                    setUpdateRecordData(null)
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
                     setSearchKey('')
@@ -374,8 +361,6 @@ const SupplierForm: React.FC = () => {
             setSnackbarOpen(true);
         }
     };
-
-
 
     return (
         <div className={styles.formsMainContainer}>

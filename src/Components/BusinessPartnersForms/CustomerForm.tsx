@@ -67,7 +67,9 @@ interface Customer {
     loc_of_source_country: string;
     partner_functions: PartnerFunctions;
     correspondence: Correspondence;
-    loc_ID: string
+    loc_ID: string;
+    location_loc_ID: string;
+    loc_of_source_loc_ID: string
 }
 
 const initialCustomerValues = {
@@ -82,11 +84,12 @@ const initialCustomerValues = {
     contactPerson: '',
     contactNumber: '',
     emailId: '',
-    locationOfSource: [] as string[],
+    locationOfSource: '',
     podRelevant: false,
     shipToParty: '',
     soldToParty: '',
     billToParty: '',
+
 };
 
 
@@ -100,7 +103,8 @@ const CustomerForm: React.FC = () => {
     const [showForm, setShowForm] = useState(false);
     const [updateRecord, setUpdateRecord] = useState(false);
     const [formInitialValues, setFormInitialValues] = useState(initialCustomerValues);
-    const [updateRecordData, setUpdateRecordData] = useState({});
+    // const [updateRecordData, setUpdateRecordData] = useState({});
+    const [updateRecordData, setUpdateRecordData] = useState<Customer | null>(null);
     const [updateRecordId, setUpdateRecordId] = useState(0)
     const [updatePartnerDetails, { isLoading: editCustomerLoading }] = useEditBusinessPartnerMutation();
     const [customerRegistration, { isLoading: postCustomerLoading }] = useCustomerRegistrationMutation();
@@ -172,7 +176,7 @@ const CustomerForm: React.FC = () => {
     const mapRowToInitialValues = (rowData: Customer) => ({
         customerId: rowData.customer_id || '',
         name: rowData.name || '',
-        locationId: rowData.loc_ID || '',
+        locationId: rowData.location_loc_ID || '',
         pincode: rowData.location_pincode || '',
         state: rowData.location_state || '',
         city: rowData.location_city || '',
@@ -181,7 +185,7 @@ const CustomerForm: React.FC = () => {
         contactPerson: rowData?.correspondence?.contact_person || '',
         contactNumber: rowData?.correspondence?.contact_number || '',
         emailId: rowData?.correspondence?.email || '',
-        locationOfSource: [rowData.loc_of_source],
+        locationOfSource: rowData.loc_of_source_loc_ID,
         podRelevant: rowData?.pod_relevant === 1,
         shipToParty: rowData?.partner_functions?.ship_to_party || '',
         soldToParty: rowData?.partner_functions?.sold_to_party || '',
@@ -302,9 +306,10 @@ const CustomerForm: React.FC = () => {
                     }
                 ]
             }
-
+            console.log("values: ", values)
             const editBody = {
-                ...updateRecordData,
+                // ...updateRecordData,
+                customer_id: updateRecordData?.customer_id,
                 name: values?.name,
                 partner_type: "customer",
                 loc_ID: values?.locationId,
@@ -321,7 +326,9 @@ const CustomerForm: React.FC = () => {
                     bill_to_party: values?.billToParty
                 }
             }
+            console.log("editBody: ", editBody)
             if (updateRecord) {
+
                 const response = await updatePartnerDetails({ body: editBody, partnerId: updateRecordId }).unwrap();
                 if (response?.updated_record) {
                     setSnackbarMessage(`Customer ID ${response.updated_record} updated successfully!`);
@@ -330,7 +337,7 @@ const CustomerForm: React.FC = () => {
                     setUpdateRecord(false)
                     setFormInitialValues(initialCustomerValues)
                     setUpdateRecordId(0)
-                    setUpdateRecordData({})
+                    setUpdateRecordData(null)
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
                     setSearchKey('')
@@ -344,7 +351,7 @@ const CustomerForm: React.FC = () => {
                     setShowForm(false)
                     setUpdateRecord(false)
                     setUpdateRecordId(0)
-                    setUpdateRecordData({})
+                    setUpdateRecordData(null)
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
                     resetForm()
