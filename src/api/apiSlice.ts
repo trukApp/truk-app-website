@@ -48,6 +48,8 @@ export const apiSlice = createApi({
     "CreateOrder",
     "PackagesForOrder",
     "Orders",
+    "AssignedOrders",
+    "SingleVehicleMaster",
   ],
   endpoints: (builder) => ({
     userLogin: builder.mutation<User, { phone: string; password: string }>({
@@ -130,6 +132,15 @@ export const apiSlice = createApi({
       invalidatesTags: [{ type: "DRIVERS", id: "LIST" }],
     }),
 
+    getFilteredDrivers: builder.query({
+      query: (searchKey) => ({
+        url: `driver/search-drivers`,
+        method: "GET",
+        params: { searchKey },
+      }),
+      providesTags: [{ type: "DRIVERS", id: "SEARCH" }],
+    }),
+
     editDriver: builder.mutation({
       query: ({ body, driverId }) => ({
         url: `driver/edit-driver?driver_id=${driverId}`,
@@ -194,6 +205,15 @@ export const apiSlice = createApi({
       providesTags: [{ type: "LocationMaster", id: "LIST" }],
     }),
 
+    getFilteredLocations: builder.query({
+      query: (searchKey) => ({
+        url: `masLoc/search-locations`,
+        method: "GET",
+        params: { searchKey },
+      }),
+      providesTags: [{ type: "LocationMaster", id: "SEARCH" }],
+    }),
+
     postLocationMaster: builder.mutation({
       query: (body) => ({
         url: "masLoc/create-location",
@@ -254,6 +274,15 @@ export const apiSlice = createApi({
         };
       },
       providesTags: [{ type: "VehicleMaster", id: "LIST" }],
+    }),
+
+    getFilteredVehicles: builder.query({
+      query: (searchKey) => ({
+        url: `veh/search-trucks`,
+        method: "GET",
+        params: { searchKey },
+      }),
+      providesTags: [{ type: "VehicleMaster", id: "SEARCH" }],
     }),
 
     postVehicleMaster: builder.mutation({
@@ -436,6 +465,15 @@ export const apiSlice = createApi({
       providesTags: [{ type: "ProductMaster", id: "LIST" }],
     }),
 
+    getFilteredProducts: builder.query({
+      query: (searchKey) => ({
+        url: `masterProducts/search-products`,
+        method: "GET",
+        params: { searchKey },
+      }),
+      providesTags: [{ type: "ProductMaster", id: "LIST" }],
+    }),
+
     createProduct: builder.mutation({
       query: (body) => ({
         url: "masterProducts/add-products",
@@ -477,7 +515,10 @@ export const apiSlice = createApi({
         method: "GET",
         params,
       }),
-      providesTags: [{ type: "PackagesForOrder", id: "LIST" }],
+      providesTags: [
+        { type: "PackagesForOrder", id: "LIST" },
+        { type: "Orders", id: "LIST" },
+      ],
     }),
 
     createPackageForOrder: builder.mutation({
@@ -546,6 +587,91 @@ export const apiSlice = createApi({
       }),
       providesTags: [{ type: "Orders", id: "LIST" }],
     }),
+
+    getAllAssignedOrders: builder.query({
+      query: (params) => ({
+        url: `ao/assigned-orders`,
+        method: "GET",
+        params,
+      }),
+      providesTags: [{ type: "AssignedOrders", id: "LIST" }],
+    }),
+    postAssignOrder: builder.mutation({
+      query: (body) => {
+        return {
+          url: "ao/assign-order",
+          method: "POST",
+          body,
+        };
+      },
+      invalidatesTags: [{ type: "AssignedOrders", id: "LIST" }],
+    }),
+
+    editAssignOrderOrder: builder.mutation({
+      query: ({ body, id }) => ({
+        url: `ao/update-assigned-order?assigning_id=1${id}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: [{ type: "AssignedOrders", id: "LIST" }],
+    }),
+
+    // image uploading
+    imageUploading: builder.mutation({
+      query: (formData) => {
+        return {
+          url: "image/upload",
+          method: "POST",
+          body: formData,
+        };
+      },
+    }),
+
+    //single vehciles master
+    getSingleVehicleMaster: builder.query({
+      query: (params) => {
+        return {
+          url: `veh/all-vehicles`,
+          method: "GET",
+          params,
+        };
+      },
+      providesTags: [{ type: "SingleVehicleMaster", id: "LIST" }],
+    }),
+
+    postSingleVehicleMaster: builder.mutation({
+      query: (body) => ({
+        url: "veh/add-vehicles",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "SingleVehicleMaster", id: "LIST" }],
+    }),
+
+    editSingleVehicleMaster: builder.mutation({
+      query: ({ body, truckId }) => ({
+        url: `veh/edit-vehicle?truk_id=${truckId}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: [{ type: "SingleVehicleMaster", id: "LIST" }],
+    }),
+
+    deleteSingleVehicleMaster: builder.mutation({
+      query: (truckId) => ({
+        url: `veh/delete-vehicle?truk_id=${truckId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [{ type: "SingleVehicleMaster", id: "LIST" }],
+    }),
+
+    getAssignedOrderById: builder.query({
+      query: (params) => ({
+        url: `ao/assigned-order`,
+        method: "GET",
+        params,
+      }),
+    }),
   }),
 });
 
@@ -557,6 +683,7 @@ export const {
   useGetAllCustomersDataQuery,
   useGetAllVendorsDataQuery,
   useGetAllDriversDataQuery,
+  useGetFilteredDriversQuery,
   useEditBusinessPartnerMutation,
   useDeleteBusinessPartnerMutation,
   useEditDriverMutation,
@@ -570,6 +697,7 @@ export const {
   useEditLocationMasterMutation,
   useDeleteLocationMasterMutation,
   useGetVehicleMasterQuery,
+  useGetFilteredVehiclesQuery,
   usePostVehicleMasterMutation,
   useEditVehicleMasterMutation,
   useDeleteVehicleMasterMutation,
@@ -605,4 +733,15 @@ export const {
   useUpdateShipFromDefaultLocationIdMutation,
   useUpdateShipToDefaultLocationIdMutation,
   useUpdateBillToDefaultLocationIdMutation,
+  useGetFilteredLocationsQuery,
+  useGetAllAssignedOrdersQuery,
+  usePostAssignOrderMutation,
+  useEditAssignOrderOrderMutation,
+  useImageUploadingMutation,
+  useGetSingleVehicleMasterQuery,
+  usePostSingleVehicleMasterMutation,
+  useEditSingleVehicleMasterMutation,
+  useDeleteSingleVehicleMasterMutation,
+  useGetAssignedOrderByIdQuery,
+  useGetFilteredProductsQuery,
 } = apiSlice;

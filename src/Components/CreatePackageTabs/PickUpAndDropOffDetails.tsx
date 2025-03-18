@@ -22,9 +22,18 @@ export interface FormValues {
 
 
 const validationSchema = Yup.object({
-    pickupDateTime: Yup.string().required('Pick up date & time is required'),
-    dropoffDateTime: Yup.string().required('Drop off date & time is required'),
-    // notes: Yup.string().max(300, 'Notes must be 300 characters or less'),
+      pickupDateTime: Yup.string()
+    .required("Pick-up Date & Time is required"),
+  dropoffDateTime: Yup.string()
+    .required("Drop-off Date & Time is required")
+    .test(
+      "is-greater",
+      "Drop-off Date & Time must be after Pick-up Date & Time",
+      function (value) {
+        const { pickupDateTime } = this.parent;
+        return !pickupDateTime || !value || new Date(value) > new Date(pickupDateTime);
+      }
+    ),
 });
 
 
@@ -38,7 +47,6 @@ const PickupDropoff: React.FC<PickupDropTab> = ({ onNext, onBack }) => {
         dropoffDateTime: '',
         notes: '',
     };
-
     const handleFormSubmit = (values: FormValues, actions: FormikHelpers<FormValues>, onNext: (values: FormValues) => void) => {
         dispatch(setPackagePickAndDropTimings(values))
         // dispatch(setCompletedState(5));
@@ -54,7 +62,7 @@ const PickupDropoff: React.FC<PickupDropTab> = ({ onNext, onBack }) => {
             validationSchema={validationSchema}
             onSubmit={(values, actions) => handleFormSubmit(values, actions, onNext)}
         >
-            {({ errors, touched }) => (
+            {({ errors, touched , values }) => (
                     <Form style={{ width: '100%' }}>
                           <Typography variant="h6" sx={{fontWeight:'bold', textAlign:'center' , marginTop:4, marginBottom:1}}>Pickup and dropoff Details</Typography>
                         <Grid container spacing={2}
@@ -74,22 +82,30 @@ const PickupDropoff: React.FC<PickupDropTab> = ({ onNext, onBack }) => {
                                 InputLabelProps={{ shrink: true }}
                                 error={touched.pickupDateTime && Boolean(errors.pickupDateTime)}
                                 helperText={touched.pickupDateTime && errors.pickupDateTime}
+                                inputProps={{
+                            min: new Date().toISOString().slice(0, 16), 
+                        }}
                             />
                         </Grid>
 
                         {/* Drop off Date & Time */}
-                        <Grid  item xs={12} md={3}>
-                            <Field
-                                as={TextField}
-                                type="datetime-local"
-                                name="dropoffDateTime"
-                                label="Drop off Date & Time (Estimated)"
-                                fullWidth size='small'
-                                InputLabelProps={{ shrink: true }}
-                                error={touched.dropoffDateTime && Boolean(errors.dropoffDateTime)}
-                                helperText={touched.dropoffDateTime && errors.dropoffDateTime}
-                            />
-                        </Grid>
+                            <Grid item xs={12} md={3}>
+                                <Field
+                                    as={TextField}
+                                    type="datetime-local"
+                                    name="dropoffDateTime"
+                                    label="Drop off Date & Time (Estimated)"
+                                    fullWidth
+                                    size="small"
+                                    InputLabelProps={{ shrink: true }}
+                                    error={touched.dropoffDateTime && Boolean(errors.dropoffDateTime)}
+                                    helperText={(touched.dropoffDateTime && errors.dropoffDateTime)}
+                                    inputProps={{
+                                        min: values.pickupDateTime ? values.pickupDateTime  : new Date().toISOString().slice(0, 16),
+                                    }}
+                                />
+                            </Grid>
+
 
                         {/* Optional Notes */}
                         <Grid item xs={12} md={6}>
@@ -98,8 +114,6 @@ const PickupDropoff: React.FC<PickupDropTab> = ({ onNext, onBack }) => {
                                 name="notes"
                                 label="Notes (Optional)"
                                 fullWidth size='small'
-                                // multiline
-                                // rows={3}
                             />
                         </Grid>
 

@@ -22,11 +22,11 @@ declare module "next-auth" {
   }
 }
 const refreshAccessToken = async (refreshToken: string) => {
-  console.log('token to refresh the accessToken :', refreshToken)
+  console.log("token to refresh the accessToken :", refreshToken);
   try {
     const response = await fetch(
-      // `https://dev-api.trukapp.com/truk/log/refresh-token`,
-       `http://192.168.10.40:8088/truk/log/refresh-token`,    // teja ofc
+      `https://dev-api.trukapp.com/truk/log/refresh-token`,
+      //  `http://192.168.10.33:8088/truk/log/refresh-token`,    // teja ofc
       {
         method: "POST",
         headers: {
@@ -35,17 +35,17 @@ const refreshAccessToken = async (refreshToken: string) => {
         body: JSON.stringify({ refreshToken }),
       }
     );
-   
+
     if (!response.ok) {
-      console.log('refresh token err :', response.statusText)
+      console.log("refresh token err :", response.statusText);
       throw new Error(`Failed to refresh access token: ${response.statusText}`);
     }
 
     const data = await response.json();
-    console.log('refreshtoken success response :', data)
+    console.log("refreshtoken success response :", data);
     return {
       accessToken: data.accessToken,
-      refreshToken:   refreshToken,
+      refreshToken: refreshToken,
       accessTokenExpires: Date.now() + 24 * 60 * 60 * 1000,
     };
   } catch (error) {
@@ -75,15 +75,14 @@ export const options: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.phone) {
           throw new Error("Phone number is required");
-        }
-        else if (!credentials?.password) {
+        } else if (!credentials?.password) {
           throw new Error("Password is required");
         }
 
         try {
           const response = await fetch(
-            // `https://dev-api.trukapp.com/truk/log/login`,
-            `http://192.168.10.40:8088/truk/log/login`,    // teja ofc
+            `https://dev-api.trukapp.com/truk/log/login`,
+            // `http://192.168.10.33:8088/truk/log/login`,    // teja ofc
             {
               method: "POST",
               headers: {
@@ -95,15 +94,14 @@ export const options: NextAuthOptions = {
               }),
             }
           );
-          console.log("login response :", response)
+          console.log("login response :", response);
           if (response.status === 404) {
-              throw new Error("You dont have an account to login");
-          }
-          else if (response.status === 500) {
+            throw new Error("You dont have an account to login");
+          } else if (response.status === 500) {
             throw new Error("Internal server occured , try after sometime...");
           }
           const user = await response.json();
-          console.log("user is :", user)
+          console.log("user is :", user);
           if (user && user.accessToken) {
             return {
               id: user.profile_id,
@@ -115,7 +113,7 @@ export const options: NextAuthOptions = {
           throw new Error("Check the password you have entered");
         } catch (error) {
           console.error("Login error:", error);
-          throw error
+          throw error;
         }
       },
     }),
@@ -133,24 +131,23 @@ export const options: NextAuthOptions = {
         };
       }
       const expiryToken = token.accessTokenExpires as number;
-      console.log('token expires in milli secs:', expiryToken- Date.now())
+      console.log("token expires in milli secs:", expiryToken - Date.now());
 
       if (Date.now() < expiryToken) {
         return token;
       }
-      
 
       // Access token has expired, refresh it
       try {
         const refreshedToken = await refreshAccessToken(
           token.refreshToken as string
         );
-        console.log('refreshedToken',refreshedToken )
+        console.log("refreshedToken", refreshedToken);
         return {
           ...token,
           accessToken: refreshedToken.accessToken,
           accessTokenExpires: refreshedToken.accessTokenExpires,
-          refreshToken:token.refreshToken,
+          refreshToken: token.refreshToken,
         };
       } catch (error) {
         console.error("Failed to refresh token:", error);
@@ -158,15 +155,15 @@ export const options: NextAuthOptions = {
       }
     },
 
- 
-
     async session({ session, token }) {
       session.user = {
         id: token.id as string,
         accessToken: token.accessToken as string,
         refreshToken: token.refreshToken as string,
       };
-       session.expires = new Date(Number(token.accessTokenExpires)).toISOString();
+      session.expires = new Date(
+        Number(token.accessTokenExpires)
+      ).toISOString();
       if (token.error === "RefreshAccessTokenError") {
         session.error = "RefreshAccessTokenError";
       }
@@ -192,4 +189,3 @@ export const options: NextAuthOptions = {
     secret: process.env.NEXTAUTH_SECRET,
   },
 };
-

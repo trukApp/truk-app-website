@@ -16,8 +16,6 @@ export interface IShipFrom {
   locationId: string;
   phoneNumber: string;
   pincode: string;
-  // saveAsDefaultShipFromLocation: boolean;
-  // saveAsNewLocationId: boolean;
   state: string;
   latitude: string;
   longitude: string;
@@ -45,7 +43,6 @@ export interface IShipTo {
   locationType: string;
   glnCode: string;
   iataCode: string;
-  // def_ship_to: number | boolean;
 }
 
 export interface IProductDetail {
@@ -57,6 +54,7 @@ export interface IProductDetail {
   quantity: string;
   rfid: string;
   weight: string;
+  product_ID: string;
 }
 
 export interface IPackageTax {

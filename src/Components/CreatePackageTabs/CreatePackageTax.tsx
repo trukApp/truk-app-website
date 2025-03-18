@@ -1,12 +1,14 @@
 'use client';
-import React from 'react';
-import { Formik, Form, Field, FormikHelpers, } from 'formik';
+import React, { useState } from 'react';
+import { Formik, Form, Field } from 'formik';
 import { Grid, TextField, Typography, } from '@mui/material';
 import * as Yup from 'yup';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setPackageTax } from '@/store/authSlice';
 import { CustomButtonFilled, CustomButtonOutlined } from '../ReusableComponents/ButtonsComponent';
 import styles from './CreatePackage.module.css';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
+
 
 interface TaxInfoValues {
     taxInfo: {
@@ -40,8 +42,11 @@ const validationSchema = Yup.object().shape({
 const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
     const dispatch = useAppDispatch()
     const packageTaxFromRedux = useAppSelector((state) => state.auth.packageTax)
+    const [openConfirm, setOpenConfirm] = useState(false);
+    const [formValues, setFormValues] = useState<TaxInfoValues | null>(null);
+
     const initialValues: TaxInfoValues = {
-        taxInfo: packageTaxFromRedux ? packageTaxFromRedux : {
+        taxInfo: packageTaxFromRedux || {
             senderGSTN: '',
             receiverGSTN: '',
             carrierGSTN: '',
@@ -50,12 +55,19 @@ const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
         },
     };
 
-    const handleSubmit = async (values: TaxInfoValues, actions: FormikHelpers<TaxInfoValues>, onSubmit: (values: TaxInfoValues) => void) => {
-        dispatch(setPackageTax(values.taxInfo))
-        // dispatch(setCompletedState(5));
-        actions.setSubmitting(false);
-        onSubmit(values);
 
+
+    const handleCreatePackageClick = (values: TaxInfoValues) => {
+        dispatch(setPackageTax(values.taxInfo)); // Save to Redux
+        setFormValues(values); // Temporarily store
+        setOpenConfirm(true);  // Show popup
+    };
+
+    const handleFinalSubmit = () => {
+        if (formValues) {
+            onSubmit(formValues);
+            setOpenConfirm(false);
+        }
     };
 
     return (
@@ -63,7 +75,7 @@ const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
             <Formik
                 initialValues={initialValues}
                 validationSchema={validationSchema}
-                onSubmit={(values, actions) => handleSubmit(values, actions, onSubmit)}
+                onSubmit={(values) => handleCreatePackageClick(values)}
             >
                 {({ touched, errors }) => (
                     <Form style={{ width: '100%' }}>
@@ -126,22 +138,32 @@ const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
                             {/* Navigation Buttons */}
                             <Grid container spacing={2} justifyContent="center" marginTop={2}>
                                 <Grid item>
-                                    {/* <Button variant="outlined" onClick={onBack}>
-                                        Back
-                                    </Button> */}
                                     <CustomButtonOutlined onClick={onBack}>Back</CustomButtonOutlined>
                                 </Grid>
                                 <Grid item>
-                                    {/* <Button type="submit" variant="contained" color="primary">
-                                        Submit
-                                    </Button> */}
-                                    <CustomButtonFilled >Submit</CustomButtonFilled>
+                                    <CustomButtonFilled type="submit">Create Package</CustomButtonFilled>
                                 </Grid>
                             </Grid>
                         </Grid>
                     </Form>
                 )}
             </Formik>
+
+            <Dialog open={openConfirm} onClose={() => setOpenConfirm(false)}>
+                <DialogTitle>Confirm Submission</DialogTitle>
+                <DialogContent>
+                    Are you sure you want to create the package ?
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setOpenConfirm(false)} color="secondary">
+                        Cancel
+                    </Button>
+                    <Button onClick={handleFinalSubmit} color="primary" variant="contained">
+                        Submit
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
 
         </>
     );

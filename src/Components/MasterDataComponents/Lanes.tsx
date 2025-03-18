@@ -1,18 +1,17 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Backdrop,
   Box,
   Button,
   CircularProgress,
   Collapse,
-  FormControl,
-  FormHelperText,
   Grid,
   IconButton,
-  InputLabel,
+  List,
+  ListItem,
   MenuItem,
-  Select,
+  Paper,
   TextField,
   Tooltip,
   Typography,
@@ -25,7 +24,7 @@ import { DataGridComponent } from '../GridComponent';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import styles from './MasterData.module.css'
-import { useGetLanesMasterQuery, usePostLaneMasterMutation, useEditLaneMasterMutation, useDeleteLaneMasterMutation, useGetLocationMasterQuery, } from '@/api/apiSlice';
+import { useGetLanesMasterQuery, usePostLaneMasterMutation, useEditLaneMasterMutation, useDeleteLaneMasterMutation, useGetLocationMasterQuery, useGetFilteredLocationsQuery, } from '@/api/apiSlice';
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MassUpload from '../MassUpload/MassUpload';
@@ -62,14 +61,6 @@ interface LaneDetails {
   carrierEndDate: string;
   carrierCost: string;
 }
-// interface unitsOfMeasure {
-//   unit_name: string;
-//   unit_desc: string;
-//   alt_unit_name :string;
-//   alt_unit_desc :string;
-
-// }
-
 export interface Lane {
   des_state: string;
   des_city: string;
@@ -95,6 +86,8 @@ export interface Lane {
 
 }
 const TransportationLanes = () => {
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const wrapperRefDest = useRef<HTMLDivElement>(null);
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10, });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -108,25 +101,56 @@ const TransportationLanes = () => {
   const [postLane, { isLoading: postLaneLoading }] = usePostLaneMasterMutation();
   const [editLane, { isLoading: editLaneLoading }] = useEditLaneMasterMutation();
   const [deleteLane, { isLoading: deleteLaneLoading }] = useDeleteLaneMasterMutation()
-  const { data: locationsData, isLoading: isLocationLoading } = useGetLocationMasterQuery({});
+  const { data: locationsData, } = useGetLocationMasterQuery({});
   const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
-   const getLocationDetails = (loc_ID: string) => {
-      const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
-      if (!location) return "Location details not available";
-        const details = [
-          location.address_1,
-          location.address_2,
-          location.city,
-          location.state,
-          location.country,
-          location.pincode
-        ].filter(Boolean);
-  
-        return details.length > 0 ? details.join(", ") : "Location details not available";
-    };
+  const [searchKey, setSearchKey] = useState('');
+  const [searchKeyDestination, setSearchKeyDestination] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showDestinations, setShowDestinations] = useState(false);
+  const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
+  const { data: destinationFilteredLocations } = useGetFilteredLocationsQuery(searchKeyDestination.length >= 3 ? searchKeyDestination : null, { skip: searchKeyDestination.length < 3 });
+  const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
+  const displayLocationsDest = searchKeyDestination ? destinationFilteredLocations?.results || [] : getAllLocations;
+  const getLocationDetails = (loc_ID: string) => {
+    const location = getAllLocations.find((loc: Location) => loc?.loc_ID === loc_ID);
+    if (!location) return "Location details not available";
+    const details = [
+      location.address_1,
+      location.city,
+      location.state,
+      location.country,
+      location.pincode,
+      location.loc_ID
+    ].filter(Boolean);
+
+    return details.length > 0 ? details.join(", ") : "Location details not available";
+  };
   if (error) {
     console.error("Error fetching lanes:", error);
   }
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (wrapperRefDest.current && !wrapperRefDest.current.contains(event.target as Node)) {
+        setShowDestinations(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
     setPaginationModel(newPaginationModel);
@@ -144,7 +168,7 @@ const TransportationLanes = () => {
               end_time: values.transportEndDate,
               transport_distance: `${values.transportDistance} ${values.transportDistanceUnits}`,
               transport_duration: `${values.transportDuration} ${values.transportDurationUnits}`,
-              transport_cost: `${values.transportCost} ${values.transportCostUnits}`
+              transport_cost: `${values.transportCost}`
             }
           },
         ]
@@ -158,7 +182,7 @@ const TransportationLanes = () => {
           end_time: values.transportEndDate,
           transport_distance: `${values.transportDistance} ${values.transportDistanceUnits}`,
           transport_duration: `${values.transportDuration} ${values.transportDurationUnits}`,
-          transport_cost: `${values.transportCost} ${values.transportCostUnits}`
+          transport_cost: `${values.transportCost}`
         }
       }
       if (isEditing && editRow) {
@@ -171,6 +195,8 @@ const TransportationLanes = () => {
           setSnackbarSeverity("success");
           setSnackbarOpen(true);
           setShowForm(false)
+          setSearchKey("")
+          setSearchKeyDestination("")
         }
 
       }
@@ -182,6 +208,8 @@ const TransportationLanes = () => {
           setSnackbarSeverity("success");
           setSnackbarOpen(true);
           setShowForm(false)
+          setSearchKey("")
+          setSearchKeyDestination("")
         }
       }
 
@@ -272,30 +300,24 @@ const TransportationLanes = () => {
       transportDistance: Yup.string().required('Transport Distance is required'),
       transportDuration: Yup.string().required('Transport Duration is required'),
       transportCost: Yup.string().required('Transport Cost is required'),
-
-      // Carrier Data
-      // carrierId: Yup.string().required('Carrier ID is required'),
-      // carrierName: Yup.string().required('Carrier Name is required'),
-      // carrierVehicleType: Yup.string().required('Vehicle Type is required'),
-      // carrierStartDate: Yup.date().required('Start Date is required'),
-      // carrierEndDate: Yup.date().required('End Date is required'),
-      // carrierCost: Yup.string().required('Carrier Cost is required'),
     }),
     onSubmit: handleFormSubmit
   });
 
   useEffect(() => {
     if (editRow) {
+      const sourceLocId = editRow?.sourceLocationId ? editRow.sourceLocationId.split(", ").at(-1) ?? "" : "";
+       const destiLocId = editRow?.destinationLocationId ? editRow.destinationLocationId.split(", ").at(-1) ?? "" : "";
+      setSearchKey(sourceLocId || '')
+      setSearchKeyDestination(destiLocId|| '')
       const editDistance = editRow.transportDistance.split(" ")
       const editDuration = editRow?.transportDuration.split(" ")
       const editCost = editRow.transportCost.split(" ");
       formik.setValues({
         id: editRow.id || '',
         laneId: editRow.laneId || '',
-        sourceLocationId: editRow.sourceLocationId || '',
-        destinationLocationId: editRow.destinationLocationId || '',
-
-        // Transport Data
+        sourceLocationId: sourceLocId || '',
+        destinationLocationId: destiLocId || '',
         vehicleType: editRow.vehicleType || '',
         transportStartDate: editRow.transportStartDate || '',
         transportEndDate: editRow.transportEndDate || '',
@@ -315,15 +337,14 @@ const TransportationLanes = () => {
         carrierCost: editRow.carrierCost || '',
       });
     }
-  }, [editRow, formik]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editRow]);
 
   const rows = data?.lanes.map((lane: Lane) => ({
     id: lane?.ln_id,
     laneId: lane?.lane_ID,
-    // sourceLocationId: lane?.src_loc_ID,
-    // destinationLocationId: lane?.des_loc_ID,
-    sourceLocationId: lane?.src_loc_ID,
-    destinationLocationId: lane?.des_loc_ID,
+    sourceLocationId : getLocationDetails(lane?.src_loc_ID),
+    destinationLocationId: getLocationDetails(lane?.des_loc_ID),
     vehicleType: lane.lane_transport_data?.vehcle_type || "Unknown",
     transportStartDate: lane?.lane_transport_data?.start_time || "N/A",
     transportEndDate: lane?.lane_transport_data?.end_time || "N/A",
@@ -334,49 +355,19 @@ const TransportationLanes = () => {
     transportCost: lane?.lane_transport_data?.transport_cost
       ? `${lane?.lane_transport_data?.transport_cost}`
       : "N/A",
-    // carrierId: `CARRIER-${id + 1}`,
-    // carrierName: `Carrier ${id + 1}`,
-    // carrierVehicleType: lane.lane_transport_data?.vehcle_type || "N/A",
-    // carrierStartDate: lane.lane_transport_data?.start_time || "N/A",
-    // carrierEndDate: lane.lane_transport_data?.end_time || "N/A",
-    // carrierCost: `$${800 + id * 40}`,
   }));
 
 
   const columns: GridColDef[] = [
     { field: "laneId", headerName: "Lane ID", width: 150 },
-        {
-        field: "sourceLocationId",
-        headerName: "Source Location ID",
-        width: 150,
-        renderCell: (params) => (
-          <Tooltip  title={getLocationDetails(params.value)} arrow>
-            <span>{params.value}</span>
-          </Tooltip>
-        ),
-      },
-      {
-          field: "destinationLocationId",
-          headerName: "Destination Location",
-          width: 150,
-          renderCell: (params) => (
-            <Tooltip title={getLocationDetails(params.value)} arrow>
-            <span>{params.value}</span>
-            </Tooltip>
-          ),
-          },
+    {field: "sourceLocationId",headerName: "Source Location ID",width: 250},
+    {field: "destinationLocationId",headerName: "Destination Location",width: 250},
     { field: "vehicleType", headerName: "Vehicle Type", width: 150 },
     { field: "transportStartDate", headerName: "Transport Start Date", width: 180 },
     { field: "transportEndDate", headerName: "Transport End Date", width: 180 },
     { field: "transportDistance", headerName: "Transport Distance", width: 160 },
     { field: "transportDuration", headerName: "Transport Duration", width: 160 },
     { field: "transportCost", headerName: "Transport Cost", width: 150 },
-    // { field: "carrierId", headerName: "Carrier ID", width: 150 },
-    // { field: "carrierName", headerName: "Carrier Name", width: 180 },
-    // { field: "carrierVehicleType", headerName: "Carrier Vehicle Type", width: 180 },
-    // { field: "carrierStartDate", headerName: "Carrier Start Date", width: 180 },
-    // { field: "carrierEndDate", headerName: "Carrier End Date", width: 180 },
-    // { field: "carrierCost", headerName: "Carrier Cost", width: 150 },
     {
       field: "actions",
       headerName: "Actions",
@@ -445,104 +436,144 @@ const TransportationLanes = () => {
               <Grid container spacing={2}>
                 {isEditing &&
                   <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth
+                      id="laneId" disabled
+                      name="laneId"
+                      label="Lane ID (Auto-generated)"
+                      value={formik.values.laneId}
+                      onChange={formik.handleChange}
+                      InputProps={{ readOnly: true }}
+                      size="small"
+                    />
+                  </Grid>}
+                <Grid item xs={12} sm={6} md={2.4}>
                   <TextField
                     fullWidth
-                    id="laneId" disabled
-                    name="laneId"
-                    label="Lane ID (Auto-generated)"
-                    value={formik.values.laneId}
-                    onChange={formik.handleChange}
-                    InputProps={{ readOnly: true }}
+                    name="sourceLocationId"
                     size="small"
-                  />
-                </Grid> }
-
-
-                <Grid item xs={12} sm={6} md={2.4}>
-                  <FormControl
-                    fullWidth id='sourceLocationId'
-                    size="small"
-                    error={
-                      formik.touched.sourceLocationId && Boolean(formik.errors.sourceLocationId)
+                    label="Search for source Location... "
+                    onFocus={() => {
+                      if (!searchKey) {
+                        setSearchKey(formik.values?.sourceLocationId || "");
+                        setShowSuggestions(true);
+                      }
+                    }}
+                    onChange={(e) => {
+                      setSearchKey(e.target.value)
+                      setShowSuggestions(true)
                     }
-                  >
-                    <InputLabel>Source Location ID</InputLabel>
-                    <Select
-                      label="Source Location ID*"
-                      name="sourceLocationId"
-                      value={formik.values.sourceLocationId}
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                    >
-                      {/* {getAllLocations.map((location: Location) => (
-															<MenuItem
-																key={location.loc_ID}
-																value={location.loc_ID}
-															>
-																{location.loc_ID}
-															</MenuItem>
-														))} */}
-                      {isLocationLoading ? (
-                        <MenuItem disabled>
-                          <CircularProgress size={20} color="inherit" />
-                          <span style={{ marginLeft: "10px" }}>Loading...</span>
-                        </MenuItem>
-                      ) : (
-                        getAllLocations?.map((location: Location) => (
-                          <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                            <Tooltip
-                              title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                              placement="right"
+                    }
+                    value={searchKey}
+                    error={formik.touched?.sourceLocationId && Boolean(formik.errors?.sourceLocationId)}
+                    helperText={
+                      formik.touched?.sourceLocationId && typeof formik.errors?.sourceLocationId === "string"
+                        ? formik.errors.sourceLocationId
+                        : ""
+                    }
+                    InputProps={{
+                      endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
+                    }}
+                  />
+                  <div ref={wrapperRef} >
+                    {showSuggestions && displayLocations?.length > 0 && (
+                      <Paper
+                        style={{
+                          maxHeight: 200,
+                          overflowY: "auto",
+                          position: "absolute",
+                          zIndex: 10,
+                          width: "18%",
+                        }}
+                      >
+                        <List>
+                          {displayLocations.map((location: Location) => (
+                            <ListItem
+                              key={location.loc_ID}
+                              component="li"
+                              onClick={() => {
+                                setShowSuggestions(false)
+                                setSearchKey(location.loc_ID);
+                                formik.setFieldValue("sourceLocationId", location.loc_ID);
+                              }}
+                              sx={{ cursor: "pointer" }}
                             >
-                              <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                            </Tooltip>
-                          </MenuItem>
-                        ))
-                      )}
-                    </Select>
-                    {formik.touched.sourceLocationId && formik.errors.sourceLocationId && (
-                      <FormHelperText>{formik.errors.sourceLocationId}</FormHelperText>
+                              <Tooltip
+                                title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                placement="right"
+                              >
+                                <span style={{ fontSize: '13px' }}>{location.loc_ID}, {location.city}, {location.state}, {location.pincode}</span>
+                              </Tooltip>
+                            </ListItem>
+                          ))}
+                        </List>
+                      </Paper>
                     )}
-                  </FormControl>
+                  </div>
                 </Grid>
                 <Grid item xs={12} sm={6} md={2.4}>
-                  <FormControl
-                    fullWidth id='destinationLocationId'
+                  <TextField
+                    fullWidth
+                    name="destinationLocationId"
                     size="small"
-                    error={
-                      formik.touched.destinationLocationId && Boolean(formik.errors.destinationLocationId)
+                    label="Search for destination Location... "
+                    onFocus={() => {
+                      if (!searchKeyDestination) {
+                        setSearchKeyDestination(formik.values?.destinationLocationId || "");
+                        setShowDestinations(true);
+                      }
+                    }}
+                    onChange={(e) => {
+                      setSearchKeyDestination(e.target.value)
+                      setShowDestinations(true)
                     }
-                  >
-                    <InputLabel>Destination Location ID</InputLabel>
-                    <Select
-                      label="Destination Location ID*"
-                      name="destinationLocationId"
-                      value={formik.values.destinationLocationId}
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                    >
-                      {isLocationLoading ? (
-                        <MenuItem disabled>
-                          <CircularProgress size={20} color="inherit" />
-                          <span style={{ marginLeft: "10px" }}>Loading...</span>
-                        </MenuItem>
-                      ) : (
-                        getAllLocations?.map((location: Location) => (
-                          <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                            <Tooltip
-                              title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                              placement="right"
+                    }
+                    value={searchKeyDestination}
+                    error={formik.touched?.destinationLocationId && Boolean(formik.errors?.destinationLocationId)}
+                    helperText={
+                      formik.touched?.destinationLocationId && typeof formik.errors?.destinationLocationId === "string"
+                        ? formik.errors.destinationLocationId
+                        : ""
+                    }
+                    InputProps={{
+                      endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
+                    }}
+                  />
+                  <div ref={wrapperRefDest} >
+                    {showDestinations && displayLocationsDest?.length > 0 && (
+                      <Paper
+                        style={{
+                          maxHeight: 200,
+                          overflowY: "auto",
+                          position: "absolute",
+                          zIndex: 10,
+                          width: "18%",
+                        }}
+                      >
+                        <List>
+                          {displayLocationsDest.map((location: Location) => (
+                            <ListItem
+                              key={location.loc_ID}
+                              component="li"
+                              onClick={() => {
+                                setShowDestinations(false)
+                                setSearchKeyDestination(location.loc_ID);
+                                formik.setFieldValue("destinationLocationId", location.loc_ID);
+                              }}
+                              sx={{ cursor: "pointer" }}
                             >
-                              <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                            </Tooltip>
-                          </MenuItem>
-                        ))
-                      )}
-                    </Select>
-                    {formik.touched.destinationLocationId && formik.errors.destinationLocationId && (
-                      <FormHelperText>{formik.errors.destinationLocationId}</FormHelperText>
+                              <Tooltip
+                                title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                placement="right"
+                              >
+                                <span style={{ fontSize: '13px' }}>{location.loc_ID}, {location.city}, {location.state}, {location.pincode}</span>
+                              </Tooltip>
+                            </ListItem>
+                          ))}
+                        </List>
+                      </Paper>
                     )}
-                  </FormControl>
+                  </div>
                 </Grid>
               </Grid>
             </Box>
@@ -551,24 +582,10 @@ const TransportationLanes = () => {
             <Box sx={{ marginBottom: 3 }}>
               <h3>2. Transport Data</h3>
               <Grid container spacing={2}>
-                {/* <Grid item xs={12} sm={6} md={2.4}>
-              <TextField
-                fullWidth
-                id="vehicleType"
-                name="vehicleType"
-                label="Vehicle Type*"
-                value={formik.values.vehicleType}
-                onChange={formik.handleChange}
-                error={formik.touched.vehicleType && Boolean(formik.errors.vehicleType)}
-                helperText={formik.touched.vehicleType && formik.errors.vehicleType}
-                size="small"
-              />
-            </Grid> */}
                 <Grid item xs={12} sm={6} md={2.4}>
                   <TextField
-                    select
                     fullWidth
-                    label="Vehicle Type"
+                    label="Vehicle Type (Truck , Trailer...)"
                     name="vehicleType"
                     value={formik.values.vehicleType}
                     onChange={formik.handleChange}
@@ -577,33 +594,9 @@ const TransportationLanes = () => {
                     helperText={formik.touched.vehicleType && formik.errors.vehicleType}
                     size="small"
                   >
-                    <MenuItem value="Truck">Truck</MenuItem>
-                    <MenuItem value="Trailer">Trailer</MenuItem>
-                    <MenuItem value="Container">Container</MenuItem>
+
                   </TextField>
                 </Grid>
-                {/* <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth 
-                      id='transportStartDate'
-                      size="small"
-                      label="Start Date*"
-                      name="transportStartDate"
-                      type="date"
-                      value={formik.values.transportStartDate
-                              ? formik.values.transportStartDate.split('-').reverse().join('-'): ''}
-                      onChange={(e) => {const selectedDate = e.target.value;
-                                        const formattedDate = selectedDate.split('-')
-                                          .reverse()
-                                          .join('-');
-                                        formik.handleChange({ target: { name: 'transportStartDate', value: formattedDate } });
-                                  }}
-                      onBlur={formik.handleBlur}
-                      error={formik.touched.transportStartDate && Boolean(formik.errors.transportStartDate)}
-                      helperText={formik.touched.transportStartDate && formik.errors.transportStartDate}
-                      InputLabelProps={{ shrink: true }}
-                          />
-                  </Grid> */}
                 <Grid item xs={12} sm={6} md={2.4}>
                   <TextField
                     fullWidth
@@ -612,75 +605,30 @@ const TransportationLanes = () => {
                     label="Start Date*"
                     name="transportStartDate"
                     type="date"
-                    value={
-                      formik.values.transportStartDate
-                        ? formik.values.transportStartDate.split("-").reverse().join("-") // Convert DD-MM-YYYY → YYYY-MM-DD for display
-                        : ""
-                    }
-                    onChange={(e) => {
-                      const selectedDate = e.target.value;
-                      const formattedDate = selectedDate.split("-").reverse().join("-"); // Convert to DD-MM-YYYY
-                      formik.setFieldValue("transportStartDate", formattedDate); // Store as DD-MM-YYYY
-                    }}
+                    value={formik.values.transportStartDate}
+                    onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     error={formik.touched.transportStartDate && Boolean(formik.errors.transportStartDate)}
                     helperText={formik.touched.transportStartDate && formik.errors.transportStartDate}
                     InputLabelProps={{ shrink: true }}
+                    inputProps={{ min: new Date().toISOString().split("T")[0] }}
                   />
                 </Grid>
-
-
-                {/* <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth
-                      id="transportEndDate"
-                      name="transportEndDate"
-                      label="End Date*"
-                      type="date"
-                      value={formik.values.transportEndDate}
-                      onChange={formik.handleChange}
-                      error={formik.touched.transportEndDate && Boolean(formik.errors.transportEndDate)}
-                      helperText={formik.touched.transportEndDate && formik.errors.transportEndDate}
-                      size="small"
-                      InputLabelProps={{ shrink: true }}
-                    />
-                  </Grid> */}
                 <Grid item xs={12} sm={6} md={2.4}>
                   <TextField
                     fullWidth
-                    id='transportEndDate'
-                    size="small"
-                    label="End Date*"
+                    id="transportEndDate"
                     name="transportEndDate"
+                    label="End Date*"
                     type="date"
-                    value={formik.values.transportEndDate
-                      ? formik.values.transportEndDate.split('-').reverse().join('-') : ''}
-                    onChange={(e) => {
-                      const selectedDate = e.target.value;
-                      const formattedDate = selectedDate.split('-')
-                        .reverse()
-                        .join('-');
-                      formik.handleChange({ target: { name: 'transportEndDate', value: formattedDate } });
-                    }}
-                    onBlur={formik.handleBlur}
+                    value={formik.values.transportEndDate}
+                    onChange={formik.handleChange}
                     error={formik.touched.transportEndDate && Boolean(formik.errors.transportEndDate)}
                     helperText={formik.touched.transportEndDate && formik.errors.transportEndDate}
-                    InputLabelProps={{ shrink: true }}
+                    size="small"
+                    InputLabelProps={{ shrink: true }} inputProps={{ min: new Date().toISOString().split("T")[0] }}
                   />
                 </Grid>
-                {/* <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth
-                      id="transportDistance"
-                      name="transportDistance"
-                      label="Transport Distance* (UoM)"
-                      value={formik.values.transportDistance}
-                      onChange={formik.handleChange}
-                      error={formik.touched.transportDistance && Boolean(formik.errors.transportDistance)}
-                      helperText={formik.touched.transportDistance && formik.errors.transportDistance}
-                      size="small"
-                    />
-                  </Grid> */}
                 <Grid item xs={12} sm={6} md={1.6}>
                   <TextField
                     fullWidth
@@ -743,27 +691,12 @@ const TransportationLanes = () => {
                     ))}
                   </TextField>
                 </Grid>
-
-                {/* <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth
-                      id="transportCost"
-                      name="transportCost"
-                      label="Transport Cost* (UoM)"
-                      value={formik.values.transportCost}
-                      onChange={formik.handleChange}
-                      error={formik.touched.transportCost && Boolean(formik.errors.transportCost)}
-                      helperText={formik.touched.transportCost && formik.errors.transportCost}
-                      size="small"
-                    />
-                  </Grid> */}
-
                 <Grid item xs={12} sm={6} md={1.6}>
                   <TextField
                     fullWidth
                     id="transportCost"
                     name="transportCost"
-                    label="Transport Cost* "
+                    label="Transport Cost(Rs.)* "
                     type="number"
                     value={formik.values.transportCost}
                     onChange={formik.handleChange}
@@ -773,134 +706,12 @@ const TransportationLanes = () => {
                     size="small"
                   />
                 </Grid>
-                <Grid item xs={12} sm={6} md={0.8}>
-                  <TextField
-                    fullWidth name="transportCostUnits"
-                    select onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    value={formik.values.transportCostUnits}
-                    size="small"
-                  >
-                    {unitsofMeasurement.map((unit: string) => (
-                      <MenuItem key={unit} value={unit}>
-                        {unit}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
-
               </Grid>
             </Box>
 
-            {/* Carrier Data */}
-
-            {/* <Box sx={{ marginBottom: 3 }}>
-                <h3>3. Carrier Data</h3>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth
-                      id="carrierId"
-                      name="carrierId"
-                      label="Carrier ID*"
-                      value={formik.values.carrierId}
-                      onChange={formik.handleChange}
-                      error={formik.touched.carrierId && Boolean(formik.errors.carrierId)}
-                      helperText={formik.touched.carrierId && formik.errors.carrierId}
-                      size="small"
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth
-                      id="carrierName"
-                      name="carrierName"
-                      label="Carrier Name* (Auto-populated)"
-                      value={formik.values.carrierName}
-                      onChange={formik.handleChange}
-                      error={formik.touched.carrierName && Boolean(formik.errors.carrierName)}
-                      helperText={formik.touched.carrierName && formik.errors.carrierName}
-                      size="small"
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth
-                      id="carrierVehicleType"
-                      name="carrierVehicleType"
-                      label="Vehicle Type*"
-                      value={formik.values.carrierVehicleType}
-                      onChange={formik.handleChange}
-                      error={
-                        formik.touched.carrierVehicleType && Boolean(formik.errors.carrierVehicleType)
-                      }
-                      helperText={formik.touched.carrierVehicleType && formik.errors.carrierVehicleType}
-                      size="small"
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth
-                      id="carrierStartDate"
-                      name="carrierStartDate"
-                      label="Start Date*"
-                      type="date"
-                      value={formik.values.carrierStartDate}
-                      onChange={formik.handleChange}
-                      error={formik.touched.carrierStartDate && Boolean(formik.errors.carrierStartDate)}
-                      helperText={formik.touched.carrierStartDate && formik.errors.carrierStartDate}
-                      size="small"
-                      InputLabelProps={{ shrink: true }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth
-                      id="carrierEndDate"
-                      name="carrierEndDate"
-                      label="End Date*"
-                      type="date"
-                      value={formik.values.carrierEndDate}
-                      onChange={formik.handleChange}
-                      error={formik.touched.carrierEndDate && Boolean(formik.errors.carrierEndDate)}
-                      helperText={formik.touched.carrierEndDate && formik.errors.carrierEndDate}
-                      size="small"
-                      InputLabelProps={{ shrink: true }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth
-                      id="carrierCost"
-                      name="carrierCost"
-                      label="Carrier Cost* (UoM)"
-                      value={formik.values.carrierCost}
-                      onChange={formik.handleChange}
-                      error={formik.touched.carrierCost && Boolean(formik.errors.carrierCost)}
-                      helperText={formik.touched.carrierCost && formik.errors.carrierCost}
-                      size="small"
-                    />
-                  </Grid>
-                </Grid>
-              </Box> */}
-
             {/* Submit Button */}
             <Box sx={{ textAlign: 'center', marginTop: 3 }}>
-             {/* <Button
-                  type="submit"
-                  variant="contained"
-                  sx={{
-                    backgroundColor: "#83214F",
-                    color: "#fff",
-                    "&:hover": {
-                      backgroundColor: "#fff",
-                      color: "#83214F"
-                    }
-                  }}
-                >
-                  {isEditing ? "Update lane" : "Create lane"}
-                </Button> */}
-              <CustomButtonFilled >{isEditing ?  "Update lane" : "Create lane"}</CustomButtonFilled>
+              <CustomButtonFilled >{isEditing ? "Update lane" : "Create lane"}</CustomButtonFilled>
 
               <Button
                 variant="outlined"
@@ -909,6 +720,8 @@ const TransportationLanes = () => {
                   formik.resetForm()
                   setIsEditing(false);
                   setEditRow(null);
+                  setSearchKey("")
+                  setSearchKeyDestination("")
                 }}
                 style={{ marginLeft: "10px" }}
               >
@@ -920,17 +733,6 @@ const TransportationLanes = () => {
         </Box>
       </Collapse>
 
-
-      {/* data grid */}
-      {/* <div style={{ marginTop: "40px" }}>
-        <DataGridComponent
-          columns={columns}
-          rows={rows}
-          isLoading={false}
-          pageSizeOptions={[10, 20, 30]}
-          initialPageSize={10}
-        />
-      </div> */}
       <div style={{ marginTop: "40px" }}>
         {isLoading ? (
           <DataGridSkeletonLoader columns={columns} />

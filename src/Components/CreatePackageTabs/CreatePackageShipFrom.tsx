@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Formik, Form, Field, FormikProps } from 'formik';
 import * as Yup from 'yup';
-import { Checkbox, FormControlLabel, Grid, TextField, FormControl, InputLabel, Select, MenuItem, Tooltip, FormHelperText, SelectChangeEvent, Backdrop, CircularProgress, Typography } from '@mui/material';
+import { Checkbox, FormControlLabel, Grid, TextField, Tooltip,  Backdrop, CircularProgress, Typography, Paper, List, ListItem } from '@mui/material';
 import styles from './CreatePackage.module.css';
 import { useAppDispatch, useAppSelector } from '@/store';
 import {
@@ -10,7 +10,7 @@ import {
     // setCompletedState,
     setPackageShipFrom
 } from '@/store/authSlice';
-import { useGetLocationMasterQuery, usePostLocationMasterMutation, useUpdateShipFromDefaultLocationIdMutation } from '@/api/apiSlice';
+import { useGetFilteredLocationsQuery, useGetLocationMasterQuery, usePostLocationMasterMutation, useUpdateShipFromDefaultLocationIdMutation } from '@/api/apiSlice';
 import { Location } from '../MasterDataComponents/Locations';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 import { CustomButtonFilled } from '../ReusableComponents/ButtonsComponent';
@@ -44,16 +44,24 @@ export interface IShipFrom {
 const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
     const { data: locationsData, isLoading: isLocationLoading } = useGetLocationMasterQuery([])
     const allLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
-
+    const shipFromReduxValues = useAppSelector((state) => state.auth.packageShipFrom)
     const defaultLocationData = allLocations?.find((eachLocation: Location) =>
         eachLocation?.def_ship_from === 1)
+    const [searchKey, setSearchKey] = useState(shipFromReduxValues?.locationId || defaultLocationData?.loc_ID || '');
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
+    
+    const displayLocations = searchKey ? filteredLocations?.results || [] : allLocations;
+    console.log("display:", displayLocations)
+
+
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const [postLocation, { isLoading: postLocationLoading }] = usePostLocationMasterMutation({})
     const [updateDefulatFromLocation, { isLoading: defaultLocationLoading }] = useUpdateShipFromDefaultLocationIdMutation();
     const dispatch = useAppDispatch()
-    const shipFromReduxValues = useAppSelector((state) => state.auth.packageShipFrom)
+   
 
     const shipToReduxValues = useAppSelector((state) => state.auth.packageShipTo)
     const billToReduxValues = useAppSelector((state) => state.auth.packageBillTo)
@@ -80,7 +88,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
         locationType: shipFromReduxValues?.locationType || defaultLocationData?.loc_type || ''
     }
 
-    const getAllLocations = allLocations.filter((location: Location) => {
+    const getAllLocations = displayLocations.filter((location: Location) => {
         if (shipToReduxValues?.locationId && billToReduxValues?.locationId) {
             return (
                 location.loc_ID !== shipToReduxValues.locationId &&
@@ -120,49 +128,53 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
 
     });
 
-    const handleLocationChange = (event: SelectChangeEvent<string>, setFieldValue: FormikProps<IShipFrom>['setFieldValue']) => {
-        const selectedLocationId = event.target.value;
-        setFieldValue('locationId', selectedLocationId);
+      const handleLocationChange = (
+        selectedLocationId: string,
+        setFieldValue: FormikProps<IShipFrom>['setFieldValue']
+    ) => {
+        setFieldValue("locationId", selectedLocationId);
 
-        const selectedLocation = getAllLocations.find((loc: Location) => loc?.loc_ID === selectedLocationId);
+        const selectedLocation = getAllLocations.find(
+            (loc: Location) => loc?.loc_ID === selectedLocationId
+        );
 
         if (selectedLocation) {
-            setFieldValue('locationDescription', selectedLocation.loc_desc || '');
-            setFieldValue('addressLine1', selectedLocation.address_1 || '');
-            setFieldValue('addressLine2', selectedLocation.address_2 || '');
-            setFieldValue('city', selectedLocation.city || '');
-            setFieldValue('state', selectedLocation.state || '');
-            setFieldValue('country', selectedLocation.country || '');
-            setFieldValue('pincode', selectedLocation.pincode || '');
-            setFieldValue('latitude', selectedLocation.latitude || '');
-            setFieldValue('longitude', selectedLocation.longitude || '');
-            setFieldValue('timeZone', selectedLocation.time_zone || '');
-            setFieldValue('locationType', selectedLocation.loc_type || '');
-            setFieldValue('glnCode', selectedLocation.gln_code || '');
-            setFieldValue('iataCode', selectedLocation.iata_code || '');
-            setFieldValue('contactPerson', selectedLocation.contact_name || '');
-            setFieldValue('phoneNumber', selectedLocation.contact_phone_number || '');
-            setFieldValue('email', selectedLocation.contact_email || '');
-            setFieldValue('saveAsDefaultShipFromLocation', selectedLocation.def_ship_from || false);
-
+            setFieldValue("locationDescription", selectedLocation.loc_desc || "");
+            setFieldValue("addressLine1", selectedLocation.address_1 || "");
+            setFieldValue("addressLine2", selectedLocation.address_2 || "");
+            setFieldValue("city", selectedLocation.city || "");
+            setFieldValue("state", selectedLocation.state || "");
+            setFieldValue("country", selectedLocation.country || "");
+            setFieldValue("pincode", selectedLocation.pincode || "");
+            setFieldValue("latitude", selectedLocation.latitude || "");
+            setFieldValue("longitude", selectedLocation.longitude || "");
+            setFieldValue("timeZone", selectedLocation.time_zone || "");
+            setFieldValue("locationType", selectedLocation.loc_type || "");
+            setFieldValue("glnCode", selectedLocation.gln_code || "");
+            setFieldValue("iataCode", selectedLocation.iata_code || "");
+            setFieldValue("contactPerson", selectedLocation.contact_name || "");
+            setFieldValue("phoneNumber", selectedLocation.contact_phone_number || "");
+            setFieldValue("email", selectedLocation.contact_email || "");
+            setFieldValue("saveAsDefaultShipFromLocation", selectedLocation.def_ship_from || false);
         } else {
-            setFieldValue('locationDescription', '');
-            setFieldValue('addressLine1', '');
-            setFieldValue('addressLine2', '');
-            setFieldValue('locationId', '');
-            setFieldValue('city', '');
-            setFieldValue('state', '');
-            setFieldValue('country', '');
-            setFieldValue('pincode', '');
-            setFieldValue('latitude', '');
-            setFieldValue('longitude', '');
-            setFieldValue('timeZone', '');
-            setFieldValue('locationType', '');
-            setFieldValue('glnCode', '');
-            setFieldValue('iataCode', '');
-            setFieldValue('contactPerson', '');
-            setFieldValue('phoneNumber', '');
-            setFieldValue('email', '');
+            // Reset values if location is not found
+            setFieldValue("locationId", "");
+            setFieldValue("locationDescription", "");
+            setFieldValue("addressLine1", "");
+            setFieldValue("addressLine2", "");
+            setFieldValue("city", "");
+            setFieldValue("state", "");
+            setFieldValue("country", "");
+            setFieldValue("pincode", "");
+            setFieldValue("latitude", "");
+            setFieldValue("longitude", "");
+            setFieldValue("timeZone", "");
+            setFieldValue("locationType", "");
+            setFieldValue("glnCode", "");
+            setFieldValue("iataCode", "");
+            setFieldValue("contactPerson", "");
+            setFieldValue("phoneNumber", "");
+            setFieldValue("email", "");
         }
     };
 
@@ -174,6 +186,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
             console.log("Getting error while changing default value: ", error)
         }
     }
+ 
 
     return (
         <Grid>
@@ -244,10 +257,10 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
 
                     }}
                 >
-                    {({ values, touched, errors, handleSubmit, setFieldValue, handleBlur }) => (
+                    {({ values, touched, errors, handleSubmit, setFieldValue }) => (
                         <Form >
                             <Typography variant="h6" sx={{ fontWeight: 'bold', textAlign: 'center', marginTop: 3 }}>Ship from Details</Typography>
-                         <Grid item xs={12} sx={{ display: 'flex', flexDirection: { md: "row", xs: "column" }, gap: {md:'20px', xs:'2px' },marginLeft:"15px"}}>
+                            <Grid item xs={12} sx={{ display: 'flex', flexDirection: { md: "row", xs: "column" }, gap: { md: '20px', xs: '2px' }, marginLeft: "15px" }}>
                                 <FormControlLabel
                                     control={<Field name="saveAsDefaultShipFromLocation" type="checkbox" as={Checkbox} />}
                                     label="Save as default Ship From Location"
@@ -293,41 +306,99 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                                 <h3 className={styles.mainHeading}>Location Details</h3>
                                 <Grid container spacing={2}>
                                     {!values.saveAsNewLocationId && (
-                                        <Grid item xs={12} sm={6} md={2.4}>
-                                            <FormControl size='small' fullWidth error={touched?.locationId && Boolean(errors?.locationId)}>
-                                                <InputLabel shrink >Location ID</InputLabel>
-                                                <Select label="Location ID*"
-                                                    displayEmpty
-                                                    name="locationId"
-                                                    value={values?.locationId}
-                                                    onChange={(event) => handleLocationChange(event, setFieldValue)}
-                                                    onBlur={handleBlur}
-                                                >
-                                                    {isLocationLoading ? (
-                                                        <MenuItem disabled>
-                                                            <CircularProgress size={20} color="inherit" />
-                                                            <span style={{ marginLeft: "10px" }}>Loading...</span>
-                                                        </MenuItem>
-                                                    ) : (
-                                                        getAllLocations?.map((location: Location) => (
-                                                            <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                                                                <Tooltip
-                                                                    title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                                                    placement="right"
-                                                                >
-                                                                    <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                                                                </Tooltip>
-                                                            </MenuItem>
-                                                        ))
-                                                    )}
-                                                </Select>
-                                                {touched?.locationId && errors?.locationId && (
-                                                    // <FormHelperText>{errors?.locationId}</FormHelperText>
-                                                    <FormHelperText error>{typeof errors.locationId === "string" ? errors.locationId : ""}</FormHelperText>
+                                            <Grid item xs={12} sm={6} md={2.4}>
+                                            <TextField
+                                                fullWidth
+                                                name="locationId"
+                                                size="small"
+                                                label="Search Location"
+                                                onFocus={() => {
+                                                    if (!searchKey) {
+                                                        setSearchKey(values?.locationId || "");
+                                                        setShowSuggestions(true);
+                                                    }
+                                                }}
+                                                onChange={(e) => {
+                                                    setSearchKey(e.target.value)
+                                                    setShowSuggestions(true) 
+                                                    setFieldValue("locationDescription", "");
+                                                    setFieldValue("addressLine1", "");
+                                                    setFieldValue("addressLine2", "");
+                                                    setFieldValue("city", "");
+                                                    setFieldValue("state", "");
+                                                    setFieldValue("country", "");
+                                                    setFieldValue("pincode", "");
+                                                    setFieldValue("latitude", "");
+                                                    setFieldValue("longitude", "");
+                                                    setFieldValue("timeZone", "");
+                                                    setFieldValue("locationType", "");
+                                                    setFieldValue("glnCode", "");
+                                                    setFieldValue("iataCode", "");
+                                                    setFieldValue("contactPerson", "");
+                                                    setFieldValue("phoneNumber", "");
+                                                    setFieldValue("email", "");
+                                                }
+                                                }
+                                                // onBlur={handleBlur}
+                                                value={searchKey}
+                                                error={touched?.locationId && Boolean(errors?.locationId)}
+                                                helperText={
+                                                    touched?.locationId && typeof errors?.locationId === "string"
+                                                        ? errors.locationId
+                                                        : ""
+                                                }
+                                                InputProps={{
+                                                    endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
+                                                }}
+                                            />
+                                            {showSuggestions && (
+    <Paper
+        style={{
+            maxHeight: 200,
+            overflowY: "auto",
+            position: "absolute",
+            zIndex: 10,
+            width: "18%",
+            padding: "8px",
+            textAlign: "center",
+        }}
+    >
+        {getAllLocations.length > 0 ? (
+            <List>
+                {getAllLocations.map((location: Location) => (
+                    <ListItem
+                        key={location.loc_ID}
+                        component="li"
+                        onClick={() => {
+                            setShowSuggestions(false);
 
-                                                )}
-                                            </FormControl> </Grid>
-                                    )}
+                            setSearchKey(location.loc_ID);
+                            handleLocationChange(location.loc_ID, setFieldValue);
+                            setFieldValue("locationId", location.loc_ID);
+                        }}
+                        sx={{ cursor: "pointer" }}
+                    >
+                        <Tooltip
+                            title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                            placement="right"
+                        >
+                            <span style={{ fontSize: "14px" }}>
+                                {location.loc_ID}, {location.city}, {location.state}, {location.country}, {location.pincode}
+                            </span>
+                        </Tooltip>
+                    </ListItem>
+                ))}
+            </List>
+        ) : (
+            <Typography variant="body2" color="textSecondary">
+                No results found
+            </Typography>
+        )}
+    </Paper>
+)}
+
+                                        </Grid>
+                                    )} 
 
                                     <Grid item xs={12} md={2.4}>
                                         <Field
@@ -559,3 +630,5 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
 };
 
 export default ShipFrom;
+
+

@@ -1,7 +1,8 @@
-import { useAppSelector } from '@/store';
+// import { useAppSelector } from '@/store';
 import React from 'react';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { Box, Typography, Paper } from '@mui/material';
+import { Truck } from './TrucksTable';
 
 interface LoadArrangement {
     stop: number;
@@ -9,27 +10,13 @@ interface LoadArrangement {
     packages: string[];
 }
 
-interface Allocation {
-    vehicle_ID: string;
-    totalWeightCapacity: number;
-    leftoverWeight: number;
-    totalVolumeCapacity: number;
-    leftoverVolume: number;
-    cost: number;
-    loadArrangement?: LoadArrangement[];
-    // occupiedWeight: number;
-    // occupiedVolume: number;
+interface TrucksTableProps {
+    trucks: Truck[];
 }
+const LoadOptimization: React.FC<TrucksTableProps> = ({ trucks }) => {
+    const selectedTrucks = trucks
+    const getVechiles = selectedTrucks;
 
-
-const LoadOptimization = () => {
-    const selectedTrucks = useAppSelector((state) => state.auth.selectedTrucks || []);
-
-
-    if (!selectedTrucks.length || !selectedTrucks[0].allocations) {
-        return <Typography variant="h6">No vehicle data available.</Typography>;
-    }
-    const getVechiles: Allocation[] = selectedTrucks[0].allocations;
 
     return (
         <Box sx={{ p: 2 }}>
@@ -44,7 +31,7 @@ const LoadOptimization = () => {
                         { field: 'packages', headerName: 'Packages', width: 250 },
                     ];
 
-                    const rows = (vehicle.loadArrangement ?? []).map((item, i) => ({
+                    const rows = (vehicle.loadArrangement ?? []).map((item: LoadArrangement, i) => ({
                         id: item.stop || i + 1,
                         location: item.location || 'N/A',
                         packages: item.packages ? item.packages.join(', ') : 'N/A',
@@ -60,10 +47,6 @@ const LoadOptimization = () => {
                                 Total Weight Capacity:  <strong>{vehicle.totalWeightCapacity} kg</strong>
                             </Typography>
 
-                            {/* <Typography variant="body1" sx={{ mb: 1 }}>
-                            Occupied Weight:   <strong>{vehicle.occupiedWeight} kg</strong>
-                            </Typography> */}
-
                             <Typography variant="body1" sx={{ mb: 1 }}>
                                 Leftover Weight: <strong>{vehicle.leftoverWeight} kg</strong>
                             </Typography>
@@ -71,10 +54,6 @@ const LoadOptimization = () => {
                             <Typography variant="body1" sx={{ mb: 1 }}>
                                 Total Volume Capacity: <strong>{vehicle.totalVolumeCapacity} m³</strong>
                             </Typography>
-
-                            {/* <Typography variant="body1" sx={{ mb: 1 }}>
-                            Occupied Volume:   <strong> {vehicle.occupiedVolume} kg</strong>
-                            </Typography> */}
 
                             <Typography variant="body1" sx={{ mb: 1 }}>
                                 Leftover Volume:   <strong>{vehicle.leftoverVolume} m³</strong>

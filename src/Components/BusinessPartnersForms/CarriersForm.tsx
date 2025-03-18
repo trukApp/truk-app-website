@@ -11,7 +11,6 @@ import {
     FormControlLabel,
     Checkbox,
     Tooltip,
-    // Checkbox, FormControlLabel,
 } from '@mui/material';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
@@ -76,13 +75,8 @@ const CarrierForm: React.FC = () => {
 
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
     const getLocationDetails = (loc_ID: string) => {
-        // Find the location object from the array
         const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
-
-        // Return a fallback message if location not found
         if (!location) return "Location details not available";
-
-        // Gather the location details, filter out any falsy values (e.g., empty strings, null, undefined)
         const details = [
             location.loc_ID,
             location.address_1,
@@ -92,33 +86,26 @@ const CarrierForm: React.FC = () => {
             location.country,
             location.pincode
         ].filter(Boolean);
-
-        // Return the combined details or a fallback message if no valid details
         return details.length > 0 ? details.join(", ") : "Location details not available";
     };
 
     const getAllLanes = lanesData?.lanes.length > 0 ? lanesData?.lanes : []
-    console.log('carriers :', data)
-    console.log('lanes :', lanesData)
     if (error) {
         console.log("err while getting carrier info :", error)
     }
 
     const getLaneDetails = (lane_ID: string) => {
-        // Find the lane object from lanesData
         const lane = lanesData?.lanes.find((l: Lane) => l.lane_ID === lane_ID);
-
-        // If no lane is found, return fallback message
         if (!lane) return "Lane details not available";
-
-        // Extract source and destination location details
         const sourceLocationDetails = [
             lane.src_loc_ID,
             lane.src_loc_desc,
             lane.src_city,
             lane.src_state,
             lane.src_latitude,
-            lane.src_longitude
+            lane.src_longitude,
+            lane_ID
+
         ].filter(Boolean).join(", ");
 
         const destinationLocationDetails = [
@@ -127,10 +114,9 @@ const CarrierForm: React.FC = () => {
             lane.des_city,
             lane.des_state,
             lane.des_latitude,
-            lane.des_longitude
+            lane.des_longitude,
+            lane_ID
         ].filter(Boolean).join(", ");
-
-        // Return combined source and destination location details
         return `Source: ${sourceLocationDetails} | Destination: ${destinationLocationDetails}`;
     };
 
@@ -147,7 +133,6 @@ const CarrierForm: React.FC = () => {
     const handleDelete = async (row: CarrierFormFE) => {
         const packageId = row?.id;
         if (!packageId) {
-            console.error("Row ID is missing");
             setSnackbarMessage("Error: Vehicle ID is missing!");
             setSnackbarSeverity("error");
             setSnackbarOpen(true);
@@ -220,9 +205,6 @@ const CarrierForm: React.FC = () => {
         vehicleTypes: Yup.array().of(Yup.string()).min(1, 'Select at least one vehicle type'),
         locationIds: Yup.array().of(Yup.string()).min(1, 'Select at least one location').required('Location is required'),
         laneIds: Yup.array().of(Yup.string()).min(1, 'Select at least one lane').required('Lane IDs are required'),
-        // deviceDetails: Yup.string().required('Device Details are required'),
-        // enrollSpotAuction: Yup.boolean(),
-        // preferredCarrier: Yup.boolean(),
     });
 
     const handleCarrierSubmit = async (values: CarrierFormFE) => {
@@ -288,21 +270,40 @@ const CarrierForm: React.FC = () => {
             setSnackbarOpen(true);
         }
     };
-    const rows = data?.carriers.map((carrier: CarrierFormBE) => ({
-        id: carrier.cr_id,
-        carrierId: carrier.carrier_ID,
-        name: carrier.carrier_name,
-        address: carrier.carrier_address,
-        contactPerson: carrier.carrier_correspondence.name,
-        contactNumber: carrier.carrier_correspondence.phone,
-        emailId: carrier.carrier_correspondence.email,
-        vehicleTypes: carrier.vehicle_types_handling,
-        locationIds: carrier.carrier_loc_of_operation,
-        laneIds: carrier.carrier_lanes,
-        // deviceDetails: carrier.deviceDetails,
-        // enrollSpotAuction: carrier.enrollSpotAuction,
-        preferredCarrier: carrier.carrier_network_portal,
-    }));
+
+    const rows = data?.carriers.map((carrier: CarrierFormBE) => {
+        const locationIds = Array.isArray(carrier.carrier_loc_of_operation)
+            ? carrier.carrier_loc_of_operation
+            : [carrier.carrier_loc_of_operation];
+
+        const laneIds = Array.isArray(carrier.carrier_lanes)
+            ? carrier.carrier_lanes
+            : [carrier.carrier_lanes];
+
+        const locationDetails = locationIds
+            .map((id) => getLocationDetails(id))
+            .join(" | ");
+
+        const laneDetails = laneIds
+            .map((id) => getLaneDetails(id))
+            .join(" || ");
+
+        return {
+            id: carrier.cr_id,
+            carrierId: carrier.carrier_ID,
+            name: carrier.carrier_name,
+            address: carrier.carrier_address,
+            contactPerson: carrier.carrier_correspondence.name,
+            contactNumber: carrier.carrier_correspondence.phone,
+            emailId: carrier.carrier_correspondence.email,
+            vehicleTypes: carrier.vehicle_types_handling,
+            allLocationIdsDetails: locationDetails,
+            allLaneIdsDetails: laneDetails,
+            preferredCarrier: carrier.carrier_network_portal,
+            locationIds: locationIds,
+            laneIds: laneIds
+        };
+    }) || [];
 
     const columns: GridColDef[] = [
         { field: 'carrierId', headerName: 'Carrier ID', width: 150 },
@@ -313,57 +314,15 @@ const CarrierForm: React.FC = () => {
         { field: 'emailId', headerName: 'Email ID', width: 150 },
         { field: 'vehicleTypes', headerName: 'Vehicle Types', width: 150 },
         {
-            field: "locationIds",
+            field: "allLocationIdsDetails",
             headerName: "Locations",
-            width: 150,
-            renderCell: (params) => {
-                const locationIds = Array.isArray(params.value) ? params.value : [params.value];
-                const allLocs = locationIds.join(" | ")
-                const locationDetails = locationIds
-                    .map((id) => getLocationDetails(id))
-                    .join(" | ");
-
-                return (
-                    <Tooltip title={locationDetails} arrow>
-                        <span>{allLocs}</span>
-                    </Tooltip>
-                );
-            },
-        }
-
-
-        ,
-
-        // { field: 'laneIds', headerName: 'Lane IDs', width: 150 },
-        {
-            field: "lane_ID",
-            headerName: "Lane Details",
-            width: 200,
-            renderCell: (params) => {
-                // Ensure params.value is an array, otherwise treat it as a single lane ID
-                const laneIDs = Array.isArray(params.row.laneIds) ? params.row.laneIds : [params.row.laneIds];
-
-                const allLanes = laneIDs.join(" | ")
-                console.log('lane id s :', laneIDs)
-                const laneDetails = laneIDs
-                    .map((id: string) => getLaneDetails(id))
-                    .join(" | "); // Combine the details of all lanes into a single string
-
-                return (
-                    <Tooltip title={laneDetails} arrow>
-                        <span>{allLanes}</span>
-                        {/* <span>fghm</span> */}
-                    </Tooltip>
-                );
-            },
+            width: 250,
         },
-        // { field: 'deviceDetails', headerName: 'Device Details', flex: 2 },
-        // {
-        //     field: 'enrollSpotAuction',
-        //     headerName: 'Spot Auction',
-        //     flex: 1,
-        //     renderCell: (params) => params.value ? 'Yes' : 'No'
-        // },
+        {
+            field: "allLaneIdsDetails",
+            headerName: "Lane Details",
+            width: 250,
+        },
         {
             field: 'preferredCarrier',
             headerName: 'Is enrolled on carrier network portal',
@@ -430,24 +389,24 @@ const CarrierForm: React.FC = () => {
                         validationSchema={carrierValidationSchema}
                         onSubmit={handleCarrierSubmit}
                     >
-                        {({ values, handleChange, handleBlur, errors, touched, resetForm ,
+                        {({ values, handleChange, handleBlur, errors, touched, resetForm,
                             setFieldValue
                         }) => (
                             <Form>
                                 <h3 className={styles.mainHeading}>General Data</h3>
                                 <Grid container spacing={2}>
-                                    {isEditing && 
+                                    {isEditing &&
                                         <Grid item xs={12} sm={6} md={4}>
-                                        <TextField disabled
-                                            fullWidth size="small"
-                                            label="Carrier ID"
-                                            name="carrierId"
-                                            value={values.carrierId}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                        />
-                                    </Grid>}
-                              
+                                            <TextField disabled
+                                                fullWidth size="small"
+                                                label="Carrier ID"
+                                                name="carrierId"
+                                                value={values.carrierId}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                            />
+                                        </Grid>}
+
                                     <Grid item xs={12} sm={6} md={4}>
                                         <TextField
                                             fullWidth size="small"
@@ -517,18 +476,6 @@ const CarrierForm: React.FC = () => {
 
                                 <h3 className={styles.mainHeading}>Transport Data</h3>
                                 <Grid container spacing={2}>
-                                    {/* <Grid item xs={12} sm={6} md={4}>
-                                        <TextField
-                                            fullWidth size="small"
-                                            label="Vehicle Types Handling"
-                                            name="vehicleTypes"
-                                            value={values.vehicleTypes}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.vehicleTypes && Boolean(errors.vehicleTypes)}
-                                            helperText={touched.vehicleTypes && errors.vehicleTypes}
-                                        />
-                                    </Grid> */}
                                     <Grid item xs={12} sm={6} md={4}>
                                         <FormControl fullWidth size="small" error={touched.vehicleTypes && Boolean(errors.vehicleTypes)}>
                                             <InputLabel>Vehicle Types Handling</InputLabel>
@@ -537,9 +484,9 @@ const CarrierForm: React.FC = () => {
                                                 label="Vehicle Types Handling"
                                                 name="vehicleTypes"
                                                 value={values.vehicleTypes}
-                                                onChange={handleChange} // Formik's change handler
-                                                onBlur={handleBlur}     // Formik's blur handler
-                                                renderValue={(selected) => (selected as string[]).join(', ')} // Display selected items as comma-separated list
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                renderValue={(selected) => (selected as string[]).join(', ')}
                                             >
                                                 {vehicleTypeOptions.map((type) => (
                                                     <MenuItem key={type} value={type}>
@@ -553,16 +500,6 @@ const CarrierForm: React.FC = () => {
                                         </FormControl>
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={4}>
-                                        {/* <TextField
-                                            fullWidth size="small"
-                                            label="Locations of Operation (Location IDs)"
-                                            name="locationIds"
-                                            value={values.locationIds}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.locationIds && Boolean(errors.locationIds)}
-                                            helperText={touched.locationIds && errors.locationIds}
-                                        /> */}
                                         <FormControl fullWidth size="small" error={touched.locationIds && Boolean(errors.locationIds)}>
                                             <InputLabel>Locations of Operation (Location IDs)</InputLabel>
                                             <Select
@@ -570,9 +507,9 @@ const CarrierForm: React.FC = () => {
                                                 label="Locations of Operation (Location IDs)"
                                                 name="locationIds"
                                                 value={values.locationIds}
-                                                onChange={handleChange} // Handles updates to the selected values
+                                                onChange={handleChange}
                                                 onBlur={handleBlur}
-                                                renderValue={(selected) => (selected as string[]).join(', ')} // Display selected items as comma-separated
+                                                renderValue={(selected) => (selected as string[]).join(', ')}
                                             >
                                                 {isLocationLoading ? (
                                                     <MenuItem disabled>
@@ -599,16 +536,6 @@ const CarrierForm: React.FC = () => {
 
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={4}>
-                                        {/* <TextField
-                                            fullWidth size="small"
-                                            label="Lane IDs"
-                                            name="laneIds"
-                                            value={values.laneIds}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.laneIds && Boolean(errors.laneIds)}
-                                            helperText={touched.laneIds && errors.laneIds}
-                                        /> */}
                                         <FormControl fullWidth size="small" error={touched.laneIds && Boolean(errors.laneIds)}>
                                             <InputLabel>Lane IDs</InputLabel>
                                             <Select
@@ -616,15 +543,10 @@ const CarrierForm: React.FC = () => {
                                                 label="Lane IDs"
                                                 name="laneIds"
                                                 value={values.laneIds}
-                                                onChange={handleChange} // Formik's handler for field change
-                                                onBlur={handleBlur}     // Formik's handler for field blur
-                                                renderValue={(selected) => (selected as string[]).join(', ')} // Display selected lanes as comma-separated
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                renderValue={(selected) => (selected as string[]).join(', ')}
                                             >
-                                                {/* {getAllLanes.map((lane: { lane_ID: string }) => (
-                                            <MenuItem key={lane.lane_ID} value={lane.lane_ID}>
-                                                {lane.lane_ID}
-                                            </MenuItem>
-                                        ))} */}
                                                 {getAllLanes?.map((lane: Lane) => (
                                                     <MenuItem key={lane.lane_ID} value={String(lane.lane_ID)}>
                                                         <Tooltip
@@ -653,56 +575,13 @@ const CarrierForm: React.FC = () => {
                                         label="Is enrolled on carrier network portal"
                                     />
                                 </Grid>
-
-                                {/* <h3 className={styles.mainHeading}>Devices</h3>
-                                <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6} md={4}>
-                                        <TextField
-                                            fullWidth size="small"
-                                            label="Device Details"
-                                            name="deviceDetails"
-                                            value={values.deviceDetails}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.deviceDetails && Boolean(errors.deviceDetails)}
-                                            helperText={touched.deviceDetails && errors.deviceDetails}
-                                        />
-                                    </Grid>
-                                </Grid> */}
-
-                                {/* <h3 className={styles.mainHeading}>Spot Auction</h3>
-                                <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6} md={4}>
-                                        <FormControlLabel
-                                            control={
-                                                <Checkbox
-                                                    checked={values.enrollSpotAuction}
-                                                    onChange={(e) => setFieldValue('enrollSpotAuction', e.target.checked)}
-                                                />
-                                            }
-                                            label="Enroll for Spot Auction"
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} sm={6} md={4}>
-                                        <FormControlLabel
-                                            control={
-                                                <Checkbox
-                                                    checked={values.preferredCarrier}
-                                                    onChange={(e) => setFieldValue('preferredCarrier', e.target.checked)}
-                                                />
-                                            }
-                                            label="Preferred Carrier"
-                                        />
-                                    </Grid>
-                                </Grid> */}
-
                                 <Box marginTop={3} textAlign="center">
                                     <Button
                                         type="submit"
                                         variant="contained"
                                         sx={{
-                                            backgroundColor: "#83214F", // Custom button background color
-                                            color: "#fff", // Text color
+                                            backgroundColor: "#83214F",
+                                            color: "#fff",
                                             "&:hover": {
                                                 backgroundColor: "#fff",
                                                 color: "#83214F"

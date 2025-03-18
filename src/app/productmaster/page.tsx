@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import {
@@ -20,13 +20,16 @@ import {
     Tooltip,
     CircularProgress,
     Backdrop,
+    ListItem,
+    List,
+    Paper,
 } from '@mui/material';
 import style from './productmaster.module.css';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 // import { GridColDef } from '@mui/x-data-grid';
 import { DataGridComponent } from '@/Components/GridComponent';
-import { useCreateProductMutation, useDeleteProductMutation, useEditProductMutation, useGetAllProductsQuery, useGetLocationMasterQuery, useGetPackageMasterQuery } from '@/api/apiSlice';
+import { useCreateProductMutation, useDeleteProductMutation, useEditProductMutation, useGetAllProductsQuery, useGetFilteredLocationsQuery, useGetLocationMasterQuery, useGetPackageMasterQuery } from '@/api/apiSlice';
 import { GridCellParams, GridPaginationModel } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -58,12 +61,14 @@ const GET_ALL_PRODUCTS = gql`
     }
   }
 `;
+
 export interface PackagingType {
     pac_ID: string;
     location: string;
 
 }
 export interface Product {
+    locationId: string;
     weight_uom: string;
     productID: string;
     productName: string;
@@ -101,7 +106,7 @@ export interface Product {
     temp_controlled: boolean
     hazardous: boolean;
     product_name: string;
-    packagingType: PackagingType[];
+    packagingType: string;
     packing_label: boolean;
     special_instructions: string;
     tempControl: boolean;
@@ -111,12 +116,17 @@ export interface Product {
     volume_uom: string;
 }
 
-const ProductMasterPage = () => {
+interface ProductMasterProps {
+    productsFromServer?: Product[];
+}
+const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer }) => {
+    const wrapperRef = useRef<HTMLDivElement>(null);
     const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10, });
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const unitsofMeasurement = useSelector((state: RootState) => state.auth.unitsofMeasurement);
+
     const productFormInitialValues = {
         productID: '',
         productName: '',
@@ -147,14 +157,19 @@ const ProductMasterPage = () => {
     const [formInitialValues, setFormInitialValues] = useState(productFormInitialValues);
     const [updateRecordData, setUpdateRecordData] = useState({});
     const [updateRecordId, setUpdateRecordId] = useState(0)
-    const { data: productsData, error: allProductsFectchingError, isLoading } = useGetAllProductsQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize })
+    const { data: productsDataFromClient, error: allProductsFectchingError, isLoading } = useGetAllProductsQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize })
+    const productsData = isLoading ? productsFromServer : productsDataFromClient;
     const [showForm, setShowForm] = useState(false);
-    const { data: locationsData, error: getLocationsError, isLoading: isLocationLoading } = useGetLocationMasterQuery({})
+    const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery({})
     const { data: packagesData, isLoading: isPackageLoading } = useGetPackageMasterQuery({})
     const [createNewProduct, { isLoading: createLoading }] = useCreateProductMutation();
     const [deleteProduct, { isLoading: deleteProductLoading }] = useDeleteProductMutation()
     const [updateProductDetails, { isLoading: updateProductLoading }] = useEditProductMutation();
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
+    const [searchKey, setSearchKey] = useState('');
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
+    const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
     const getAllPackages = packagesData?.packages.length > 0 ? packagesData?.packages : []
     const allProductsData = productsData?.products || [];
 
@@ -197,19 +212,47 @@ const ProductMasterPage = () => {
     const validationSchema = Yup.object({
         productName: Yup.string().required('Product name is required'),
         productDescription: Yup.string().required('Product Description is required'),
+        weightUoM: Yup.string().required('Weight is required'),
+        volumeUoM: Yup.string().required('Volume is required'),
         basicUoM: Yup.string().required('Basic Unit of Measure is required'),
         salesUoM: Yup.string().required('Sales Unit of Measure is required'),
+        locationId: Yup.string().required('Location id is required'),
         packagingType: Yup.string().required('packaging type is required'),
     });
 
+    const getLocationDetails = (loc_ID: string) => {
+            const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
+            if (!location) return "Location details not available";
+            const details = [
+                location.address_1 ,
+                location.city,
+                location.state,
+                location.country,
+                location.pincode,
+                location.loc_ID
+            ].filter(Boolean);
+    
+            return details.length > 0 ? details.join(", ") : "Location details not available";
+    };
+const getPackageDetails = (pack_ID: string) => {
+    const packageData = getAllPackages.find((pack: Package) => pack.pac_ID === pack_ID);
+    console.log("packageData : ", packageData)
+    return packageData 
+        ? `${packageData.packaging_type_name}, ${packageData.pac_ID}` 
+        : "NA";
+};
+
 
     const mapRowToInitialValues = (selectedProduct: Product) => {
-        console.log('selected pro :', selectedProduct)
+        const locId = selectedProduct?.locationId ? selectedProduct?.locationId.split(", ").at(-1) ?? "" : "";
+        const packIdd = selectedProduct?.packagingType ? selectedProduct?.packagingType.split(", ").at(-1) ?? "" : "";
+        console.log('package det :' , selectedProduct )
+        setSearchKey(locId || '')
         const weightUnit = selectedProduct.weight.split(' ')
         const volumeUnit = selectedProduct.volume.split(' ')
         return (
             {
-                productID: selectedProduct.productID || '',
+                productID: selectedProduct.product_ID || '',
                 productName: selectedProduct.productName || '',
                 productDescription: selectedProduct.product_desc || '',
                 basicUoM: selectedProduct.basic_uom || '',
@@ -220,13 +263,13 @@ const ProductMasterPage = () => {
                 expirationDate: selectedProduct.expiration || '',
                 bestBeforeDate: selectedProduct.best_before || '',
                 stackingFactor: selectedProduct?.stacking_factor || '',
-                documents: '',
-                locationId: selectedProduct?.packagingType[0]?.location || '',
-                packagingType: selectedProduct?.packagingType[0]?.pac_ID || '',
-                generatePackagingLabel: selectedProduct.packingLabel || false,
-                specialInstructions: selectedProduct.specialInstructions || '',
-                fragileGoods: selectedProduct.fragile_goods || false,
-                dangerousGoods: selectedProduct.dangerous_goods || false,
+                documents: selectedProduct.documents || '' ,
+                locationId: locId || '',
+                packagingType: packIdd || '',
+                generatePackagingLabel: selectedProduct?.packingLabel || false,
+                specialInstructions: selectedProduct?.specialInstructions || '',
+                fragileGoods: selectedProduct?.fragile_goods || false,
+                dangerousGoods: selectedProduct?.dangerous_goods || false,
                 hazardousStorage: selectedProduct?.hazardous || false,
                 skuNumber: selectedProduct.sku_num || '',
                 hsncode: selectedProduct.hsn_code || '',
@@ -235,7 +278,6 @@ const ProductMasterPage = () => {
                 temperatureControl: selectedProduct?.tempControl || false,
             });
     }
-
 
     const handleEdit = async (rowData: Product) => {
         setShowForm(true)
@@ -273,16 +315,18 @@ const ProductMasterPage = () => {
         { field: 'product_ID', headerName: 'Product ID', width: 150 },
         { field: 'productName', headerName: 'Product Name', width: 150 },
         { field: 'product_desc', headerName: 'Product Description', width: 200 },
-        { field: 'sales_uom', headerName: 'Sales UOM', width: 150 },
-        { field: 'basic_uom', headerName: 'Basic UOM', width: 150 },
+        // { field: 'sales_uom', headerName: 'Sales UOM', width: 150 },
+        // { field: 'basic_uom', headerName: 'Basic UOM', width: 150 },
         { field: 'weight', headerName: 'Weight', width: 150 },
         { field: 'volume', headerName: 'Volume', width: 150 },
-        { field: 'expiration', headerName: 'Expiration Date', width: 180 },
-        { field: 'best_before', headerName: 'Best Before Date', width: 180 },
+        { field: 'expiration', headerName: 'Expiration Date', width: 150 },
+        { field: 'best_before', headerName: 'Best Before Date', width: 150 },
+        { field: 'locationId', headerName: 'Location', width: 250 },
+        { field: 'packagingType', headerName: 'Packaging type', width: 250 },
         { field: 'hsn_code', headerName: 'HSN Code', width: 150 },
         { field: 'sku_num', headerName: 'SKU Number', width: 150 },
-        { field: 'fragile_goods', headerName: 'Fragile Goods', width: 180, valueFormatter: (params: GridCellParams) => params.value ? 'Yes' : 'No' },
-        { field: 'dangerous_goods', headerName: 'Dangerous Goods', width: 180, valueFormatter: (params: GridCellParams) => params.value ? 'Yes' : 'No' },
+        { field: 'fragile_goods', headerName: 'Fragile Goods', width: 150, valueFormatter: (params: GridCellParams) => params.value ? 'Yes' : 'No' },
+        { field: 'dangerous_goods', headerName: 'Dangerous Goods', width: 150, valueFormatter: (params: GridCellParams) => params.value ? 'Yes' : 'No' },
         {
             field: 'actions',
             headerName: 'Actions',
@@ -305,8 +349,6 @@ const ProductMasterPage = () => {
             ),
         },
     ];
-
-
     const rows = allProductsData.map((product: Product) => ({
         id: product.prod_id,
         product_ID: product.product_ID,
@@ -323,8 +365,8 @@ const ProductMasterPage = () => {
         dangerous_goods: product.dangerous_goods,
         documents: product.documents,
         stacking_factor: product.stacking_factor,
-        locationId: product.loc_ID,
-        packagingType: product.packaging_type,
+        locationId: getLocationDetails(product.loc_ID),
+        packagingType: getPackageDetails(product.packaging_type[0].pac_ID),
         specialInstructions: product.special_instructions,
         hazardousStorage: product.hazardous,
         tempControl: product.temp_controlled,
@@ -374,6 +416,7 @@ const ProductMasterPage = () => {
 
             const editProductBody = {
                 ...updateRecordData,
+
                 product_name: values?.productName,
                 product_desc: values?.productDescription,
                 basic_uom: values?.basicUoM,
@@ -415,6 +458,7 @@ const ProductMasterPage = () => {
                     setUpdateRecordData({})
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
+                    setSearchKey('')
                 }
             } else {
                 const response = await createNewProduct(createProductBody).unwrap();
@@ -427,6 +471,7 @@ const ProductMasterPage = () => {
                     setUpdateRecordData({})
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
+                    setSearchKey('')
                 }
             }
         }
@@ -437,11 +482,20 @@ const ProductMasterPage = () => {
             setSnackbarMessage("Something went wrong! please try again.");
             setSnackbarSeverity("error");
             setSnackbarOpen(true);
+            setSearchKey('')
         }
-
-
-
     };
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+                setShowSuggestions(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     return (
         <>
@@ -545,18 +599,6 @@ const ProductMasterPage = () => {
                                                 ))}
                                             </TextField>
                                         </Grid>
-                                        {/* <Grid item xs={12} sm={6} md={2.4} >
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="Sales Unit of Measure*"
-                                            name="salesUoM"
-                                            value={values.salesUoM}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.salesUoM && Boolean(errors.salesUoM)}
-                                            helperText={touched.salesUoM && errors.salesUoM}
-                                        />
-                                    </Grid> */}
                                         <Grid item xs={12} sm={6} md={2.4}   >
                                             <TextField
                                                 fullWidth size='small'
@@ -585,6 +627,8 @@ const ProductMasterPage = () => {
                                                 value={values.weightUoM}
                                                 onChange={handleChange}
                                                 onBlur={handleBlur}
+                                                error={touched.weightUoM && Boolean(errors.weightUoM)}
+                                                helperText={touched.weightUoM && errors.weightUoM}
                                             />
                                         </Grid>
                                         <Grid item xs={12} sm={6} md={2.4}   >
@@ -612,6 +656,8 @@ const ProductMasterPage = () => {
                                                 value={values.volumeUoM}
                                                 onChange={handleChange}
                                                 onBlur={handleBlur}
+                                                error={touched.volumeUoM && Boolean(errors.volumeUoM)}
+                                                helperText={touched.volumeUoM && errors.volumeUoM}
                                             />
                                         </Grid>
                                         <Grid item xs={12} sm={6} md={2.4}  >
@@ -675,13 +721,14 @@ const ProductMasterPage = () => {
                                                     touched.expirationDate && errors.expirationDate
                                                 }
                                                 InputLabelProps={{ shrink: true }}
+                                                inputProps={{ min: new Date().toISOString().split("T")[0] }}
                                             />
                                         </Grid>
 
                                         <Grid item xs={12} sm={6} md={2.4}>
                                             <TextField
                                                 fullWidth
-                                                size="small"
+                                                size="small" inputProps={{ min: new Date().toISOString().split("T")[0] }}
                                                 label="Best Before Date"
                                                 name="bestBeforeDate"
                                                 type="date"
@@ -766,51 +813,69 @@ const ProductMasterPage = () => {
                                         Location data
                                     </Typography>
                                     <Grid container spacing={2}>
+
                                         <Grid item xs={12} sm={6} md={2.4}>
-                                            <FormControl fullWidth size="small" error={touched.locationId && Boolean(errors.locationId)}>
-                                                <InputLabel>Location of Source</InputLabel>
-                                                <Select
-                                                    label="Location of Source"
-                                                    name="locationOfSource"
-                                                    value={values.locationId}
-                                                    onChange={(e) => setFieldValue('locationId', e.target.value)}
-                                                    onBlur={handleBlur}
-                                                >
-                                                    {isLocationLoading ? (
-                                                        <MenuItem disabled>
-                                                            <CircularProgress size={20} color="inherit" />
-                                                            <span style={{ marginLeft: "10px" }}>Loading...</span>
-                                                        </MenuItem>
-                                                    ) : (
-                                                        getAllLocations?.map((location: Location) => (
-                                                            <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                                                                <Tooltip
-                                                                    title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                                                    placement="right"
+                                            <TextField
+                                                fullWidth 
+                                                error={touched.locationId && Boolean(errors.locationId)}
+                                                helperText={touched.locationId && errors.locationId}
+                                                name="locationId"
+                                                size="small"
+                                                label="Location ID"
+                                                onFocus={() => {
+                                                    if (!searchKey) {
+                                                        setSearchKey(values?.locationId || "");
+                                                        setShowSuggestions(true);
+                                                    }
+                                                }}
+                                                onChange={(e) => {
+                                                    setSearchKey(e.target.value)
+                                                    setShowSuggestions(true)
+                                                }
+                                                }
+                                                // onBlur={handleBlur}
+                                                value={searchKey}
+                                                InputProps={{
+                                                    endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
+                                                }}
+                                            />
+                                            <div ref={wrapperRef} >
+                                                {showSuggestions && displayLocations?.length > 0 && (
+                                                    <Paper
+                                                        style={{
+                                                            maxHeight: 200,
+                                                            overflowY: "auto",
+                                                            position: "absolute",
+                                                            zIndex: 10,
+                                                            width: "18%",
+                                                        }}
+                                                    >
+                                                        <List>
+                                                            {displayLocations.map((location: Location) => (
+                                                                <ListItem
+                                                                    key={location.loc_ID}
+                                                                    component="li"
+                                                                    onClick={() => {
+                                                                        setShowSuggestions(false)
+                                                                        setSearchKey(location.loc_ID);
+                                                                        setFieldValue("locationId", location.loc_ID);
+                                                                    }}
+                                                                    sx={{ cursor: "pointer" }}
                                                                 >
-                                                                    <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                                                                </Tooltip>
-                                                            </MenuItem>
-                                                        ))
-                                                    )}
-                                                </Select>
-                                                {touched.locationId && errors.locationId && (
-                                                    <FormHelperText>{errors.locationId}</FormHelperText>
-                                                )}
-                                            </FormControl>
+                                                                    <Tooltip
+                                                                        title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                                                        placement="right"
+                                                                    >
+                                                                        <span style={{ fontSize: '14px' }}>{location.loc_ID}, {location.city}, {location.state}, {location.pincode}</span>
+                                                                    </Tooltip>
+                                                                </ListItem>
+                                                            ))}
+                                                        </List>
+                                                    </Paper>
+                                                )} </div>
                                         </Grid>
-                                        {/* <Grid item xs={12} sm={6} md={2.4} >
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="Packaging Type"
-                                            name="packagingType"
-                                            value={values.packagingType}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                        />
-                                    </Grid> */}
                                         <Grid item xs={12} sm={6} md={2.4}>
-                                            <FormControl fullWidth size="small" error={touched.locationId && Boolean(errors.locationId)}>
+                                            <FormControl fullWidth size="small" error={touched.packagingType && Boolean(errors.packagingType)}>
                                                 <InputLabel>Packaging Type</InputLabel>
                                                 <Select
                                                     label="Packaging Type"
@@ -818,6 +883,7 @@ const ProductMasterPage = () => {
                                                     value={values.packagingType}
                                                     onChange={(e) => setFieldValue('packagingType', e.target.value)}
                                                     onBlur={handleBlur}
+                                                    renderValue={(selected) => selected}
                                                 >
                                                     {isPackageLoading ? (
                                                         <MenuItem disabled>
@@ -828,17 +894,17 @@ const ProductMasterPage = () => {
                                                         getAllPackages?.map((packages: Package) => (
                                                             <MenuItem key={packages.pac_ID} value={String(packages.pac_ID)}>
                                                                 <Tooltip
-                                                                    title={`${packages.packaging_type_name}, ${packages.dimensions}, ${packages.dimensions_uom}`}
+                                                                    title={`${packages.packaging_type_name}, ${packages.pack_length}*${packages.pack_width}*${packages.pack_height}, ${packages.dimensions_uom}`}
                                                                     placement="right"
                                                                 >
-                                                                    <span style={{ flex: 1 }}>{packages.pac_ID}</span>
+                                                                    <span>{packages.packaging_type_name}, {packages.pack_length}*{packages.pack_width}*{packages.pack_height} {packages.dimensions_uom}, {packages.pac_ID} </span>
                                                                 </Tooltip>
                                                             </MenuItem>
                                                         ))
                                                     )}
                                                 </Select>
                                                 {touched.packagingType && errors.packagingType && (
-                                                    <FormHelperText>{errors.packagingType}</FormHelperText>
+                                                    <FormHelperText style={{color:'red'}}>{errors.packagingType}</FormHelperText>
                                                 )}
                                             </FormControl>
                                         </Grid>
@@ -848,7 +914,7 @@ const ProductMasterPage = () => {
                                                     <Checkbox
                                                         name="generatePackagingLabel"
                                                         checked={values.generatePackagingLabel}
-                                                        onChange={handleChange}
+                                                        onChange={(e) => setFieldValue("generatePackagingLabel", e.target.checked)}
                                                     />
                                                 }
                                                 label="Generate Packaging Label"
@@ -878,7 +944,7 @@ const ProductMasterPage = () => {
                                                     <Checkbox
                                                         name="fragileGoods"
                                                         checked={values.fragileGoods}
-                                                        onChange={handleChange}
+                                                        onChange={(e) => setFieldValue("fragileGoods", e.target.checked)}
                                                     />
                                                 }
                                                 label="Fragile Goods"
@@ -890,7 +956,7 @@ const ProductMasterPage = () => {
                                                     <Checkbox
                                                         name="dangerousGoods"
                                                         checked={values.dangerousGoods}
-                                                        onChange={handleChange}
+                                                        onChange={(e) => setFieldValue("dangerousGoods", e.target.checked)}
                                                     />
                                                 }
                                                 label="Dangerous Goods"
@@ -902,7 +968,7 @@ const ProductMasterPage = () => {
                                                     <Checkbox
                                                         name="hazardousStorage"
                                                         checked={values.hazardousStorage}
-                                                        onChange={handleChange}
+                                                        onChange={(e) => setFieldValue("hazardousStorage", e.target.checked)}
                                                     />
                                                 }
                                                 label="Hazardous Substance Storage"
@@ -914,7 +980,7 @@ const ProductMasterPage = () => {
                                                     <Checkbox
                                                         name="temperatureControl"
                                                         checked={values.temperatureControl}
-                                                        onChange={handleChange}
+                                                        onChange={(e) => setFieldValue("temperatureControl", e.target.checked)}
                                                     />
                                                 }
                                                 label="Temperature control"
@@ -930,6 +996,7 @@ const ProductMasterPage = () => {
                                             onClick={() => {
                                                 setFormInitialValues(productFormInitialValues)
                                                 setUpdateRecord(false)
+                                                setSearchKey('')
                                                 resetForm({ values: productFormInitialValues });
                                             }}
                                             style={{ marginLeft: "10px" }}>Reset
@@ -959,5 +1026,6 @@ const ProductMasterPage = () => {
         </>
     );
 };
+
 
 export default withAuthComponent(ProductMasterPage);

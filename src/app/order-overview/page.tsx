@@ -91,6 +91,9 @@ const OrdersGrid: React.FC = () => {
         columns={ordersColumns}
         autoHeight
         disableRowSelectionOnClick
+        pageSizeOptions={[10, 20, 30]}
+        initialState={{pagination: { paginationModel: { pageSize: 10 } },
+  }}
       />
     </Box>
   );

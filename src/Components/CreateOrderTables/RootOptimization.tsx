@@ -64,36 +64,26 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
     const [selectedRouteIndex, setSelectedRouteIndex] = useState<number | null>(null);
     const [selectedTransport, setSelectedTransport] = useState('');
     const [transportOptions, setTransportOptions] = useState<string[]>([]);
+    const [selectedRouteData, setSelectedRouteData] = useState<{ vehicle: string; route: any } | null>(null);
 
     useEffect(() => {
-        if (rootOptimization?.[0]?.allocations?.length > 0) {
-            const transports = rootOptimization[0].allocations
-                .map((allocation) => allocation.vehicle_ID)
+        if (rootOptimization?.length > 0) {
+            const transports = rootOptimization.map((allocation) => allocation.vehicle_ID)
                 .filter((t): t is string => t !== undefined);
-
             setTransportOptions(transports);
             setSelectedTransport(transports[0] ?? '');
         }
     }, [rootOptimization]);
 
-    useEffect(() => {
-        setSelectedRouteIndex(null);
-    }, [selectedTransport]);
-    console.log('selectedRouteIndex', selectedRouteIndex);
     const filteredRoutes = useMemo(() => {
         if (!selectedTransport) return [];
-        return rootOptimization.flatMap(vehicle =>
-            vehicle.allocations
-                .filter(allocation => allocation.vehicle_ID === selectedTransport)
-                .flatMap(allocation => allocation.route)
-        );
+        const vehicle = rootOptimization.find(vehicle => vehicle.vehicle_ID === selectedTransport);
+        return vehicle ? vehicle.route : [];
     }, [selectedTransport, rootOptimization]);
 
     const { startMarkers, endMarkers } = useMemo(() => {
         const startSet = new Map();
         const endSet = new Map();
-
-        // Decide which routes to use (all or single)
         const routesToShow = selectedRouteIndex !== null
             ? [filteredRoutes[selectedRouteIndex]]
             : filteredRoutes;
@@ -128,17 +118,16 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
     }, [filteredRoutes, selectedRouteIndex]);
 
 
-    console.log('startMarkers', startMarkers);
-    console.log('endMarkers', endMarkers);
-
     const fetchDirections = useCallback(async () => {
         if (!isLoaded || typeof google === 'undefined' || !google.maps) return;
 
         const directionsService = new google.maps.DirectionsService();
         const newDirectionsResults: google.maps.DirectionsResult[] = [];
 
-        for (let i = 0; i < filteredRoutes.length; i++) {
-            const route = filteredRoutes[i];
+        const vehicleRoutes = rootOptimization.find(vehicle => vehicle.vehicle_ID === selectedTransport)?.route || [];
+
+        for (let i = 0; i < vehicleRoutes.length; i++) {
+            const route = vehicleRoutes[i];
             try {
                 const response = await new Promise<google.maps.DirectionsResult | null>((resolve) => {
                     directionsService.route(
@@ -166,7 +155,7 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
         }
 
         setDirectionsResults(newDirectionsResults);
-    }, [isLoaded, filteredRoutes]);
+    }, [isLoaded, selectedTransport, rootOptimization]);
 
     useEffect(() => {
         if (filteredRoutes.length > 0) {
@@ -176,10 +165,26 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
 
     if (!isLoaded) return <p>Loading Maps...</p>;
 
-    const handleRouteSelection = (value: string) => {
-        setSelectedRouteIndex(value === 'all' ? null : Number(value));
-    };
+    // const handleRouteSelection = (value: string) => {
+    //     setSelectedRouteIndex(value === 'all' ? null : Number(value));
+    // };
 
+
+    const handleRouteSelection = (value: string) => {
+        if (value === 'all') {
+            setSelectedRouteIndex(null);
+            setSelectedRouteData(null);
+        } else {
+            const index = Number(value);
+            setSelectedRouteIndex(index);
+            setSelectedRouteData({
+                vehicle: selectedTransport,
+                route: directionsResults[index]?.routes || null,
+            });
+        }
+    };
+    // console.log('directionsResults', directionsResults);
+    // console.log('selectedRouteData', selectedRouteData);
     return (
         <div style={{ width: '100%' }}>
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', margin: '1rem' }}>
@@ -190,6 +195,7 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
                         onChange={(e) => {
                             setSelectedTransport(e.target.value);
                             setSelectedRouteIndex(null);
+                            setSelectedRouteData(null);
                         }}
                         label="Transport"
                     >
@@ -206,6 +212,7 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
                         value={selectedRouteIndex !== null ? selectedRouteIndex.toString() : 'all'}
                         label="Select Route"
                         onChange={(e) => handleRouteSelection(e.target.value)}
+                        disabled={!selectedTransport}
                     >
                         <MenuItem value="all">All Routes</MenuItem>
                         {directionsResults.map((result, idx) => {
@@ -227,35 +234,56 @@ const RootOptimization: React.FC<RootOptimizationProps> = ({ rootOptimization })
                 center={startMarkers[0]?.position || { lat: 0, lng: 0 }}
                 zoom={5}
             >
-                {startMarkers.map(({ id, position }) => (
-                    <Marker
-                        key={id}
-                        position={position}
-                        onClick={() => setActiveMarker(id)}
-                        icon={{ url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png' }}
-                    >
-                        {activeMarker === id && (
-                            <InfoWindow onCloseClick={() => setActiveMarker(null)}>
-                                <div>Start Location</div>
-                            </InfoWindow>
-                        )}
-                    </Marker>
-                ))}
+                {startMarkers.map(({ id, position }) => {
+                    // Find matching end marker
+                    const endMarker = endMarkers.find(marker => marker.position.lat === position.lat && marker.position.lng === position.lng);
 
-                {endMarkers.map(({ id, position }) => (
-                    <Marker
-                        key={id}
-                        position={position}
-                        onClick={() => setActiveMarker(id)}
-                        icon={{ url: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png' }}
-                    >
-                        {activeMarker === id && (
-                            <InfoWindow onCloseClick={() => setActiveMarker(null)}>
-                                <div>End Location</div>
-                            </InfoWindow>
-                        )}
-                    </Marker>
-                ))}
+                    // Apply a small offset if the end marker exists at the same position
+                    const adjustedPosition = endMarker
+                        ? { lat: position.lat + 0.0001, lng: position.lng + 0.0001 }
+                        : position;
+
+                    return (
+                        <Marker
+                            key={id}
+                            position={position}
+                            onClick={() => setActiveMarker(id)}
+                            icon={{ url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png' }}
+                        >
+                            {activeMarker === id && (
+                                <InfoWindow onCloseClick={() => setActiveMarker(null)}>
+                                    <div>Start Location</div>
+                                </InfoWindow>
+                            )}
+                        </Marker>
+                    );
+                })}
+
+                {endMarkers.map(({ id, position }) => {
+                    // Find matching start marker
+                    const startMarker = startMarkers.find(marker => marker.position.lat === position.lat && marker.position.lng === position.lng);
+
+                    // Apply a small offset if the start marker exists at the same position
+                    const adjustedPosition = startMarker
+                        ? { lat: position.lat - 0.0001, lng: position.lng - 0.0001 }
+                        : position;
+
+                    return (
+                        <Marker
+                            key={id}
+                            position={adjustedPosition}
+                            onClick={() => setActiveMarker(id)}
+                            icon={{ url: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png' }}
+                        >
+                            {activeMarker === id && (
+                                <InfoWindow onCloseClick={() => setActiveMarker(null)}>
+                                    <div>End Location</div>
+                                </InfoWindow>
+                            )}
+                        </Marker>
+                    );
+                })}
+
 
                 {selectedRouteIndex === null
                     ? directionsResults.map((result, index) =>

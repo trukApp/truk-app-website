@@ -1,17 +1,21 @@
-import React from "react";
-import { Formik, Form, Field, FieldArray, FieldProps, FormikHelpers } from "formik";
-import * as Yup from "yup";
-import { Button, Grid, TextField, MenuItem, Tooltip, CircularProgress, Typography } from "@mui/material";
-import { useAppDispatch, useAppSelector } from "@/store";
+import React, { useState } from "react";
 import {
-  // setCompletedState,
-  setProductsList
-} from "@/store/authSlice";
+  Formik, Form, FieldArray, FieldProps,
+  Field
+} from "formik";
+import * as Yup from "yup";
+import {
+  Grid, TextField, CircularProgress, Typography, Autocomplete
+} from "@mui/material";
+import { useAppDispatch, useAppSelector } from "@/store";
+import { setProductsList } from "@/store/authSlice";
 import styles from './CreatePackage.module.css';
-import { useGetAllProductsQuery } from "@/api/apiSlice";
+import {
+  useGetAllProductsQuery,
+  useGetFilteredProductsQuery
+} from "@/api/apiSlice";
 import { Product } from "@/app/productmaster/page";
 import { CustomButtonFilled, CustomButtonOutlined } from "../ReusableComponents/ButtonsComponent";
-
 
 interface PackageDetails {
   productId: string;
@@ -22,6 +26,7 @@ interface PackageDetails {
   quantity: string;
   weight: string;
   packagingType: string;
+  product_ID: string
 }
 
 interface FormValues {
@@ -36,180 +41,242 @@ interface PackingDetailsTab {
 const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
   const dispatch = useAppDispatch();
   const productListFromRedux = useAppSelector((state) => state.auth.packagesDetails);
-  const { data: productsData, isLoading: isProductsLoading } = useGetAllProductsQuery({})
-  const productIdOptions = productsData?.products.length > 0 ? productsData?.products : []
-  console.log("products data :", productsData)
+  console.log("productListFromRedux: ", productListFromRedux)
+  const { data: allProducts, isLoading: isAllProductsLoading } = useGetAllProductsQuery({});
+  const [searchKey, setSearchKey] = useState("");
+  const {
+    data: filteredProductsData,
+    isFetching: isFilteredLoading
+  } = useGetFilteredProductsQuery(searchKey.length >= 3 ? searchKey : null, {
+    skip: searchKey.length < 3,
+  });
+
+  const allProductList = allProducts?.products || [];
+  const filteredProducts = filteredProductsData?.results || [];
+
+  const productOptions = searchKey.length >= 3 ? filteredProducts : allProductList;
+
   const validationSchema = Yup.object().shape({
     packageDetails: Yup.array().of(
       Yup.object().shape({
         productId: Yup.string().required("Required"),
         productName: Yup.string().required("Required"),
-        // hsnCode: Yup.string().required("Required"),
-        // rfid: Yup.string().required("Required"),
         dimensions: Yup.string().required("Required"),
         quantity: Yup.string().required("Required"),
         weight: Yup.string().required("Required"),
-        // packagingType: Yup.string().required("Required"),
       })
     ),
   });
 
   const initialValues: FormValues = {
-    packageDetails:
-      productListFromRedux.length > 0
-        ? productListFromRedux
-        : [
-          {
-            productId: "",
-            productName: "",
-            hsnCode: "",
-            rfid: "",
-            dimensions: "",
-            quantity: "",
-            weight: "",
-            packagingType: "",
-          },
-        ],
+    packageDetails: productListFromRedux.length > 0
+      ? productListFromRedux
+      : [{
+        product_ID: "",
+        productId: "",
+        productName: "",
+        hsnCode: "",
+        rfid: "",
+        dimensions: "",
+        quantity: "",
+        weight: "",
+        packagingType: "",
+      }],
   };
 
-  const handleFormSubmit = (values: FormValues,) => {
+  const handleFormSubmit = (values: FormValues) => {
     dispatch(setProductsList(values.packageDetails));
-    // dispatch(setCompletedState(2));
     onNext(values);
-  };
-
-  const handleProductChange = (
-    event: React.ChangeEvent<{ value: unknown }>,
-    index: number,
-    setFieldValue: FormikHelpers<FormValues>["setFieldValue"]
-  ) => {
-    const selectedProductId = event.target.value as string;
-    const selectedProduct = productIdOptions.find(
-      (product: Product) => product.product_ID === selectedProductId
-    );
-
-    setFieldValue(`packageDetails.${index}.productId`, selectedProductId);
-
-    if (selectedProduct) {
-      setFieldValue(`packageDetails.${index}.productName`, selectedProduct.product_name);
-      setFieldValue(`packageDetails.${index}.hsnCode`, selectedProduct.hsn_code);
-      setFieldValue(`packageDetails.${index}.weight`, `${selectedProduct.weight} ${selectedProduct.weight_uom}`);
-      setFieldValue(`packageDetails.${index}.dimensions`, `${selectedProduct.volume} ${selectedProduct.volume_uom}`);
-      setFieldValue(`packageDetails.${index}.packagingType`, selectedProduct.packaging_type[0]?.pac_ID);
-
-
-    }
   };
 
   return (
     <Grid>
       <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleFormSubmit}>
-  {({ values, handleSubmit, setFieldValue }) => (
-    <Form onSubmit={handleSubmit} className={styles.formsBgContainer}>
-      <Typography variant="h6" sx={{ fontWeight: 'bold', textAlign: 'center' }}>Package Details</Typography>
-      <FieldArray name="packageDetails">
-        {({ push, remove }) => (
-          <>
-            {values.packageDetails.map((_, index) => (
-              <Grid container spacing={2} sx={{ marginTop: 1 }} key={index}>
-                {Object.keys(initialValues.packageDetails[0]).map((fieldName) => (
-                  <Grid item xs={12} md={2.4} key={fieldName}>
-                    <Field name={`packageDetails.${index}.${fieldName}`}>
-                      {({ field, meta }: FieldProps) => {
-                        if (fieldName === "productId") {
-                          return (
-                            <TextField
-                              {...field}
-                              select
-                              InputLabelProps={{ shrink: true }}
-                              label="Product ID*"
-                              fullWidth
-                              onChange={(event) => handleProductChange(event, index, setFieldValue)}
-                              size="small" 
-                              error={meta.touched && Boolean(meta.error)}
-                              helperText={meta.touched && meta.error}
-                            >
-                              {isProductsLoading ? (
-                                <MenuItem disabled>
-                                  <CircularProgress size={20} />
-                                </MenuItem>
-                              ) : (
-                                productIdOptions?.map((product: Product) => (
-                                  <MenuItem key={product.product_ID} value={String(product.product_ID)}>
-                                    <Tooltip title={`${product.product_name}, ${product.product_desc}`} placement="right">
-                                      <span style={{ flex: 1 }}>{product.product_ID}</span>
-                                    </Tooltip>
-                                  </MenuItem>
-                                ))
-                              )}
-                            </TextField>
-                          );
-                        }
-                        // else if (fieldName === "packagingType") {
-                        //   return (
-                        //     <TextField
-                        //       {...field}
-                        //       select
-                        //       InputLabelProps={{ shrink: true }}
-                        //       label="Packaging Type"
-                        //       fullWidth
-                        //       size="small"
-                        //       error={meta.touched && Boolean(meta.error)}
-                        //       helperText={meta.touched && meta.error}
-                        //     >
-                        //       {isPackagesLoading ? (
-                        //         <MenuItem disabled>
-                        //           <CircularProgress size={20} />
-                        //         </MenuItem>
-                        //       ) : (
-                        //         getAllPackages.map((pkg:Package) => (
-                        //           <MenuItem key={pkg.pac_ID} value={String(pkg.pac_ID)}>
-                        //             {pkg.pac_ID}
-                        //           </MenuItem>
-                        //         ))
-                        //       )}
-                        //     </TextField>
-                        //   );
-                        // }
-                        else {
-                          return (
-                            <TextField
-                              {...field} disabled={fieldName !== "rfid" && fieldName !== "quantity" } 
-                              InputLabelProps={{ shrink: true }} 
-                              label={
-                                    fieldName
-                                        .replace(/([A-Z])/g, " $1") 
-                                        .replace(/^./, (str) => str.toUpperCase())
-                                        .trim() + " *"
-                                    }
+        {({ values, handleSubmit, setFieldValue }) => (
+          <Form onSubmit={handleSubmit} className={styles.formsBgContainer}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold', textAlign: 'center' }}>
+              Package Details
+            </Typography>
+            <FieldArray name="packageDetails">
+              {({ push, remove }) => (
+                <>
+                  {values.packageDetails.map((_, index) => (
+                    <Grid container spacing={2} sx={{ marginTop: 1 }} key={index}>
+                      {Object.keys(initialValues.packageDetails[0]).map((fieldName) => (
+                        <Grid item xs={12} md={2.4} key={fieldName}>
+                          {(fieldName === "productId") ? (
+                            // <Autocomplete
+                            //   freeSolo
+                            //   options={productOptions}
+                            //   loading={isAllProductsLoading || isFilteredLoading}
+                            //   value={
+                            //     allProductList.find(
+                            //       (p: PackageDetails) => p.product_ID === values.packageDetails[index].productId
+                            //     ) || null
+                            //   }
+                            //   getOptionLabel={(option: Product | string) =>
+                            //     typeof option === "string" ? option : `${option.product_ID} - ${option.product_name}`
+                            //   }
+                            //   renderInput={(params) => (
+                            //     <TextField
+                            //       {...params}
+                            //       label="Product ID *"
+                            //       variant="outlined"
+                            //       size="small"
+                            //       onChange={(e) => {
+                            //         const value = e.target.value;
+                            //         setSearchKey(value);
+                            //       }}
+                            //       InputProps={{
+                            //         ...params.InputProps,
+                            //         endAdornment: (
+                            //           <>
+                            //             {(isAllProductsLoading || isFilteredLoading) ? (
+                            //               <CircularProgress color="inherit" size={20} />
+                            //             ) : null}
+                            //             {params.InputProps.endAdornment}
+                            //           </>
+                            //         ),
+                            //       }}
+                            //     />
+                            //   )}
+                            //   onChange={(e, selectedOption) => {
+                            //     if (!selectedOption) {
+                            //       setFieldValue(`packageDetails.${index}.productId`, '');
+                            //       setFieldValue(`packageDetails.${index}.productName`, '');
+                            //       setFieldValue(`packageDetails.${index}.hsnCode`, '');
+                            //       setFieldValue(`packageDetails.${index}.weight`, '');
+                            //       setFieldValue(`packageDetails.${index}.dimensions`, '');
+                            //       setFieldValue(`packageDetails.${index}.packagingType`, '');
+                            //       return;
+                            //     }
 
-                                    fullWidth
-                                    size="small"
-                                    type={fieldName === "quantity" ? "number" : "text"}
-                                    error={meta.touched && Boolean(meta.error)}
-                                    helperText={meta.touched && meta.error}
-                                  />
-                                );
+                            //     const selected =
+                            //       typeof selectedOption === "string"
+                            //         ? allProductList.find((p: PackageDetails) => p.product_ID === selectedOption)
+                            //         : selectedOption;
+
+                            //     if (selected) {
+                            //       setFieldValue(`packageDetails.${index}.productId`, selected.product_ID);
+                            //       setFieldValue(`packageDetails.${index}.productName`, selected.product_name);
+                            //       setFieldValue(`packageDetails.${index}.hsnCode`, selected.hsn_code);
+                            //       setFieldValue(`packageDetails.${index}.weight`, `${selected.weight} ${selected.weight_uom}`);
+                            //       setFieldValue(`packageDetails.${index}.dimensions`, `${selected.volume} ${selected.volume_uom}`);
+                            //       setFieldValue(`packageDetails.${index}.packagingType`, selected.packaging_type[0]?.pac_ID);
+                            //     }
+                            //   }}
+                            // />
+                            <Autocomplete
+                              freeSolo
+                              options={productOptions}
+                              loading={isAllProductsLoading || isFilteredLoading}
+                              value={
+                                allProductList.find(
+                                  (p: PackageDetails) => p.product_ID === values.packageDetails[index].productId
+                                ) || null
                               }
-                            }}
-                          </Field>
+                              getOptionLabel={(option: Product | string) => {
+                                if (typeof option === "string") return option;
+                                return option.product_ID;
+                              }}
+                              renderOption={(props, option) => (
+                                <li {...props} key={typeof option === "string" ? option : option.product_ID}>
+                                  {typeof option === "string"
+                                    ? option
+                                    : `${option.product_ID} - ${option.product_name}`}
+                                </li>
+                              )}
+                              filterOptions={(options, { inputValue }) =>
+                                options.filter((option) => {
+                                  const label = typeof option === "string" ? option : (
+                                    `${option.product_ID} ${option.product_name}`.toLowerCase()
+                                  );
+                                  return label.includes(inputValue.toLowerCase());
+                                })
+                              }
+                              renderInput={(params) => (
+                                <TextField
+                                  {...params}
+                                  label="Product ID *"
+                                  variant="outlined"
+                                  size="small"
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    setSearchKey(value);
+                                  }}
+                                  InputProps={{
+                                    ...params.InputProps,
+                                    endAdornment: (
+                                      <>
+                                        {(isAllProductsLoading || isFilteredLoading) ? (
+                                          <CircularProgress color="inherit" size={20} />
+                                        ) : null}
+                                        {params.InputProps.endAdornment}
+                                      </>
+                                    ),
+                                  }}
+                                />
+                              )}
+                              onChange={(e, selectedOption) => {
+                                if (!selectedOption) {
+                                  setFieldValue(`packageDetails.${index}.productId`, '');
+                                  setFieldValue(`packageDetails.${index}.productName`, '');
+                                  setFieldValue(`packageDetails.${index}.hsnCode`, '');
+                                  setFieldValue(`packageDetails.${index}.weight`, '');
+                                  setFieldValue(`packageDetails.${index}.dimensions`, '');
+                                  setFieldValue(`packageDetails.${index}.packagingType`, '');
+                                  return;
+                                }
+
+                                const selected =
+                                  typeof selectedOption === "string"
+                                    ? allProductList.find((p: PackageDetails) => p.product_ID === selectedOption)
+                                    : selectedOption;
+
+                                if (selected) {
+                                  setFieldValue(`packageDetails.${index}.productId`, selected.product_ID);
+                                  setFieldValue(`packageDetails.${index}.productName`, selected.product_name);
+                                  setFieldValue(`packageDetails.${index}.hsnCode`, selected.hsn_code);
+                                  setFieldValue(`packageDetails.${index}.weight`, `${selected.weight} ${selected.weight_uom}`);
+                                  setFieldValue(`packageDetails.${index}.dimensions`, `${selected.volume} ${selected.volume_uom}`);
+                                  setFieldValue(`packageDetails.${index}.packagingType`, selected.packaging_type[0]?.pac_ID);
+                                }
+                              }}
+                            />
+
+
+                          ) : (
+                            <Field name={`packageDetails.${index}.${fieldName}`}>
+                              {({ field, meta }: FieldProps) => (
+                                <TextField
+                                  {...field}
+                                  disabled={fieldName !== "rfid" && fieldName !== "quantity"}
+                                  label={
+                                    fieldName.replace(/([A-Z])/g, " $1").replace(/^./, str => str.toUpperCase()) + " *"
+                                  }
+                                  fullWidth
+                                  size="small"
+                                  type={fieldName === "quantity" ? "number" : "text"}
+                                  error={meta.touched && Boolean(meta.error)}
+                                  helperText={meta.touched && meta.error}
+                                />
+                              )}
+                            </Field>
+                          )}
                         </Grid>
                       ))}
-
                       {values.packageDetails.length > 1 && (
                         <Grid item xs={12}>
-                          <Button variant="outlined" size="small" color="secondary" onClick={() => remove(index)}>
+                          <CustomButtonOutlined size="small" onClick={() => remove(index)}>
                             Remove
-                          </Button>
+                          </CustomButtonOutlined>
                         </Grid>
                       )}
                     </Grid>
                   ))}
 
-                  <Grid item xs={12} style={{ marginTop: 10 }}>
-                    <Button
-                      variant="contained"
-                      color="primary"
+                  <Grid item xs={12} sx={{ mt: 2 }}>
+                    <CustomButtonFilled
                       size="small"
                       onClick={() =>
                         push({
@@ -225,7 +292,7 @@ const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
                       }
                     >
                       Add One More
-                    </Button>
+                    </CustomButtonFilled>
                   </Grid>
                 </>
               )}
@@ -233,22 +300,15 @@ const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
 
             <Grid container spacing={2} justifyContent="center" marginTop={2}>
               <Grid item>
-                {/* <Button variant="outlined" onClick={onBack}>
-            Back
-          </Button> */}
                 <CustomButtonOutlined onClick={onBack}>Back</CustomButtonOutlined>
               </Grid>
               <Grid item>
-                {/* <Button variant="contained" color="primary" type="submit">
-            Next
-          </Button> */}
-                <CustomButtonFilled  >Next</CustomButtonFilled>
+                <CustomButtonFilled type="submit">Next</CustomButtonFilled>
               </Grid>
             </Grid>
           </Form>
         )}
       </Formik>
-
     </Grid>
   );
 };

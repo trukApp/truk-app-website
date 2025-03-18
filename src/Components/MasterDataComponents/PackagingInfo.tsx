@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { Box, Button, MenuItem, TextField, Select, FormControl, InputLabel, OutlinedInput, Grid, Typography, Collapse, IconButton, Backdrop, CircularProgress } from '@mui/material';
+import { Box, Button, MenuItem, TextField, Grid, Typography, Collapse, IconButton, Backdrop, CircularProgress } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { GridColDef, GridPaginationModel } from '@mui/x-data-grid';
@@ -18,7 +18,9 @@ import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 export interface Package {
   handling_unit_type: string;
-  dimensions: string;
+  pack_length: number,
+  pack_width: number,
+  pack_height: number,
   packageItem: string;
   dimensions_uom: string;
   packaging_type_name: string;
@@ -30,6 +32,9 @@ export interface PackageInfo {
   id: string;
   handlingUnitType: string;
   packagingDimensions: string;
+  packagingLength: string;
+  packagingWidth: string;
+  packagingHeight: string;
   packagingDimensionsUoM: string;
   packagingTypeName: string;
   packagingTypeId: string;
@@ -63,16 +68,20 @@ const PackagingForm = () => {
           {
             packaging_type_name: values.packagingTypeName,
             dimensions_uom: values.packagingDimensionsUoM,
-            dimensions: values.packagingDimensions,
-            handling_unit_type: values.handlingUnitType
+            pack_length: values.packagingLength ,
+            pack_width: values.packagingWidth,
+            pack_height: values.packagingHeight,
+            handling_unit_type:  values.handlingUnitType,
           }
         ]
       }
       const editBody = {
-        packaging_type_name: values.packagingTypeName,
-        dimensions_uom: values.packagingDimensionsUoM,
-        dimensions: values.packagingDimensions,
-        handling_unit_type: values.handlingUnitType
+            packaging_type_name: values.packagingTypeName,
+            dimensions_uom: values.packagingDimensionsUoM,
+            pack_length: values.packagingLength ,
+            pack_width: values.packagingWidth,
+            pack_height: values.packagingHeight,
+            handling_unit_type:  values.handlingUnitType,
       }
       if (isEditing && editRow) {
         const packageId = editRow.id
@@ -84,6 +93,7 @@ const PackagingForm = () => {
           setIsEditing(false)
           setSnackbarSeverity("success");
           setSnackbarOpen(true);
+           
         }
 
       }
@@ -114,18 +124,21 @@ const PackagingForm = () => {
   const formik = useFormik({
     initialValues: {
       id: '',
-      packagingTypeId: '', // Auto-generated, read-only
+      packagingTypeId: '',
       packagingTypeName: '',
       packagingDimensionsUoM: unitsofMeasurement[0],
-      packagingDimensions: '',
+      packagingLength: '', 
+      packagingWidth: '',
+      packagingHeight:'',
       handlingUnitType: '',
+      packagingDimensions:''
     },
     validationSchema: Yup.object({
       packagingTypeName: Yup.string().required('Packaging Type Name is required'),
       packagingDimensionsUoM: Yup.string().required('Packaging Dimensions UoM is required'),
-      packagingDimensions: Yup.string()
-        .matches(/^\d+\*\d+\*\d+$/, 'Enter dimensions in L*W*H format (e.g., 10*20*30)')
-        .required('Packaging Dimensions are required'),
+      packagingLength: Yup.string().required('Packaging length is required'),
+      packagingWidth: Yup.string().required('Packaging width is required'),
+      packagingHeight: Yup.string().required('Packaging height is required'),
       handlingUnitType: Yup.string().required('Handling Unit Type is required'),
     }),
     onSubmit: handleFormSubmit
@@ -133,20 +146,24 @@ const PackagingForm = () => {
 
   useEffect(() => {
     if (editRow) {
+      console.log('edit row :', editRow)
+      const dimensions = editRow.packagingDimensions.split(" * ")
       formik.setValues({
         id: editRow?.id,
         packagingTypeId: editRow?.packagingTypeId,
         packagingTypeName: editRow?.packagingTypeName,
         packagingDimensionsUoM: editRow?.packagingDimensionsUoM,
-        packagingDimensions: editRow?.packagingDimensions,
+        packagingLength:dimensions[0],
+        packagingWidth: dimensions[1],
+        packagingHeight: dimensions[2],
         handlingUnitType: editRow?.handlingUnitType,
+        packagingDimensions : ''
 
 
       });
     }
-  }, [editRow, formik]);
-  const handlingUnitOptions = ['Pallet', 'Container', 'Crate', 'Box', 'Drum', 'Bag', 'Sack'];
-
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editRow]); 
   const handleEdit = (row: PackageInfo) => {
     setShowForm(true)
     setIsEditing(true)
@@ -170,15 +187,13 @@ const PackagingForm = () => {
 
     try {
       const response = await deletePackage(packageId);
-      if (response.data.deleted_record) {
+      if (response?.data?.deleted_record) {
         setSnackbarMessage(`Package ID ${response.data.deleted_record} deleted successfully!`);
         setSnackbarSeverity("info");
         setSnackbarOpen(true);
       }
     } catch (error) {
       console.error("Error deleting vehicle:", error);
-
-      // Show error snackbar
       setSnackbarMessage("Failed to delete package. Please try again.");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
@@ -191,10 +206,9 @@ const PackagingForm = () => {
     packagingTypeId: packageItem.pac_ID,
     packagingTypeName: packageItem?.packaging_type_name,
     packagingDimensionsUoM: packageItem.dimensions_uom,
-    packagingDimensions: packageItem.dimensions,
+    packagingDimensions: `${packageItem.pack_length} * ${packageItem.pack_width} * ${packageItem.pack_height}` ,
     handlingUnitType: packageItem.handling_unit_type,
   }));
-
 
   const columns: GridColDef[] = [
     { field: "packagingTypeId", headerName: "Packaging Type ID", width: 200, editable: false },
@@ -284,6 +298,7 @@ const PackagingForm = () => {
                   id="packagingTypeName"
                   name="packagingTypeName"
                   label="Packaging Type Name"
+                  onBlur = {formik.handleBlur}
                   value={formik.values.packagingTypeName}
                   onChange={formik.handleChange}
                   error={formik.touched.packagingTypeName && Boolean(formik.errors.packagingTypeName)}
@@ -292,38 +307,8 @@ const PackagingForm = () => {
                 />
               </Grid>
 
-
-              {/* Packaging Dimensions */}
-              <Grid item xs={12} md={2.4}>
-                <TextField
-                  fullWidth
-                  id="packagingDimensions"
-                  name="packagingDimensions"
-                  label="Dimensions (L*W*H)"
-                  placeholder="e.g., 10*20*30"
-                  value={formik.values.packagingDimensions}
-                  onChange={formik.handleChange}
-                  error={formik.touched.packagingDimensions && Boolean(formik.errors.packagingDimensions)}
-                  helperText={formik.touched.packagingDimensions && formik.errors.packagingDimensions}
-                  size="small"
-                />
-              </Grid>
-
-
               {/* Packaging Dimensions UoM */}
               <Grid item xs={12} md={2.4}>
-                {/* <TextField
-                  fullWidth
-                  id="packagingDimensionsUoM"
-                  name="packagingDimensionsUoM"
-                  label="Dimensions UoM"
-                  value={formik.values.packagingDimensionsUoM}
-                  onChange={formik.handleChange}
-                  error={formik.touched.packagingDimensionsUoM && Boolean(formik.errors.packagingDimensionsUoM)}
-                  helperText={formik.touched.packagingDimensionsUoM && formik.errors.packagingDimensionsUoM}
-                  size="small"
-                /> */}
-
                 <TextField
                   fullWidth
                   select
@@ -343,31 +328,76 @@ const PackagingForm = () => {
                 </TextField>
               </Grid>
 
+              {/* Packaging Dimensions */}
+              <Grid item xs={12} md={2.4}>
+                <TextField
+                  fullWidth
+                  id="packagingLength"
+                  name="packagingLength"
+                  label="Package length" type='number'
+                  value={formik.values.packagingLength}
+                  onBlur = {formik.handleBlur}
+                  onChange={formik.handleChange}
+                  error={formik.touched.packagingLength && Boolean(formik.errors.packagingLength)}
+                  helperText={formik.touched.packagingLength && formik.errors.packagingLength}
+                  size="small"
+                />
+              </Grid>
+              <Grid item xs={12} md={2.4}>
+                <TextField
+                  fullWidth
+                  id="packagingWidth"
+                  name="packagingWidth"
+                  onBlur = {formik.handleBlur}
+                  label="Package width" type='number'
+                  value={formik.values.packagingWidth}
+                  onChange={formik.handleChange}
+                  error={formik.touched.packagingWidth && Boolean(formik.errors.packagingWidth)}
+                  helperText={formik.touched.packagingWidth && formik.errors.packagingWidth}
+                  size="small"
+                />
+              </Grid>
+              <Grid item xs={12} md={2.4}>
+                <TextField
+                  fullWidth
+                  id="packagingHeight"
+                  name="packagingHeight"
+                  label="Package height" type='number'
+                  value={formik.values.packagingHeight}
+                  onChange={formik.handleChange}
+                  onBlur = {formik.handleBlur}
+                  error={formik.touched.packagingHeight && Boolean(formik.errors.packagingHeight)}
+                  helperText={formik.touched.packagingHeight && formik.errors.packagingHeight}
+                  size="small"
+                />
+              </Grid>
+                <Grid item xs={12} md={2.4}>
+                <TextField 
+                  fullWidth size='small' disabled
+                  label="Volume"
+                  value={
+                    Number(formik.values.packagingLength || 1) *
+                    Number(formik.values.packagingWidth || 1) *
+                    Number(formik.values.packagingHeight || 1)
+                  }
+
+                  InputProps={{ readOnly: true }}
+                />
+              </Grid>
               {/* Handling Unit Type Dropdown */}
               <Grid item xs={12} md={2.4}>
-                <FormControl fullWidth size="small">
-                  <InputLabel id="handlingUnitType-label">Handling Unit Type</InputLabel>
-                  <Select
-                    labelId="handlingUnitType-label"
-                    id="handlingUnitType"
-                    name="handlingUnitType"
-                    value={formik.values.handlingUnitType}
-                    onChange={(event) => formik.setFieldValue('handlingUnitType', event.target.value)}
-                    input={<OutlinedInput label="Handling Unit Type" />}
-                    error={formik.touched.handlingUnitType && Boolean(formik.errors.handlingUnitType)}
-                  >
-                    {handlingUnitOptions.map((option) => (
-                      <MenuItem key={option} value={option}>
-                        {option}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {formik.touched.handlingUnitType && formik.errors.handlingUnitType && (
-                    <Box sx={{ color: 'red', fontSize: '0.8rem', marginTop: 0.5 }}>
-                      {formik.errors.handlingUnitType}
-                    </Box>
-                  )}
-                </FormControl>
+                <TextField
+                  fullWidth
+                  id="handlingUnitType"
+                  name="handlingUnitType"
+                  label="Handling unit type"
+                  value={formik.values.handlingUnitType}
+                  onChange={formik.handleChange}
+                  onBlur = {formik.handleBlur}
+                  error={formik.touched.handlingUnitType && Boolean(formik.errors.handlingUnitType)}
+                  helperText={formik.touched.handlingUnitType && formik.errors.handlingUnitType}
+                  size="small"
+                />
               </Grid>
             </Grid>
 

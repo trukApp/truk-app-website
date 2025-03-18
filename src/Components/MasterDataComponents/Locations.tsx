@@ -116,8 +116,7 @@ const Locations: React.FC = () => {
   const [postLocation, { isLoading: postLocationLoading }] = usePostLocationMasterMutation();
   const [editLocation, { isLoading: editLocationLoading }] = useEditLocationMasterMutation();
   const [deleteLocation, { isLoading: deleteLocationLoading }] = useDeleteLocationMasterMutation()
-
-
+  console.log('all locations :', data?.locations)
 
   if (error) {
     console.error("Error fetching locations:", error);
@@ -270,19 +269,20 @@ const Locations: React.FC = () => {
 
   useEffect(() => {
     if (editRow) {
+      console.log('edit row :', editRow)
       formik.setValues({
         id: editRow.id,
         locationId: editRow.locationId,
         locationDescription: editRow.locationDescription,
         locationType: editRow.locationType,
-        glnCode: editRow.glnCode,
-        iataCode: editRow.iataCode,
+        glnCode: editRow.glnCode !=='NA' ? editRow.glnCode : "",
+        iataCode: editRow.iataCode !=='NA' ? editRow.iataCode : "" ,
         longitude: editRow.longitude,
         latitude: editRow.latitude,
         timeZone: editRow.timeZone,
         city: editRow.city,
-        addressLine1: editRow?.addressLine1,
-        addressLine2: editRow?.addressLine2,
+        addressLine1: editRow.addressLine1 ? editRow.addressLine1 : '',
+        addressLine2: editRow.addressLine2 ? editRow.addressLine2 :'',
         district: editRow.district,
         state: editRow.state,
         country: editRow.country,
@@ -293,7 +293,8 @@ const Locations: React.FC = () => {
         locationContactEmail: editRow.locationContactEmail,
       });
     }
-  }, [editRow, formik]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editRow]);
   const { values, errors, touched, handleChange, handleBlur, handleSubmit } = formik;
 
 
@@ -408,7 +409,8 @@ const Locations: React.FC = () => {
                 1. General info
               </Typography>
               <Grid container spacing={2}>
-                {/* <Grid item xs={12} sm={6} md={2.4}>
+                {isEditing &&
+                 <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth disabled
                       size="small"
@@ -421,7 +423,8 @@ const Locations: React.FC = () => {
                         readOnly: true,
                       }}
                     />
-                  </Grid> */}
+                  </Grid> }
+               
                 <Grid item xs={12} sm={6} md={2.4}>
                   <TextField
                     fullWidth
@@ -435,47 +438,6 @@ const Locations: React.FC = () => {
                     helperText={touched.locationDescription && errors.locationDescription}
                   />
                 </Grid>
-                {/* <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth
-                    size="small"
-                    InputProps={{
-                        style: { textTransform: 'capitalize' }
-                      }}
-                      select sx={{textTransform:'capitalize'}}
-                      name="locationType"
-                      value={values.locationType}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      error={touched.locationType && Boolean(errors.locationType)}
-                      helperText={touched.locationType && errors.locationType}
-                      SelectProps={{
-                        native: true, // Use native dropdown
-                      }}
-                    >
-                      <option value="" disabled>
-                        Select Location Type *
-                      </option>
-                      <option value="product plant">Product Plant</option>
-                      <option value="distribution center">Distribution Center</option>
-                      <option value="shipping point">Shipping Point</option>
-                      <option value="customer">Customer</option>
-                      <option value="vendor">Vendor</option>
-                      <option value="terminal">Terminal</option>
-                      <option value="port">Port</option>
-                      <option value="airport">Airport</option>
-                      <option value="railway station">Railway Station</option>
-                      <option value="container freight station">Container Freight Station</option>
-                      <option value="hub">Hub</option>
-                      <option value="gateway">Gateway</option>
-                      <option value="container yard">Container Yard</option>
-                      <option value="warehouse">Warehouse</option>
-                      <option value="carrier warehouse">Carrier Warehouse</option>
-                      <option value="rail junction">Rail Junction</option>
-                      <option value="border cross point">Border Cross Point</option>
-                    </TextField>
-                  </Grid> */}
-
                 <Grid item xs={12} sm={6} md={2.4}>
                   <TextField
                     fullWidth
@@ -509,7 +471,6 @@ const Locations: React.FC = () => {
                     value={values.iataCode}
                     onChange={handleChange}
                     onBlur={handleBlur}
-
                     inputProps={{ maxLength: 3 }}
                   />
                 </Grid>
@@ -605,17 +566,6 @@ const Locations: React.FC = () => {
                       helperText={touched.city && errors.city}
                     />
                   </Grid>
-                  {/* <Grid item xs={12} sm={6} md={2.4}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        label="District"
-                        name="district"
-                        value={values.district}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                      />
-                    </Grid> */}
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth
@@ -657,92 +607,6 @@ const Locations: React.FC = () => {
                   </Grid>
                 </Grid>
               </Grid>
-
-              {/* <Grid spacing={4} mt={2} ml={1}>
-                  <Typography variant="h6" mb={1}  >
-                    3. Vehicles
-                  </Typography>
-
-
-
-                  <Box sx={{ marginBottom: 2 }}>
-                    <FormControl fullWidth sx={{ minWidth: '280px' }}>
-                      <InputLabel
-                        id="vehiclesNearBy-label"
-                      >
-                        Vehicles operated at this location
-                      </InputLabel>
-                      <Select
-                        labelId="vehiclesNearBy-label"
-                        id="vehiclesNearBy"
-                        multiple
-                        value={formik.values.vehiclesNearBy}
-                        onChange={(event) => formik.setFieldValue('vehiclesNearBy', event.target.value)}
-                        input={
-                          <OutlinedInput
-                            label="Vehicles Operated Nearby"
-                          />
-                        }
-                        renderValue={(selected) => (
-                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                            {selected.map((value) => {
-                              const vehicle = vehicleOptions.find((v) => v.id === value);
-                              return vehicle ? <Chip key={value} label={vehicle.name} /> : null;
-                            })}
-                          </Box>
-                        )}
-
-                      >
-                        {vehicleOptions.map((option) => (
-                          <MenuItem key={option.id} value={option.id}>
-                            {option.name}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                      {formik.touched.vehiclesNearBy && formik.errors.vehiclesNearBy && (
-                        <Box sx={{ color: 'red', fontSize: '0.8rem', marginTop: 1 }}>
-                          {formik.errors.vehiclesNearBy}
-                        </Box>
-                      )}
-                    </FormControl>
-                  </Box>
-
-
-
-                </Grid>
-
-                <Grid container spacing={2} ml={1} mt={2}>
-                  <Typography variant="h6" align="center" gutterBottom >
-                    4. Additional details
-                  </Typography>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} sm={6} md={2.4}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        label="Location contact name"
-                        name="locationContactName"
-                        value={values.locationContactName}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={2.4}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        label="Location contact number"
-                        name="locationContactNumber"
-                        value={values.locationContactNumber}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                      />
-                    </Grid>
-
-                  </Grid>
-                </Grid> */}
-
-
               <Grid container spacing={2} ml={1} mt={2}>
                 <Typography variant="h6" align="center" gutterBottom >
                   3. Additional details
@@ -790,7 +654,9 @@ const Locations: React.FC = () => {
                 </Grid>
               </Grid>
 
-              <Box sx={{ marginTop: '24px', textAlign: 'center' }}>
+            </Grid>
+            
+            <Box sx={{ marginTop: '24px', textAlign: 'center' }}>
                 <CustomButtonFilled  >{isEditing ? "Update location" : "Create location"}</CustomButtonFilled>
                 <Button
                   variant='outlined'
@@ -803,7 +669,6 @@ const Locations: React.FC = () => {
                   style={{ marginLeft: "10px" }}>Reset
                 </Button>
               </Box>
-            </Grid>
           </Box>
         </Collapse>
       </Box>

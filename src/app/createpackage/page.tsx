@@ -109,7 +109,7 @@ const CreatePackage = () => {
         const firstUnfilledIndex = completedSteps.findIndex((step) => !step);
         console.log("firstunfilled ", firstUnfilledIndex)
         if (firstUnfilledIndex !== -1) {
-            setSnackbarMessage("Some steps are unfilled!");
+            setSnackbarMessage("Some steps are unfilled! Navigating to first unfilled step...");
             setSnackbarSeverity("warning");
             setSnackbarOpen(true);
             setActiveStep(firstUnfilledIndex);
@@ -124,23 +124,34 @@ const CreatePackage = () => {
                             product_ID: productListFromRedux.map((product) => ({
                                 prod_ID: product.productId,
                                 quantity: product.quantity,
+                                package_info: product?.packagingType
                             })),
                             package_info: productListFromRedux[0]?.packagingType,
                             bill_to: billToReduxValues?.locationId,
-                            return_label: 1,
+                            return_label: packageAddtionalInfoFromRedux?.returnLabel ? 1 : 0,
                             additional_info: {
                                 reference_id: packageAddtionalInfoFromRedux?.referenceId,
                                 invoice: packageAddtionalInfoFromRedux?.invoiceNumber,
+                                department: packageAddtionalInfoFromRedux?.department,
+                                attachment: packageAddtionalInfoFromRedux?.file,
+                                po_number: packageAddtionalInfoFromRedux?.poNumber,
+                                sales_order_number: packageAddtionalInfoFromRedux?.salesOrderNumber,
                             },
                             pickup_date_time: packagePickUpAndDropTimingsFromRedux?.pickupDateTime,
                             dropoff_date_time: packagePickUpAndDropTimingsFromRedux?.dropoffDateTime,
                             tax_info: {
                                 tax_rate: packageTaxFromRedux?.taxRate,
+                                sender_gst: packageTaxFromRedux?.senderGSTN,
+                                receiver_gst: packageTaxFromRedux?.receiverGSTN,
+                                carrier_gst: packageTaxFromRedux?.carrierGSTN,
+                                self_transport: packageTaxFromRedux?.isSelfTransport,
                             },
                         },
                     ],
 
                 }
+
+                console.log("createPackageBody: ", createPackageBody)
                 const response = await createPackageOrder(createPackageBody).unwrap();
                 if (response) {
                     dispatch(resetCompletedSteps())
@@ -205,14 +216,14 @@ const CreatePackage = () => {
                 </Dialog>
             )}
             <Box sx={{ overflowX: isMobile ? "auto" : "visible", padding: "10px" }}>
-                <Stepper 
-                    activeStep={activeStep} 
+                <Stepper
+                    activeStep={activeStep}
                     alternativeLabel sx={{
-                                        flexWrap: "nowrap",
-                                        '& .MuiStepConnector-line': {
-                                            borderWidth: '1px'
-                                        },
-                                    }}
+                        flexWrap: "nowrap",
+                        '& .MuiStepConnector-line': {
+                            borderWidth: '1px'
+                        },
+                    }}
                 >
                     {steps.map((label, index) => (
                         <Step key={index} completed={!!completedSteps[index]}>
@@ -224,7 +235,7 @@ const CreatePackage = () => {
                         </Step>
                     ))}
                 </Stepper>
- 
+
             </Box>
 
             {/* Form Content */}

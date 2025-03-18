@@ -2,15 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { DataGrid, GridCellParams, GridColDef } from '@mui/x-data-grid';
 import { useAppSelector, useAppDispatch } from '@/store';
 import { setSelectedPackages } from '@/store/authSlice';
-import { Grid, Tooltip } from '@mui/material';
+import { Grid } from '@mui/material';
 import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
-import { useGetLocationMasterQuery, useGetPackageMasterQuery } from '@/api/apiSlice';
+import { useGetAllProductsQuery, useGetLocationMasterQuery, useGetPackageMasterQuery } from '@/api/apiSlice';
 import { Location } from '../MasterDataComponents/Locations';
+import moment from 'moment';
 
 
 export interface Product {
     prod_ID: string;
     quantity: number;
+    product_ID: string
 }
 
 export interface AdditionalInfo {
@@ -52,8 +54,9 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
     const dispatch = useAppDispatch();
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
     const [selectionModel, setSelectionModel] = useState<number[]>([]);
-    // const filters = useAppSelector((state) => state.auth.filters);
     const { data: locationsData } = useGetLocationMasterQuery({})
+    const { data: productsData } = useGetAllProductsQuery({})
+    const allProductsData = productsData?.products || [];
     const { data: packagesData } = useGetPackageMasterQuery({})
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
     const getAllPackages = packagesData?.packages.length > 0 ? packagesData?.packages : []
@@ -62,16 +65,17 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
         (eachPackage) => eachPackage?.package_status !== "ordered"
     );
 
-    const getLocationDetails = (loc_ID: string) => {
+    const getLocationDescription = (loc_ID: string) => {
         const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
         if (!location) return "Location details not available";
         const details = [
+            location.loc_desc,
             location.address_1,
-            location.address_2,
             location.city,
             location.state,
             location.country,
-            location.pincode
+            location.pincode,
+            location.loc_ID
         ].filter(Boolean);
 
         return details.length > 0 ? details.join(", ") : "Location details not available";
@@ -79,18 +83,29 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
 
     const getPackageDetails = (pac_ID: string) => {
         const packageInfo = getAllPackages.find((pkg: Package) => pkg.pac_ID === pac_ID);
-
         if (!packageInfo) return "Package details not available";
-
         const details = [
             packageInfo.packaging_type_name,
             packageInfo.dimensions,
-            // packageInfo.dimensions_uom,
             packageInfo.handling_unit_type,
-
+            packageInfo.pac_ID
         ].filter(Boolean);
-
         return details.length > 0 ? details.join(", ") : "Package details not available";
+    };
+
+    const getProductDetails = (productID: string) => {
+        const productInfo = allProductsData.find((product: Product) => product.product_ID === productID);
+        if (!productInfo) return "Package details not available";
+        const details = [
+            productInfo.product_name,
+            productInfo.weight,
+            productInfo.product_ID,
+        ].filter(Boolean);
+        return details.length > 0 ? details.join("-") : "Product details not available";
+    };
+
+    const formatPickupDateTime = (pickupDateTime: string) => {
+        return moment(pickupDateTime).format("MMM DD, YYYY h:mm A");
     };
 
     useEffect(() => {
@@ -98,77 +113,65 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
         setSelectionModel(selectedIds);
     }, [selectedPackages]);
 
-    // const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    //     const { name, checked } = event.target;
-    //     dispatch(setFilters({ ...filters, [name]: checked }));
-    // };
-
     const columns: GridColDef[] = [
         { field: 'pack_ID', headerName: 'Package ID', width: 150 },
-        // { field: 'ship_from', headerName: 'Ship From', width: 150 },
         {
             field: "ship_from",
             headerName: "Ship from",
-            width: 150,
-            renderCell: (params) => (
-                <Tooltip title={getLocationDetails(params.value)} arrow>
-                    <span>{params.value}</span>
-                </Tooltip>
-            ),
+            width: 250,
         },
-        // { field: 'ship_to', headerName: 'Ship To', width: 150 },
         {
             field: "ship_to",
             headerName: "Ship to",
-            width: 150,
-            renderCell: (params) => (
-                <Tooltip title={getLocationDetails(params.value)} arrow>
-                    <span>{params.value}</span>
-                </Tooltip>
-            ),
+            width: 250,
         },
-        // { field: 'package_info', headerName: 'Package Info', width: 150 },
         {
             field: "package_info",
             headerName: "Package Info",
-            width: 150,
-            renderCell: (params) => (
-                <Tooltip title={getPackageDetails(params.value)} arrow>
-                    <span>{params.value}</span>
-                </Tooltip>
-            ),
+            width: 250,
         },
-
-        // { field: 'bill_to', headerName: 'Bill To', width: 150 },
         {
             field: "bill_to",
             headerName: "Bill to",
-            width: 150,
-            renderCell: (params) => (
-                <Tooltip title={getLocationDetails(params.value)} arrow>
-                    <span>{params.value}</span>
-                </Tooltip>
-            ),
+            width: 250,
         },
-        { field: 'return_label', headerName: 'Return Label', width: 150 },
+        {
+            field: 'return_label',
+            headerName: 'Return Label',
+            width: 150,
+            renderCell: (params: GridCellParams) => {
+                const value = params.value === 1;
+                return <span>{value ? 'True' : 'False'}</span>;
+            },
+        },
+
         { field: 'pickup_date_time', headerName: 'Pickup Date & Time', width: 200 },
         { field: 'dropoff_date_time', headerName: 'Dropoff Date & Time', width: 200 },
         { field: 'tax_rate', headerName: 'Tax Rate', width: 150 },
         {
             field: 'product_details',
             headerName: 'Product Details',
-            width: 300,
+            width: 400,
             renderCell: (params: GridCellParams) => {
-                const products = params.value as { prod_ID: string; quantity: number }[];
+                const products = Array.isArray(params.value) ? params.value : [];
+
+                if (!products.length) return <div>No products</div>;
+
+                const productText = products
+                    .map((prod) => {
+                        const detail = getProductDetails(prod.prod_ID);
+                        return `${detail} (Qty: ${prod.quantity})`;
+                    })
+                    .join(', ');
+
                 return (
-                    <div>
-                        {products?.map((prod) => (
-                            <div key={prod.prod_ID}>{`${prod.prod_ID} (Qty: ${prod.quantity})`}</div>
-                        ))}
+                    <div style={{ whiteSpace: 'normal', wordWrap: 'break-word' }}>
+                        {productText}
                     </div>
                 );
             },
         },
+
         {
             field: 'additional_info',
             headerName: 'Additional Info',
@@ -188,15 +191,15 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
     const rows = unorderedPackages.map((pkg: Package) => ({
         id: pkg.pac_id,
         pack_ID: pkg.pack_ID,
-        ship_from: pkg.ship_from,
-        ship_to: pkg.ship_to,
-        package_info: pkg.package_info,
-        bill_to: pkg.bill_to,
+        ship_from: getLocationDescription(pkg.ship_from),
+        ship_to: getLocationDescription(pkg.ship_to),
+        package_info: getPackageDetails(pkg.package_info),
+        bill_to: getLocationDescription(pkg.bill_to),
         return_label: pkg.return_label,
-        pickup_date_time: pkg.pickup_date_time,
-        dropoff_date_time: pkg.dropoff_date_time,
+        pickup_date_time: formatPickupDateTime(pkg.pickup_date_time),
+        dropoff_date_time: formatPickupDateTime(pkg.dropoff_date_time),
         tax_rate: pkg.tax_info.tax_rate,
-        product_details: pkg.product_ID,
+        product_details: pkg.product_ID ?? [],
         additional_info: pkg.additional_info,
     }));
 
@@ -211,23 +214,6 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
 
     return (
         <div>
-            {/* <Grid container spacing={2} sx={{ marginBottom: '10px' }}>
-                {Object.entries(filters).map(([filterKey, filterValue]) => (
-                    <Grid item key={filterKey}>
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={filterValue}
-                                    onChange={handleFilterChange}
-                                    name={filterKey}
-                                />
-                            }
-                            label={filterKey.replace(/([A-Z])/g, ' $1').trim()}
-                        />
-                    </Grid>
-                ))}
-            </Grid> */}
-
             <Grid sx={{ marginTop: '5px', marginBottom: '20px' }}>
                 {isPackagesLoading ? (
                     <DataGridSkeletonLoader columns={columns} />
