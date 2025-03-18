@@ -49,7 +49,7 @@ export const apiSlice = createApi({
     "PackagesForOrder",
     "Orders",
     "AssignedOrders",
-    'SingleVehicleMaster'
+    "SingleVehicleMaster",
   ],
   endpoints: (builder) => ({
     userLogin: builder.mutation<User, { phone: string; password: string }>({
@@ -456,6 +456,15 @@ export const apiSlice = createApi({
       providesTags: [{ type: "ProductMaster", id: "LIST" }],
     }),
 
+    getFilteredProducts: builder.query({
+      query: (searchKey) => ({
+        url: `masterProducts/search-products`,
+        method: "GET",
+        params: { searchKey },
+      }),
+      providesTags: [{ type: "ProductMaster", id: "LIST" }],
+    }),
+
     createProduct: builder.mutation({
       query: (body) => ({
         url: "masterProducts/add-products",
@@ -597,19 +606,19 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: [{ type: "AssignedOrders", id: "LIST" }],
     }),
-    
+
     // image uploading
     imageUploading: builder.mutation({
       query: (formData) => {
         return {
           url: "image/upload",
           method: "POST",
-          body:formData,
+          body: formData,
         };
       },
     }),
 
-        //single vehciles master
+    //single vehciles master
     getSingleVehicleMaster: builder.query({
       query: (params) => {
         return {
@@ -654,7 +663,6 @@ export const apiSlice = createApi({
         params,
       }),
     }),
-
   }),
 });
 
@@ -724,6 +732,6 @@ export const {
   usePostSingleVehicleMasterMutation,
   useEditSingleVehicleMasterMutation,
   useDeleteSingleVehicleMasterMutation,
-  useGetAssignedOrderByIdQuery
-
+  useGetAssignedOrderByIdQuery,
+  useGetFilteredProductsQuery,
 } = apiSlice;
