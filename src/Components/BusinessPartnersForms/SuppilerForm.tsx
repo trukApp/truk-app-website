@@ -97,7 +97,7 @@ const SupplierForm: React.FC = () => {
 
     const [searchKeyDestination, setSearchKeyDestination] = useState('');
     const [showDestinations, setShowDestinations] = useState(false);
-    const { data: destinationFilteredLocations } = useGetFilteredLocationsQuery(searchKeyDestination.length >= 3 ? searchKeyDestination : null, { skip: searchKeyDestination.length < 3 });
+    const { data: destinationFilteredLocations,isLoading: filteredDestinationLoading } = useGetFilteredLocationsQuery(searchKeyDestination.length >= 3 ? searchKeyDestination : null, { skip: searchKeyDestination.length < 3 });
     const displayLocationsDest = searchKeyDestination ? destinationFilteredLocations?.results || [] : getAllLocations;
     const getLocationDetails = (loc_ID: string) => {
         const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
@@ -612,7 +612,7 @@ const SupplierForm: React.FC = () => {
                                                     : ""
                                             }
                                             InputProps={{
-                                                endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
+                                                endAdornment: filteredDestinationLoading ? <CircularProgress size={20} /> : null,
                                             }}
                                         />
                                         <div ref={wrapperRefDest} >
