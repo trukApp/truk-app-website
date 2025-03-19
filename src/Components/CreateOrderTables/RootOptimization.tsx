@@ -34,6 +34,13 @@ interface Props {
     rootOptimization: VehicleData[];
 }
 
+export interface RootOptimizationType {
+    vehicle_ID: string;
+    route: Route[];
+    loadArrangement: LoadArrangement[];
+}
+
+
 const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
     const { isLoaded, loadError } = useLoadScript({ googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '' });
     const [selectedVehicle, setSelectedVehicle] = useState<string>(rootOptimization[0]?.vehicle_ID || '');
