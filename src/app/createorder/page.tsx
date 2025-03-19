@@ -28,7 +28,7 @@ const CreateOrder: React.FC = () => {
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const dispatch = useAppDispatch();
     const selectedRoutes = useSelector((state: RootState) => state.auth.selectedRoutes);
-    console.log('selectedRoutes create order pagetsx: ', selectedRoutes);
+    // console.log('selectedRoutes create order pagetsx: ', selectedRoutes);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
