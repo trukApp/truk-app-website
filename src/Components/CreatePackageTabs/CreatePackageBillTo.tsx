@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Formik, Form, Field, FormikProps } from 'formik';
 import * as Yup from 'yup';
-import { Checkbox, FormControlLabel, Grid, TextField, Tooltip, Backdrop, CircularProgress, Typography, Paper, List, ListItem } from '@mui/material';
+import { Checkbox, FormControlLabel, Grid, TextField, Backdrop, CircularProgress, Typography, Paper, List, ListItem } from '@mui/material';
 import styles from './CreatePackage.module.css';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setPackageBillTo } from '@/store/authSlice';
@@ -50,9 +50,12 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
     const [updateDefulatFromLocation, { isLoading: defaultLocationLoading }] = useUpdateBillToDefaultLocationIdMutation();
     const allLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
     const billToReduxValues = useAppSelector((state) => state.auth.packageBillTo)
-    const defaultLocationData = allLocations?.find((eachLocation: Location) =>
-        eachLocation?.def_bill_to === 1)
-    const [searchKey, setSearchKey] = useState(billToReduxValues?.locationId || defaultLocationData?.loc_ID || '');
+    const defaultLocationData = allLocations?.find((eachLocation: Location) => eachLocation?.def_bill_to === 1)
+    const defaultLocationDataInputText = defaultLocationData
+        ? `${defaultLocationData.loc_ID},${defaultLocationData.loc_desc}, ${defaultLocationData.city}, ${defaultLocationData.state}, ${defaultLocationData.pincode}`
+        : '';
+
+    const [searchKey, setSearchKey] = useState(billToReduxValues?.locationId || defaultLocationDataInputText || '');
     const [showSuggestions, setShowSuggestions] = useState(false);
     const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
 
@@ -70,7 +73,7 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
     );
 
     const shipBillToInitialValues = {
-        locationId: billToReduxValues?.locationId || defaultLocationData?.loc_ID || '',
+        locationId: billToReduxValues?.locationId || defaultLocationDataInputText || '',
         locationDescription: billToReduxValues?.locationDescription || defaultLocationData?.loc_desc || '',
         contactPerson: billToReduxValues?.contactPerson || defaultLocationData?.contact_name || '',
         phoneNumber: billToReduxValues?.phoneNumber || defaultLocationData?.contact_phone_number || '',
@@ -331,20 +334,17 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                                                                 component="li"
                                                                 onClick={() => {
                                                                     setShowSuggestions(false);
-                                                                    setSearchKey(location.loc_ID);
+                                                                    const selectedDisplay = `${location.loc_ID},${location?.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
+                                                                    setSearchKey(selectedDisplay);
+                                                                    // setSearchKey(location.loc_ID);
                                                                     handleLocationChange(location.loc_ID, setFieldValue);
-                                                                    setFieldValue("locationId", location.loc_ID);
+                                                                    setFieldValue("locationId", selectedDisplay);
                                                                 }}
                                                                 sx={{ cursor: "pointer" }}
                                                             >
-                                                                <Tooltip
-                                                                    title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                                                    placement="right"
-                                                                >
-                                                                    <span style={{ fontSize: "14px" }}>
-                                                                        {location.loc_ID}, {location.city}, {location.state}, {location.country}, {location.pincode}
-                                                                    </span>
-                                                                </Tooltip>
+                                                                <span style={{ fontSize: "14px" }}>
+                                                                    {location.loc_ID}, {location?.loc_desc}, {location.city}, {location.state}, {location.country}, {location.pincode}
+                                                                </span>
                                                             </ListItem>
                                                         ))}
                                                     </List>

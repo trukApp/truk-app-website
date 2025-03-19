@@ -12,25 +12,23 @@ const OrderDetailedOverview: React.FC = () => {
     const { data: order, isLoading } = useGetOrderByIdQuery({ orderId });
     const orderData = order?.order;
     const allocatedPackageDetails = order?.allocated_packages_details
-    // console.log("orderData: ", orderData);
-    console.log("allocatedPackageDetails: ", allocatedPackageDetails)
 
     return (
-        <Box sx={{ p: {xs:0.2 , md:3} }}>
+        <Box sx={{ p: { xs: 0.2, md: 3 } }}>
             <Backdrop sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }} open={isLoading}>
                 <CircularProgress color="inherit" />
             </Backdrop>
             {orderData && (
-                <Paper sx={{ p: 3, mb: 3, }}> 
+                <Paper sx={{ p: 3, mb: 3, }}>
                     <Typography variant="h6" gutterBottom sx={{ color: "#83214F", fontWeight: 'bold' }}>
                         Order Details
                     </Typography>
-                    <Grid container spacing={1} sx={{ mt: {xs:0.2 , md:2} }}>
+                    <Grid container spacing={1} sx={{ mt: { xs: 0.2, md: 2 } }}>
                         <Grid item xs={12} sm={6}>
-                            <Typography variant="body1" sx={{fontSize:{xs:'15px', md:'17px'}}}>Order ID: <strong>{orderData.order_ID}</strong></Typography>
+                            <Typography variant="body1" sx={{ fontSize: { xs: '15px', md: '17px' } }}>Order ID: <strong>{orderData.order_ID}</strong></Typography>
                         </Grid>
                         <Grid item xs={12} sm={6}>
-                            <Typography variant="body1" sx={{fontSize:{xs:'15px', md:'17px'}}}>Scenario:  <strong>{orderData.scenario_label}</strong> </Typography>
+                            <Typography variant="body1" sx={{ fontSize: { xs: '15px', md: '17px' } }}>Scenario:  <strong>{orderData.scenario_label}</strong> </Typography>
                         </Grid>
                         <Grid item xs={12} sm={6}>
                             <Typography variant="body1" sx={{ fontSize: { xs: '15px', md: '17px' } }}>Total Cost: <strong>₹{parseFloat(orderData.total_cost).toFixed(2)}</strong></Typography>

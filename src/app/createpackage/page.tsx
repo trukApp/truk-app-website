@@ -38,6 +38,13 @@ const CreatePackage = () => {
     const productListFromRedux = useAppSelector((state) => state.auth.packagesDetails);
     const packagePickUpAndDropTimingsFromRedux = useAppSelector((state) => state.auth.packagePickAndDropTimings);
     const [createPackageOrder, { isLoading: isPackageCreating }] = useCreatePackageForOrderMutation()
+    console.log("shipFromReduxValues: ", shipFromReduxValues)
+    console.log("shipToReduxValues: ", shipToReduxValues)
+    console.log("productListFromRedux: ", productListFromRedux)
+    console.log("shipToReduxValues: ", shipToReduxValues)
+    console.log("packageAddtionalInfoFromRedux: ", packageAddtionalInfoFromRedux)
+    console.log("packagePickUpAndDropTimingsFromRedux: ", packagePickUpAndDropTimingsFromRedux)
+    console.log("packageTaxFromRedux: ", packageTaxFromRedux)
 
     const CustomStepIcon = (props: StepIconProps) => {
         const { active, completed, icon } = props;
@@ -116,18 +123,21 @@ const CreatePackage = () => {
             return;
         } else {
             try {
+                const shipFromLocationId = shipFromReduxValues?.locationId.split(",")[0]
+                const shipToLocationId = shipToReduxValues?.locationId.split(",")[0]
+                const billToLocationId = billToReduxValues?.locationId.split(",")[0]
                 const createPackageBody = {
                     packages: [
                         {
-                            ship_from: shipFromReduxValues?.locationId,
-                            ship_to: shipToReduxValues?.locationId,
+                            ship_from: shipFromLocationId,
+                            ship_to: shipToLocationId,
                             product_ID: productListFromRedux.map((product) => ({
                                 prod_ID: product.productId,
                                 quantity: product.quantity,
                                 package_info: product?.packagingType
                             })),
                             package_info: productListFromRedux[0]?.packagingType,
-                            bill_to: billToReduxValues?.locationId,
+                            bill_to: billToLocationId,
                             return_label: packageAddtionalInfoFromRedux?.returnLabel ? 1 : 0,
                             additional_info: {
                                 reference_id: packageAddtionalInfoFromRedux?.referenceId,
