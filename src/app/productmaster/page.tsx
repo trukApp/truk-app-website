@@ -137,12 +137,12 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
     };
     const [updateRecord, setUpdateRecord] = useState(false);
     const [formInitialValues, setFormInitialValues] = useState(productFormInitialValues);
-    const [updateRecordData, setUpdateRecordData] = useState({});
+    // const [updateRecordData, setUpdateRecordData] = useState({});
     const [updateRecordId, setUpdateRecordId] = useState(0)
-    const { data: productsDataFromClient, error: allProductsFectchingError, isLoading } = useGetAllProductsQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize })
+    const { data: productsDataFromClient, isLoading } = useGetAllProductsQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize })
     const productsData = isLoading ? productsFromServer : productsDataFromClient;
     const [showForm, setShowForm] = useState(false);
-    const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery({})
+    const { data: locationsData,  } = useGetLocationMasterQuery({})
     const { data: packagesData, isLoading: isPackageLoading } = useGetPackageMasterQuery({})
     const [createNewProduct, { isLoading: createLoading }] = useCreateProductMutation();
     const [deleteProduct, { isLoading: deleteProductLoading }] = useDeleteProductMutation()
@@ -155,9 +155,6 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
     const getAllPackages = packagesData?.packages.length > 0 ? packagesData?.packages : []
     const allProductsData = productsData?.products || [];
 
-
-    console.log("Getting all product errors: ", allProductsFectchingError)
-    console.log("getLocationsError: ", getLocationsError)
     const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
         setPaginationModel(newPaginationModel);
     };
@@ -175,20 +172,18 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
     const getLocationDetails = (loc_ID: string) => {
             const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
             if (!location) return "Location details not available";
-            const details = [
-                location.address_1 ,
+        const details = [
+                location.loc_ID,
+                location.loc_desc ,
                 location.city,
                 location.state,
-                location.country,
                 location.pincode,
-                location.loc_ID
             ].filter(Boolean);
     
             return details.length > 0 ? details.join(", ") : "Location details not available";
     };
 const getPackageDetails = (pack_ID: string) => {
     const packageData = getAllPackages.find((pack: Package) => pack.pac_ID === pack_ID);
-    console.log("packageData : ", packageData)
     return packageData 
         ? `${packageData.packaging_type_name}, ${packageData.pac_ID}` 
         : "NA";
@@ -196,10 +191,9 @@ const getPackageDetails = (pack_ID: string) => {
 
 
     const mapRowToInitialValues = (selectedProduct: Product) => {
-        const locId = selectedProduct?.locationId ? selectedProduct?.locationId.split(", ").at(-1) ?? "" : "";
+        const locId = selectedProduct?.locationId ? selectedProduct?.locationId.split(", ")[0] ?? "" : "";
         const packIdd = selectedProduct?.packagingType ? selectedProduct?.packagingType.split(", ").at(-1) ?? "" : "";
-        console.log('package det :' , selectedProduct )
-        setSearchKey(locId || '')
+        setSearchKey(selectedProduct?.locationId  || '')
         const weightUnit = selectedProduct.weight.split(' ')
         const volumeUnit = selectedProduct.volume.split(' ')
         return (
@@ -234,7 +228,7 @@ const getPackageDetails = (pack_ID: string) => {
     const handleEdit = async (rowData: Product) => {
         setShowForm(true)
         setUpdateRecord(true)
-        setUpdateRecordData(rowData)
+        // setUpdateRecordData(rowData)
         const updatedInitialValues = await mapRowToInitialValues(rowData);
         setUpdateRecordId(rowData?.id)
 
@@ -367,8 +361,7 @@ const getPackageDetails = (pack_ID: string) => {
             }
 
             const editProductBody = {
-                ...updateRecordData,
-
+                // ...updateRecordData,
                 product_name: values?.productName,
                 product_desc: values?.productDescription,
                 basic_uom: values?.basicUoM,
@@ -399,6 +392,7 @@ const getPackageDetails = (pack_ID: string) => {
             }
 
             if (updateRecord) {
+                console.log('editBody :', editProductBody)
                 const response = await updateProductDetails({ body: editProductBody, productId: updateRecordId }).unwrap();
                 if (response?.updated_record) {
                     setSnackbarMessage(`Product ID ${response.updated_record} updated successfully!`);
@@ -407,12 +401,13 @@ const getPackageDetails = (pack_ID: string) => {
                     setShowForm(false)
                     setUpdateRecord(false)
                     setUpdateRecordId(0)
-                    setUpdateRecordData({})
+                    // setUpdateRecordData({})
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
                     setSearchKey('')
                 }
             } else {
+                console.log('post body : ', createProductBody)
                 const response = await createNewProduct(createProductBody).unwrap();
                 if (response?.created_records) {
                     setSnackbarMessage(`Product ID ${response.created_records[0]} created successfully!`);
@@ -420,7 +415,7 @@ const getPackageDetails = (pack_ID: string) => {
                     setShowForm(false)
                     setUpdateRecord(false)
                     setUpdateRecordId(0)
-                    setUpdateRecordData({})
+                    // setUpdateRecordData({})
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
                     setSearchKey('')
@@ -807,8 +802,9 @@ const getPackageDetails = (pack_ID: string) => {
                                                                     key={location.loc_ID}
                                                                     component="li"
                                                                     onClick={() => {
+                                                                        const selectedDisplay = `${location.loc_ID},${location?.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
+                                                                        setSearchKey(selectedDisplay);
                                                                         setShowSuggestions(false)
-                                                                        setSearchKey(location.loc_ID);
                                                                         setFieldValue("locationId", location.loc_ID);
                                                                     }}
                                                                     sx={{ cursor: "pointer" }}
@@ -834,7 +830,6 @@ const getPackageDetails = (pack_ID: string) => {
                                                     value={values.packagingType}
                                                     onChange={(e) => setFieldValue('packagingType', e.target.value)}
                                                     onBlur={handleBlur}
-                                                    renderValue={(selected) => selected}
                                                 >
                                                     {isPackageLoading ? (
                                                         <MenuItem disabled>

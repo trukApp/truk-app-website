@@ -69,12 +69,12 @@ const DeviceMaster: React.FC = () => {
     const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
     if (!location) return "Location details not available";
     const details = [
-      location.address_1,
+      location.loc_ID,
+      location.loc_desc,
       location.city,
       location.state,
-      location.country,
       location.pincode,
-      location.loc_ID
+      
       
     ].filter(Boolean);
 
@@ -91,7 +91,6 @@ const DeviceMaster: React.FC = () => {
     return `${carrier_name}, ${carrier_address}, Locations: ${locationDetails}, ${carrier.carrier_ID}`;
   };
 
-  console.log('getAll carriers :', getAllCarriers)
   useEffect(() => {
     if (postSuccess || editSuccess || deleteSuccess) {
       refetch();
@@ -136,6 +135,7 @@ const DeviceMaster: React.FC = () => {
           setSnackbarSeverity("success");
           setSnackbarOpen(true);
           setSearchKey('')
+          setShowForm(false)
         }
       }
       else {
@@ -146,6 +146,7 @@ const DeviceMaster: React.FC = () => {
           setSnackbarSeverity("success");
           setSnackbarOpen(true);
           setSearchKey('')
+          setShowForm(false)
         }
       }
 
@@ -272,9 +273,9 @@ const DeviceMaster: React.FC = () => {
 
   useEffect(() => {
     if (editRow) {
-      const locId = editRow?.locationId ? editRow.locationId.split(", ").at(-1) ?? "" : "";
+      const locId = editRow?.locationId ? editRow.locationId.split(", ")[0] ?? "" : "";
        const carrId = editRow?.carrierId ? editRow.carrierId.split(", ").at(-1) ?? "" : "";
-      setSearchKey(locId)
+      setSearchKey(editRow?.locationId )
       formik.setValues({
         id: editRow.id || '',
         deviceId: editRow.deviceId,
@@ -404,20 +405,19 @@ const DeviceMaster: React.FC = () => {
               <Grid item xs={12} sm={6} md={2.4}>
                 <FormControl
                   fullWidth
-                  size="small"
+                  size="small" 
                   error={
                     formik.touched.carrierId && Boolean(formik.errors.carrierId)
                   }
                 >
                   <InputLabel>Carrier ID</InputLabel>
-                  <Select fullWidth renderValue={(selected) => selected}
+                  <Select fullWidth 
                     label="Carrier ID"
                     name="carrierId"
                     value={formik.values.carrierId}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                   >
-
                     {isCarrierLoading ? (
                       <MenuItem disabled>
                         <CircularProgress size={20} color="inherit" />
@@ -425,13 +425,12 @@ const DeviceMaster: React.FC = () => {
                       </MenuItem>
                     ) : (
                       getAllCarriers?.map((carrier: CarrierFormBE) => (
-                        <MenuItem key={carrier?.carrier_ID} value={String(carrier.carrier_ID)}>
+                        <MenuItem  key={carrier?.carrier_ID} value={String(carrier.carrier_ID)} >
                           <Tooltip
                             title={`${carrier?.carrier_name}, ${carrier?.carrier_address}`}
                             placement="right" arrow
                           >
-                            {/* <span style={{ flex: 1 }}>{carrier?.carrier_name}, {carrier?.carrier_address}, {carrier?.carrier_ID}</span> */}
-                             <Typography noWrap>
+                            <Typography noWrap>
                                 {carrier?.carrier_name}, {carrier?.carrier_address}, {carrier?.carrier_ID}
                               </Typography>
                           </Tooltip>
@@ -494,17 +493,17 @@ const DeviceMaster: React.FC = () => {
                             component="li"
                             onClick={() => {
                               setShowSuggestions(false)
-                              setSearchKey(location.loc_ID);
-                              // handleLocationChange(location.loc_ID, setFieldValue);
+                              const selectedDisplay = `${location.loc_ID},${location?.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
+                              setSearchKey(selectedDisplay);
                               formik.setFieldValue("locationId", location.loc_ID);
                             }}
                             sx={{ cursor: "pointer" }}
                           >
                             <Tooltip
-                              title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                              title={`${location.loc_desc}, ${location.address_1}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
                               placement="right"
                             >
-                              <span style={{ fontSize: '14px' }}>{location.loc_ID}, {location.city}, {location.state}, {location.pincode}</span>
+                              <span style={{ fontSize: '14px' }}>{location.loc_ID}, {location.loc_desc}, {location.city}, {location.state}, {location.pincode}</span>
                             </Tooltip>
                           </ListItem>
                         ))}

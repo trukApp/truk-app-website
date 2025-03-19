@@ -3,7 +3,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
-import { TextField, Grid, Box, Typography, Checkbox, FormControlLabel, MenuItem, Button, Collapse, IconButton, Backdrop, CircularProgress, Tooltip, Paper, List, ListItem } from "@mui/material";
+import {
+	TextField, Grid, Box, Typography, Checkbox, FormControlLabel, MenuItem, Button, Collapse, IconButton, Backdrop, CircularProgress, Paper, List, ListItem
+	// ,Tooltip
+} from "@mui/material";
 import { DataGridComponent } from "../GridComponent";
 import { GridColDef, GridPaginationModel } from "@mui/x-data-grid";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
@@ -191,7 +194,6 @@ const VehicleForm: React.FC = () => {
 	const [editVehicle, { isLoading: editVehicleLoading }] = useEditVehicleMasterMutation();
 	const [deleteVehicle, { isLoading: deleteVehicleLoading }] = useDeleteVehicleMasterMutation();
 	const wrapperRef = useRef<HTMLDivElement>(null);
-	console.log('all vehs :', data)
 	const { data: locationsData } = useGetLocationMasterQuery({});
 	const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
 
@@ -232,12 +234,11 @@ const VehicleForm: React.FC = () => {
 		const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
 		if (!location) return "Location details not available";
 		const details = [
-			location.address_1 ,
+			location.loc_ID,
+			location.desc ,
 			location.city,
 			location.state,
-			location.country,
 			location.pincode,
-			location.loc_ID
 		].filter(Boolean);
 
 		return details.length > 0 ? details.join(", ") : "Location details not available";
@@ -321,9 +322,8 @@ const VehicleForm: React.FC = () => {
 			const editMaxLength = editRow.maxLength.split(" ");
 			const editMaxWidth = editRow.maxWidth.split(" ");
 			const editMaxHeight = editRow.maxHeight.split(" ");
-			const locId = editRow?.locationId ? editRow.locationId.split(", ").at(-1) ?? "" : "";
-			console.log("locID :", locId)
-			setSearchKey(locId)
+			const locId = editRow?.locationId ? editRow.locationId.split(", ")[0] ?? "" : "";
+			setSearchKey(editRow?.locationId )
 			setInitialValues(() => ({
 				id: "",
 				vehicleId: editRow?.vehicleId,
@@ -411,9 +411,7 @@ const VehicleForm: React.FC = () => {
 		doorWidth: vehicle.doorWidth,
 		doorHeight: vehicle.doorHeight,
 		doorLength: vehicle.doorLength,
-
 		avgCost: vehicle.additional_details.cost_per_ton,
-
 		downtimeStart: vehicle?.downtimes?.downtime_starts_from,
 		downtimeEnd: vehicle?.downtimes?.downtime_ends_from,
 		downtimeLocation: vehicle?.downtimes?.downtime_location,
@@ -427,54 +425,32 @@ const VehicleForm: React.FC = () => {
 
 	const columns: GridColDef[] = [
 		{ field: "vehicleId", headerName: "Vehicle ID", width: 150 },
-		{
-			field: "locationId",
-			headerName: "Location",
-			width: 250,
-			// renderCell: (params) => (
-			// 	<Tooltip title={getLocationDetails(params.value)} arrow>
-			// 		<span>{params.value}</span>
-			// 	</Tooltip>
-			// ),
-		},
-		{ field: "timeZone", headerName: "Time Zone", width: 150 },
-		{
-			field: "unlimitedUsage",
-			headerName: "Unlimited Usage",
-			width: 150,
-			type: "boolean",
-		},
-		{
-			field: "individualResources",
-			headerName: "Individual Resources",
-			width: 150,
-		},
-		{ field: "validityFrom", headerName: "Validity From", width: 150 },
-		{ field: "validityTo", headerName: "Validity To", width: 150 },
+		{field: "locationId",headerName: "Location",width: 250},
+		{ field: "timeZone", headerName: "Time Zone", width: 100 },
+		{field: "unlimitedUsage",headerName: "Unlimited Usage",width: 80,type: "boolean",},
+		{field: "individualResources",headerName: "Individual Resources",width: 80},
+		{ field: "validityFrom", headerName: "Validity From", width: 100 },
+		{ field: "validityTo", headerName: "Validity To", width: 100 },
 		{ field: "vehicleType", headerName: "Vehicle Type", width: 150 },
 		{ field: "vehicleGroup", headerName: "Vehicle Group", width: 150 },
 		{ field: "ownership", headerName: "Ownership", width: 150 },
-		{ field: "payloadWeight", headerName: "Payload Weight", width: 150 },
-		{ field: "cubicCapacity", headerName: "Cubic Capacity", width: 150 },
-		{ field: "interiorLength", headerName: "Interior Length", width: 150 },
-		{ field: "interiorWidth", headerName: "Interior Width", width: 150 },
-		{ field: "interiorHeight", headerName: "Interior Height", width: 150 },
-		{ field: "tareWeight", headerName: "Tare Weight", width: 150 },
-		{ field: "maxGrossWeight", headerName: "Max Gross Weight", width: 150 },
-		{ field: "tareVolume", headerName: "Tare Volume", width: 150 },
-		{ field: "maxLength", headerName: "Max Length", width: 150 },
-		{ field: "maxWidth", headerName: "Max Width", width: 150 },
-		{ field: "maxHeight", headerName: "Max Height", width: 150 },
-		{ field: "downtimeStart", headerName: "Downtime Start", width: 150 },
-		{ field: "downtimeEnd", headerName: "Downtime End", width: 150 },
+		{ field: "payloadWeight", headerName: "Payload Weight", width: 100 },
+		{ field: "cubicCapacity", headerName: "Cubic Capacity", width: 100 },
+		{ field: "interiorLength", headerName: "Interior Length", width: 100 },
+		{ field: "interiorWidth", headerName: "Interior Width", width: 100 },
+		{ field: "interiorHeight", headerName: "Interior Height", width: 100 },
+		{ field: "tareWeight", headerName: "Tare Weight", width: 100 },
+		{ field: "maxGrossWeight", headerName: "Max Gross Weight", width: 100 },
+		{ field: "tareVolume", headerName: "Tare Volume", width: 100 },
+		{ field: "maxLength", headerName: "Max Length", width: 100 },
+		{ field: "maxWidth", headerName: "Max Width", width: 100 },
+		{ field: "maxHeight", headerName: "Max Height", width: 100 },
+		{ field: "downtimeStart", headerName: "Downtime Start", width: 120 },
+		{ field: "downtimeEnd", headerName: "Downtime End", width: 120 },
 		{ field: "downtimeLocation", headerName: "Downtime Location", width: 200 },
-		{
-			field: "downtimeDescription",
-			headerName: "Downtime Description",
-			width: 250,
-		},
+		{field: "downtimeDescription",headerName: "Downtime Description",width: 250},
 		{ field: "downtimeReason", headerName: "Downtime Reason", width: 200 },
-		{ field: "avgCost", headerName: "Average Cost", width: 150 },
+		{ field: "avgCost", headerName: "Average Cost (Rs.)", width: 150 },
 		{
 			field: "actions",
 			headerName: "Actions",
@@ -597,7 +573,7 @@ const VehicleForm: React.FC = () => {
 			};
 
 			if (isEditing && editRow) {
-				console.log('qwerty')
+				console.log('editBody : ', editBody)
 				const vehicleId = editRow.id;
 				const response = await editVehicle({
 					body: editBody,
@@ -614,6 +590,7 @@ const VehicleForm: React.FC = () => {
 				}
 
 			} else {
+				console.log("post body : ", body)
 				const response = await postVehicle(body).unwrap();
 				if (response?.created_records) {
 					setSnackbarMessage(`Vehicle ID ${response.created_records[0]} created successfully!`);
@@ -624,7 +601,6 @@ const VehicleForm: React.FC = () => {
 					setSnackbarOpen(true);
 					setSearchKey('')
 				}
-
 			}
 		} catch (error) {
 			console.error("API Error:", error);
@@ -804,20 +780,21 @@ const VehicleForm: React.FC = () => {
 																		component="li"
 																		onClick={() => {
 																			setShowSuggestions(false);
-																			setSearchKey(location.loc_ID);
+																			const selectedDisplay = `${location.loc_ID},${location?.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
+                                                                            setSearchKey(selectedDisplay);
 																			setFieldValue("locationId", location.loc_ID);
 																			setFieldValue("timeZone", location.time_zone);
 																		}}
 																		sx={{ cursor: "pointer" }}
 																	>
-																		<Tooltip
+																		{/* <Tooltip
 																			title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
 																			placement="right"
-																		>
+																		> */}
 																			<span style={{ fontSize: "13px" }}>
-																				{location.loc_ID}, {location.city}, {location.state}, {location.pincode}
+																				{location.loc_ID},{location.loc_desc}, {location.city}, {location.state}, {location.pincode}
 																			</span>
-																		</Tooltip>
+																		{/* </Tooltip> */}
 																	</ListItem>
 																))}
 															</List>
@@ -847,9 +824,7 @@ const VehicleForm: React.FC = () => {
 															onChange={(e) => {
 																const checked = e.target.checked;
 																setFieldValue("unlimitedUsage", checked);
-																console.log("unlimited checked ", checked)
 																if (checked) {
-																	console.log("inidvidual resources :", values.individualResources)
 																	setFieldValue("individualResources", null);
 																	setFieldValue("individualResources", '');
 																}
