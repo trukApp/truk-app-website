@@ -113,10 +113,26 @@ const SupplierForm: React.FC = () => {
 
         return details.length > 0 ? details.join(", ") : "Location details not available";
     };
+    // const getVendorDetails = (customer_id: string) => {
+    //     console.log('customer id :', customer_id)
+    //     const customer = vendorsData.find((customer: Customer) => customer.customer_id === customer_id);
+    //     if (!location) return "Customer details not available";
+    //     const details = [
+    //         customer.name,
+    //         customer.location_city,
+    //         customer.location_state,
+    //         customer.location_country,
+    //         customer.location_pincode,
+    //         customer.customer_id
+    //     ].filter(Boolean);
+
+    //     return details.length > 0 ? details.join(", ") : "Customer details not available";
+    // };
     if (getLocationsError) {
         console.log("getLocationsError: ", getLocationsError)
     }
     const vendorsData = data?.partners.length > 0 ? data?.partners : []
+    console.log("vendors data :", vendorsData)
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
@@ -220,17 +236,16 @@ const SupplierForm: React.FC = () => {
         {
             field: "loc_ID",
             headerName: "Supplier Location ID",
-            width: 150,
+            width: 250,
         },
-        { field: 'location_pincode', headerName: 'Supplier Pincode', width: 100 },
-        { field: 'location_city', headerName: 'Supplier City', width: 150 },
-        { field: 'location_state', headerName: 'Supplier State', width: 150 },
-        { field: 'location_country', headerName: 'Supplier Country', width: 150 },
         {
             field: "loc_of_source",
             headerName: "Source Location ID",
-            width: 200,
+            width: 250,
         },
+        { field: "contact_person", headerName: "Contact Person", width: 200 },
+        { field: "contact_number", headerName: "Contact Number", width: 150 },
+        { field: "email", headerName: "Email", width: 200 },
         {
             field: 'actions',
             headerName: 'Actions',
@@ -258,7 +273,13 @@ const SupplierForm: React.FC = () => {
         id: item.partner_id,
         ...item,
         loc_of_source: getLocationDetails(item?.loc_of_source),
-        loc_ID: getLocationDetails(item?.loc_ID)
+        loc_ID: getLocationDetails(item?.loc_ID),
+        contact_person: item.correspondence?.contact_person || "",
+        contact_number: item.correspondence?.contact_number || "",
+        email: item.correspondence?.email || "",
+        // ordering_address: getVendorDetails(item.partner_functions?.ordering_address) || "",
+        // goods_supplier: getVendorDetails(item.partner_functions?.goods_supplier) || "",
+        // forwarding_agent: getVendorDetails(item.partner_functions?.forwarding_agent) || "",
     }));
 
     const supplierValidationSchema = Yup.object({
