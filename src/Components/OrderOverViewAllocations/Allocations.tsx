@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Box, Collapse, IconButton, Paper, Typography, Grid, Button, useTheme, useMediaQuery, TextField, Modal, MenuItem, Backdrop, CircularProgress, List, ListItem, Tooltip } from "@mui/material";
+import { Box, Collapse, IconButton, Paper, Typography, Grid, Button, useTheme, useMediaQuery, TextField, Modal, MenuItem, Backdrop, CircularProgress, List, ListItem } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { useRouter } from 'next/navigation';
-import { useEditAssignOrderOrderMutation, useGetAllDriversDataQuery, useGetAllProductsQuery, useGetAssignedOrderByIdQuery, useGetDeviceMasterQuery, useGetFilteredDriversQuery, useGetFilteredVehiclesQuery, useGetLocationMasterQuery, useGetSingleVehicleMasterQuery, usePostAssignOrderMutation } from "@/api/apiSlice";
+import { useEditAssignOrderOrderMutation, useGetAllDriversDataQuery, useGetAllProductsQuery, useGetAssignedOrderByIdQuery, useGetDeviceMasterQuery, useGetFilteredDriversQuery, useGetFilteredVehiclesQuery, useGetLocationMasterQuery, useGetOrderByIdQuery, useGetSingleVehicleMasterQuery, usePostAssignOrderMutation } from "@/api/apiSlice";
 import SnackbarAlert from "../ReusableComponents/SnackbarAlerts";
 import { Driver } from "../BusinessPartnersForms/DriverForm";
 import moment from 'moment';
@@ -40,7 +40,6 @@ interface AdditionalInformation {
     sales_order_number: string;
     po_number: string;
     attachment: string;
-
 }
 
 interface TaxInformation {
@@ -72,6 +71,7 @@ export interface ProductDetails {
 }
 
 const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocatedPackageDetails }) => {
+    const { refetch: refetchOrderById } = useGetOrderByIdQuery({ orderId }, { skip: true });
     const wrapperRef = useRef<HTMLDivElement>(null);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -88,7 +88,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
     const driversData = data?.drivers.length > 0 ? data?.drivers : []
     const getAvailableDrivers = Array.isArray(driversData)
         ? driversData.reduce((acc: Driver[], eachDriver: Driver) => {
-            if (eachDriver?.driver_availability === 1) {
+            if (Number(eachDriver?.driver_availability) === 1) {
                 acc.push(eachDriver);
             }
             return acc;
@@ -96,22 +96,13 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
         : [];
     const { data: filteredDrivers, isLoading: filteredDriversLoading } = useGetFilteredDriversQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
     const displayDrivers = searchKey ? filteredDrivers?.results || [] : getAvailableDrivers;
-    console.log('display drivrs :', displayDrivers)
 
     const [searchKeyVehicle, setSearchKeyVehicle] = useState('');
     const [showSuggestionsVehicle, setShowSuggestionsVehicle] = useState(false);
-   const vehiclesData = allVehicleTrucks?.data.length > 0 ? allVehicleTrucks?.data : []
-    // const getAvailableDrivers = Array.isArray(driversData)
-    //     ? driversData.reduce((acc: Driver[], eachDriver: Driver) => {
-    //         if (eachDriver?.driver_availability === 1) {
-    //             acc.push(eachDriver);
-    //         }
-    //         return acc;
-    //     }, [])
-    //     : [];
+    const vehiclesData = allVehicleTrucks?.data.length > 0 ? allVehicleTrucks?.data : []
     const { data: filteredVehicles, isLoading: filteredVehicleLoading } = useGetFilteredVehiclesQuery(searchKeyVehicle.length >= 3 ? searchKeyVehicle : null, { skip: searchKeyVehicle.length < 3 });
     const displayVehicles = searchKeyVehicle ? filteredVehicles?.results || [] : vehiclesData;
-console.log("display vehicles :", displayVehicles)
+    console.log("display vehicles :", displayVehicles)
     const [assignModal, setAssignModal] = useState(false);
     const [selectedAllocation, setSelectedAllocation] = useState<Allocation | null>(null);
     const [postAssignOrder, { isLoading: isAssigning }] = usePostAssignOrderMutation()
@@ -120,13 +111,13 @@ console.log("display vehicles :", displayVehicles)
     const { data: allDevices, isLoading: deviceLoading } = useGetDeviceMasterQuery({})
     const { data: productsData } = useGetAllProductsQuery({})
     const allProductsData = productsData?.products || [];
-    const { data: locationsData  } = useGetLocationMasterQuery({});
+    const { data: locationsData } = useGetLocationMasterQuery({});
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
     const getLocationDetails = (loc_ID: string) => {
         const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
         if (!location) return "Location details not available";
         const details = [
-            location.address_1 ,
+            location.address_1,
             location.city,
             location.state,
             location.country,
@@ -136,12 +127,12 @@ console.log("display vehicles :", displayVehicles)
 
         return details.length > 0 ? details.join(", ") : "Location details not available";
     };
-useEffect(() => {
-    if (!searchKey) {
-        setShowSuggestions(false);
-        
-    }
-}, [searchKey]);
+    useEffect(() => {
+        if (!searchKey) {
+            setShowSuggestions(false);
+
+        }
+    }, [searchKey]);
 
     const getProductDetails = (productID: string) => {
         const productInfo = allProductsData.find((product: ProductDetails) => product.product_ID === productID);
@@ -152,12 +143,11 @@ useEffect(() => {
         ].filter(Boolean);
         return details.length > 0 ? details.join("-") : "Product details not available";
     };
- 
+
     const devicesData = allDevices?.devices.length > 0 ? allDevices?.devices : []
     if (driverLoading || vehTrucksLoading) {
         console.log("driver loading")
     }
-    
 
     const [formData, setFormData] = useState({
         truckId: "",
@@ -181,6 +171,7 @@ useEffect(() => {
     };
 
     const handleSubmit = async () => {
+        console.log("formData: ", formData)
         try {
             if (assignedOrder.data.length === 0) {
                 if (!selectedAllocation) return;
@@ -194,11 +185,10 @@ useEffect(() => {
                             vehicle_ID: selectedAllocation?.vehicle_ID
                         },
                     ],
-                    self_transport: '',
+                    self_transport: 1,
                     pod: {},
                     pod_doc: ""
                 };
-                console.log("Posting to API:", body);
                 const response = await postAssignOrder(body).unwrap();
                 console.log("assign response :", response)
                 setAssignModal(false);
@@ -212,6 +202,7 @@ useEffect(() => {
                     driverId: "",
                     deviceId: "",
                 })
+                await refetchOrderById();
             } else {
                 const newVehicle = {
                     act_truk_ID: formData.truckId,
@@ -237,19 +228,19 @@ useEffect(() => {
         }
 
     }
-        useEffect(() => {
-            function handleClickOutside(event: MouseEvent) {
-                if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
-                    setShowSuggestions(false);
-                }
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+                setShowSuggestions(false);
             }
-            document.addEventListener("mousedown", handleClickOutside);
-            return () => {
-                document.removeEventListener("mousedown", handleClickOutside);
-            };
-        }, []);
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
-console.log('allo',allocations)
+    console.log('allo', allocations)
     return (
         <Box>
             <Backdrop
@@ -294,79 +285,69 @@ console.log('allo',allocations)
                     </Typography>
 
                     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                        {/* <TextField
-                            label="Vehicle number"
-                            name="truckId"
-                            value={formData.truckId}
-                            onChange={handleChange}
-                            variant="outlined"
-                            size="small"
-                            fullWidth
-                        >
-                        </TextField> */}
-
-                         <Grid item xs={12} sm={6} md={2.4}>
+                        <Grid item xs={12} sm={6} md={2.4}>
                             <TextField
                                 fullWidth
                                 name="truckId"
                                 size="small"
                                 label="Search truck... "
                                 onFocus={() => {
-                                if (!searchKey) {
-                                    setSearchKey(formData.truckId || "");
-                                    setShowSuggestionsVehicle(true);
-                                }
+                                    if (!searchKey) {
+                                        setSearchKey(formData.truckId || "");
+                                        setShowSuggestionsVehicle(true);
+                                    }
                                 }}
                                 onChange={(e) => {
-                                setSearchKeyVehicle(e.target.value);
-                                setShowSuggestionsVehicle(true);
+                                    setSearchKeyVehicle(e.target.value);
+                                    setShowSuggestionsVehicle(true);
                                 }}
                                 value={searchKeyVehicle}
                                 InputProps={{
-                                // endAdornment: filteredVehicleLoading ? <CircularProgress size={20} /> : null,
+                                    // endAdornment: filteredVehicleLoading ? <CircularProgress size={20} /> : null,
                                 }}
                             />
                             <div style={{ position: "relative" }}>
                                 {showSuggestionsVehicle && (
-                                <Paper
-                                    style={{
-                                    maxHeight: 200,
-                                    overflowY: "auto",
-                                    position: "absolute",
-                                    zIndex: 10,
-                                    width: "100%",
-                                    }}
-                                >
-                                    <List>
-                                    {filteredVehicleLoading ? (
-                                        <ListItem>
-                                        <CircularProgress size={20} />
-                                        </ListItem>
-                                    ) : displayVehicles.length === 0   ? (
-                                        <ListItem component="li">
-                                        <Typography variant="body2" sx={{ color: "gray", textAlign: "center", width: "100%" }}>
-                                            No results found
-                                        </Typography>
-                                        </ListItem>
-                                    ) : (
-                                        displayVehicles.map((truck: {act_truk_ID:string,act_vehicle_num :string}) => (
-                                        <ListItem
-                                            key={truck?.act_truk_ID}
-                                            component="li"
-                                            onClick={() => {
-                                            setShowSuggestionsVehicle(false);
-                                            setSearchKeyVehicle(truck?.act_vehicle_num);
-                                            }}
-                                            sx={{ cursor: "pointer" }}
-                                        >
-                                            <span style={{ fontSize: "13px" }}>
-                                                {truck?.act_vehicle_num}, {truck?.act_truk_ID}
-                                            </span>
-                                        </ListItem>
-                                        ))
-                                    )}
-                                    </List>
-                                </Paper>
+                                    <Paper
+                                        style={{
+                                            maxHeight: 200,
+                                            overflowY: "auto",
+                                            position: "absolute",
+                                            zIndex: 10,
+                                            width: "100%",
+                                        }}
+                                    >
+                                        <List>
+                                            {filteredVehicleLoading ? (
+                                                <ListItem>
+                                                    <CircularProgress size={20} />
+                                                </ListItem>
+                                            ) : displayVehicles.length === 0 ? (
+                                                <ListItem component="li">
+                                                    <Typography variant="body2" sx={{ color: "gray", textAlign: "center", width: "100%" }}>
+                                                        No results found
+                                                    </Typography>
+                                                </ListItem>
+                                            ) : (
+                                                displayVehicles.map((truck: { act_truk_ID: string, act_vehicle_num: string }) => (
+                                                    <ListItem
+                                                        key={truck?.act_truk_ID}
+                                                        component="li"
+                                                        onClick={() => {
+                                                            setShowSuggestionsVehicle(false);
+                                                            setSearchKeyVehicle(`${truck?.act_vehicle_num}, ${truck?.act_truk_ID}`);
+                                                            setFormData({ ...formData, truckId: truck?.act_vehicle_num });
+                                                        }}
+                                                        sx={{ cursor: "pointer" }}
+                                                    >
+                                                        <span style={{ fontSize: "13px" }}>
+                                                            {truck?.act_vehicle_num}, {truck?.act_truk_ID}
+                                                        </span>
+                                                    </ListItem>
+                                                ))
+                                            )}
+                                        </List>
+                                    </Paper>
                                 )}
                             </div>
                         </Grid>
@@ -378,63 +359,63 @@ console.log('allo',allocations)
                                 size="small"
                                 label="Search drivers... "
                                 onFocus={() => {
-                                if (!searchKey) {
-                                    setSearchKey(formData.driverId || "");
-                                    setShowSuggestions(true);
-                                }
+                                    if (!searchKey) {
+                                        setSearchKey(formData.driverId || "");
+                                        setShowSuggestions(true);
+                                    }
                                 }}
                                 onChange={(e) => {
-                                setSearchKey(e.target.value);
-                                setShowSuggestions(true);
+                                    setSearchKey(e.target.value);
+                                    setShowSuggestions(true);
                                 }}
                                 value={searchKey}
                                 InputProps={{
-                                // endAdornment: filteredDriversLoading ? <CircularProgress size={20} /> : null,
+                                    // endAdornment: filteredDriversLoading ? <CircularProgress size={20} /> : null,
                                 }}
                             />
                             <div ref={wrapperRef} style={{ position: "relative" }}>
                                 {showSuggestions && (
-                                <Paper
-                                    style={{
-                                    maxHeight: 200,
-                                    overflowY: "auto",
-                                    position: "absolute",
-                                    zIndex: 10,
-                                    width: "100%",
-                                    }}
-                                >
-                                    <List>
-                                    {filteredDriversLoading ? (
-                                        <ListItem>
-                                        <CircularProgress size={20} />
-                                        </ListItem>
-                                    ) : displayDrivers.length === 0   ? (
-                                        <ListItem component="li">
-                                        <Typography variant="body2" sx={{ color: "gray", textAlign: "center", width: "100%" }}>
-                                            No results found
-                                        </Typography>
-                                        </ListItem>
-                                    ) : (
-                                        displayDrivers.map((driver: Driver) => (
-                                        <ListItem
-                                            key={driver?.dri_ID}
-                                            component="li"
-                                            onClick={() => {
-                                            setShowSuggestions(false);
-                                            setSearchKey(driver?.dri_ID);
-                                            }}
-                                            sx={{ cursor: "pointer" }}
-                                        >
-                                            <Tooltip title={`${driver?.driver_name}, ${driver?.dri_ID}`} placement="right">
-                                            <span style={{ fontSize: "13px" }}>
-                                                {driver?.driver_name}, {driver?.driver_correspondence?.phone}
-                                            </span>
-                                            </Tooltip>
-                                        </ListItem>
-                                        ))
-                                    )}
-                                    </List>
-                                </Paper>
+                                    <Paper
+                                        style={{
+                                            maxHeight: 200,
+                                            overflowY: "auto",
+                                            position: "absolute",
+                                            zIndex: 10,
+                                            width: "100%",
+                                        }}
+                                    >
+                                        <List>
+                                            {filteredDriversLoading ? (
+                                                <ListItem>
+                                                    <CircularProgress size={20} />
+                                                </ListItem>
+                                            ) : displayDrivers.length === 0 ? (
+                                                <ListItem component="li">
+                                                    <Typography variant="body2" sx={{ color: "gray", textAlign: "center", width: "100%" }}>
+                                                        No results found
+                                                    </Typography>
+                                                </ListItem>
+                                            ) : (
+                                                displayDrivers.map((driver: Driver) => (
+                                                    <ListItem
+                                                        key={driver?.dri_ID}
+                                                        component="li"
+                                                        onClick={() => {
+                                                            const selected = `${driver?.dri_ID}, ${driver?.driver_name}, ${driver?.driver_correspondence?.phone}`
+                                                            setShowSuggestions(false);
+                                                            setSearchKey(selected);
+                                                            setFormData({ ...formData, driverId: driver?.dri_ID });
+                                                        }}
+                                                        sx={{ cursor: "pointer" }}
+                                                    >
+                                                        <span style={{ fontSize: "13px" }}>
+                                                            {driver?.dri_ID}, {driver?.driver_name}, {driver?.driver_correspondence?.phone}
+                                                        </span>
+                                                    </ListItem>
+                                                ))
+                                            )}
+                                        </List>
+                                    </Paper>
                                 )}
                             </div>
                         </Grid>
@@ -449,22 +430,11 @@ console.log('allo',allocations)
                             fullWidth
                         >
                             {devicesData?.map((device: DeviceInfoBE) => (
-                                <MenuItem key={device?.device_id} value={device.device_id}>
+                                <MenuItem key={device?.device_id} value={device.dev_ID}>
                                     {device.dev_ID}
                                 </MenuItem>
                             ))}
                         </TextField>
-                        {/* <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={formData.selfTransport}
-                                    onChange={(e) => setFormData({ ...formData, selfTransport: e.target.checked })}
-                                    name="selfTransport"
-                                    color="primary"
-                                />
-                            }
-                            label="Self Transport"
-                        /> */}
                         <Button variant="contained" color="primary" onClick={handleSubmit}>
                             Submit
                         </Button>
@@ -524,7 +494,7 @@ console.log('allo',allocations)
                                         Leftover Weight: <strong> {allocation.leftoverWeight.toFixed(2)}</strong>
                                     </Typography>
                                     <Typography variant="body2">
-                                        Leftover Volume: <strong> {allocation.leftoverVolume.toFixed(2)}</strong> 
+                                        Leftover Volume: <strong> {allocation.leftoverVolume.toFixed(2)}</strong>
                                     </Typography>
                                 </Grid>
                             </Grid>
@@ -536,152 +506,152 @@ console.log('allo',allocations)
                             </Box>
                             {allocatedPackageDetails
                                 .filter((pkg: PackageDetail) => allocation.packages.includes(pkg.pack_ID))
-                                .map((pkg: PackageDetail) => ( 
+                                .map((pkg: PackageDetail) => (
                                     <Box key={pkg.pac_id} >
-                                    <Grid key={pkg.pac_id} sx={{ mt: {xs:1 , md:2}, p: 2, backgroundColor: '#e9e7e7', borderRadius: 1 , }}>
-                                        <Typography variant="subtitle2" gutterBottom>
-                                            <strong>Package ID: {pkg.pack_ID}</strong>
-                                        </Typography>
-
-                                        <Typography variant="body2">
-                                            <strong>Status:</strong> {pkg.package_status}
+                                        <Grid key={pkg.pac_id} sx={{ mt: { xs: 1, md: 2 }, p: 2, backgroundColor: '#e9e7e7', borderRadius: 1, }}>
+                                            <Typography variant="subtitle2" gutterBottom>
+                                                <strong>Package ID: {pkg.pack_ID}</strong>
                                             </Typography>
-                                        <Grid sx={{ overflowX: "auto", whiteSpace: "nowrap" }}>
-                                        <Grid container spacing={2} sx={{minWidth:'1000px',display:'flex',justifyContent:'space-between'}}  item >
-                                            <Grid item >
-                                                <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '15px', marginTop: '15px', marginBottom: '5px' }}>Billing Details</Typography>
-                                                <Grid  >
-                                                    <Typography variant="body2">
-                                                        Ship From: <strong> {getLocationDetails(pkg.ship_from)}</strong>
-                                                    </Typography>
-                                                    <Typography variant="body2">
-                                                        Ship To: <strong>  {getLocationDetails(pkg.ship_to)}</strong>
-                                                    </Typography>
-                                                    <Typography variant="body2">
-                                                        Bill To: <strong> {getLocationDetails(pkg.bill_to)}</strong> 
-                                                    </Typography>
-                                                </Grid>
-                                            </Grid>
-                                            <Grid item >
-                                                <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '15px', marginTop: '15px', marginBottom: '5px' }}>Date & Timings</Typography>
-                                                <Grid >
-                                                    <Typography variant="body2">
-                                                        Pickup Date:<strong>  {moment(pkg.pickup_date_time).format("DD MMM YYYY, hh:mm A")}</strong>
-                                                    </Typography>
-                                                    <Typography variant="body2">
-                                                        Dropoff Date:<strong>  {moment(pkg.dropoff_date_time).format("DD MMM YYYY, hh:mm A")}</strong>
-                                                    </Typography>
-                                                </Grid>
-                                            </Grid>
-                                            <Grid item >
-                                                <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '15px', marginTop: '15px', marginBottom: '5px' }}>Additional Info</Typography>
-                                                <Grid >
-                                                    {pkg.additional_info?.reference_id && (
-                                                        <Typography variant="body2">
-                                                            Refernce ID: <strong>  {pkg.additional_info?.reference_id}</strong>
-                                                        </Typography>
-                                                    )}
 
-                                                    {pkg.additional_info?.invoice && (
-                                                        <Typography variant="body2">
-                                                            Invoice:<strong>  {pkg.additional_info?.invoice}</strong>
-                                                        </Typography>
-                                                    )}
-
-                                                    {pkg.additional_info?.department && (
-                                                        <Typography variant="body2">
-                                                            Department:<strong>  {pkg.additional_info?.department}</strong>
-                                                        </Typography>
-                                                    )}
-
-                                                    {pkg.additional_info?.sales_order_number && (
-                                                        <Typography variant="body2">
-                                                            Sales order number: <strong>  {pkg.additional_info?.sales_order_number}</strong>
-                                                        </Typography>
-                                                    )}
-
-                                                    {pkg.additional_info?.po_number && (
-                                                        <Typography variant="body2">
-                                                            Po number: <strong>  {pkg.additional_info?.po_number}</strong>
-                                                        </Typography>
-                                                    )
-                                                    }
-                                                    {pkg?.additional_info?.attachment && (
-                                                        <div style={{ display: "flex" }}>
-                                                            <Typography variant="body2" style={{ fontWeight: 'bold' }}>
-                                                                Attachment:
+                                            <Typography variant="body2">
+                                                <strong>Status:</strong> {pkg.package_status}
+                                            </Typography>
+                                            <Grid sx={{ overflowX: "auto", whiteSpace: "nowrap" }}>
+                                                <Grid container spacing={2} sx={{ minWidth: '1000px', display: 'flex', justifyContent: 'space-between' }} item >
+                                                    <Grid item >
+                                                        <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '15px', marginTop: '15px', marginBottom: '5px' }}>Billing Details</Typography>
+                                                        <Grid  >
+                                                            <Typography variant="body2">
+                                                                Ship From: <strong> {getLocationDetails(pkg.ship_from)}</strong>
                                                             </Typography>
-                                                            <div style={{ position: 'relative', width: '50px', height: '45px', marginTop: '5px' }}>
-                                                                <Image
-                                                                    src={pkg?.additional_info?.attachment}
-                                                                    alt="Attachment"
-                                                                    fill
-                                                                    sizes="(max-width: 768px) 100vw, 300px"
-                                                                    style={{ objectFit: 'contain' }}
-                                                                />
+                                                            <Typography variant="body2">
+                                                                Ship To: <strong>  {getLocationDetails(pkg.ship_to)}</strong>
+                                                            </Typography>
+                                                            <Typography variant="body2">
+                                                                Bill To: <strong> {getLocationDetails(pkg.bill_to)}</strong>
+                                                            </Typography>
+                                                        </Grid>
+                                                    </Grid>
+                                                    <Grid item >
+                                                        <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '15px', marginTop: '15px', marginBottom: '5px' }}>Date & Timings</Typography>
+                                                        <Grid >
+                                                            <Typography variant="body2">
+                                                                Pickup Date:<strong>  {moment(pkg.pickup_date_time).format("DD MMM YYYY, hh:mm A")}</strong>
+                                                            </Typography>
+                                                            <Typography variant="body2">
+                                                                Dropoff Date:<strong>  {moment(pkg.dropoff_date_time).format("DD MMM YYYY, hh:mm A")}</strong>
+                                                            </Typography>
+                                                        </Grid>
+                                                    </Grid>
+                                                    <Grid item >
+                                                        <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '15px', marginTop: '15px', marginBottom: '5px' }}>Additional Info</Typography>
+                                                        <Grid >
+                                                            {pkg.additional_info?.reference_id && (
+                                                                <Typography variant="body2">
+                                                                    Refernce ID: <strong>  {pkg.additional_info?.reference_id}</strong>
+                                                                </Typography>
+                                                            )}
 
-                                                            </div>
-                                                        </div>
-                                                    )}
+                                                            {pkg.additional_info?.invoice && (
+                                                                <Typography variant="body2">
+                                                                    Invoice:<strong>  {pkg.additional_info?.invoice}</strong>
+                                                                </Typography>
+                                                            )}
 
-                                                </Grid>
-                                            </Grid>
+                                                            {pkg.additional_info?.department && (
+                                                                <Typography variant="body2">
+                                                                    Department:<strong>  {pkg.additional_info?.department}</strong>
+                                                                </Typography>
+                                                            )}
 
-                                            <Grid item >
-                                                <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '15px', marginTop: '15px', marginBottom: '5px' }}>Tax Info</Typography>
-                                                <Grid >
-                                                    {pkg.tax_info?.sender_gst && (
-                                                        <Typography variant="body2">
-                                                            GSTN of sender:<strong>  {pkg.tax_info?.sender_gst}</strong>
-                                                        </Typography>
-                                                    )}
+                                                            {pkg.additional_info?.sales_order_number && (
+                                                                <Typography variant="body2">
+                                                                    Sales order number: <strong>  {pkg.additional_info?.sales_order_number}</strong>
+                                                                </Typography>
+                                                            )}
 
-                                                    {pkg.tax_info?.receiver_gst && (
-                                                        <Typography variant="body2">
-                                                            GSTN of receiver: <strong>  {pkg.tax_info?.receiver_gst}</strong>
-                                                        </Typography>
-                                                    )}
+                                                            {pkg.additional_info?.po_number && (
+                                                                <Typography variant="body2">
+                                                                    Po number: <strong>  {pkg.additional_info?.po_number}</strong>
+                                                                </Typography>
+                                                            )
+                                                            }
+                                                            {pkg?.additional_info?.attachment && (
+                                                                <div style={{ display: "flex" }}>
+                                                                    <Typography variant="body2" style={{ fontWeight: 'bold' }}>
+                                                                        Attachment:
+                                                                    </Typography>
+                                                                    <div style={{ position: 'relative', width: '50px', height: '45px', marginTop: '5px' }}>
+                                                                        <Image
+                                                                            src={pkg?.additional_info?.attachment}
+                                                                            alt="Attachment"
+                                                                            fill
+                                                                            sizes="(max-width: 768px) 100vw, 300px"
+                                                                            style={{ objectFit: 'contain' }}
+                                                                        />
 
-                                                    {pkg.tax_info?.carrier_gst && (
-                                                        <Typography variant="body2">
-                                                            GSTN of carrier: <strong>  {pkg.tax_info?.carrier_gst}</strong>
-                                                        </Typography>
-                                                    )}
-                                                    {pkg.tax_info?.self_transport && (
-                                                        <Typography variant="body2">
-                                                            Is self transport: <strong>  {pkg.tax_info?.self_transport}</strong>
-                                                        </Typography>
-                                                    )}
-                                                    {pkg.tax_info?.tax_rate && (
-                                                        <Typography variant="body2">
-                                                            Tax rate: <strong>  {pkg.tax_info?.tax_rate}</strong>
-                                                        </Typography>
-                                                    )}
+                                                                    </div>
+                                                                </div>
+                                                            )}
 
-                                                    {pkg.return_label && (
-                                                        <Typography variant="body2">
-                                                            Return Label:<strong>  {pkg.return_label ? "Yes" : "No"}</strong>
-                                                        </Typography>
-                                                    )}
+                                                        </Grid>
+                                                    </Grid>
 
-                                                </Grid>
-                                            </Grid>
-                                            <Grid item >
-                                                <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '15px', marginTop: '15px', marginBottom: '5px' }}>Product Details</Typography>
-                                                <Box sx={{ mt: 1 }}>
-                                                    <Typography variant="body2" sx={{ fontWeight: "bold" }}>
-                                                        Products:
-                                                    </Typography>
-                                                    {pkg.product_ID.map((prod: Product, index: number) => (
-                                                        <Typography key={index} variant="body2" sx={{ ml: 2 }}>
-                                                            - {getProductDetails(prod.prod_ID)} (Qty: {prod.quantity})
-                                                        </Typography>
-                                                    ))}
-                                                </Box>
-                                            </Grid>
-                                        </Grid></Grid>
-                                        </Grid> 
-                                        </Box>
+                                                    <Grid item >
+                                                        <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '15px', marginTop: '15px', marginBottom: '5px' }}>Tax Info</Typography>
+                                                        <Grid >
+                                                            {pkg.tax_info?.sender_gst && (
+                                                                <Typography variant="body2">
+                                                                    GSTN of sender:<strong>  {pkg.tax_info?.sender_gst}</strong>
+                                                                </Typography>
+                                                            )}
+
+                                                            {pkg.tax_info?.receiver_gst && (
+                                                                <Typography variant="body2">
+                                                                    GSTN of receiver: <strong>  {pkg.tax_info?.receiver_gst}</strong>
+                                                                </Typography>
+                                                            )}
+
+                                                            {pkg.tax_info?.carrier_gst && (
+                                                                <Typography variant="body2">
+                                                                    GSTN of carrier: <strong>  {pkg.tax_info?.carrier_gst}</strong>
+                                                                </Typography>
+                                                            )}
+                                                            {pkg.tax_info?.self_transport && (
+                                                                <Typography variant="body2">
+                                                                    Is self transport: <strong>  {pkg.tax_info?.self_transport}</strong>
+                                                                </Typography>
+                                                            )}
+                                                            {pkg.tax_info?.tax_rate && (
+                                                                <Typography variant="body2">
+                                                                    Tax rate: <strong>  {pkg.tax_info?.tax_rate}</strong>
+                                                                </Typography>
+                                                            )}
+
+                                                            {pkg.return_label && (
+                                                                <Typography variant="body2">
+                                                                    Return Label:<strong>  {pkg.return_label ? "Yes" : "No"}</strong>
+                                                                </Typography>
+                                                            )}
+
+                                                        </Grid>
+                                                    </Grid>
+                                                    <Grid item >
+                                                        <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '15px', marginTop: '15px', marginBottom: '5px' }}>Product Details</Typography>
+                                                        <Box sx={{ mt: 1 }}>
+                                                            <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+                                                                Products:
+                                                            </Typography>
+                                                            {pkg.product_ID.map((prod: Product, index: number) => (
+                                                                <Typography key={index} variant="body2" sx={{ ml: 2 }}>
+                                                                    - {getProductDetails(prod.prod_ID)} (Qty: {prod.quantity})
+                                                                </Typography>
+                                                            ))}
+                                                        </Box>
+                                                    </Grid>
+                                                </Grid></Grid>
+                                        </Grid>
+                                    </Box>
                                 ))}
                             <Box sx={{ display: "flex", justifyContent: isMobile ? "center" : "flex-end", mt: 3, gap: 3 }}>
                                 {!assignedOrder?.data[0]?.allocated_vehicles?.some(

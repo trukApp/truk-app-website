@@ -3,16 +3,11 @@ import {
   Formik, Form, FieldArray, FieldProps, Field
 } from "formik";
 import * as Yup from "yup";
-import {
-  Grid, TextField, CircularProgress, Typography, Autocomplete
-} from "@mui/material";
+import { Grid, TextField, CircularProgress, Typography, Autocomplete } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { setProductsList } from "@/store/authSlice";
 import styles from './CreatePackage.module.css';
-import {
-  useGetAllProductsQuery,
-  useGetFilteredProductsQuery
-} from "@/api/apiSlice";
+import { useGetAllProductsQuery, useGetFilteredProductsQuery } from "@/api/apiSlice";
 import { Product } from "@/app/productmaster/page";
 import { CustomButtonFilled, CustomButtonOutlined } from "../ReusableComponents/ButtonsComponent";
 
@@ -131,8 +126,9 @@ const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
                           }
                           getOptionLabel={(option: Product | string) => {
                             if (typeof option === "string") return option;
-                            return option.product_ID;
+                            return `${option.product_ID} - ${option.product_name}`;
                           }}
+
                           renderOption={(props, option) => (
                             <li {...props} key={typeof option === "string" ? option : option.product_ID}>
                               {typeof option === "string"

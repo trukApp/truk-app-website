@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Box, Button, Collapse, Grid, TextField, FormControlLabel, Checkbox, Backdrop, CircularProgress, Tooltip, List, Paper, ListItem } from '@mui/material';
+import { Box, Button, Collapse, Grid, TextField, FormControlLabel, Checkbox, Backdrop, CircularProgress, List, Paper, ListItem } from '@mui/material';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { DataGridComponent } from '../GridComponent';
@@ -103,36 +103,20 @@ const SupplierForm: React.FC = () => {
         const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
         if (!location) return "Location details not available";
         const details = [
-            location.address_1,
-            location.address_2,
+            location.loc_ID,
+            location?.loc_dec,
             location.city,
             location.state,
+            location.pincode,
             location.country,
-            location.pincode
         ].filter(Boolean);
 
         return details.length > 0 ? details.join(", ") : "Location details not available";
     };
-    // const getVendorDetails = (customer_id: string) => {
-    //     console.log('customer id :', customer_id)
-    //     const customer = vendorsData.find((customer: Customer) => customer.customer_id === customer_id);
-    //     if (!location) return "Customer details not available";
-    //     const details = [
-    //         customer.name,
-    //         customer.location_city,
-    //         customer.location_state,
-    //         customer.location_country,
-    //         customer.location_pincode,
-    //         customer.customer_id
-    //     ].filter(Boolean);
-
-    //     return details.length > 0 ? details.join(", ") : "Customer details not available";
-    // };
     if (getLocationsError) {
         console.log("getLocationsError: ", getLocationsError)
     }
     const vendorsData = data?.partners.length > 0 ? data?.partners : []
-    console.log("vendors data :", vendorsData)
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
@@ -215,20 +199,16 @@ const SupplierForm: React.FC = () => {
 
 
     const handleEdit = async (rowData: Customer) => {
-        console.log("rowdata :", rowData)
         setShowForm(true)
         setUpdateRecord(true)
         setUpdateRecordData(rowData)
         setUpdateRecordId(rowData?.partner_id)
         const updatedInitialValues = await mapRowToInitialValues(rowData);
-        const locId = rowData?.location_loc_ID ? rowData.location_loc_ID.split(", ").at(-1) ?? "" : "";
-        const sourceLocationId = rowData?.loc_of_source_loc_ID ? rowData.loc_of_source_loc_ID.split(", ").at(-1) ?? "" : "";
-        console.log("locId: ", sourceLocationId, locId)
         setFormInitialValues(updatedInitialValues);
-        setSearchKey(locId)
-        setSearchKeyDestination(sourceLocationId)
+        console.log(rowData?.location_loc_ID, rowData?.loc_of_source_loc_ID)
+        setSearchKey(rowData?.loc_ID)
+        setSearchKeyDestination(rowData?.loc_of_source)
     };
-    console.log("formInitialValues: ", formInitialValues)
 
     const columns: GridColDef[] = [
         { field: 'supplier_id', headerName: 'Supplier ID', width: 150 },
@@ -292,10 +272,10 @@ const SupplierForm: React.FC = () => {
         contactPerson: Yup.string().required('Contact Person is required'),
         contactNumber: Yup.string().required('Contact Number is required'),
         emailId: Yup.string().email('Invalid email format').required('Email ID is required'),
-        locationOfSource: Yup.string().required('Location is required'),
-        orderingAddress: Yup.string().required('Ship To Party is required'),
-        goodsSupplier: Yup.string().required('Sold To Party is required'),
-        forwardingAgent: Yup.string().required('Bill To Party is required')
+        locationOfSource: Yup.string().required('Location of source is required'),
+        orderingAddress: Yup.string().required('Ordering address is required'),
+        goodsSupplier: Yup.string().required('Goods supplier is required'),
+        forwardingAgent: Yup.string().required('Forwarding agent is required')
     });
 
     const handleSupplierSubmit = async (values: typeof initialSupplierValues, { resetForm }: { resetForm: () => void }) => {
@@ -321,9 +301,7 @@ const SupplierForm: React.FC = () => {
                     }
                 ]
             }
-            console.log("values: ", updateRecordData)
             const editBody = {
-                // ...updateRecordData,
                 supplier_id: updateRecordData?.supplier_id,
                 name: values?.name,
                 partner_type: "vendor",
@@ -341,9 +319,6 @@ const SupplierForm: React.FC = () => {
                     forwarding_agent: values?.forwardingAgent
                 }
             }
-
-
-            console.log("editBody: ", editBody)
             if (updateRecord) {
                 const response = await updatePartnerDetails({ body: editBody, partnerId: updateRecordId }).unwrap();
                 if (response?.updated_record) {
@@ -496,7 +471,9 @@ const SupplierForm: React.FC = () => {
                                                                 component="li"
                                                                 onClick={() => {
                                                                     setShowSuggestions(false)
-                                                                    setSearchKey(location.loc_ID);
+                                                                    const selectedDisplay = `${location.loc_ID},${location?.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
+                                                                    setSearchKey(selectedDisplay);
+                                                                    // setSearchKey(location.loc_ID);
                                                                     setFieldValue("locationId", location.loc_ID)
                                                                     const matchedLocation = getAllLocations.find((loc: Location) => loc.loc_ID === location.loc_ID);
 
@@ -519,12 +496,7 @@ const SupplierForm: React.FC = () => {
                                                                 }}
                                                                 sx={{ cursor: "pointer" }}
                                                             >
-                                                                <Tooltip
-                                                                    title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                                                    placement="right"
-                                                                >
-                                                                    <span style={{ fontSize: '13px' }}>{location.loc_ID}, {location.city}, {location.state}, {location.pincode}</span>
-                                                                </Tooltip>
+                                                                <span style={{ fontSize: '13px' }}>{location.loc_ID},{location?.loc_desc}, {location.city}, {location.state}, {location.pincode}</span>
                                                             </ListItem>
                                                         ))}
                                                     </List>
@@ -557,18 +529,6 @@ const SupplierForm: React.FC = () => {
                                             helperText={touched.city && errors.city}
                                         />
                                     </Grid>
-                                    {/* <Grid item xs={12} sm={6} md={2.4}>
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="District"
-                                            name="district"
-                                            value={values.district}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.district && Boolean(errors.district)}
-                                            helperText={touched.district && errors.district}
-                                        />
-                                    </Grid> */}
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small' disabled
@@ -632,7 +592,7 @@ const SupplierForm: React.FC = () => {
                                             fullWidth
                                             name="locationOfSource"
                                             size="small"
-                                            label="Search for Location of Source... "
+                                            label="Location of Source"
                                             onFocus={() => {
                                                 if (!searchKeyDestination) {
                                                     setSearchKeyDestination(values?.locationOfSource[0] || "");
@@ -644,7 +604,6 @@ const SupplierForm: React.FC = () => {
                                                 setShowDestinations(true)
                                             }
                                             }
-                                            // onBlur={handleBlur}
                                             value={searchKeyDestination}
                                             error={touched?.locationOfSource && Boolean(errors?.locationOfSource)}
                                             helperText={
@@ -674,17 +633,19 @@ const SupplierForm: React.FC = () => {
                                                                 component="li"
                                                                 onClick={() => {
                                                                     setShowDestinations(false)
-                                                                    setSearchKeyDestination(location.loc_ID);
+                                                                    const selectedDisplay = `${location.loc_ID},${location?.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
+                                                                    setSearchKeyDestination(selectedDisplay);
+                                                                    // setSearchKeyDestination(location.loc_ID);
                                                                     setFieldValue("locationOfSource", location.loc_ID);
                                                                 }}
                                                                 sx={{ cursor: "pointer" }}
                                                             >
-                                                                <Tooltip
+                                                                {/* <Tooltip
                                                                     title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
                                                                     placement="right"
                                                                 >
-                                                                    <span style={{ fontSize: '13px' }}>{location.loc_ID}, {location.city}, {location.state}, {location.pincode}</span>
-                                                                </Tooltip>
+                                                                </Tooltip> */}
+                                                                <span style={{ fontSize: '13px' }}>{location.loc_ID},{location?.loc_desc}, {location.city}, {location.state}, {location.pincode}</span>
                                                             </ListItem>
                                                         ))}
                                                     </List>
