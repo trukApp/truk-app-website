@@ -7,7 +7,6 @@ import styles from './CreatePackage.module.css';
 import { useAppDispatch, useAppSelector } from '@/store';
 import {
     clearPackageShipFrom,
-    // setCompletedState,
     setPackageShipFrom
 } from '@/store/authSlice';
 import { useGetFilteredLocationsQuery, useGetLocationMasterQuery, usePostLocationMasterMutation, useUpdateShipFromDefaultLocationIdMutation } from '@/api/apiSlice';
@@ -17,7 +16,6 @@ import { CustomButtonFilled } from '../ReusableComponents/ButtonsComponent';
 
 interface ShipFromProps {
     onNext: (values: IShipFrom) => void;
-    // onBack: () => void;
 }
 export interface IShipFrom {
     addressLine1: string;
@@ -46,8 +44,6 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
     const allLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
     const shipFromReduxValues = useAppSelector((state) => state.auth.packageShipFrom)
     const defaultLocationData = allLocations?.find((eachLocation: Location) => eachLocation?.def_ship_from === 1)
-    console.log("defaultLocationData: ", defaultLocationData)
-    // const defaultLocationDataInputText = `${defaultLocationData.loc_ID},${defaultLocationData?.loc_desc}, ${defaultLocationData.city}, ${defaultLocationData.state}, ${defaultLocationData.pincode}`
     const defaultLocationDataInputText = defaultLocationData
         ? `${defaultLocationData.loc_ID},${defaultLocationData.loc_desc}, ${defaultLocationData.city}, ${defaultLocationData.state}, ${defaultLocationData.pincode}`
         : '';
@@ -55,18 +51,13 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
     const [searchKey, setSearchKey] = useState(shipFromReduxValues?.locationId || defaultLocationDataInputText || '');
     const [showSuggestions, setShowSuggestions] = useState(false);
     const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
-
     const displayLocations = searchKey ? filteredLocations?.results || [] : allLocations;
-    console.log("display:", defaultLocationDataInputText)
-
-
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const [postLocation, { isLoading: postLocationLoading }] = usePostLocationMasterMutation({})
     const [updateDefulatFromLocation, { isLoading: defaultLocationLoading }] = useUpdateShipFromDefaultLocationIdMutation();
     const dispatch = useAppDispatch()
-
 
     const shipToReduxValues = useAppSelector((state) => state.auth.packageShipTo)
     const billToReduxValues = useAppSelector((state) => state.auth.packageBillTo)
@@ -160,7 +151,6 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
             setFieldValue("email", selectedLocation.contact_email || "");
             setFieldValue("saveAsDefaultShipFromLocation", selectedLocation.def_ship_from || false);
         } else {
-            // Reset values if location is not found
             setFieldValue("locationId", "");
             setFieldValue("locationDescription", "");
             setFieldValue("addressLine1", "");
@@ -575,40 +565,8 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                                         />
                                     </Grid>
                                 </Grid>
-
-
-                                {/* <h3 className={styles.mainHeading}>Save Options</h3>
-                        <Grid container spacing={2}>
-                            <Grid item xs={12} md={2.4}>
-                                <FormControlLabel
-                                    control={<Field name="saveAsNewLocationId" type="checkbox" as={Checkbox} />}
-                                    label="Save as new Location ID"
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={2.4}>
-                                <FormControlLabel
-                                    control={<Field name="saveAsDefaultShipFromLocation" type="checkbox" as={Checkbox} />}
-                                    label="Save as default Ship From Location"
-                                />
-                            </Grid>
-                        </Grid> */}
-
-                                {/* Back & Next Buttons */}
                                 <Grid container spacing={2} justifyContent="center" marginTop={2}>
-                                    {/* <Grid item>
-                                <Button variant="outlined">
-                                    Back
-                                </Button>
-                            </Grid> */}
                                     <Grid item>
-                                        {/* <Button
-                                        variant="contained"
-                                        color="primary"
-                                        // disabled={!isValid || !dirty}
-                                        onClick={() => handleSubmit()}
-                                    >
-                                        Next
-                                    </Button> */}
                                         <CustomButtonFilled onSubmit={() => handleSubmit()}>Next</CustomButtonFilled>
                                     </Grid>
                                 </Grid>
