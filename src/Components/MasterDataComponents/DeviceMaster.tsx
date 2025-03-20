@@ -88,7 +88,7 @@ const DeviceMaster: React.FC = () => {
     const locationDetails = carrier_loc_of_operation && carrier_loc_of_operation.length > 0
       ? carrier_loc_of_operation.join(", ")
       : "No locations available";
-    return `${carrier_name}, ${carrier_address}, Locations: ${locationDetails}, ${carrier.carrier_ID}`;
+    return `${carrier.carrier_ID}, ${carrier_name}, ${carrier_address}, Locations: ${locationDetails}`;
   };
 
   useEffect(() => {
@@ -274,7 +274,7 @@ const DeviceMaster: React.FC = () => {
   useEffect(() => {
     if (editRow) {
       const locId = editRow?.locationId ? editRow.locationId.split(", ")[0] ?? "" : "";
-       const carrId = editRow?.carrierId ? editRow.carrierId.split(", ").at(-1) ?? "" : "";
+       const carrId = editRow?.carrierId ? editRow.carrierId.split(", ")[0] ?? "" : "";
       setSearchKey(editRow?.locationId )
       formik.setValues({
         id: editRow.id || '',

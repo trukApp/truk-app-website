@@ -69,13 +69,14 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
         const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
         if (!location) return "Location details not available";
         const details = [
+            location.loc_ID,
             location.loc_desc,
             location.address_1,
             location.city,
             location.state,
             location.country,
             location.pincode,
-            location.loc_ID
+            
         ].filter(Boolean);
 
         return details.length > 0 ? details.join(", ") : "Location details not available";

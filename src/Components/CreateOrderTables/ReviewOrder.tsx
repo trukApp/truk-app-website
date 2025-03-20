@@ -27,13 +27,14 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks }) => {
  const getLocationDescription = (loc_ID: string) => {
         const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
         if (!location) return "Location details not available";
-        const details = [
+     const details = [
+            location.loc_ID,
             location.loc_desc,
             location.address_1,
             location.city,
             location.state,
             location.pincode,
-            location.loc_ID
+            
         ].filter(Boolean);
 
         return details.length > 0 ? details.join(", ") : "Location details not available";
