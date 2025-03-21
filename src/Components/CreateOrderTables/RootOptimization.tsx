@@ -135,6 +135,13 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
     const selectedVehicleData = rootOptimization?.find(vehicle => vehicle?.vehicle_ID === selectedVehicle);
 
     const handleStopClick = (location: string) => {
+        if (!selectedVehicleData || !selectedVehicleData.route || !selectedVehicleData.route.length) {
+            console.warn('No selected vehicle data or invalid route.');
+            return;
+        }
+
+        const startPoint = selectedVehicleData?.route?.[0]?.start;
+        console.log('startPoint', startPoint);
         if (selectedStop === location) {
             setSelectedStop(null);
             setMatchedRoute(null);
@@ -162,6 +169,7 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
             }
         }
     };
+
     // console.log('matchedRoute:', matchedRoute);
     // console.log('returnRoute:', returnRoute)
     console.log('Selected Routes Data:', selectedRoutesData);
@@ -216,6 +224,7 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
                     </Box>
                 </Box>
             )}
+            <h1 style={{ color: '#83214F', fontSize: '24px', fontWeight: 'bold', textDecorationLine: 'underline' }}>LoadArrangement</h1>
             {[...(selectedVehicleData?.loadArrangement || [])].reverse().map((stop, index) => (
                 <Box
                     key={index}
