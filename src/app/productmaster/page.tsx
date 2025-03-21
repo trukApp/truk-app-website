@@ -137,12 +137,11 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
     };
     const [updateRecord, setUpdateRecord] = useState(false);
     const [formInitialValues, setFormInitialValues] = useState(productFormInitialValues);
-    // const [updateRecordData, setUpdateRecordData] = useState({});
     const [updateRecordId, setUpdateRecordId] = useState(0)
     const { data: productsDataFromClient, isLoading } = useGetAllProductsQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize })
     const productsData = isLoading ? productsFromServer : productsDataFromClient;
     const [showForm, setShowForm] = useState(false);
-    const { data: locationsData,  } = useGetLocationMasterQuery({})
+    const { data: locationsData, } = useGetLocationMasterQuery({})
     const { data: packagesData, isLoading: isPackageLoading } = useGetPackageMasterQuery({})
     const [createNewProduct, { isLoading: createLoading }] = useCreateProductMutation();
     const [deleteProduct, { isLoading: deleteProductLoading }] = useDeleteProductMutation()
@@ -158,6 +157,19 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
     const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
         setPaginationModel(newPaginationModel);
     };
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+                setShowSuggestions(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
     const validationSchema = Yup.object({
         productName: Yup.string().required('Product name is required'),
         productDescription: Yup.string().required('Product Description is required'),
@@ -167,33 +179,34 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
         salesUoM: Yup.string().required('Sales Unit of Measure is required'),
         locationId: Yup.string().required('Location id is required'),
         packagingType: Yup.string().required('packaging type is required'),
+        hsncode: Yup.string().required('Hsn code is required'),
     });
 
     const getLocationDetails = (loc_ID: string) => {
-            const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
-            if (!location) return "Location details not available";
+        const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
+        if (!location) return "Location details not available";
         const details = [
-                location.loc_ID,
-                location.loc_desc ,
-                location.city,
-                location.state,
-                location.pincode,
-            ].filter(Boolean);
-    
-            return details.length > 0 ? details.join(", ") : "Location details not available";
-    };
-const getPackageDetails = (pack_ID: string) => {
-    const packageData = getAllPackages.find((pack: Package) => pack.pac_ID === pack_ID);
-    return packageData 
-        ? `${packageData.packaging_type_name}, ${packageData.pac_ID}` 
-        : "NA";
-};
+            location.loc_ID,
+            location.loc_desc,
+            location.city,
+            location.state,
+            location.pincode,
+        ].filter(Boolean);
 
+        return details.length > 0 ? details.join(", ") : "Location details not available";
+    };
+
+    const getPackageDetails = (pack_ID: string) => {
+        const packageData = getAllPackages.find((pack: Package) => pack.pac_ID === pack_ID);
+        return packageData
+            ? `${packageData.packaging_type_name}, ${packageData.pac_ID}`
+            : "NA";
+    };
 
     const mapRowToInitialValues = (selectedProduct: Product) => {
         const locId = selectedProduct?.locationId ? selectedProduct?.locationId.split(", ")[0] ?? "" : "";
         const packIdd = selectedProduct?.packagingType ? selectedProduct?.packagingType.split(", ").at(-1) ?? "" : "";
-        setSearchKey(selectedProduct?.locationId  || '')
+        setSearchKey(selectedProduct?.locationId || '')
         const weightUnit = selectedProduct.weight.split(' ')
         const volumeUnit = selectedProduct.volume.split(' ')
         return (
@@ -209,7 +222,7 @@ const getPackageDetails = (pack_ID: string) => {
                 expirationDate: selectedProduct.expiration || '',
                 bestBeforeDate: selectedProduct.best_before || '',
                 stackingFactor: selectedProduct?.stacking_factor || '',
-                documents: selectedProduct.documents || '' ,
+                documents: selectedProduct.documents || '',
                 locationId: locId || '',
                 packagingType: packIdd || '',
                 generatePackagingLabel: selectedProduct?.packingLabel || false,
@@ -228,18 +241,14 @@ const getPackageDetails = (pack_ID: string) => {
     const handleEdit = async (rowData: Product) => {
         setShowForm(true)
         setUpdateRecord(true)
-        // setUpdateRecordData(rowData)
         const updatedInitialValues = await mapRowToInitialValues(rowData);
         setUpdateRecordId(rowData?.id)
-
         setFormInitialValues(updatedInitialValues);
     };
 
     const handleDelete = async (row: Product) => {
         const confirmDelete = window.confirm(`Are you sure you want to delete ? This action cannot be undone.`);
-
         if (!confirmDelete) return;
-
         try {
             const productId = row?.id;
             const response = await deleteProduct(productId);
@@ -256,13 +265,10 @@ const getPackageDetails = (pack_ID: string) => {
         }
     };
 
-
     const columns = [
         { field: 'product_ID', headerName: 'Product ID', width: 150 },
         { field: 'productName', headerName: 'Product Name', width: 150 },
         { field: 'product_desc', headerName: 'Product Description', width: 200 },
-        // { field: 'sales_uom', headerName: 'Sales UOM', width: 150 },
-        // { field: 'basic_uom', headerName: 'Basic UOM', width: 150 },
         { field: 'weight', headerName: 'Weight', width: 150 },
         { field: 'volume', headerName: 'Volume', width: 150 },
         { field: 'expiration', headerName: 'Expiration Date', width: 150 },
@@ -295,6 +301,7 @@ const getPackageDetails = (pack_ID: string) => {
             ),
         },
     ];
+
     const rows = allProductsData.map((product: Product) => ({
         id: product.prod_id,
         product_ID: product.product_ID,
@@ -321,7 +328,6 @@ const getPackageDetails = (pack_ID: string) => {
         hazardous: product?.hazardous
 
     }));
-
 
     const handleSubmit = async (values: typeof productFormInitialValues, { resetForm }: { resetForm: () => void }) => {
         try {
@@ -432,17 +438,8 @@ const getPackageDetails = (pack_ID: string) => {
             setSearchKey('')
         }
     };
-    useEffect(() => {
-        function handleClickOutside(event: MouseEvent) {
-            if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
-                setShowSuggestions(false);
-            }
-        }
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, []);
+
+
 
     return (
         <>
@@ -740,6 +737,13 @@ const getPackageDetails = (pack_ID: string) => {
                                                 value={values.hsncode}
                                                 onChange={handleChange}
                                                 onBlur={handleBlur}
+                                                error={
+                                                    touched.hsncode &&
+                                                    Boolean(errors.hsncode)
+                                                }
+                                                helperText={
+                                                    touched.hsncode && errors.hsncode
+                                                }
                                             />
                                         </Grid>
 
@@ -762,7 +766,7 @@ const getPackageDetails = (pack_ID: string) => {
 
                                         <Grid item xs={12} sm={6} md={2.4}>
                                             <TextField
-                                                fullWidth 
+                                                fullWidth
                                                 error={touched.locationId && Boolean(errors.locationId)}
                                                 helperText={touched.locationId && errors.locationId}
                                                 name="locationId"
@@ -850,7 +854,7 @@ const getPackageDetails = (pack_ID: string) => {
                                                     )}
                                                 </Select>
                                                 {touched.packagingType && errors.packagingType && (
-                                                    <FormHelperText style={{color:'red'}}>{errors.packagingType}</FormHelperText>
+                                                    <FormHelperText style={{ color: 'red' }}>{errors.packagingType}</FormHelperText>
                                                 )}
                                             </FormControl>
                                         </Grid>
