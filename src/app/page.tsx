@@ -9,10 +9,9 @@ import { useDispatch } from "react-redux";
 import { useGetUomMasterQuery } from "@/api/apiSlice";
 import { useEffect } from "react";
 import { setUnitsofMeasurement } from "@/store/authSlice";
+import { withAuthComponent } from "@/Components/WithAuthComponent";
 
-
-
-export default function Home() {
+const Home = () => {
   const dispatch = useDispatch();
   const { data: uom, error: uomErr } = useGetUomMasterQuery([])
   if (uomErr) {
@@ -40,3 +39,5 @@ export default function Home() {
     </Grid>
   );
 }
+
+export default withAuthComponent(Home)
