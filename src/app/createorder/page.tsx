@@ -66,7 +66,7 @@ const CreateOrder: React.FC = () => {
         const createOrderBody = {
             scenario_label: conformOrderPayload?.message,
             total_cost: conformOrderPayload?.totalCost,
-            allocations: selectedRoutes,
+            allocations: conformOrderPayload?.allocations,
             unallocated_packages: conformOrderPayload?.unallocatedPackages,
             created_at: new Date().toISOString().split("T")[0],
         }
