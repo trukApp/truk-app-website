@@ -321,6 +321,7 @@ const DriverForm: React.FC = () => {
         },
         vehicle_types: values?.vehicleTypes,
         logged_in: values?.loggedIntoApp,
+        driver_availability: values?.driverAvailable === 'Yes' ? 1 : 0
       };
 
       console.log("body: ", body)

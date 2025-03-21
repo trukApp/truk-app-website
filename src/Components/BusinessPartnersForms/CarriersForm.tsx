@@ -136,7 +136,7 @@ const CarrierForm: React.FC = () => {
     const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
         setPaginationModel(newPaginationModel);
     };
-    const vehicleTypeOptions = ['Truck', 'Van', 'Container', 'Trailer'];
+    // const vehicleTypeOptions = ['Truck', 'Van', 'Container', 'Trailer'];
     const handleEdit = (row: CarrierFormFE) => {
         setShowForm(true)
         setIsEditing(true)
@@ -213,9 +213,11 @@ const CarrierForm: React.FC = () => {
         name: Yup.string().required('Name is required'),
         address: Yup.string().required('Address is required'),
         contactPerson: Yup.string().required('Contact Person is required'),
-        contactNumber: Yup.string().required('Contact Number is required'),
+        contactNumber: Yup.string()
+        .matches(/^[0-9]{10}$/, "Contact number must be exactly 10 digits")
+        .required("Contact number is required"),
         emailId: Yup.string().email('Invalid email format').required('Email ID is required'),
-        vehicleTypes: Yup.array().of(Yup.string()).min(1, 'Select at least one vehicle type'),
+        vehicleTypes: Yup.string().required('Vehicle type is required'),
         locationIds: Yup.array().of(Yup.string()).min(1, 'Select at least one location').required('Location is required'),
         laneIds: Yup.array().of(Yup.string()).min(1, 'Select at least one lane').required('Lane IDs are required'),
     });
@@ -451,12 +453,17 @@ const CarrierForm: React.FC = () => {
                                         <TextField
                                             fullWidth size="small"
                                             label="Contact Number"
-                                            name="contactNumber"
+                                            name="contactNumber" type='number'
                                             value={values.contactNumber}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
                                             error={touched.contactNumber && Boolean(errors.contactNumber)}
-                                            helperText={touched.contactNumber && errors.contactNumber}
+                                            helperText={touched.contactNumber && errors.contactNumber} 
+                                                    inputProps={{
+                                                    maxLength: 10,
+                                                    inputMode: "numeric",
+                                                    pattern: "[0-9]*"  
+                                                }}
                                         />
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={4}>
@@ -471,35 +478,40 @@ const CarrierForm: React.FC = () => {
                                             helperText={touched.emailId && errors.emailId}
                                         />
                                     </Grid>
-
                                 </Grid>
 
                                 <h3 className={styles.mainHeading}>Transport Data</h3>
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} sm={6} md={4}>
+                                        <TextField
+                                            fullWidth size="small"
+                                            label="Vehicle Types Handling (Van, Truck...)*"
+                                            name="vehicleTypes"
+                                            value={values.vehicleTypes}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.vehicleTypes && Boolean(errors.vehicleTypes)}
+                                            helperText={touched.vehicleTypes && errors.vehicleTypes}
+                                        />
+                                    </Grid>
+                                    {/* <Grid item xs={12} sm={6} md={4}>
                                         <FormControl fullWidth size="small" error={touched.vehicleTypes && Boolean(errors.vehicleTypes)}>
                                             <InputLabel>Vehicle Types Handling</InputLabel>
                                             <Select
                                                 multiple
-                                                label="Vehicle Types Handling"
+                                                label="Vehicle Types Handling (Van,Truck"
                                                 name="vehicleTypes"
                                                 value={values.vehicleTypes}
                                                 onChange={handleChange}
                                                 onBlur={handleBlur}
-                                                renderValue={(selected) => (selected as string[]).join(', ')}
+                                                // renderValue={(selected) => (selected as string[]).join(', ')}
                                             >
-                                                {vehicleTypeOptions.map((type) => (
-                                                    <MenuItem key={type} value={type}>
-                                                        {type}
-                                                    </MenuItem>
-                                                ))}
                                             </Select>
                                             {touched.vehicleTypes && errors.vehicleTypes && (
                                                 <FormHelperText>{errors.vehicleTypes}</FormHelperText>
                                             )}
                                         </FormControl>
-                                    </Grid>
-
+                                    </Grid> */}
                                     <Grid item xs={12} sm={6} md={4}>
                                         <TextField
                                             fullWidth

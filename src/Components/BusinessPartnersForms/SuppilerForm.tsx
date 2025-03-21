@@ -56,7 +56,7 @@ const initialSupplierValues = {
     locationId: '',
     pincode: '',
     city: '',
-    district: '',
+    state: '',
     country: '',
     contactPerson: '',
     contactNumber: '',
@@ -512,9 +512,6 @@ const SupplierForm: React.FC = () => {
                                             name="pincode" disabled
                                             value={values.pincode}
                                             onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.pincode && Boolean(errors.pincode)}
-                                            helperText={touched.pincode && errors.pincode}
                                         />
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={2.4}>
@@ -525,20 +522,16 @@ const SupplierForm: React.FC = () => {
                                             value={values.city}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
-                                            error={touched.city && Boolean(errors.city)}
-                                            helperText={touched.city && errors.city}
                                         />
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small' disabled
-                                            label="Country"
-                                            name="country"
-                                            value={values.country}
+                                            label="State"
+                                            name="state"
+                                            value={values.state}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
-                                            error={touched.country && Boolean(errors.country)}
-                                            helperText={touched.country && errors.country}
                                         />
                                     </Grid>
                                 </Grid>

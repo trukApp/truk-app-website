@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { TextField, Grid, Button, Collapse, Box, FormControlLabel, Checkbox, Autocomplete, Backdrop, CircularProgress, Tooltip, Paper, List, ListItem } from '@mui/material';
+import { TextField, Grid, Button, Collapse, Box, FormControlLabel, Checkbox, Autocomplete, Backdrop, CircularProgress,  Paper, List, ListItem, Typography } from '@mui/material';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import styles from './BusinessPartners.module.css';
@@ -22,9 +22,6 @@ const customerValidationSchema = Yup.object().shape({
     pincode: Yup.string()
         .matches(/^\d{6}$/, 'Pincode must be 6 digits')
         .required('Pincode is required'),
-    city: Yup.string().required('City is required'),
-    // district: Yup.string().required('District is required'),
-    country: Yup.string().required('Country is required'),
     contactNumber: Yup.string()
         .matches(/^\d{10}$/, 'Contact number must be 10 digits')
         .required('Contact number is required'),
@@ -32,6 +29,7 @@ const customerValidationSchema = Yup.object().shape({
         .email('Invalid email address')
         .required('Email is required'),
     contactPerson: Yup.string().required('Contact person is required'),
+    locationOfSource: Yup.string().required('Location of source is required'),
 });
 interface PartnerFunctions {
     ship_to_party: string;
@@ -132,13 +130,14 @@ const CustomerForm: React.FC = () => {
     const [searchKey, setSearchKey] = useState('');
     const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
     const [showSuggestions, setShowSuggestions] = useState(false);
-    const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
+    // const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
+    const displayLocations = searchKey === "" ?  getAllLocations : filteredLocations?.results || [] ;
 
     const [searchKeyDestination, setSearchKeyDestination] = useState('');
     const [showDestinations, setShowDestinations] = useState(false);
     const { data: destinationFilteredLocations,isLoading: filteredDestinationLoading } = useGetFilteredLocationsQuery(searchKeyDestination.length >= 3 ? searchKeyDestination : null, { skip: searchKeyDestination.length < 3 });
     const displayLocationsDest = searchKeyDestination ? destinationFilteredLocations?.results || [] : getAllLocations;
-
+   console.log("display locations : ", displayLocations)
     const getLocationDetails = (loc_ID: string) => {
         const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
         if (!location) return "Location details not available";
@@ -149,7 +148,6 @@ const CustomerForm: React.FC = () => {
             location.state,
             location.pincode,
             location.country,
-            // location.address_1,
         ].filter(Boolean);
 
         return details.length > 0 ? details.join(", ") : "Location details not available";
@@ -157,17 +155,24 @@ const CustomerForm: React.FC = () => {
     if (getLocationsError) {
         console.log("getLocationsError: ", getLocationsError)
     }
+        useEffect(() => {
+            if (!searchKey) {
+                setShowSuggestions(false);
+    
+            }
+        }, [searchKey]);
     const customersData = data?.partners.length > 0 ? data?.partners : []
     const getCustomerDetails = (customer_id: string) => {
         const customer = customersData.find((customer: Customer) => customer.customer_id === customer_id);
         if (!location) return "Customer details not available";
         const details = [
+            customer.customer_id,
             customer.name,
             customer.location_city,
             customer.location_state,
             customer.location_country,
             customer.location_pincode,
-            customer.customer_id
+            
         ].filter(Boolean);
         return details.length > 0 ? details.join(", ") : "Customer details not available";
     };
@@ -220,9 +225,9 @@ const CustomerForm: React.FC = () => {
         { field: "contact_person", headerName: "Contact Person", width: 200 },
         { field: "contact_number", headerName: "Contact Number", width: 150 },
         { field: "email", headerName: "Email", width: 200 },
-        { field: "bill_to_party", headerName: "Bill To Party", width: 150 },
-        { field: "ship_to_party", headerName: "Ship To Party", width: 150 },
-        { field: "sold_to_party", headerName: "Sold To Party", width: 150 },
+        { field: "bill_to_party", headerName: "Bill To Party", width: 250 },
+        { field: "ship_to_party", headerName: "Ship To Party", width: 250 },
+        { field: "sold_to_party", headerName: "Sold To Party", width: 250 },
         {
             field: 'actions',
             headerName: 'Actions',
@@ -411,11 +416,10 @@ const CustomerForm: React.FC = () => {
                                             />
                                         </Grid>
                                     }
-
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
-                                            label="Name"
+                                            label="Name*"
                                             name="name"
                                             value={values.name}
                                             onChange={handleChange}
@@ -429,7 +433,7 @@ const CustomerForm: React.FC = () => {
                                             fullWidth
                                             name="locationId"
                                             size="small"
-                                            label="Location ID"
+                                            label="Location ID*"
                                             onFocus={() => {
                                                 if (!searchKey) {
                                                     setSearchKey(values.locationId || '');
@@ -464,7 +468,7 @@ const CustomerForm: React.FC = () => {
                                                         zIndex: 10,
                                                         width: "18%",
                                                     }}
-                                                >
+                                                > {displayLocations.length > 0 ? (
                                                     <List>
                                                         {displayLocations.map((location: Location) => (
                                                             <ListItem
@@ -486,6 +490,8 @@ const CustomerForm: React.FC = () => {
                                                                         setFieldValue('country', matchedLocation.country || '');
                                                                         setFieldValue('pincode', matchedLocation.pincode || '');
                                                                     } else {
+                                                                        setFieldValue('address1',  '');
+                                                                        setFieldValue('address2',  '');
                                                                         setFieldValue('city', '');
                                                                         setFieldValue('district', '');
                                                                         setFieldValue('state', '');
@@ -495,15 +501,16 @@ const CustomerForm: React.FC = () => {
                                                                 }}
                                                                 sx={{ cursor: "pointer" }}
                                                             >
-                                                                {/* <Tooltip
-                                                                    title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                                                    placement="right"
-                                                                >
-                                                                </Tooltip> */}
                                                                 <span style={{ fontSize: '13px' }}>{location.loc_ID}, {location?.loc_desc}, {location.city}, {location.state}, {location.pincode}</span>
                                                             </ListItem>
                                                         ))}
-                                                    </List>
+                                                    </List>) : 
+                                                        (
+                                                            <Typography variant="body2" color="textSecondary">
+                                                                No results found
+                                                            </Typography>
+                                                        )
+                                                    }
                                                 </Paper>
                                             )}
                                         </div>
@@ -516,8 +523,6 @@ const CustomerForm: React.FC = () => {
                                             value={values.pincode}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
-                                            error={touched.pincode && Boolean(errors.pincode)}
-                                            helperText={touched.pincode && errors.pincode}
                                         />
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={2.4}>
@@ -528,8 +533,6 @@ const CustomerForm: React.FC = () => {
                                             value={values.city}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
-                                            error={touched.city && Boolean(errors.city)}
-                                            helperText={touched.city && errors.city}
                                         />
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={2.4}>
@@ -540,11 +543,9 @@ const CustomerForm: React.FC = () => {
                                             value={values.state}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
-                                            error={touched.state && Boolean(errors.state)}
-                                            helperText={touched.state && errors.state}
                                         />
                                     </Grid>
-                                    <Grid item xs={12} sm={6} md={2.4}>
+                                    {/* <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
                                             label="Country" disabled
@@ -552,10 +553,8 @@ const CustomerForm: React.FC = () => {
                                             value={values.country}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
-                                            error={touched.country && Boolean(errors.country)}
-                                            helperText={touched.country && errors.country}
                                         />
-                                    </Grid>
+                                    </Grid> */}
                                 </Grid>
 
                                 <h3 className={styles.mainHeading}>Correspondence</h3>
@@ -563,7 +562,7 @@ const CustomerForm: React.FC = () => {
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
-                                            label="Contact Person"
+                                            label="Contact Person*"
                                             name="contactPerson"
                                             value={values.contactPerson}
                                             onChange={handleChange}
@@ -575,11 +574,11 @@ const CustomerForm: React.FC = () => {
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
-                                            label="Contact Number"
+                                            label="Contact Number*"
                                             name="contactNumber"
                                             value={values.contactNumber}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
+                                            onChange={handleChange} type="tel" 
+                                            onBlur={handleBlur} 
                                             error={touched.contactNumber && Boolean(errors.contactNumber)}
                                             helperText={touched.contactNumber && errors.contactNumber}
                                         />
@@ -587,7 +586,7 @@ const CustomerForm: React.FC = () => {
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
-                                            label="Email ID"
+                                            label="Email ID*"
                                             name="emailId"
                                             value={values.emailId}
                                             onChange={handleChange}
@@ -648,16 +647,10 @@ const CustomerForm: React.FC = () => {
                                                                     const selectedDisplay = `${location.loc_ID},${location?.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
                                                                     setSearchKeyDestination(selectedDisplay);
                                                                     setShowDestinations(false)
-                                                                    // setSearchKeyDestination(location.loc_ID);
                                                                     setFieldValue("locationOfSource", location.loc_ID);
                                                                 }}
                                                                 sx={{ cursor: "pointer" }}
                                                             >
-                                                                {/* <Tooltip
-                                                                    title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                                                    placement="right"
-                                                                >
-                                                                </Tooltip> */}
                                                                 <span style={{ fontSize: '13px' }}>{location.loc_ID},{location?.loc_desc}, {location.city}, {location.state}, {location.pincode}</span>
                                                             </ListItem>
                                                         ))}
@@ -685,11 +678,11 @@ const CustomerForm: React.FC = () => {
                                         <Grid item xs={12} sm={6} md={2.4} key={field}>
                                             <Autocomplete
                                                 options={customersData}
-                                                getOptionLabel={(option) => `${option.customer_id}`}
+                                                getOptionLabel={(option) => `${option.customer_id} - ${option.name}`}
                                                 renderOption={(props, option) => (
-                                                    <Tooltip placement='right' title={`${option.name}, ${option.location_city}, ${option.location_state}, ${option.location_country}, ${option.location_pincode}`} arrow>
-                                                        <li {...props}>{option.customer_id}</li>
-                                                    </Tooltip>
+                                                    <li {...props}>
+                                                        {option.customer_id} - {option.name}, {option.location_city}, {option.location_state}, {option.location_country}, {option.location_pincode}
+                                                    </li>
                                                 )}
                                                 renderInput={(params) => (
                                                     <TextField
@@ -706,11 +699,14 @@ const CustomerForm: React.FC = () => {
                                                 onChange={(event, newValue) => {
                                                     setFieldValue(field, newValue ? newValue.customer_id : '');
                                                 }}
-                                                isOptionEqualToValue={(option, value) => option.customer_id === value}
+
+                                                // 🛠 Modified: Fix value comparison to avoid type errors
+                                                isOptionEqualToValue={(option, value) => option.customer_id === value?.customer_id}
                                             />
                                         </Grid>
                                     ))}
                                 </Grid>
+
                                 <Box marginTop={3} textAlign="center">
                                     <Button
                                         type="submit"
