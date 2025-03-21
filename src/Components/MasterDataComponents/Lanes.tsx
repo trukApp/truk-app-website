@@ -108,21 +108,19 @@ const TransportationLanes = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showDestinations, setShowDestinations] = useState(false);
   const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
-  const { data: destinationFilteredLocations } = useGetFilteredLocationsQuery(searchKeyDestination.length >= 3 ? searchKeyDestination : null, { skip: searchKeyDestination.length < 3 });
+  const { data: destinationFilteredLocations, isLoading: filteredDestinationLoading } = useGetFilteredLocationsQuery(searchKeyDestination.length >= 3 ? searchKeyDestination : null, { skip: searchKeyDestination.length < 3 });
   const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
   const displayLocationsDest = searchKeyDestination ? destinationFilteredLocations?.results || [] : getAllLocations;
   const getLocationDetails = (loc_ID: string) => {
     const location = getAllLocations.find((loc: Location) => loc?.loc_ID === loc_ID);
     if (!location) return "Location details not available";
     const details = [
-      location.address_1,
+      location.loc_ID,
+      location.loc_desc,
       location.city,
       location.state,
-      location.country,
       location.pincode,
-      location.loc_ID
     ].filter(Boolean);
-
     return details.length > 0 ? details.join(", ") : "Location details not available";
   };
   if (error) {
@@ -260,7 +258,6 @@ const TransportationLanes = () => {
     }
   };
 
-
   const formik = useFormik({
     initialValues: {
       // General Data
@@ -306,10 +303,10 @@ const TransportationLanes = () => {
 
   useEffect(() => {
     if (editRow) {
-      const sourceLocId = editRow?.sourceLocationId ? editRow.sourceLocationId.split(", ").at(-1) ?? "" : "";
-       const destiLocId = editRow?.destinationLocationId ? editRow.destinationLocationId.split(", ").at(-1) ?? "" : "";
-      setSearchKey(sourceLocId || '')
-      setSearchKeyDestination(destiLocId|| '')
+      const sourceLocId = editRow?.sourceLocationId ? editRow.sourceLocationId.split(", ")[0] ?? "" : "";
+      const destiLocId = editRow?.destinationLocationId ? editRow.destinationLocationId.split(", ")[0] ?? "" : "";
+      setSearchKey(editRow?.sourceLocationId || '')
+      setSearchKeyDestination(editRow?.destinationLocationId || '')
       const editDistance = editRow.transportDistance.split(" ")
       const editDuration = editRow?.transportDuration.split(" ")
       const editCost = editRow.transportCost.split(" ");
@@ -343,7 +340,7 @@ const TransportationLanes = () => {
   const rows = data?.lanes.map((lane: Lane) => ({
     id: lane?.ln_id,
     laneId: lane?.lane_ID,
-    sourceLocationId : getLocationDetails(lane?.src_loc_ID),
+    sourceLocationId: getLocationDetails(lane?.src_loc_ID),
     destinationLocationId: getLocationDetails(lane?.des_loc_ID),
     vehicleType: lane.lane_transport_data?.vehcle_type || "Unknown",
     transportStartDate: lane?.lane_transport_data?.start_time || "N/A",
@@ -357,11 +354,10 @@ const TransportationLanes = () => {
       : "N/A",
   }));
 
-
   const columns: GridColDef[] = [
     { field: "laneId", headerName: "Lane ID", width: 150 },
-    {field: "sourceLocationId",headerName: "Source Location ID",width: 250},
-    {field: "destinationLocationId",headerName: "Destination Location",width: 250},
+    { field: "sourceLocationId", headerName: "Source Location ID", width: 250 },
+    { field: "destinationLocationId", headerName: "Destination Location", width: 250 },
     { field: "vehicleType", headerName: "Vehicle Type", width: 150 },
     { field: "transportStartDate", headerName: "Transport Start Date", width: 180 },
     { field: "transportEndDate", headerName: "Transport End Date", width: 180 },
@@ -476,7 +472,7 @@ const TransportationLanes = () => {
                     }}
                   />
                   <div ref={wrapperRef} >
-                    {showSuggestions && displayLocations?.length > 0 && (
+                    {/* {showSuggestions && displayLocations?.length > 0 && (
                       <Paper
                         style={{
                           maxHeight: 200,
@@ -493,7 +489,8 @@ const TransportationLanes = () => {
                               component="li"
                               onClick={() => {
                                 setShowSuggestions(false)
-                                setSearchKey(location.loc_ID);
+                                const selectedDisplay = `${location.loc_ID},${location?.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
+                                setSearchKey(selectedDisplay);
                                 formik.setFieldValue("sourceLocationId", location.loc_ID);
                               }}
                               sx={{ cursor: "pointer" }}
@@ -508,7 +505,50 @@ const TransportationLanes = () => {
                           ))}
                         </List>
                       </Paper>
+                    )} */}
+                    {showSuggestions && (
+                      <Paper
+                        style={{
+                          maxHeight: 200,
+                          overflowY: "auto",
+                          position: "absolute",
+                          zIndex: 10,
+                          width: "18%",
+                        }}
+                      >
+                        {displayLocations?.length > 0 ? (
+                          <List>
+                            {displayLocations.map((location: Location) => (
+                              <ListItem
+                                key={location.loc_ID}
+                                component="li"
+                                onClick={() => {
+                                  setShowSuggestions(false);
+                                  const selectedDisplay = `${location.loc_ID},${location?.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
+                                  setSearchKey(selectedDisplay);
+                                  formik.setFieldValue("sourceLocationId", location.loc_ID);
+                                }}
+                                sx={{ cursor: "pointer" }}
+                              >
+                                <Tooltip
+                                  title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                  placement="right"
+                                >
+                                  <span style={{ fontSize: '13px' }}>
+                                    {location.loc_ID}, {location.city}, {location.state}, {location.pincode}
+                                  </span>
+                                </Tooltip>
+                              </ListItem>
+                            ))}
+                          </List>
+                        ) : (
+                          <div style={{ padding: "10px", fontSize: "13px", color: "#777", textAlign: "center" }}>
+                            No results found
+                          </div>
+                        )}
+                      </Paper>
                     )}
+
                   </div>
                 </Grid>
                 <Grid item xs={12} sm={6} md={2.4}>
@@ -536,7 +576,7 @@ const TransportationLanes = () => {
                         : ""
                     }
                     InputProps={{
-                      endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
+                      endAdornment: filteredDestinationLoading ? <CircularProgress size={20} /> : null,
                     }}
                   />
                   <div ref={wrapperRefDest} >
@@ -557,7 +597,8 @@ const TransportationLanes = () => {
                               component="li"
                               onClick={() => {
                                 setShowDestinations(false)
-                                setSearchKeyDestination(location.loc_ID);
+                                const selectedDisplay = `${location.loc_ID},${location?.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
+                                setSearchKeyDestination(selectedDisplay)
                                 formik.setFieldValue("destinationLocationId", location.loc_ID);
                               }}
                               sx={{ cursor: "pointer" }}

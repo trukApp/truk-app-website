@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Box, Button, Collapse, Grid, TextField, FormControlLabel, Checkbox, MenuItem, Backdrop, CircularProgress, Tooltip, Paper, List, ListItem } from '@mui/material';
+import { Box, Button, Collapse, Grid, TextField, FormControlLabel, Checkbox, MenuItem, Backdrop, CircularProgress, Paper, List, ListItem } from '@mui/material';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import styles from './BusinessPartners.module.css';
@@ -31,6 +31,7 @@ interface DriverFormValues {
   emailID: string;
   vehicleTypes: string[];
   loggedIntoApp: boolean;
+  driverAvailable: string;
 }
 
 export interface Driver {
@@ -69,7 +70,8 @@ export interface Driver {
   locationState: string;
   locationCity: string;
   locationCountry: string;
-  driver_availability: number
+  driver_availability: string;
+  driverAvailable: string
 }
 
 const DriverForm: React.FC = () => {
@@ -91,6 +93,7 @@ const DriverForm: React.FC = () => {
     state: '',
     city: '',
     country: '',
+    driverAvailable: 'Yes'
   };
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10, });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -117,14 +120,13 @@ const DriverForm: React.FC = () => {
     const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
     if (!location) return "Location details not available";
     const details = [
-      location.address_1,
+      location.loc_ID,
+      location?.loc_dec,
       location.city,
       location.state,
-      location.country,
       location.pincode,
-      location.loc_ID
+      location.country,
     ].filter(Boolean);
-
     return details.length > 0 ? details.join(", ") : "Location details not available";
   };
 
@@ -141,20 +143,19 @@ const DriverForm: React.FC = () => {
     expiryDate: Yup.string().required('Expiry Date is required'),
     driverContactNumber: Yup.string().required('Contact Number is required').matches(/^\d{10}$/, 'Contact Number must be exactly 10 digits'),
     emailID: Yup.string().email('Invalid email format').required('Email ID is required'),
+    driverAvailable: Yup.string().required('Driver availablity is required'),
   });
-
-
   const mapRowToInitialValues = (rowData: Driver) => {
+    console.log("rowData: ", rowData)
     const locationString = Array.isArray(rowData.locations)
       ? rowData.locations[0]
       : rowData.locations;
 
-    const locId = locationString?.split(",").at(-1)?.trim() ?? "";
-    setSearchKey(locId)
+    const locId = locationString?.split(",").at(0)?.trim() ?? "";
+    setSearchKey(locationString)
+    // setSearchKey(rowData.locations[0] || '');
 
     const matchedLocation = getAllLocations.find((loc: Location) => loc.loc_ID === locId);
-
-
     return {
       driverId: rowData?.driverID || '',
       driverName: rowData?.driverName || '',
@@ -171,6 +172,7 @@ const DriverForm: React.FC = () => {
       state: matchedLocation?.state || '',
       country: matchedLocation?.country || '',
       pincode: matchedLocation?.pincode || '',
+      driverAvailable: Number(rowData?.driverAvailable) === 1 ? 'Yes' : "No"
     };
   };
   useEffect(() => {
@@ -184,6 +186,8 @@ const DriverForm: React.FC = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  console.log("formInitialValues: ", formInitialValues)
 
   const handleEdit = async (rowData: Driver) => {
     console.log("edit: ", rowData)
@@ -246,6 +250,7 @@ const DriverForm: React.FC = () => {
     { field: 'driverContactNumber', headerName: 'Contact Number', width: 150 },
     { field: 'emailID', headerName: 'Email ID', width: 200 },
     { field: 'vehicleTypes', headerName: 'Vehicle Types', width: 200 },
+    { field: 'driverAvailable', headerName: 'Driver Avilable', width: 200 },
 
     {
       field: 'actions',
@@ -278,9 +283,11 @@ const DriverForm: React.FC = () => {
     vehicleTypes: driver?.vehicle_types,
     loggedIntoApp: driver?.logged_in,
     address: driver?.address,
+    driverAvailable: driver?.driver_availability
   })) || [];
 
   const handleDriverSubmit: (values: DriverFormValues) => Promise<void> = async (values) => {
+    console.log(values)
     try {
       const body = {
         drivers: [
@@ -296,6 +303,7 @@ const DriverForm: React.FC = () => {
             },
             vehicle_types: values?.vehicleTypes,
             logged_in: values?.loggedIntoApp,
+            driver_availability: values?.driverAvailable === 'Yes' ? 1 : 0,
           },
         ],
       };
@@ -313,7 +321,10 @@ const DriverForm: React.FC = () => {
         },
         vehicle_types: values?.vehicleTypes,
         logged_in: values?.loggedIntoApp,
+        driver_availability: values?.driverAvailable === 'Yes' ? 1 : 0
       };
+
+      console.log("body: ", body)
       if (updateRecord) {
         const response = await editDriverDetails({ body: editBody, driverId: updateRecordId }).unwrap();
         if (response?.updated_record) {
@@ -415,40 +426,6 @@ const DriverForm: React.FC = () => {
                       helperText={touched.driverName && errors.driverName}
                     />
                   </Grid>
-                  {/* <Grid item xs={12} sm={6} md={2.4}>
-                    <FormControl fullWidth size="small" error={touched.locations && Boolean(errors.locations)}>
-                      <InputLabel>Location ID</InputLabel>
-                      <Select
-                        label="Location ID"
-                        name="locations"
-                        value={values.locations[0] || ''}
-                        onChange={(event) => handleLocationChange(event, setFieldValue)}
-                        onBlur={handleBlur}
-                      >
-                        {isLocationLoading ? (
-                          <MenuItem disabled>
-                            <CircularProgress size={20} color="inherit" />
-                            <span style={{ marginLeft: "10px" }}>Loading...</span>
-                          </MenuItem>
-                        ) : (
-                          getAllLocations?.map((location: Location) => (
-                            <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                              <Tooltip
-                                title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                placement="right"
-                              >
-                                <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                              </Tooltip>
-                            </MenuItem>
-                          ))
-                        )}
-                      </Select>
-                      {touched.locations && errors.locations && (
-                        <FormHelperText>{errors.locations}</FormHelperText>
-                      )}
-                    </FormControl>
-
-                  </Grid> */}
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth
@@ -497,13 +474,13 @@ const DriverForm: React.FC = () => {
                                 component="li"
                                 onClick={() => {
                                   setShowSuggestions(false)
-                                  setSearchKey(location.loc_ID);
-                                  // handleLocationChange(location.loc_ID, setFieldValue);
+                                  const selectedDisplay = `${location.loc_ID},${location?.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
+                                  setSearchKey(selectedDisplay);
+                                  // setSearchKey(location.loc_ID);
                                   setFieldValue("locations", location.loc_ID)
                                   const matchedLocation = getAllLocations.find((loc: Location) => loc.loc_ID === location.loc_ID);
 
                                   if (matchedLocation) {
-                                    // Set corresponding fields from the matched location
                                     setFieldValue('address1', matchedLocation.address_1 || '');
                                     setFieldValue('address2', matchedLocation.address_2 || '');
                                     setFieldValue('city', matchedLocation.city || '');
@@ -521,12 +498,7 @@ const DriverForm: React.FC = () => {
                                 }}
                                 sx={{ cursor: "pointer" }}
                               >
-                                <Tooltip
-                                  title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                  placement="right"
-                                >
-                                  <span style={{ fontSize: '14px' }}>{location.loc_ID}, {location.city}, {location.state}, {location.pincode}</span>
-                                </Tooltip>
+                                <span style={{ fontSize: '14px' }}>{location.loc_ID}, {location?.loc_desc} {location.city}, {location.state}, {location.pincode}</span>
                               </ListItem>
                             ))}
                           </List>
@@ -693,6 +665,27 @@ const DriverForm: React.FC = () => {
                       ))}
                     </TextField>
                   </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      select
+                      fullWidth
+                      size="small"
+                      label="Driver Available"
+                      name="driverAvailable"
+                      value={values.driverAvailable}
+                      onChange={(e) => setFieldValue('driverAvailable', e.target.value)}
+                      onBlur={handleBlur}
+                      error={touched.driverAvailable && Boolean(errors.driverAvailable)}
+                      helperText={touched.driverAvailable && errors.driverAvailable}
+                    >
+                      {['Yes', 'No'].map((option) => (
+                        <MenuItem key={option} value={option}>
+                          {option}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+
                   <Grid item xs={12}>
                     <FormControlLabel
                       control={

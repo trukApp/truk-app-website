@@ -50,6 +50,7 @@ export const apiSlice = createApi({
     "Orders",
     "AssignedOrders",
     "SingleVehicleMaster",
+    "DataCount"
   ],
   endpoints: (builder) => ({
     userLogin: builder.mutation<User, { phone: string; password: string }>({
@@ -175,7 +176,7 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "CARRIER", id: "LIST" }],
+      invalidatesTags: [{ type: "CARRIER", id: "LIST" }, { type: "DataCount", id: "LIST" }],
     }),
 
     editCarrierMaster: builder.mutation({
@@ -505,7 +506,7 @@ export const apiSlice = createApi({
         url: `data/count-data`,
         method: "GET",
       }),
-      // providesTags: [{ type: "ProductMaster", id: "LIST" }],
+      providesTags: [{ type: "DataCount", id: "LIST" }],
     }),
 
     //Packages API'S

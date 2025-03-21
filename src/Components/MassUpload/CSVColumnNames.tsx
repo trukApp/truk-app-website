@@ -15,7 +15,6 @@ export const locationColumnNames = [
   { displayName: 'Contact person name*', key: 'contact_name' },
   { displayName: 'Contact phone number*', key: 'contact_phone_number' },
   { displayName: 'Contact email*', key: 'contact_email' },
-
 ];
 
 export const vehicleColumnNames = [
@@ -46,6 +45,10 @@ export const vehicleColumnNames = [
   { displayName: 'Downtime Description*', key: 'downtime_desc', nestedKey: 'downtimes' },
   { displayName: 'Downtime Reason*', key: 'reason', nestedKey: 'downtimes' },
   { displayName: 'Cost Per Ton (Rs.)*', key: 'cost_per_ton', nestedKey: 'additional_details' },
+  { displayName: 'Is Fragile vehicle (if Yes type 1 else 0)', key: 'fragile_vehicle' },
+  { displayName: 'Is Danger proof vehicle (if Yes type 1 else 0)*', key: 'danger_proof' },
+  { displayName: 'Is Hazardous proof vehicle (if Yes type 1 else 0)*', key: 'hazardous_proof' },
+  { displayName: 'Is temperature controlled vehilce (if Yes type 1 else 0)*', key: 'temp_controlled_vehicle' },
 ];
 
 export const laneColumnNames = [
@@ -56,7 +59,7 @@ export const laneColumnNames = [
   { displayName: 'Transport End Date*', key: 'end_time', nestedKey: 'lane_transport_data' },
   { displayName: 'Transport Distance*', key: 'transport_distance', nestedKey: 'lane_transport_data' },
   { displayName: 'Transport Duration*', key: 'transport_duration', nestedKey: 'lane_transport_data' },
-  { displayName: 'Transport Cost*', key: 'transport_cost', nestedKey: 'lane_transport_data' },
+  { displayName: 'Transport Cost(Rs.)*', key: 'transport_cost', nestedKey: 'lane_transport_data' },
 ];
 
 export const deviceColumnNames = [
@@ -118,13 +121,13 @@ export const vendorColumnNames  = [
 export const driversColumnNames= [
   { displayName: 'Location ID*', key: 'locations' },
   { displayName: 'Driver Name*', key: 'driver_name' },
-
   {displayName: 'Driving License*', key: 'driving_license',nestedKey: 'driver_correspondence',},
   {displayName: 'Expiry Date*',key: 'expiry_date',nestedKey: 'driver_correspondence',},
   { displayName: 'Driver Contact Number (10 digits)*',key: 'phone',nestedKey: 'driver_correspondence',},
   {displayName: 'Email ID (Valid email)*',key: 'email',nestedKey: 'driver_correspondence',},
   { displayName: 'Vehicle Types*', key: 'vehicle_types' },
   { displayName: 'Is Logged in (if Yes type 1 else 0)', key: 'logged_in' },
+  { displayName: 'Driver availability (if Yes type 1 else 0)*', key: 'driver_availability' },
 ];
 
 export const productColumnNames = [
