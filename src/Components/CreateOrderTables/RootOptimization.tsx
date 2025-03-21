@@ -49,7 +49,7 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
     const [returnRoute, setReturnRoute] = useState<google.maps.DirectionsResult | null>(null);
     const [selectedStop, setSelectedStop] = useState<string | null>(null);
     const [matchedRoute, setMatchedRoute] = useState<Route | null>(null);
-    const [selectedRoutesData, setSelectedRoutesData] = useState<{ vehicle_ID: string; selectedRoutes: Route[] }[]>([]);
+    // const [selectedRoutesData, setSelectedRoutesData] = useState<{ vehicle_ID: string; selectedRoutes: Route[] }[]>([]);
 
     const fetchDirections = useCallback(async () => {
         if (!isLoaded || typeof google === 'undefined' || !google.maps) return;
@@ -67,6 +67,7 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
                             origin: { lat: route?.start?.latitude, lng: route?.start?.longitude },
                             destination: { lat: route?.end?.latitude, lng: route?.end?.longitude },
                             travelMode: google.maps.TravelMode.DRIVING,
+                            provideRouteAlternatives: true,
                         },
                         (result, status) => {
                             if (status === google.maps.DirectionsStatus.OK && result) {
@@ -123,6 +124,53 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
         }
     };
 
+    const fetchAlternateRoutes = useCallback(async (matchedRoute: Route) => {
+        if (!isLoaded || typeof google === 'undefined' || !google.maps) return;
+
+        const directionsService = new google.maps.DirectionsService();
+
+        try {
+            const response = await new Promise<google.maps.DirectionsResult | null>((resolve) => {
+                directionsService.route(
+                    {
+                        origin: { lat: matchedRoute.start.latitude, lng: matchedRoute.start.longitude },
+                        destination: { lat: matchedRoute.end.latitude, lng: matchedRoute.end.longitude },
+                        travelMode: google.maps.TravelMode.DRIVING,
+                        provideRouteAlternatives: true,
+                    },
+                    (result, status) => {
+                        if (status === google.maps.DirectionsStatus.OK && result) {
+                            resolve(result);
+                        } else {
+                            console.warn('Failed to fetch alternate routes:', status);
+                            resolve(null);
+                        }
+                    }
+                );
+            });
+
+            if (response && response.routes) {
+                const wrappedResults = response.routes.map((route) => ({
+                    routes: [route],
+                    request: response.request,
+                } as google.maps.DirectionsResult));
+                console.log('wrappedResults:', wrappedResults)
+                // setDirectionsResults(wrappedResults);
+            }
+            if (response && response.routes) {
+                response.routes.forEach((route, index) => {
+                    const distance = route.legs[0]?.distance?.text || 'N/A';
+                    const duration = route.legs[0]?.duration?.text || 'N/A';
+                    console.log(`Route ${index + 1}: Distance - ${distance}, Duration - ${duration}`);
+                });
+            }
+
+        } catch (error) {
+            console.log('Error fetching alternate routes:', error);
+        }
+    }, [isLoaded]);
+
+
     const clearReturnRoute = () => {
         setReturnRoute(null);
         setShowReturnRoute(false);
@@ -133,7 +181,7 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
     }, [fetchDirections]);
 
     const selectedVehicleData = rootOptimization?.find(vehicle => vehicle?.vehicle_ID === selectedVehicle);
-
+    // console.log('selectedVehicleData', selectedVehicleData);
     const handleStopClick = (location: string) => {
         if (!selectedVehicleData || !selectedVehicleData.route || !selectedVehicleData.route.length) {
             console.warn('No selected vehicle data or invalid route.');
@@ -152,27 +200,28 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
             );
             setMatchedRoute(matchedRoute || null);
             if (matchedRoute) {
-                setSelectedRoutesData((prev) => {
-                    const existingVehicle = prev.find((item) => item.vehicle_ID === selectedVehicle);
+                fetchAlternateRoutes(matchedRoute);
+                // setSelectedRoutesData((prev) => {
+                //     const existingVehicle = prev.find((item) => item.vehicle_ID === selectedVehicle);
 
-                    if (existingVehicle) {
-                        const updatedRoutes = [...existingVehicle.selectedRoutes, matchedRoute];
-                        return prev.map((item) =>
-                            item.vehicle_ID === selectedVehicle
-                                ? { ...item, selectedRoutes: updatedRoutes }
-                                : item
-                        );
-                    } else {
-                        return [...prev, { vehicle_ID: selectedVehicle, selectedRoutes: [matchedRoute] }];
-                    }
-                });
+                //     if (existingVehicle) {
+                //         const updatedRoutes = [...existingVehicle.selectedRoutes, matchedRoute];
+                //         return prev.map((item) =>
+                //             item.vehicle_ID === selectedVehicle
+                //                 ? { ...item, selectedRoutes: updatedRoutes }
+                //                 : item
+                //         );
+                //     } else {
+                //         return [...prev, { vehicle_ID: selectedVehicle, selectedRoutes: [matchedRoute] }];
+                //     }
+                // });
             }
         }
     };
 
     // console.log('matchedRoute:', matchedRoute);
     // console.log('returnRoute:', returnRoute)
-    console.log('Selected Routes Data:', selectedRoutesData);
+    // console.log('Selected Routes Data:', selectedRoutesData);
 
     if (loadError) {
         return <p>Error loading maps: {loadError.message}</p>;
