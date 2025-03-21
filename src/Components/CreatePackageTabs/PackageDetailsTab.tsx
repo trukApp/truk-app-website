@@ -55,10 +55,13 @@ const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
     packageDetails: Yup.array().of(
       Yup.object().shape({
         productId: Yup.string().required("Required"),
-        productName: Yup.string().required("Required"),
-        dimensions: Yup.string().required("Required"),
-        quantity: Yup.string().required("Required"),
-        weight: Yup.string().required("Required"),
+        // productName: Yup.string().required("Required"),
+        // dimensions: Yup.string().required("Required"),
+        quantity: Yup.number()
+          .min(1, "Quantity must be at least 1")
+          .max(9999, "Quantity cannot exceed 99999")
+          .required("Quantity is required"),
+        // weight: Yup.string().required("Required"),
       })
     ),
   });
@@ -203,13 +206,25 @@ const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
                                 {...field}
                                 disabled={fieldName !== "rfid" && fieldName !== "quantity"}
                                 label={
-                                  fieldName.replace(/([A-Z])/g, " $1").replace(/^./, str => str.toUpperCase()) + " *"
+                                  fieldName.replace(/([A-Z])/g, " $1").replace(/^./, str => str.toUpperCase())
                                 }
                                 fullWidth
                                 size="small"
                                 type={fieldName === "quantity" ? "number" : "text"}
                                 error={meta.touched && Boolean(meta.error)}
                                 helperText={meta.touched && meta.error}
+                                      inputProps={
+                        fieldName === "quantity"
+                          ? {
+                              min: 1,
+                              onKeyDown: (e) => {
+                                if (e.key === "-" || e.key === "e") {
+                                  e.preventDefault();
+                                }
+                              },
+                            }
+                          : {}
+                      }
                               />
                             )}
                           </Field>

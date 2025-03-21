@@ -23,8 +23,9 @@ const customerValidationSchema = Yup.object().shape({
         .matches(/^\d{6}$/, 'Pincode must be 6 digits')
         .required('Pincode is required'),
     contactNumber: Yup.string()
-        .matches(/^\d{10}$/, 'Contact number must be 10 digits')
-        .required('Contact number is required'),
+    .matches(/^\d{10}$/, 'Contact number must be exactly 10 digits')
+    .max(10, 'Contact number cannot exceed 10 digits')
+    .required('Contact number is required'),
     emailId: Yup.string()
         .email('Invalid email address')
         .required('Email is required'),
@@ -577,7 +578,7 @@ const CustomerForm: React.FC = () => {
                                             label="Contact Number*"
                                             name="contactNumber"
                                             value={values.contactNumber}
-                                            onChange={handleChange} type="tel" 
+                                            onChange={handleChange} type="number" 
                                             onBlur={handleBlur} 
                                             error={touched.contactNumber && Boolean(errors.contactNumber)}
                                             helperText={touched.contactNumber && errors.contactNumber}

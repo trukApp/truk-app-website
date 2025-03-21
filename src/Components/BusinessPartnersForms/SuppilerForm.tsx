@@ -270,7 +270,10 @@ const SupplierForm: React.FC = () => {
         city: Yup.string().required('City is required'),
         country: Yup.string().required('Country is required'),
         contactPerson: Yup.string().required('Contact Person is required'),
-        contactNumber: Yup.string().required('Contact Number is required'),
+       contactNumber: Yup.string()
+            .matches(/^\d{10}$/, 'Contact number must be exactly 10 digits')
+            .max(10, 'Contact number cannot exceed 10 digits')
+            .required('Contact number is required'),
         emailId: Yup.string().email('Invalid email format').required('Email ID is required'),
         locationOfSource: Yup.string().required('Location of source is required'),
         orderingAddress: Yup.string().required('Ordering address is required'),
@@ -554,7 +557,7 @@ const SupplierForm: React.FC = () => {
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
-                                            label="Contact Number"
+                                            label="Contact Number" type="number"
                                             name="contactNumber"
                                             value={values.contactNumber}
                                             onChange={handleChange}

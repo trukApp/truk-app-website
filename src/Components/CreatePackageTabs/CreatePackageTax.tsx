@@ -128,10 +128,8 @@ const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
                                 <Field
                                     as={TextField}
                                     name="taxInfo.taxRate"
-                                    label="Tax rate"
+                                    label="Tax rate" type='number'
                                     fullWidth size='small'
-                                    error={touched.taxInfo?.taxRate && Boolean(errors.taxInfo?.taxRate)}
-                                    helperText={touched.taxInfo?.taxRate && errors.taxInfo?.taxRate}
                                 />
                             </Grid>
 
