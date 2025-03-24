@@ -19,7 +19,7 @@ const LayoutClientWrapper = ({ children }: { children: React.ReactNode }) => {
                     <Header />
                     <Grid
                         sx={{
-                            marginTop: { xs: "20px", md: "33px" },
+                            marginTop: { xs: "20px", md: "60px", },
                             padding: "15px",
                             backgroundColor: "#FAF1F8",
                             minHeight: "70vh",
