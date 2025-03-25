@@ -5,6 +5,7 @@ import { GridColDef, DataGrid, GridRenderCellParams } from '@mui/x-data-grid';
 import { Box, Typography, IconButton } from '@mui/material';
 import { Visibility } from '@mui/icons-material';
 import { useGetAllOrdersQuery } from '@/api/apiSlice';
+import moment from 'moment';
 
 interface Route {
   start: { address: string; latitude: number; longitude: number };
@@ -59,7 +60,6 @@ const OrdersGrid: React.FC = () => {
     { field: 'total_cost', headerName: 'Total Cost', width: 150 },
     { field: 'unallocated_packages', headerName: 'Unallocated Packages', width: 250 },
     { field: 'created_at', headerName: 'Created At', width: 200 },
-    { field: 'updated_at', headerName: 'Updated At', width: 200 },
     {
       field: 'view',
       headerName: 'View',
@@ -81,12 +81,13 @@ const OrdersGrid: React.FC = () => {
       <DataGrid
         rows={ordersData.map((order: Order) => ({
           id: order.ord_id,
-          order_ID: order.order_ID,
-          scenario_label: order.scenario_label,
-          total_cost: order.total_cost,
-          unallocated_packages: order.unallocated_packages?.join(', ') || 'None',
-          created_at: new Date(order.created_at).toLocaleString(),
-          updated_at: new Date(order.updated_at).toLocaleString(),
+          order_ID: order?.order_ID,
+          scenario_label: order?.scenario_label,
+          total_cost: order?.total_cost,
+          unallocated_packages: order?.unallocated_packages?.join(', ') || 'None',
+          created_at: moment(new Date(order?.created_at).toLocaleString()).format("DD MMM YYYY, hh:mm A"),
+
+       
         }))}
         columns={ordersColumns}
         autoHeight
