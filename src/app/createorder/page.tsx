@@ -14,7 +14,6 @@ import SnackbarAlert from '@/Components/ReusableComponents/SnackbarAlerts';
 import { CustomButtonFilled, CustomButtonOutlined } from '@/Components/ReusableComponents/ButtonsComponent';
 import { setSelectedPackages, setSelectedTrucks } from '@/store/authSlice';
 import { useMediaQuery, useTheme } from '@mui/material';
-// import { useSelector } from 'react-redux';
 
 interface ConfirmPayload {
     message?: string;

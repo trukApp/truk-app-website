@@ -181,6 +181,9 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
     const handleTrack = (vehicle_ID: string) => {
         router.push(`/liveTracking?vehicle_ID=${vehicle_ID}`);
     };
+    const handleRouteReply = (vehicle_ID: string) => {
+        router.push(`/liveTracking/autoreply?vehicle_ID=${vehicle_ID}`);
+    };
     const handleAssign = (allocation: Allocation) => {
         setSelectedAllocation(allocation);
         setAssignModal(true)
@@ -682,13 +685,21 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                                 {assignedOrder?.data[0]?.allocated_vehicles?.some(
                                     (vehicle: string) => vehicle === allocation.vehicle_ID
                                 ) && (
-                                        <Button
-                                            variant="contained"
-                                            color="primary"
-                                            onClick={() => handleTrack(allocation.vehicle_ID)}
-                                        >
-                                            View Track
-                                        </Button>
+                                        <>
+                                            <Button
+                                                variant="contained"
+                                                color="primary"
+                                                onClick={() => handleTrack(allocation.vehicle_ID)}
+                                            >
+                                                View Track
+                                            </Button><Button
+                                                variant="contained"
+                                                color="primary"
+                                                onClick={() => handleRouteReply(allocation.vehicle_ID)}
+                                            >
+                                                Rotereply
+                                            </Button>
+                                        </>
                                     )}
 
                             </Box>
