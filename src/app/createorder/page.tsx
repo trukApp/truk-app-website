@@ -5,7 +5,7 @@ import PackagesTable from '@/Components/CreateOrderTables/PackagesTable';
 import TrucksTable, { Truck } from '@/Components/CreateOrderTables/TrucksTable';
 import RootOptimization, { RootOptimizationType } from '@/Components/CreateOrderTables/RootOptimization';
 import LoadOptimization from '@/Components/CreateOrderTables/LoadOptimization';
-import { RootState, useAppDispatch, useAppSelector } from '@/store';
+import { useAppDispatch, useAppSelector } from '@/store';
 import styles from './createorder.module.css';
 import { withAuthComponent } from '@/Components/WithAuthComponent';
 import { useGetAllPackagesForOrderQuery, useSelectTheProductsMutation, useConfomOrderMutation } from '@/api/apiSlice';
@@ -14,7 +14,6 @@ import SnackbarAlert from '@/Components/ReusableComponents/SnackbarAlerts';
 import { CustomButtonFilled, CustomButtonOutlined } from '@/Components/ReusableComponents/ButtonsComponent';
 import { setSelectedPackages, setSelectedTrucks } from '@/store/authSlice';
 import { useMediaQuery, useTheme } from '@mui/material';
-import { useSelector } from 'react-redux';
 
 interface ConfirmPayload {
     message?: string;
@@ -27,7 +26,7 @@ const CreateOrder: React.FC = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const dispatch = useAppDispatch();
-    const selectedRoutes = useSelector((state: RootState) => state.auth.selectedRoutes);
+    // const selectedRoutes = useSelector((state: RootState) => state.auth.selectedRoutes);
     // console.log('selectedRoutes create order pagetsx: ', selectedRoutes);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -66,7 +65,7 @@ const CreateOrder: React.FC = () => {
         const createOrderBody = {
             scenario_label: conformOrderPayload?.message,
             total_cost: conformOrderPayload?.totalCost,
-            allocations: selectedRoutes,
+            allocations: conformOrderPayload?.allocations,
             unallocated_packages: conformOrderPayload?.unallocatedPackages,
             created_at: new Date().toISOString().split("T")[0],
         }
