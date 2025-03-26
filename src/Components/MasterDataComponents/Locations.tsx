@@ -94,10 +94,11 @@ const validationSchema = Yup.object({
   city: Yup.string().required('City  is required'),
   state: Yup.string().required('State  is required'),
   country: Yup.string().required('Country is required'),
-  pincode: Yup.string().required('Pincode is required'),
-  locationContactName: Yup.string().required('Contact person name is required'),
-  locationContactNumber: Yup.string().required('Phone number is required'),
-  locationContactEmail: Yup.string().required('Email is required'),
+  pincode: Yup.string().matches(/^[0-9]{6}$/, "Pincode must be exactly 6 digits").required("Pincode is required"),
+  locationContactName: Yup.string().required('Contact person name is required'), 
+  locationContactNumber: Yup.string().matches(/^[0-9]{10}$/, "Phone number must be exactly 10 digits").required("Phone number is required"),
+  locationContactEmail: Yup.string().email("Enter a valid email").required("Email is required"),
+
   // vehiclesNearBy: Yup.array()
   // .min(1, 'Select at least one vehicle')
   // .required('Required'),
@@ -596,7 +597,7 @@ const Locations: React.FC = () => {
                     <TextField
                       fullWidth
                       size="small"
-                      label="Pincode*"
+                      label="Pincode*" type='number'
                       name="pincode"
                       value={values.pincode}
                       onChange={handleChange}

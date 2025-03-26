@@ -472,40 +472,6 @@ const TransportationLanes = () => {
                     }}
                   />
                   <div ref={wrapperRef} >
-                    {/* {showSuggestions && displayLocations?.length > 0 && (
-                      <Paper
-                        style={{
-                          maxHeight: 200,
-                          overflowY: "auto",
-                          position: "absolute",
-                          zIndex: 10,
-                          width: "18%",
-                        }}
-                      >
-                        <List>
-                          {displayLocations.map((location: Location) => (
-                            <ListItem
-                              key={location.loc_ID}
-                              component="li"
-                              onClick={() => {
-                                setShowSuggestions(false)
-                                const selectedDisplay = `${location.loc_ID},${location?.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
-                                setSearchKey(selectedDisplay);
-                                formik.setFieldValue("sourceLocationId", location.loc_ID);
-                              }}
-                              sx={{ cursor: "pointer" }}
-                            >
-                              <Tooltip
-                                title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                placement="right"
-                              >
-                                <span style={{ fontSize: '13px' }}>{location.loc_ID}, {location.city}, {location.state}, {location.pincode}</span>
-                              </Tooltip>
-                            </ListItem>
-                          ))}
-                        </List>
-                      </Paper>
-                    )} */}
                     {showSuggestions && (
                       <Paper
                         style={{
@@ -676,9 +642,17 @@ const TransportationLanes = () => {
                     id="transportDistance"
                     name="transportDistance"
                     label="Transport Distance* "
-                    type="number"
+                    type="number" 
+                    onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															formik.handleChange(e);
+														}
+													}}
                     value={formik.values.transportDistance}
-                    onChange={formik.handleChange}
+                    // onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     error={formik.touched.transportDistance && Boolean(formik.errors.transportDistance)}
                     helperText={formik.touched.transportDistance && formik.errors.transportDistance}
@@ -710,7 +684,15 @@ const TransportationLanes = () => {
                     label="Transport Duration* "
                     type="number"
                     value={formik.values.transportDuration}
-                    onChange={formik.handleChange}
+                    // onChange={formik.handleChange}
+                    onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															formik.handleChange(e);
+														}
+													}}
                     onBlur={formik.handleBlur}
                     error={formik.touched.transportDuration && Boolean(formik.errors.transportDuration)}
                     helperText={formik.touched.transportDuration && formik.errors.transportDuration}
@@ -737,10 +719,18 @@ const TransportationLanes = () => {
                     fullWidth
                     id="transportCost"
                     name="transportCost"
-                    label="Transport Cost(Rs.)* "
+                    label="Transport Cost (Rs.)* "
                     type="number"
                     value={formik.values.transportCost}
-                    onChange={formik.handleChange}
+                    // onChange={formik.handleChange}
+                    onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															formik.handleChange(e);
+														}
+													}}
                     onBlur={formik.handleBlur}
                     error={formik.touched.transportCost && Boolean(formik.errors.transportCost)}
                     helperText={formik.touched.transportCost && formik.errors.transportCost}

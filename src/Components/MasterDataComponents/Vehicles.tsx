@@ -840,7 +840,14 @@ const VehicleForm: React.FC = () => {
 														name="individualResources"
 														type="number"
 														value={!values.unlimitedUsage ? values.individualResources : ""}
-														onChange={(e) => setFieldValue("individualResources", e.target.value ? Number(e.target.value) : "")}
+														onChange={(e) => {
+															const inputValue = e.target.value;
+															const numericValue = Number(inputValue);
+
+															if (numericValue > 0 || inputValue === "") {
+																setFieldValue("individualResources", inputValue ? numericValue : "");
+															}
+														}}
 														onBlur={handleBlur}
 														size="small"
 														error={touched.individualResources && Boolean(errors.individualResources)}
@@ -959,7 +966,15 @@ const VehicleForm: React.FC = () => {
 													name="payloadWeight"
 													type="number"
 													value={values.payloadWeight}
-													onChange={handleChange}
+													// onChange={handleChange}
+													onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															handleChange(e);
+														}
+													}}
 													onBlur={handleBlur}
 													error={
 														touched.payloadWeight &&
@@ -997,7 +1012,15 @@ const VehicleForm: React.FC = () => {
 													name="cubicCapacity"
 													type="number"
 													value={values.cubicCapacity}
-													onChange={handleChange}
+													// onChange={handleChange}
+													onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															handleChange(e);
+														}
+													}}
 													onBlur={handleBlur}
 													error={
 														touched.cubicCapacity &&
@@ -1035,7 +1058,14 @@ const VehicleForm: React.FC = () => {
 													name="interiorLength"
 													type="number"
 													value={values.interiorLength}
-													onChange={handleChange}
+													onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															handleChange(e);
+														}
+													}}
 													onBlur={handleBlur}
 													error={
 														touched.interiorLength &&
@@ -1073,7 +1103,14 @@ const VehicleForm: React.FC = () => {
 													name="interiorWidth"
 													type="number"
 													value={values.interiorWidth}
-													onChange={handleChange}
+													onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															handleChange(e);
+														}
+													}}
 													onBlur={handleBlur}
 													error={
 														touched.interiorWidth &&
@@ -1111,7 +1148,14 @@ const VehicleForm: React.FC = () => {
 													name="interiorHeight"
 													type="number"
 													value={values.interiorHeight}
-													onChange={handleChange}
+													onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															handleChange(e);
+														}
+													}}
 													onBlur={handleBlur}
 													error={
 														touched.interiorHeight &&
@@ -1155,7 +1199,14 @@ const VehicleForm: React.FC = () => {
 													name="maxGrossWeight"
 													type="number"
 													value={values.maxGrossWeight}
-													onChange={handleChange}
+													onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															handleChange(e);
+														}
+													}}
 													onBlur={handleBlur}
 													error={
 														touched.maxGrossWeight &&
@@ -1193,7 +1244,14 @@ const VehicleForm: React.FC = () => {
 													name="tareWeight"
 													type="number"
 													value={values.tareWeight}
-													onChange={handleChange}
+													onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															handleChange(e);
+														}
+													}}
 													onBlur={handleBlur}
 													error={
 														touched.tareWeight && Boolean(errors.tareWeight)
@@ -1228,7 +1286,14 @@ const VehicleForm: React.FC = () => {
 													name="tareVolume"
 													type="number"
 													value={values.tareVolume}
-													onChange={handleChange}
+													onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															handleChange(e);
+														}
+													}}
 													onBlur={handleBlur}
 													error={
 														touched.tareVolume && Boolean(errors.tareVolume)
@@ -1263,7 +1328,15 @@ const VehicleForm: React.FC = () => {
 													name="maxLength"
 													type="number"
 													value={values.maxLength}
-													onChange={handleChange}
+													// onChange={handleChange}
+													onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															handleChange(e);
+														}
+													}}
 													onBlur={handleBlur}
 													error={touched.maxLength && Boolean(errors.maxLength)}
 													helperText={touched.maxLength && errors.maxLength}
@@ -1296,7 +1369,14 @@ const VehicleForm: React.FC = () => {
 													name="maxWidth"
 													type="number"
 													value={values.maxWidth}
-													onChange={handleChange}
+													onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															handleChange(e);
+														}
+													}}
 													onBlur={handleBlur}
 													error={touched.maxWidth && Boolean(errors.maxWidth)}
 													helperText={touched.maxWidth && errors.maxWidth}
@@ -1329,7 +1409,14 @@ const VehicleForm: React.FC = () => {
 													name="maxHeight"
 													type="number"
 													value={values.maxHeight}
-													onChange={handleChange}
+													onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															handleChange(e);
+														}
+													}}
 													onBlur={handleBlur}
 													error={touched.maxHeight && Boolean(errors.maxHeight)}
 													helperText={touched.maxHeight && errors.maxHeight}
@@ -1369,7 +1456,6 @@ const VehicleForm: React.FC = () => {
 													type="date"
 													value={
 														values.downtimeStart
-
 													}
 													onChange={handleChange}
 													onBlur={handleBlur}
@@ -1387,7 +1473,6 @@ const VehicleForm: React.FC = () => {
 													type="date"
 													value={
 														values.downtimeEnd
-
 													}
 													onChange={handleChange}
 													onBlur={handleBlur}
@@ -1443,11 +1528,18 @@ const VehicleForm: React.FC = () => {
 											<Grid item xs={12} sm={6} md={2.4}>
 												<TextField
 													fullWidth
-													label="Avg. Cost of Transportation (Price Per Ton)*"
+													label="Avg. Cost of (Price Per Ton in Rs.)*"
 													name="avgCost"
 													type="number"
 													value={values.avgCost}
-													onChange={handleChange}
+													onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															handleChange(e);
+														}
+													}}
 													onBlur={handleBlur}
 													size="small"
 													error={touched.avgCost && Boolean(errors.avgCost)}

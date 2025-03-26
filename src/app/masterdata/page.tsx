@@ -65,4 +65,5 @@ const MasterData: React.FC = () => {
   );
 };
 
-export default withAuthComponent(MasterData);
+// export default withAuthComponent(MasterData);
+export default MasterData

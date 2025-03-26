@@ -568,7 +568,15 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                                                 label="Weight"
                                                 name="weightUoM"
                                                 value={values.weightUoM}
-                                                onChange={handleChange}
+                                                // onChange={handleChange}
+                                                onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															handleChange(e);
+														}
+													}}
                                                 onBlur={handleBlur}
                                                 error={touched.weightUoM && Boolean(errors.weightUoM)}
                                                 helperText={touched.weightUoM && errors.weightUoM}
@@ -597,7 +605,15 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                                                 label="Volume" type='number'
                                                 name="volumeUoM"
                                                 value={values.volumeUoM}
-                                                onChange={handleChange}
+                                                // onChange={handleChange}
+                                                onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															handleChange(e);
+														}
+													}}
                                                 onBlur={handleBlur}
                                                 error={touched.volumeUoM && Boolean(errors.volumeUoM)}
                                                 helperText={touched.volumeUoM && errors.volumeUoM}
@@ -978,4 +994,5 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
 };
 
 
-export default withAuthComponent(ProductMasterPage);
+// export default withAuthComponent(ProductMasterPage);
+export default ProductMasterPage

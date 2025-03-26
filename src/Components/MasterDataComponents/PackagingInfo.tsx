@@ -337,7 +337,15 @@ const PackagingForm = () => {
                   label="Package length" type='number'
                   value={formik.values.packagingLength}
                   onBlur = {formik.handleBlur}
-                  onChange={formik.handleChange}
+                  // onChange={formik.handleChange}
+                  onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															formik.handleChange(e);
+														}
+													}}
                   error={formik.touched.packagingLength && Boolean(formik.errors.packagingLength)}
                   helperText={formik.touched.packagingLength && formik.errors.packagingLength}
                   size="small"
@@ -351,7 +359,15 @@ const PackagingForm = () => {
                   onBlur = {formik.handleBlur}
                   label="Package width" type='number'
                   value={formik.values.packagingWidth}
-                  onChange={formik.handleChange}
+                  // onChange={formik.handleChange}
+                  onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															formik.handleChange(e);
+														}
+													}}
                   error={formik.touched.packagingWidth && Boolean(formik.errors.packagingWidth)}
                   helperText={formik.touched.packagingWidth && formik.errors.packagingWidth}
                   size="small"
@@ -364,7 +380,15 @@ const PackagingForm = () => {
                   name="packagingHeight"
                   label="Package height" type='number'
                   value={formik.values.packagingHeight}
-                  onChange={formik.handleChange}
+                  // onChange={formik.handleChange}
+                  onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															formik.handleChange(e);
+														}
+													}}
                   onBlur = {formik.handleBlur}
                   error={formik.touched.packagingHeight && Boolean(formik.errors.packagingHeight)}
                   helperText={formik.touched.packagingHeight && formik.errors.packagingHeight}

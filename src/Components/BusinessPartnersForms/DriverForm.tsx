@@ -328,7 +328,7 @@ const DriverForm: React.FC = () => {
       if (updateRecord) {
         const response = await editDriverDetails({ body: editBody, driverId: updateRecordId }).unwrap();
         if (response?.updated_record) {
-          setSnackbarMessage(`Driver ID ${response.updated_record} updated successfully!`);
+          setSnackbarMessage(`Driver ID ${response?.updated_record} updated successfully!`);
           setFormInitialValues(initialDriverValues);
           setShowForm(false);
           setUpdateRecord(false);
@@ -644,25 +644,25 @@ const DriverForm: React.FC = () => {
                 <Grid container spacing={2} style={{ marginBottom: '30px' }}>
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
-                      select
+                      // select
                       fullWidth
                       size="small"
-                      label="Vehicle Types"
+                      label="Vehicle Types (Van, Truck...)"
                       name="vehicleTypes"
                       value={values.vehicleTypes}
                       onChange={(e) => setFieldValue('vehicleTypes', e.target.value)}
                       onBlur={handleBlur}
                       error={touched.vehicleTypes && Boolean(errors.vehicleTypes)}
                       helperText={touched.vehicleTypes && errors.vehicleTypes}
-                      SelectProps={{
-                        multiple: true,
-                      }}
+                      // SelectProps={{
+                      //   multiple: true,
+                      // }}
                     >
-                      {['Truck', 'Mini Auto', 'Lorry', 'Container', 'Van', "Trailer", "Car"].map((type) => (
+                      {/* {['Truck', 'Mini Auto', 'Lorry', 'Container', 'Van', "Trailer", "Car"].map((type) => (
                         <MenuItem key={type} value={type}>
                           {type}
                         </MenuItem>
-                      ))}
+                      ))} */}
                     </TextField>
                   </Grid>
                   <Grid item xs={12} sm={6} md={2.4}>
@@ -670,7 +670,7 @@ const DriverForm: React.FC = () => {
                       select
                       fullWidth
                       size="small"
-                      label="Driver Available"
+                      label="Is Driver Available"
                       name="driverAvailable"
                       value={values.driverAvailable}
                       onChange={(e) => setFieldValue('driverAvailable', e.target.value)}
@@ -694,7 +694,7 @@ const DriverForm: React.FC = () => {
                           onChange={(e) => setFieldValue('loggedIntoApp', e.target.checked)}
                         />
                       }
-                      label="Logged Into App"
+                      label="Is Logged Into App"
                     />
                   </Grid>
                 </Grid>
