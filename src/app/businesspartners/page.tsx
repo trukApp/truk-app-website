@@ -56,4 +56,5 @@ const BusinessPartnersPage: React.FC = () => {
     );
 };
 
-export default withAuthComponent(BusinessPartnersPage);
+// export default withAuthComponent(BusinessPartnersPage);
+export default BusinessPartnersPage;

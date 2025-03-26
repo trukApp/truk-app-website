@@ -9,7 +9,7 @@ import { useDispatch } from "react-redux";
 import { useGetUomMasterQuery } from "@/api/apiSlice";
 import { useEffect } from "react";
 import { setUnitsofMeasurement } from "@/store/authSlice";
-import { withAuthComponent } from "@/Components/WithAuthComponent";
+// import { withAuthComponent } from "@/Components/WithAuthComponent";
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -39,4 +39,5 @@ const Home = () => {
   );
 }
 
-export default withAuthComponent(Home)
+// export default withAuthComponent(Home)
+export default Home
