@@ -148,21 +148,20 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks }) => {
                                         Vehicle ID: <strong>{vehicle.vehicle_ID}</strong>
                                     </Typography>
                                     <Typography>
-                                        Total Weight Capacity: <strong>{vehicle.totalWeightCapacity} kg</strong>
+                                        Total Weight Capacity: <strong>{vehicle?.totalWeightCapacity?.toFixed(2)} kg</strong>
                                     </Typography>
                                     <Typography>
-                                        Leftover Weight: <strong>{vehicle.leftoverWeight} kg</strong>
+                                        Leftover Weight: <strong>{parseFloat(vehicle?.leftoverWeight)?.toFixed(2)} kg</strong>
                                     </Typography>
                                     <Typography>
-                                        Total Volume Capacity: <strong>{vehicle.totalVolumeCapacity} m³</strong>
+                                        Total Volume Capacity: <strong>{vehicle?.totalVolumeCapacity?.toFixed(2)} m³</strong>
                                     </Typography>
                                     <Typography>
-                                        Leftover Volume: <strong>{vehicle.leftoverVolume} m³</strong>
+                                        Leftover Volume: <strong>{vehicle.leftoverVolume.toFixed(2)} m³</strong>
                                     </Typography>
                                     <Typography>
-                                        Estimated Cost: <strong>₹{vehicle.cost}</strong>
+                                        Estimated Cost: <strong>₹{vehicle.cost.toFixed(2)}</strong>
                                     </Typography>
-
                                     {vehicle.loadArrangement && vehicle.loadArrangement.length > 0 ? (
                                         <Box sx={{ mt: 2, height: 300, backgroundColor: "white", borderRadius: 1, overflow: "hidden" }}>
                                             <DataGrid
