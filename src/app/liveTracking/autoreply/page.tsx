@@ -28,8 +28,8 @@ const AutoReply = () => {
         try {
             // const vehicleId = 'TS02EY1313';
             const vehicleId = 'TS08JB3663';
-            const fromDateUTC = '1742919251314';
-            const toDateUTC = '1742962391314';
+            const fromDateUTC = '1742927400000';
+            const toDateUTC = '1743003000000';
             const userId = process.env.NEXT_PUBLIC_VAMOSYS_USERID || '';
             console.log(userId)
 
