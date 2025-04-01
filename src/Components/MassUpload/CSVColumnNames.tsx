@@ -1,6 +1,6 @@
 export const locationColumnNames = [
   { displayName: 'Location Description*', key: 'loc_desc' },
-  { displayName: 'Location Type (Warehouse or Production plant...)*', key: 'loc_type' },
+  { displayName: '"Location Type (Production Plant, Distribution Center, Shipping Point, ...)*"', key: 'loc_type' },
   { displayName: 'GLN Code (13 characters)', key: 'gln_code' },
   { displayName: 'IATA Code (3 characters)', key: 'iata_code' },
   { displayName: 'Longitude*', key: 'longitude' },
@@ -119,15 +119,15 @@ export const vendorColumnNames  = [
 ];
 
 export const driversColumnNames= [
-  { displayName: 'Location ID (LOC000001...)*', key: 'locations' },
-  { displayName: 'Driver Name*', key: 'driver_name' },
-  {displayName: 'Driving License*', key: 'driving_license',nestedKey: 'driver_correspondence',},
-  {displayName: 'Expiry Date (dd-mm-yyyy)*',key: 'expiry_date',nestedKey: 'driver_correspondence',},
-  { displayName: 'Driver Contact Number (10 digits)*',key: 'phone',nestedKey: 'driver_correspondence',},
-  {displayName: 'Valid Email*',key: 'email',nestedKey: 'driver_correspondence',},
-  { displayName: 'Vehicle Types (Van or Truck or...)*', key: 'vehicle_types' },
+  { displayName: '*Location ID (LOC000001...)', key: 'locations' },
+  { displayName: '*Driver Name', key: 'driver_name' },
+  {displayName: '*Driving License', key: 'driving_license',nestedKey: 'driver_correspondence',},
+  {displayName: '*Expiry Date (dd-mm-yyyy)',key: 'expiry_date',nestedKey: 'driver_correspondence',},
+  { displayName: '*Driver Contact Number (10 digits)',key: 'phone',nestedKey: 'driver_correspondence',},
+  {displayName: '*Valid Email',key: 'email',nestedKey: 'driver_correspondence',},
+  { displayName: '"*Vehicle Types (Van, Truck, ...)"', key: 'vehicle_types' },
   { displayName: 'Is Logged in (if Yes type 1 else 0)', key: 'logged_in' },
-  { displayName: 'Is driver available (if Yes type 1 else 0)*', key: 'driver_availability' },
+  { displayName: 'Is driver available (if Yes type 1 else 0)', key: 'driver_availability' },
 ];
 
 export const productColumnNames = [
