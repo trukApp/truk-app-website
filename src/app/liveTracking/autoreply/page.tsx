@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { GoogleMap, Marker, Polyline, useLoadScript } from '@react-google-maps/api';
 import { useSearchParams } from 'next/navigation';
 import { Button, CircularProgress, Box, Typography, Modal } from '@mui/material';
@@ -160,7 +160,8 @@ const AutoReply = () => {
     };
 
     return (
-        <Box>
+        <Suspense fallback={<div>Loading search params...</div>}>
+               <Box>
             <GoogleMap mapContainerStyle={mapContainerStyle} center={center} zoom={10}>
                 <Marker
                     position={{ lat: vehicleLocations[0]?.latitude, lng: vehicleLocations[0]?.longitude }}
@@ -204,6 +205,8 @@ const AutoReply = () => {
                 </Box>
             </Modal>
         </Box>
+        </Suspense>
+     
     );
 };
 
