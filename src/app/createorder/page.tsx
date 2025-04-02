@@ -42,7 +42,19 @@ const CreateOrder: React.FC = () => {
 
     useEffect(() => {
         if (packageSelectErr) {
-            setSnackbarMessage(`Please select the packages of same SHIP FROM location`);
+            console.log('packageSelectErr:', packageSelectErr);
+            if ("data" in packageSelectErr && packageSelectErr.data && typeof packageSelectErr.data === "object") {
+                const errorMessage = (packageSelectErr.data as { error?: string }).error;
+
+                if (errorMessage === "All packages must have the same pickup_date (ignoring time).") {
+                    setSnackbarMessage("All packages must have the same pickup date.");
+                } else {
+                    setSnackbarMessage("Please select the packages of the same SHIP FROM location.");
+                }
+            } else {
+                setSnackbarMessage("An unexpected error occurred.");
+            }
+            // setSnackbarMessage(`Please select the packages of same SHIP FROM location`);
             setSnackbarSeverity("warning");
             setSnackbarOpen(true);
         }

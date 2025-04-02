@@ -436,14 +436,20 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
                                 lat: selectedVehicleData?.route[selectedVehicleData?.route.length - 1]?.end.latitude || 0,
                                 lng: selectedVehicleData?.route[selectedVehicleData?.route.length - 1]?.end.longitude || 0,
                             }}
-                            icon={{ url: '/start.svg' }}
+                            icon={{
+                                url: '/start.svg',
+                                scaledSize: new window.google.maps.Size(40, 40),
+                            }}
                         />
                         <Marker
                             position={{
                                 lat: selectedVehicleData?.route[0]?.start.latitude || 0,
                                 lng: selectedVehicleData?.route[0]?.start.longitude || 0,
                             }}
-                            icon={{ url: '/drop.svg' }}
+                            icon={{
+                                url: '/drop.svg',
+                                scaledSize: new window.google.maps.Size(40, 40),
+                            }}
                         />
                         <DirectionsRenderer
                             directions={returnRoute}
@@ -463,14 +469,20 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
                                 lat: alternateRoutes[selectedRouteIndex]?.routes[0]?.legs[0]?.start_location?.lat() || 0,
                                 lng: alternateRoutes[selectedRouteIndex]?.routes[0]?.legs[0]?.start_location?.lng() || 0,
                             }}
-                            icon={{ url: '/start.svg' }}
+                            icon={{
+                                url: '/start.svg',
+                                scaledSize: new window.google.maps.Size(40, 40),
+                            }}
                         />
                         <Marker
                             position={{
                                 lat: alternateRoutes[selectedRouteIndex]?.routes[0]?.legs[0]?.end_location?.lat() || 0,
                                 lng: alternateRoutes[selectedRouteIndex]?.routes[0]?.legs[0]?.end_location?.lng() || 0,
                             }}
-                            icon={{ url: '/drop.svg' }}
+                            icon={{
+                                url: '/drop.svg',
+                                scaledSize: new window.google.maps.Size(40, 40),
+                            }}
                         />
                         <DirectionsRenderer
                             directions={alternateRoutes[selectedRouteIndex]}
@@ -495,14 +507,20 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
                                             lat: firstLeg?.start_location?.lat() || 0,
                                             lng: firstLeg?.start_location?.lng() || 0,
                                         }}
-                                        icon={{ url: '/start.svg' }}
+                                        icon={{
+                                            url: '/start.svg',
+                                            scaledSize: new window.google.maps.Size(40, 40),
+                                        }}
                                     />
                                     <Marker
                                         position={{
                                             lat: firstLeg?.end_location?.lat() || 0,
                                             lng: firstLeg?.end_location?.lng() || 0,
                                         }}
-                                        icon={{ url: '/drop.svg' }}
+                                        icon={{
+                                            url: '/drop.svg',
+                                            scaledSize: new window.google.maps.Size(40, 40),
+                                        }}
                                     />
                                     <DirectionsRenderer
                                         directions={routeResult}
@@ -522,11 +540,17 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
                     <>
                         <Marker
                             position={{ lat: matchedRoute?.start?.latitude, lng: matchedRoute?.start?.longitude }}
-                            icon={{ url: '/start.svg' }}
+                            icon={{
+                                url: '/start.svg',
+                                scaledSize: new window.google.maps.Size(40, 40),
+                            }}
                         />
                         <Marker
                             position={{ lat: matchedRoute?.end?.latitude, lng: matchedRoute?.end?.longitude }}
-                            icon={{ url: '/drop.svg' }}
+                            icon={{
+                                url: '/drop.svg',
+                                scaledSize: new window.google.maps.Size(40, 40),
+                            }}
                         />
                         {matchedRoute && (
                             <div
@@ -581,7 +605,10 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
                                     lat: selectedVehicleData?.route[0]?.start?.latitude,
                                     lng: selectedVehicleData?.route[0]?.start?.longitude,
                                 }}
-                                icon={{ url: '/start.svg' }}
+                                icon={{
+                                    url: '/start.svg',
+                                    scaledSize: new window.google.maps.Size(40, 40),
+                                }}
                             />
                         )}
                         {selectedVehicleData?.route[selectedVehicleData?.route?.length - 1] && (
@@ -590,7 +617,10 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
                                     lat: selectedVehicleData?.route[selectedVehicleData?.route?.length - 1].end?.latitude,
                                     lng: selectedVehicleData?.route[selectedVehicleData?.route?.length - 1].end?.longitude,
                                 }}
-                                icon={{ url: '/drop.svg' }}
+                                icon={{
+                                    url: '/drop.svg',
+                                    scaledSize: new window.google.maps.Size(40, 40),
+                                }}
                             />
                         )}
                         {selectedVehicleData?.route?.slice(0, -1).map((route, index) => (

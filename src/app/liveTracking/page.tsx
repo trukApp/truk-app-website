@@ -3,13 +3,13 @@ import React, { useEffect, useRef, useState } from "react";
 import { GoogleMap, Marker, Polyline, useJsApiLoader } from "@react-google-maps/api";
 // import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
-import { Button } from "@mui/material";
+import { Box, Button, Typography } from '@mui/material';
+import Image from "next/image";
 
 const mapContainerStyle = {
     width: "100%",
     height: "500px",
 };
-
 interface Vehicle {
     regNo: string;
     status: string;
@@ -21,16 +21,44 @@ interface Vehicle {
     vehicleType: string;
     deviceId: string;
 }
+type Location = {
+    address: string;
+    latitude: number;
+    longitude: number;
+};
+
+type Route = {
+    distance: string;
+    duration: string;
+    start: Location;
+    end: Location;
+    loadAfterStop: number;
+};
+
+type Allocation = {
+    cost: number;
+    leftoverVolume: number;
+    leftoverWeight: number;
+    occupiedVolume: number;
+    occupiedWeight: number;
+    totalVolumeCapacity: number;
+    totalWeightCapacity: number;
+    vehicle_ID: string;
+    packages: string[];
+    route: Route[];
+    loadArrangement: {
+        location: string;
+        packages: string[];
+        stop: number;
+    }[];
+    sampledRoutePoints: { lat: number; lng: number }[];
+};
 
 const mapsKey: string = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? '';
 const liveUrl: string = process.env.NEXT_PUBLIC_LIVE_TRACK_URL ?? '';
 
 const LiveTracking: React.FC = () => {
-    // const searchParams = useSearchParams();
-    const router = useRouter();
-    // const vehicleId = "TS08JB3663";
-    const deviceId = "867232055767934";
-
+    const [allocation, setAllocation] = useState<Allocation | null>(null);
     const [vehicles, setVehicles] = useState<Vehicle[]>([]);
     const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
     const [vehiclePath, setVehiclePath] = useState<{ [key: string]: { lat: number, lng: number }[] }>({});
@@ -38,15 +66,33 @@ const LiveTracking: React.FC = () => {
     const [isTracking, setIsTracking] = useState(false);
     const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null);
 
+    const vehicleSuggestRoute = allocation?.route;
+    const allocations = allocation?.sampledRoutePoints
+    const routeData = {
+        sampledRoutePoints: allocations
+    };
+    const suggestedRoute: { lat: number; lng: number }[] = routeData?.sampledRoutePoints ?? [];
+    const router = useRouter();
+    // const vehicleId = "TS08JB3663";
+    const deviceId = "867232055767934";
+
     const selectedVehicleRef = useRef<Vehicle | null>(null);
     const { isLoaded } = useJsApiLoader({ googleMapsApiKey: mapsKey });
+
+    useEffect(() => {
+        const storedData = localStorage.getItem("allocationData");
+        if (storedData) {
+            const allocation = JSON.parse(storedData);
+            setAllocation(allocation)
+        }
+    }, []);
 
     useEffect(() => {
         const fetchVehicles = async () => {
             try {
                 const response = await fetch(liveUrl);
                 const data: Vehicle[] = await response.json();
-                console.log('data', data);
+                // console.log('data', data);
                 if (Array.isArray(data)) {
                     const validVehicles = data.filter(vehicle => vehicle.latitude && vehicle.longitude);
                     setVehicles(validVehicles);
@@ -114,11 +160,58 @@ const LiveTracking: React.FC = () => {
         }
     }, [isTracking, selectedVehicle]);
 
+    const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => {
+        const toRad = (value: number) => (value * Math.PI) / 180;
+        const R = 6378137;
+        const dLat = toRad(lat2 - lat1);
+        const dLng = toRad(lng2 - lng1);
+
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLng / 2) * Math.sin(dLng / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    };
+
+    const checkRouteDeviation = () => {
+        if (!selectedVehicle) return;
+
+        const vehicleLat = parseFloat(selectedVehicle.latitude);
+        const vehicleLng = parseFloat(selectedVehicle.longitude);
+        // Haversine Formula
+        // Distance Matrix API.
+        const isDeviated = suggestedRoute.every((point) => {
+            // console.log(point.lat,point.lng);
+            const distance = calculateDistance(vehicleLat, vehicleLng, point.lat, point.lng);
+            return distance > 500;
+        });
+        console.log('isDeviated:', isDeviated)
+        const distances = suggestedRoute.map((point) =>
+            calculateDistance(vehicleLat, vehicleLng, point.lat, point.lng)
+        );
+        const minDistance = Math.min(...distances);
+        const minDistanceKm = minDistance / 1000;
+        console.log('Min Distance from Route (km):', minDistanceKm);
+        // if (isDeviated && minDistance > 500) {
+        //     alert(`Alert: Vehicle is deviating from the suggested route by ${minDistanceKm.toFixed(2)} km!`);
+        // }
+    };
+
+    useEffect(() => {
+        const deviationInterval = setInterval(() => {
+            checkRouteDeviation();
+        }, 5000);
+
+        return () => clearInterval(deviationInterval);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedVehicle]);
 
     const getVehicleIcon = (vehicleType: string) => {
         switch (vehicleType.toLowerCase()) {
             case "car":
-                return "https://maps.google.com/mapfiles/kml/shapes/cabs.png";
+                return "/car.svg";
+            case "bike":
+                return "/bike.svg";
             case "truck":
                 return "https://maps.google.com/mapfiles/kml/shapes/truck.png";
             default:
@@ -135,6 +228,32 @@ const LiveTracking: React.FC = () => {
 
     return (
         <div>
+            <p style={{ fontSize: '20px', color: "#83214F", textDecoration: 'underline', fontWeight: 'bold' }}>Suggested Vehicle Route</p>
+            {vehicleSuggestRoute && vehicleSuggestRoute.length > 0 && (
+                <Box sx={{ marginBottom: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', padding: 1, border: '1px solid #ccc', marginBottom: 1, gap: '10px' }}>
+                        <Image
+                            src="/start.svg"
+                            alt="Start"
+                            width={25}
+                            height={25}
+                            unoptimized
+                        />
+                        <Typography variant="h6">Start: {vehicleSuggestRoute[0]?.start?.address}</Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', padding: 1, border: '1px solid #ccc', marginBottom: 1, gap: '10px' }}>
+                        <Image
+                            src="/drop.svg"
+                            alt="End"
+                            width={25}
+                            height={25}
+                            unoptimized
+                        />
+                        <Typography variant="h6">End: {vehicleSuggestRoute[0]?.end?.address}</Typography>
+                    </Box>
+                </Box>
+            )}
+
             <GoogleMap
                 mapContainerStyle={mapContainerStyle}
                 zoom={14}
@@ -149,7 +268,7 @@ const LiveTracking: React.FC = () => {
                         }}
                         icon={{
                             url: getVehicleIcon(vehicle.vehicleType),
-                            scaledSize: new window.google.maps.Size(20, 20),
+                            scaledSize: new window.google.maps.Size(60, 60),
                         }}
                     />
                 ))}
@@ -180,7 +299,7 @@ const LiveTracking: React.FC = () => {
 
             {selectedVehicle && (
                 <div>
-                    <h3>Vehicle Details</h3>
+                    <h3 style={{color: "#83214F", textDecoration: 'underline'}}>Vehicle Details</h3>
                     <p><strong>Registration:</strong> {selectedVehicle.regNo}</p>
                     <p><strong>Status:</strong> {selectedVehicle.status}</p>
                     <p><strong>Speed:</strong> {selectedVehicle.speed} km/h</p>
@@ -212,217 +331,3 @@ const LiveTracking: React.FC = () => {
 };
 
 export default LiveTracking;
-
-
-
-// ###################################################### static values ##############################################################
-// 'use client';
-// import React, { useEffect, useState } from "react";
-// import { GoogleMap, Marker, Polyline, useJsApiLoader } from "@react-google-maps/api";
-
-// const mapContainerStyle = {
-//     width: "100%",
-//     height: "500px",
-// };
-
-// const center = {
-//     lat: 17.3850,
-//     lng: 78.4867,
-// };
-
-// const hyderabadLocations = [
-//     { lat: 17.3850, lng: 78.4867 },
-//     { lat: 17.4484, lng: 78.3915 },
-//     { lat: 17.4399, lng: 78.4983 },
-//     { lat: 17.3606, lng: 78.4744 },
-//     { lat: 17.4156, lng: 78.4347 },
-// ];
-
-// const mapsKey: string = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? '';
-
-// const LiveTracking: React.FC = () => {
-//     const [currentLocationIndex, setCurrentLocationIndex] = useState<number>(0);
-//     const [vehiclePosition, setVehiclePosition] = useState<{ lat: number; lng: number }>(hyderabadLocations[0]);
-//     const [completedRoutes, setCompletedRoutes] = useState<boolean[]>(new Array(hyderabadLocations.length - 1).fill(false));
-//     const [isMoving, setIsMoving] = useState<boolean>(false);
-//     const [isDeviation, setIsDeviation] = useState<boolean>(false);
-
-//     const { isLoaded } = useJsApiLoader({
-//         googleMapsApiKey: mapsKey,
-//     });
-
-//     const interpolate = (start: { lat: number; lng: number }, end: { lat: number; lng: number }, fraction: number) => {
-//         return {
-//             lat: start.lat + (end.lat - start.lat) * fraction,
-//             lng: start.lng + (end.lng - start.lng) * fraction,
-//         };
-//     };
-
-//     // Function to calculate distance between two lat/lng points using Haversine formula
-//     const getDistance = (pos1: { lat: number; lng: number }, pos2: { lat: number; lng: number }) => {
-//         const R = 6371e3; // Radius of the Earth in meters
-//         const lat1 = (pos1.lat * Math.PI) / 180;
-//         const lat2 = (pos2.lat * Math.PI) / 180;
-//         const deltaLat = ((pos2.lat - pos1.lat) * Math.PI) / 180;
-//         const deltaLng = ((pos2.lng - pos1.lng) * Math.PI) / 180;
-
-//         const a = Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
-//                   Math.cos(lat1) * Math.cos(lat2) *
-//                   Math.sin(deltaLng / 2) * Math.sin(deltaLng / 2);
-
-//         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-//         return R * c; // Distance in meters
-//     };
-
-//     useEffect(() => {
-//         let animationFrameId: number;
-
-//         const moveVehicle = () => {
-//             if (currentLocationIndex < hyderabadLocations.length - 1) {
-//                 const start = hyderabadLocations[currentLocationIndex];
-//                 const end = hyderabadLocations[currentLocationIndex + 1];
-//                 const duration = 5000;
-//                 const startTime = Date.now();
-
-//                 const animate = () => {
-//                     const now = Date.now();
-//                     const elapsed = now - startTime;
-//                     const fraction = elapsed / duration;
-
-//                     if (fraction < 1) {
-//                         const newPosition = interpolate(start, end, fraction);
-//                         setVehiclePosition(newPosition);
-
-//                         // Check for route deviation
-//                         const expectedDistance = getDistance(start, end);
-//                         const actualDistance = getDistance(newPosition, end);
-//                         if (actualDistance > expectedDistance * 1.2) { // Allow 20% buffer
-//                             if (!isDeviation) {
-//                                 setIsDeviation(true);
-//                                 alert("Route deviation detected! Please get back on track.");
-//                             }
-//                         } else {
-//                             setIsDeviation(false);
-//                         }
-
-//                         animationFrameId = requestAnimationFrame(animate);
-//                     } else {
-//                         setVehiclePosition(end);
-//                         setCompletedRoutes(prevRoutes => {
-//                             const updatedRoutes = [...prevRoutes];
-//                             updatedRoutes[currentLocationIndex] = true;
-//                             return updatedRoutes;
-//                         });
-//                         setTimeout(() => {
-//                             setCurrentLocationIndex(prevIndex => prevIndex + 1);
-//                         }, 1000);
-//                     }
-//                 };
-
-//                 animate();
-//             } else {
-//                 setIsMoving(false);
-//             }
-//         };
-
-//         if (isMoving) {
-//             moveVehicle();
-//         }
-
-//         return () => {
-//             if (animationFrameId) {
-//                 cancelAnimationFrame(animationFrameId);
-//             }
-//         };
-//     }, [currentLocationIndex, isMoving]);
-
-//     const handleStartTracking = () => {
-//         setCurrentLocationIndex(0);
-//         setVehiclePosition(hyderabadLocations[0]);
-//         setCompletedRoutes(new Array(hyderabadLocations.length - 1).fill(false));
-//         setIsMoving(true);
-//         setIsDeviation(false);
-//     };
-
-//     if (!isLoaded) return <p>Loading Maps...</p>;
-
-//     return (
-//         <div>
-//             <h2>Vehicle Live Tracking</h2>
-
-//             <button
-//                 onClick={handleStartTracking}
-//                 disabled={isMoving}
-//                 style={{
-//                     marginBottom: "10px",
-//                     padding: "10px",
-//                     backgroundColor: isMoving ? "gray" : "blue",
-//                     color: "white",
-//                     border: "none",
-//                     cursor: isMoving ? "not-allowed" : "pointer",
-//                 }}
-//             >
-//                 {isMoving ? "Tracking in Progress..." : "Start Tracking"}
-//             </button>
-
-//             <GoogleMap
-//                 mapContainerStyle={mapContainerStyle}
-//                 zoom={14}
-//                 center={vehiclePosition}
-//             >
-//                 {/* Markers for all locations */}
-//                 {hyderabadLocations.map((location, index) => (
-//                     <Marker
-//                         key={index}
-//                         position={location}
-//                         icon={{
-//                             url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-//                             scaledSize: new window.google.maps.Size(20, 20),
-//                         }}
-//                     />
-//                 ))}
-
-//                 {/* Moving Vehicle Marker */}
-//                 <Marker
-//                     position={vehiclePosition}
-//                     icon={{
-//                         url: isDeviation
-//                             ? "https://maps.google.com/mapfiles/ms/icons/red-dot.png"
-//                             : "https://maps.google.com/mapfiles/kml/shapes/cabs.png",
-//                         scaledSize: new window.google.maps.Size(30, 30),
-//                     }}
-//                 />
-
-//                 {/* Draw all routes including the first one initially */}
-//                 {hyderabadLocations.map((location, index) => {
-//                     if (index < hyderabadLocations.length - 1) {
-//                         const isCurrentSegment = index === currentLocationIndex;
-//                         const isSegmentCompleted = completedRoutes[index];
-
-//                         return (
-//                             <Polyline
-//                                 key={index}
-//                                 path={[
-//                                     hyderabadLocations[index],
-//                                     index === 0 && !isMoving
-//                                         ? hyderabadLocations[index + 1]
-//                                         : isCurrentSegment
-//                                         ? vehiclePosition
-//                                         : hyderabadLocations[index + 1]
-//                                 ]}
-//                                 options={{
-//                                     strokeColor: isSegmentCompleted || isCurrentSegment ? "#FF0000" : "#0000FF",
-//                                     strokeOpacity: 0.8,
-//                                     strokeWeight: 4,
-//                                 }}
-//                             />
-//                         );
-//                     }
-//                     return null;
-//                 })}
-//             </GoogleMap>
-//         </div>
-//     );
-// };
-
-// export default LiveTracking;

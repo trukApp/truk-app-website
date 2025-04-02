@@ -98,7 +98,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
     const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({});
     const { data, isLoading: driverLoading } = useGetAllDriversDataQuery({})
     const { data: allVehicleTrucks, isLoading: vehTrucksLoading } = useGetSingleVehicleMasterQuery({})
-    console.log('allveh trucks : ', allVehicleTrucks)
+    // console.log('allveh trucks : ', allVehicleTrucks)
     const [searchKey, setSearchKey] = useState('');
     const [showSuggestions, setShowSuggestions] = useState(false);
     const driversData = data?.drivers.length > 0 ? data?.drivers : []
@@ -118,7 +118,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
     const vehiclesData = allVehicleTrucks?.data.length > 0 ? allVehicleTrucks?.data : []
     const { data: filteredVehicles, isLoading: filteredVehicleLoading } = useGetFilteredVehiclesQuery(searchKeyVehicle.length >= 3 ? searchKeyVehicle : null, { skip: searchKeyVehicle.length < 3 });
     const displayVehicles = searchKeyVehicle ? filteredVehicles?.results || [] : vehiclesData;
-    console.log("display vehicles :", displayVehicles)
+    // console.log("display vehicles :", displayVehicles)
     const [assignModal, setAssignModal] = useState(false);
     const [selectedAllocation, setSelectedAllocation] = useState<Allocation | null>(null);
     const [postAssignOrder, { isLoading: isAssigning }] = usePostAssignOrderMutation()
@@ -150,6 +150,11 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
         }
     }, [searchKey]);
 
+    const { data: order, refetch: fetchOrderById, isFetching, error } = useGetOrderByIdQuery(
+        { orderId },
+        { skip: !orderId } // Skip if orderId is not available
+    );
+
     const getProductDetails = (productID: string) => {
         const productInfo = allProductsData.find((product: ProductDetails) => product.product_ID === productID);
         if (!productInfo) return "Package details not available";
@@ -178,8 +183,15 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
     const handleToggle = (vehicleId: string) => {
         setExpanded((prev) => ({ ...prev, [vehicleId]: !prev[vehicleId] }));
     };
-    const handleTrack = (vehicle_ID: string) => {
-        router.push(`/liveTracking?vehicle_ID=${vehicle_ID}`);
+    // const handleTrack = (vehicle_ID: string) => {
+    //     router.push(`/liveTracking?vehicle_ID=${vehicle_ID}`);
+    // };
+    // In your order details component
+    const handleTrack = (allocation: Allocation) => {
+        // const allocationString = JSON.stringify(allocation);
+        // const encodedAllocation = encodeURIComponent(allocationString);
+        localStorage.setItem("allocationData", JSON.stringify(allocation));
+        router.push(`/liveTracking`);
     };
     const handleRouteReply = (vehicle_ID: string) => {
         router.push(`/liveTracking/autoreply?vehicle_ID=${vehicle_ID}`);
@@ -259,7 +271,18 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
         };
     }, []);
 
-    console.log('allo', allocations)
+    // console.log('allo', allocations)
+
+    useEffect(() => {
+        if (orderId) {
+            fetchOrderById();
+        }
+    }, [orderId, fetchOrderById]);
+
+    if (isFetching) return <p>Loading...</p>;
+    if (error) return <p>Error fetching order details</p>;
+    console.log('order by id:', order?.order?.order_status);
+
     return (
         <Box>
             <Backdrop
@@ -943,13 +966,25 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                                     {assignedOrder?.data[0]?.allocated_vehicles?.some(
                                         (vehicle: string) => vehicle === allocation.vehicle_ID
                                     ) && (
-                                            <Button
-                                                variant="contained"
-                                                color="primary"
-                                                onClick={() => handleTrack(allocation.vehicle_ID)}
-                                            >
-                                                View Track
-                                            </Button>
+                                            <>
+                                                {order?.order?.order_status === "Finished" ? (
+                                                    <Button
+                                                        variant="contained"
+                                                        color="primary"
+                                                        onClick={() => handleRouteReply(allocation.vehicle_ID)}
+                                                    >
+                                                        Route Reply
+                                                    </Button>
+                                                ) : (
+                                                    <Button
+                                                        variant="contained"
+                                                        color="primary"
+                                                        onClick={() => handleTrack(allocation)}
+                                                    >
+                                                        View Track
+                                                    </Button>
+                                                )}
+                                            </>
                                         )}
                                 </Box>
                             </Box>

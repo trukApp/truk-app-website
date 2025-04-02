@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { GoogleMap, Marker, Polyline, useLoadScript } from '@react-google-maps/api';
+import { useSearchParams } from 'next/navigation';
 
 const mapContainerStyle = {
     width: '100%',
@@ -15,6 +16,9 @@ interface VehicleLocation {
 }
 
 const AutoReply = () => {
+    const searchParams = useSearchParams();
+        const vehicleId = searchParams.get('vehicle_ID') || '';
+        console.log('vehicleId:', vehicleId);
     const { isLoaded } = useLoadScript({
         googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
     });
@@ -28,8 +32,8 @@ const AutoReply = () => {
         try {
             // const vehicleId = 'TS02EY1313';
             const vehicleId = 'TS08JB3663';
-            const fromDateUTC = '1742927400000';
-            const toDateUTC = '1743003000000';
+            const fromDateUTC = '1742754600000';
+            const toDateUTC = '1743359399000';
             const userId = process.env.NEXT_PUBLIC_VAMOSYS_USERID || '';
             console.log(userId)
 
@@ -41,6 +45,7 @@ const AutoReply = () => {
                     latitude: parseFloat(loc.latitude),
                     longitude: parseFloat(loc.longitude),
                 }));
+                console.log('locations:', locations)
                 setVehicleLocations(locations);
                 if (locations?.length > 0) {
                     setCenter({ lat: locations?.[0].latitude, lng: locations?.[0].longitude });
