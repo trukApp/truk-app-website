@@ -994,5 +994,4 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
 };
 
 
-// export default withAuthComponent(ProductMasterPage);
-export default ProductMasterPage
+export default withAuthComponent(ProductMasterPage);
