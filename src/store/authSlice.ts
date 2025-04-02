@@ -82,6 +82,27 @@ export interface IPackageTax {
   taxRate: string;
 }
 
+export interface DriverPointDeviation {
+  lat: number;
+  lng: number;
+  time: string;
+  deviationDistanceKM: string;
+  reason: string;
+}
+
+interface DeviationState {
+  message: string;
+  order_ID: string;
+  vehicle_ID: string;
+  expected_distance: string;
+  actual_distance: string;
+  start_deviation_km: string;
+  end_deviation_km: string;
+  deviation_detected: boolean;
+  deviation_reasons: string[];
+  driverPointDeviations: DriverPointDeviation[];
+}
+
 export interface IAuthState {
   authState: boolean;
   bablu: string;
@@ -101,6 +122,7 @@ export interface IAuthState {
   packageTax: IPackageTax | null;
   completedState: boolean[];
   filters: ConfigFilters;
+  deviationData: DeviationState | null;
 }
 
 export interface ConfigFilters {
@@ -134,6 +156,7 @@ const initialState: IAuthState = {
     sortUnlimitedUsage: true,
     sortOwnership: true,
   },
+  deviationData: null,
 };
 
 export const authSlice = createSlice({
@@ -207,6 +230,9 @@ export const authSlice = createSlice({
     setSelectedRoutes: (state, action: PayloadAction<ISelectedRoute[]>) => {
       state.selectedRoutes = action.payload;
     },
+    setDeviationData: (state, action: PayloadAction<DeviationState>) => {
+      state.deviationData = action.payload;
+    },
   },
 });
 
@@ -231,6 +257,7 @@ export const {
   resetCompletedSteps,
   setFilters,
   setSelectedRoutes,
+  setDeviationData,
 } = authSlice.actions;
 
 export const authReducer = authSlice.reducer;

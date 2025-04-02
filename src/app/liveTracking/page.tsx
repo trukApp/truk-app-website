@@ -2,8 +2,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { GoogleMap, Marker, Polyline, useJsApiLoader } from "@react-google-maps/api";
 // import { useSearchParams } from 'next/navigation';
-import { useRouter } from 'next/navigation';
-import { Box, Button, Typography } from '@mui/material';
+// import { useRouter } from 'next/navigation';
+import { Box, Typography } from '@mui/material';
 import Image from "next/image";
 
 const mapContainerStyle = {
@@ -65,6 +65,8 @@ const LiveTracking: React.FC = () => {
     const [trackedPath, setTrackedPath] = useState<{ lat: number; lng: number }[]>([]);
     const [isTracking, setIsTracking] = useState(false);
     const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null);
+    const [orderId, setOrderId] = useState(null);
+    const [vehicleId, setVehicleId] = useState(null);
 
     const vehicleSuggestRoute = allocation?.route;
     const allocations = allocation?.sampledRoutePoints
@@ -72,7 +74,7 @@ const LiveTracking: React.FC = () => {
         sampledRoutePoints: allocations
     };
     const suggestedRoute: { lat: number; lng: number }[] = routeData?.sampledRoutePoints ?? [];
-    const router = useRouter();
+    // const router = useRouter();
     // const vehicleId = "TS08JB3663";
     const deviceId = "867232055767934";
 
@@ -81,12 +83,20 @@ const LiveTracking: React.FC = () => {
 
     useEffect(() => {
         const storedData = localStorage.getItem("allocationData");
+        const storedOrder = localStorage.getItem("orderData");
         if (storedData) {
             const allocation = JSON.parse(storedData);
+            // console.log('allocation:', allocation)
             setAllocation(allocation)
+            setVehicleId(allocation?.vehicle_ID);
+        }
+        if (storedOrder) {
+            const parsedOrder = JSON.parse(storedOrder);
+            setOrderId(parsedOrder?.order?.order_ID);
         }
     }, []);
-
+    console.log('orderid:', orderId);
+    console.log('vehicleid:', vehicleId);
     useEffect(() => {
         const fetchVehicles = async () => {
             try {
@@ -175,26 +185,23 @@ const LiveTracking: React.FC = () => {
 
     const checkRouteDeviation = () => {
         if (!selectedVehicle) return;
-
         const vehicleLat = parseFloat(selectedVehicle.latitude);
         const vehicleLng = parseFloat(selectedVehicle.longitude);
-        // Haversine Formula
-        // Distance Matrix API.
+        // Haversine Formula // Distance Matrix API.
         const isDeviated = suggestedRoute.every((point) => {
-            // console.log(point.lat,point.lng);
             const distance = calculateDistance(vehicleLat, vehicleLng, point.lat, point.lng);
             return distance > 500;
         });
-        console.log('isDeviated:', isDeviated)
+        // console.log('isDeviated:', isDeviated)
         const distances = suggestedRoute.map((point) =>
             calculateDistance(vehicleLat, vehicleLng, point.lat, point.lng)
         );
         const minDistance = Math.min(...distances);
         const minDistanceKm = minDistance / 1000;
-        console.log('Min Distance from Route (km):', minDistanceKm);
-        // if (isDeviated && minDistance > 500) {
-        //     alert(`Alert: Vehicle is deviating from the suggested route by ${minDistanceKm.toFixed(2)} km!`);
-        // }
+        // console.log('Min Distance from Route (km):', minDistanceKm);
+        if (isDeviated && minDistance > 500) {
+            alert(`Alert: Vehicle is deviating from the suggested route by ${minDistanceKm.toFixed(2)} km!`);
+        }
     };
 
     useEffect(() => {
@@ -222,9 +229,9 @@ const LiveTracking: React.FC = () => {
     if (!isLoaded) return <p>Loading Maps...</p>;
     if (!mapCenter) return <p>Loading vehicle data...</p>;
 
-    const handleViewRouteDetails = () => {
-        router.push('/route-details');
-    };
+    // const handleViewRouteDetails = () => {
+    //     router.push('/route-details');
+    // };
 
     return (
         <div>
@@ -299,7 +306,7 @@ const LiveTracking: React.FC = () => {
 
             {selectedVehicle && (
                 <div>
-                    <h3 style={{color: "#83214F", textDecoration: 'underline'}}>Vehicle Details</h3>
+                    <h3 style={{ color: "#83214F", textDecoration: 'underline' }}>Vehicle Details</h3>
                     <p><strong>Registration:</strong> {selectedVehicle.regNo}</p>
                     <p><strong>Status:</strong> {selectedVehicle.status}</p>
                     <p><strong>Speed:</strong> {selectedVehicle.speed} km/h</p>
@@ -319,13 +326,13 @@ const LiveTracking: React.FC = () => {
                     </ul>
                 </div>
             )}
-            <Button
+            {/* <Button
                 variant="contained"
                 color="primary"
                 onClick={handleViewRouteDetails}
             >
                 View Route Details
-            </Button>
+            </Button> */}
         </div>
     );
 };

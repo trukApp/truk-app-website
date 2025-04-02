@@ -152,7 +152,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
 
     const { data: order, refetch: fetchOrderById, isFetching, error } = useGetOrderByIdQuery(
         { orderId },
-        { skip: !orderId } // Skip if orderId is not available
+        { skip: !orderId }
     );
 
     const getProductDetails = (productID: string) => {
@@ -188,12 +188,16 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
     // };
     // In your order details component
     const handleTrack = (allocation: Allocation) => {
-        // const allocationString = JSON.stringify(allocation);
-        // const encodedAllocation = encodeURIComponent(allocationString);
         localStorage.setItem("allocationData", JSON.stringify(allocation));
+        if (order) {
+            localStorage.setItem("orderData", JSON.stringify(order));
+        }
         router.push(`/liveTracking`);
     };
     const handleRouteReply = (vehicle_ID: string) => {
+        if (order) {
+            localStorage.setItem("orderData", JSON.stringify(order));
+        }
         router.push(`/liveTracking/autoreply?vehicle_ID=${vehicle_ID}`);
     };
     const handleAssign = (allocation: Allocation) => {
@@ -967,7 +971,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                                         (vehicle: string) => vehicle === allocation.vehicle_ID
                                     ) && (
                                             <>
-                                                {order?.order?.order_status === "Finished" ? (
+                                                {order?.order?.order_status === "finished" ? (
                                                     <Button
                                                         variant="contained"
                                                         color="primary"

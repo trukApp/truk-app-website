@@ -50,7 +50,8 @@ export const apiSlice = createApi({
     "Orders",
     "AssignedOrders",
     "SingleVehicleMaster",
-    "DataCount"
+    "DataCount",
+    "ValidateRoute"
   ],
   endpoints: (builder) => ({
     userLogin: builder.mutation<User, { phone: string; password: string }>({
@@ -673,6 +674,14 @@ export const apiSlice = createApi({
         params,
       }),
     }),
+    postValidateRoute: builder.mutation({
+      query: (body) => ({
+        url: "route/validate-route",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "ValidateRoute" }],
+    }),
   }),
 });
 
@@ -745,4 +754,5 @@ export const {
   useDeleteSingleVehicleMasterMutation,
   useGetAssignedOrderByIdQuery,
   useGetFilteredProductsQuery,
+  usePostValidateRouteMutation,
 } = apiSlice;
