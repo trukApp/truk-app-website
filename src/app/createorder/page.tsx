@@ -54,14 +54,12 @@ const CreateOrder: React.FC = () => {
             } else {
                 setSnackbarMessage("An unexpected error occurred.");
             }
-            // setSnackbarMessage(`Please select the packages of same SHIP FROM location`);
             setSnackbarSeverity("warning");
             setSnackbarOpen(true);
         }
     }, [packageSelectErr])
 
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
-    // const selectedTrucks = useAppSelector((state) => state.auth.selectedTrucks || []);
 
 
     const { data: packagesData, error: allProductsFectchingError, isLoading: isPackagesLoading } = useGetAllPackagesForOrderQuery([]);
@@ -73,7 +71,6 @@ const CreateOrder: React.FC = () => {
 
 
     const handleCreateOrder = async () => {
-        // const selectedOrderType = selectedTrucks[0]
         const createOrderBody = {
             scenario_label: conformOrderPayload?.message,
             total_cost: conformOrderPayload?.totalCost,
@@ -86,7 +83,9 @@ const CreateOrder: React.FC = () => {
         try {
             const response = await createOrder(createOrderBody).unwrap();
             if (response) {
-                setSnackbarMessage(`Order ID ${response?.order_ID} created successfully!`);
+                const orderIds = response.created_orders.map((order: { order_ID: string }) => order.order_ID).join(', ');
+                setSnackbarMessage(`Order ID(s) ${orderIds} created successfully!`);
+                // setSnackbarMessage(`Order ID ${response?.order_ID} created successfully!`);
                 setSnackbarSeverity("success");
                 setSnackbarOpen(true);
                 setActiveStep(0)

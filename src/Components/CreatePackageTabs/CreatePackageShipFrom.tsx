@@ -173,8 +173,9 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
 
     const handleDefaultLocationChange = async (locId: string, defaultValue: number | boolean) => {
         try {
-            const response = await updateDefulatFromLocation({ locId: locId, defShipFrom: defaultValue ? 1 : 0 }).unwrap();
-            console.log("response: ", response)
+            const updatedLocationId = locId?.split(',')[0] ?? '';
+            await updateDefulatFromLocation({ locId: updatedLocationId, defShipFrom: defaultValue ? 1 : 0 }).unwrap();
+            // console.log("response: ", response)
         } catch (error) {
             console.log("Getting error while changing default value: ", error)
         }
