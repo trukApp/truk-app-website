@@ -38,13 +38,6 @@ const CreatePackage = () => {
     const productListFromRedux = useAppSelector((state) => state.auth.packagesDetails);
     const packagePickUpAndDropTimingsFromRedux = useAppSelector((state) => state.auth.packagePickAndDropTimings);
     const [createPackageOrder, { isLoading: isPackageCreating }] = useCreatePackageForOrderMutation()
-    console.log("shipFromReduxValues: ", shipFromReduxValues)
-    console.log("shipToReduxValues: ", shipToReduxValues)
-    console.log("productListFromRedux: ", productListFromRedux)
-    console.log("shipToReduxValues: ", shipToReduxValues)
-    console.log("packageAddtionalInfoFromRedux: ", packageAddtionalInfoFromRedux)
-    console.log("packagePickUpAndDropTimingsFromRedux: ", packagePickUpAndDropTimingsFromRedux)
-    console.log("packageTaxFromRedux: ", packageTaxFromRedux)
 
     const CustomStepIcon = (props: StepIconProps) => {
         const { active, completed, icon } = props;
@@ -114,7 +107,6 @@ const CreatePackage = () => {
 
     const handleSubmit = async () => {
         const firstUnfilledIndex = completedSteps.findIndex((step) => !step);
-        console.log("firstunfilled ", firstUnfilledIndex)
         if (firstUnfilledIndex !== -1) {
             setSnackbarMessage("Some steps are unfilled! Navigating to first unfilled step...");
             setSnackbarSeverity("warning");

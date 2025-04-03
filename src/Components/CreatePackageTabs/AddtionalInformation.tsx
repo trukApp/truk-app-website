@@ -66,18 +66,11 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
         },
     };
 
-    // const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, setFieldValue: (field: string, value: File | null) => void) => {
-    //     const file = event.target.files?.[0] || null;
-    //     setSelectedFile(file);
-    //     setFieldValue('additionalInfo.file', file);
-    // };
     const handleFileChange = async (
         event: React.ChangeEvent<HTMLInputElement>,
         setFieldValue: (field: string, value: File | string | null) => void
     ) => {
         const file = event.target.files?.[0] || null;
-        console.log("File selected:", file);
-
         setSelectedFile(file);
         setFieldValue("additionalInfo.file", file);
 
@@ -85,14 +78,11 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
             try {
                 const formData = new FormData();
                 formData.append("image", file);
-                // Log FormData keys & values to verify
                 for (const [key, value] of formData.entries()) {
                     console.log("FormData entry:", key, value);
                 }
 
                 const response = await imageUpload(formData).unwrap();
-                console.log("File upload response:", response);
-
                 if (response?.imageUrl) {
                     setFieldValue("additionalInfo.file", response.imageUrl);
                 }
@@ -109,13 +99,12 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
             ...values.additionalInfo,
             fileUrl: values.additionalInfo.file || "",
         };
-        console.log("updated :", updatedAdditionalInfo)
         dispatch(setPackageAddtionalInfo(updatedAdditionalInfo));
         onNext(values);
         actions.setSubmitting(false);
     };
 
- 
+
 
     return (
         <Formik
@@ -123,7 +112,7 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
             validationSchema={validationSchema}
             onSubmit={handleFormSubmit}
         >
-            {({ touched, errors, setFieldValue , setFieldTouched }) => (
+            {({ touched, errors, setFieldValue, setFieldTouched }) => (
                 <Form>
                     <Typography variant="h6" sx={{ fontWeight: 'bold', textAlign: 'center', marginTop: 3 }}>Additional Details</Typography>
                     <Grid className={styles.formsBgContainer}>
@@ -160,8 +149,6 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
                                     label="PO #"
                                     fullWidth
                                     size="small"
-                                // error={touched.additionalInfo?.poNumber && Boolean(errors.additionalInfo?.poNumber)}
-                                // helperText={touched.additionalInfo?.poNumber && errors.additionalInfo?.poNumber}
                                 />
                             </Grid>
 
@@ -172,8 +159,6 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
                                     label="Sales Order #"
                                     fullWidth
                                     size="small"
-                                // error={touched.additionalInfo?.salesOrderNumber && Boolean(errors.additionalInfo?.salesOrderNumber)}
-                                // helperText={touched.additionalInfo?.salesOrderNumber && errors.additionalInfo?.salesOrderNumber}
                                 />
                             </Grid>
 
@@ -184,13 +169,9 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
                                     label="Department"
                                     fullWidth
                                     size="small"
-                                // error={touched.additionalInfo?.department && Boolean(errors.additionalInfo?.department)}
-                                // helperText={touched.additionalInfo?.department && errors.additionalInfo?.department}
                                 />
                             </Grid>
 
-
-                            {/* File Upload */}
                             <Grid item xs={12} md={4.8}>
                                 <label>Upload File (Image/PDF)</label>
                                 <Field name="additionalInfo.file">
@@ -210,12 +191,8 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
                                                             component="label"
                                                             sx={{
                                                                 minWidth: "auto",
-                                                                // padding: "6px 12px",
                                                                 margin: 0,
-                                                                height: '100%', // Makes sure button aligns with TextField height
-                                                                // display: 'flex',
-                                                                // alignItems: 'center',
-                                                                // justifyContent: 'center',
+                                                                height: '100%',
                                                             }}
                                                         >
                                                             Browse
@@ -245,25 +222,22 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
                                 </Field>
                             </Grid>
 
-                            <Grid item xs={12} sx={{textAlign:'center' ,marginTop:'15px'}}>
-                                    {errors.additionalInfo && typeof errors.additionalInfo === "string" && (
-                                        <Typography color="error" sx={{fontSize:'13px'}}>{errors.additionalInfo}</Typography>
-                                    )}
+                            <Grid item xs={12} sx={{ textAlign: 'center', marginTop: '15px' }}>
+                                {errors.additionalInfo && typeof errors.additionalInfo === "string" && (
+                                    <Typography color="error" sx={{ fontSize: '13px' }}>{errors.additionalInfo}</Typography>
+                                )}
                             </Grid>
                             {/* Navigation Buttons */}
                             <Grid container spacing={2} justifyContent="center" >
                                 <Grid item>
                                     <CustomButtonOutlined onClick={onBack}>Back</CustomButtonOutlined>
                                 </Grid>
-                                {/* <Grid item>
-                                    <CustomButtonFilled >Next</CustomButtonFilled>
-                                </Grid> */}
                                 <Grid item>
                                     <CustomButtonFilled
                                         onClick={() => {
-                                        setFieldTouched("additionalInfo.invoiceNumber", true);
-                                        setFieldTouched("additionalInfo.poNumber", true);
-                                        setFieldTouched("additionalInfo.salesOrderNumber", true);
+                                            setFieldTouched("additionalInfo.invoiceNumber", true);
+                                            setFieldTouched("additionalInfo.poNumber", true);
+                                            setFieldTouched("additionalInfo.salesOrderNumber", true);
                                         }}
                                     >
                                         Next

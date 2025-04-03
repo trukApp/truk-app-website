@@ -8,8 +8,7 @@ import { setPackageTax } from '@/store/authSlice';
 import { CustomButtonFilled, CustomButtonOutlined } from '../ReusableComponents/ButtonsComponent';
 import styles from './CreatePackage.module.css';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
-
-
+import { Select, MenuItem, FormHelperText, FormControl, InputLabel } from '@mui/material';
 interface TaxInfoValues {
     taxInfo: {
         senderGSTN: string;
@@ -58,9 +57,9 @@ const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
 
 
     const handleCreatePackageClick = (values: TaxInfoValues) => {
-        dispatch(setPackageTax(values.taxInfo)); // Save to Redux
-        setFormValues(values); // Temporarily store
-        setOpenConfirm(true);  // Show popup
+        dispatch(setPackageTax(values.taxInfo));
+        setFormValues(values);
+        setOpenConfirm(true);
     };
 
     const handleFinalSubmit = () => {
@@ -115,14 +114,16 @@ const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
                             </Grid>
 
                             <Grid item xs={12} md={2.4}>
-                                <Field
-                                    as={TextField}
-                                    name="taxInfo.isSelfTransport"
-                                    label="Self Transport (Yes/No)"
-                                    fullWidth size='small'
-                                    error={touched.taxInfo?.isSelfTransport && Boolean(errors.taxInfo?.isSelfTransport)}
-                                    helperText={touched.taxInfo?.isSelfTransport && errors.taxInfo?.isSelfTransport}
-                                />
+                                <FormControl fullWidth size="small" error={touched.taxInfo?.isSelfTransport && Boolean(errors.taxInfo?.isSelfTransport)}>
+                                    <InputLabel>Self Transport</InputLabel>
+                                    <Field as={Select} name="taxInfo.isSelfTransport" label="Self Transport">
+                                        <MenuItem value="Yes">Yes</MenuItem>
+                                        <MenuItem value="No">No</MenuItem>
+                                    </Field>
+                                    {touched.taxInfo?.isSelfTransport && errors.taxInfo?.isSelfTransport && (
+                                        <FormHelperText>{errors.taxInfo.isSelfTransport}</FormHelperText>
+                                    )}
+                                </FormControl>
                             </Grid>
                             <Grid item xs={12} md={2.4}>
                                 <Field
