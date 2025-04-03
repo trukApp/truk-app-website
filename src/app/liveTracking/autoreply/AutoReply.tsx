@@ -58,8 +58,8 @@ const AutoReply = () => {
     const fetchData = async () => {
         try {
             const vehicleId = 'TS08JB3663';
-            const fromDateUTC = '1742754600000';
-            const toDateUTC = '1743359399000';
+            const fromDateUTC = '1743656612135';
+            const toDateUTC = '1743674552135';
             const userId = process.env.NEXT_PUBLIC_VAMOSYS_USERID || '';
 
             const response = await fetch(`https://gpsvtsprobend.vamosys.com/getVehicleHistory?vehicleId=${vehicleId}&fromDateUTC=${fromDateUTC}&toDateUTC=${toDateUTC}&interval=-1&userId=${userId}`);
