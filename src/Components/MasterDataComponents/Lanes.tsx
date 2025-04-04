@@ -34,7 +34,8 @@ import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 import { Location } from './Locations';
 import { CustomButtonFilled } from '../ReusableComponents/ButtonsComponent';
-
+import { useQuery } from '@apollo/client';
+import { GET_LANES } from '@/api/graphqlApiSlice';
 interface LaneDetails {
   // General Data
   id: string;
@@ -96,6 +97,14 @@ const TransportationLanes = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editRow, setEditRow] = useState<LaneDetails | null>(null);
   const { data, error, isLoading } = useGetLanesMasterQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize });
+// GraphqlAPI
+  const [page, setPage] = useState(1);
+  const { loading, error:laneErr, data:laneData, refetch } = useQuery(GET_LANES, {
+    variables: { page: paginationModel.page + 1, limit: paginationModel.pageSize },
+  });
+
+  if (loading) return <p>Loading lanes...</p>;
+  if (laneErr) return <p>Error: {laneErr.message}</p>;
   const unitsofMeasurement = useSelector((state: RootState) => state.auth.unitsofMeasurement);
 
   const [postLane, { isLoading: postLaneLoading }] = usePostLaneMasterMutation();

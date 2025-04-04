@@ -5,7 +5,8 @@ import { Backdrop, CircularProgress, Grid, Paper, Typography, Box } from "@mui/m
 import Allocations from "@/Components/OrderOverViewAllocations/Allocations";
 import { useSearchParams } from 'next/navigation';
 import moment from "moment";
-
+import { useQuery } from "@apollo/client";
+import { GET_ORDER_BY_ID } from '@/api/graphqlApiSlice';
 const OrderDetailedOverview: React.FC = () => {
     const searchParams = useSearchParams();
     const orderId = searchParams.get('order_ID') || '';
@@ -14,6 +15,18 @@ const OrderDetailedOverview: React.FC = () => {
     const allocatedPackageDetails = order?.allocated_packages_details
     // console.log("orderData: ", orderData);
     console.log("allocatedPackageDetails: ", allocatedPackageDetails)
+
+
+
+    const { loading:loadinOrderById, error, data:getOrderById } = useQuery(GET_ORDER_BY_ID, {
+        variables: { order_ID: orderId },
+        skip: !orderId, // Prevents query execution if `id` is undefined
+      });
+    
+    //   if (loading) return <p>Loading...</p>;
+    //   if (error) return <p>Error: {error.message}</p>;
+    
+    //   const order = data?.getOrderById?.order;
 
     return (
         <Box sx={{ p: {xs:0.2 , md:3} }}>

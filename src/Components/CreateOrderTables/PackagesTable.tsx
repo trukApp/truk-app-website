@@ -7,7 +7,8 @@ import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader
 import { useGetAllProductsQuery, useGetLocationMasterQuery, useGetPackageMasterQuery } from '@/api/apiSlice';
 import { Location } from '../MasterDataComponents/Locations';
 import moment from 'moment';
-
+import { useQuery } from "@apollo/client";
+import { GET_ALL_PACKAGES, } from '@/api/graphqlApiSlice';
 
 export interface Product {
     prod_ID: string;
@@ -58,6 +59,8 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
     const { data: productsData } = useGetAllProductsQuery({})
     const allProductsData = productsData?.products || [];
     const { data: packagesData } = useGetPackageMasterQuery({})
+        // graphqlAPI
+        const { data: allPackagesDatas, loading: packagesLoading, error: packagesError } = useQuery(GET_ALL_PACKAGES);
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
     const getAllPackages = packagesData?.packages.length > 0 ? packagesData?.packages : []
 

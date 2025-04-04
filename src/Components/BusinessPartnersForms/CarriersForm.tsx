@@ -27,6 +27,8 @@ import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 import { Location } from '../MasterDataComponents/Locations';
 import { Lane } from '../MasterDataComponents/Lanes';
+import { useQuery } from '@apollo/client';
+import { GET_LANES } from '@/api/graphqlApiSlice';
 interface CarrierFormFE {
     id: string;
     carrierId: string,
@@ -72,6 +74,14 @@ const CarrierForm: React.FC = () => {
     const [deleteCarrier, { isLoading: deleteCarrierLoading }] = useDeleteCarrierMasterMutation()
     const { data: locationsData, isLoading: isLocationLoading } = useGetLocationMasterQuery({})
     const { data: lanesData } = useGetLanesMasterQuery([]);
+
+    const [page, setPage] = useState(1);
+    const { loading, error:laneErr, data:laneData, refetch } = useQuery(GET_LANES, {
+      variables: { },
+    });
+  
+    if (loading) return <p>Loading lanes...</p>;
+    if (laneErr) return <p>Error: {laneErr.message}</p>;
 
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
     const getLocationDetails = (loc_ID: string) => {

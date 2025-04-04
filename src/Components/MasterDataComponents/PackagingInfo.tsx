@@ -16,6 +16,8 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
+import { useQuery } from "@apollo/client";
+import {GET_ALL_PACKAGES } from '@/api/graphqlApiSlice';
 export interface Package {
   handling_unit_type: string;
   pack_length: number,
@@ -51,6 +53,8 @@ const PackagingForm = () => {
   const [showForm, setShowForm] = useState(false);
   const { data, error, isLoading } = useGetPackageMasterQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize })
   const { data: allData } = useGetPackageMasterQuery({});
+      // graphqlAPI
+      const { data: allPackagesDatas, loading: packagesLoading, error: packagesError } = useQuery(GET_ALL_PACKAGES);
   const [postPackage, { isLoading: postPackageLoading }] = usePostPackageMasterMutation()
   const [editPackage, { isLoading: editPackageLoading }] = useEditPackageMasterMutation()
   const [deletePackage, { isLoading: deletePackageLoading }] = useDeletePackageMasterMutation()

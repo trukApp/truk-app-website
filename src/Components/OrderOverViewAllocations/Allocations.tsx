@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useRef, useState } from "react";
 import { Box, Collapse, IconButton, Paper, Typography, Grid, Button, useTheme, useMediaQuery, TextField, Modal, MenuItem, Backdrop, CircularProgress, List, ListItem, Tooltip } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -11,6 +12,9 @@ import Image from "next/image";
 import AdditionalInformation from '@/Components/CreatePackageTabs/AddtionalInformation';
 import { DeviceInfoBE } from "../MasterDataComponents/DeviceMaster";
 import { Location } from "../MasterDataComponents/Locations";
+import client from "@/lib/apollo-client";
+import { GET_ASSIGNED_ORDER ,GET_DEVICES} from '../../api/graphqlApiSlice';
+import { useQuery } from "@apollo/client";
 
 interface Allocation {
     vehicle_ID: string;
@@ -72,6 +76,15 @@ export interface ProductDetails {
 }
 
 const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocatedPackageDetails }) => {
+    const { data:assignedOrders, loading, error, refetch } = useQuery(GET_ASSIGNED_ORDER, {
+        variables: { order_ID: orderId },
+        skip: !orderId, // Prevent query from running until an order ID is entered
+      });
+
+
+
+
+
     const wrapperRef = useRef<HTMLDivElement>(null);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -118,6 +131,13 @@ console.log("display vehicles :", displayVehicles)
     const [editAssignOrder, { isLoading: editAssignLoading }] = useEditAssignOrderOrderMutation()
     const { data: assignedOrder } = useGetAssignedOrderByIdQuery({ order_ID: orderId })
     const { data: allDevices, isLoading: deviceLoading } = useGetDeviceMasterQuery({})
+
+    const { loading:devicesLoading, error:deviceERR, data:GetDEVICES } = useQuery(GET_DEVICES, {
+        variables: {  },
+      });
+    
+      if (loading) return <p>Loading devices...</p>;
+      if (deviceERR) return <p>Error: {deviceERR.message}</p>;
     const { data: productsData } = useGetAllProductsQuery({})
     const allProductsData = productsData?.products || [];
     const { data: locationsData  } = useGetLocationMasterQuery({});

@@ -1,11 +1,12 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { GridColDef, DataGrid, GridRenderCellParams } from '@mui/x-data-grid';
 import { Box, Typography, IconButton } from '@mui/material';
 import { Visibility } from '@mui/icons-material';
 import { useGetAllOrdersQuery } from '@/api/apiSlice';
-
+import { useQuery } from '@apollo/client';
+import { GET_ALL_ORDERS } from '@/api/graphqlApiSlice';
 interface Route {
   start: { address: string; latitude: number; longitude: number };
   end: { address: string; latitude: number; longitude: number };
@@ -38,6 +39,18 @@ interface Order {
 
 const OrdersGrid: React.FC = () => {
   const { data: allOrders, error, isLoading } = useGetAllOrdersQuery({});
+  const [page, setPage] = useState(1);
+  const limit = 10;
+  const { loading:orderLoading, error:err, data:getAllOrders } = useQuery(GET_ALL_ORDERS, {
+    variables: { page, limit },
+    fetchPolicy: 'cache-and-network',
+  });
+
+  if (orderLoading) return <p>Loading orders...</p>;
+  if (err) return <p>Error loading orders: {err.message}</p>;
+
+  const orders = getAllOrders?.allOrders?.orders || [];
+
   const router = useRouter();
 
   if (isLoading) {

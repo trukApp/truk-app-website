@@ -9,7 +9,8 @@ import { useDispatch } from "react-redux";
 import { useGetUomMasterQuery } from "@/api/apiSlice";
 import { useEffect } from "react";
 import { setUnitsofMeasurement } from "@/store/authSlice";
-
+import { useQuery } from '@apollo/client';
+import { GET_UOM } from '@/api/graphqlApiSlice';
 
 
 export default function Home() {
@@ -18,6 +19,12 @@ export default function Home() {
   if (uomErr) {
     console.log("uom err:", uomErr)
   }
+
+
+  const { loading, error, data } = useQuery(GET_UOM);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error.message}</p>;
   useEffect(() => {
     if (uom && uom.uomList) {
       const unitsofMeasure = uom.uomList.map((item: { unit_name: string }) => item.unit_name);

@@ -5,7 +5,8 @@ import { Grid, Tooltip, Typography } from '@mui/material';
 import DataGridSkeletonLoader from '@/Components/ReusableComponents/DataGridSkeletonLoader';
 import { useGetAllPackagesForOrderQuery, useGetLocationMasterQuery, useGetPackageMasterQuery } from '@/api/apiSlice';
 import { Location } from '@/Components/MasterDataComponents/Locations';
-
+import { useQuery } from "@apollo/client";
+import {GET_ALL_PACKAGES } from '@/api/graphqlApiSlice';
 
 export interface Product {
     prod_ID: string;
@@ -50,6 +51,9 @@ export interface Package {
 const PackagesTable = () => {
     const { data: locationsData } = useGetLocationMasterQuery({})
     const { data: packagesData } = useGetPackageMasterQuery({})
+    // graphqlAPI
+    const { data: allPackagesDatas, loading: packagesLoading, error: packagesError } = useQuery(GET_ALL_PACKAGES);
+  
     const { data: packagesOrderData, error: allProductsFectchingError, isLoading: isPackagesLoading } = useGetAllPackagesForOrderQuery([]);
     if (allProductsFectchingError) {
     }
@@ -71,6 +75,8 @@ const PackagesTable = () => {
 
         return details.length > 0 ? details.join(", ") : "Location details not available";
     };
+
+
     const getPackageDetails = (pac_ID: string) => {
         const packageInfo = getAllPackages.find((pkg: Package) => pkg.pac_ID === pac_ID);
 

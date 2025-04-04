@@ -21,6 +21,8 @@ import DataGridSkeletonLoader from "@/Components/ReusableComponents/DataGridSkel
 import SnackbarAlert from "@/Components/ReusableComponents/SnackbarAlerts";
 import { VehicleDetails } from "@/Components/MasterDataComponents/Vehicles";
 import { withAuthComponent } from "@/Components/WithAuthComponent";
+import { useQuery } from "@apollo/client";
+import { GET_ALL_VEHICLES } from '@/api/graphqlApiSlice';
 export interface TruckFormDetails {
     truckId: string;
     id: string;
@@ -82,6 +84,9 @@ const VehicleOnly: React.FC = () => {
     // const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
     //     setPaginationModel(newPaginationModel);
     // };
+
+    // graphql API
+    const { data: getSingleVehicleMaster, loading: getSingleVehicleMasterLoading, error:Error } = useQuery(GET_ALL_VEHICLES);
     const [showForm, setShowForm] = useState(false);
     const initialFormValues = {
         id: "",

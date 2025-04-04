@@ -19,6 +19,8 @@ import DataGridSkeletonLoader from "../ReusableComponents/DataGridSkeletonLoader
 import { Location } from "./Locations";
 import SnackbarAlert from "../ReusableComponents/SnackbarAlerts";
 import { setUnitsofMeasurement } from "@/store/authSlice";
+import { useQuery } from '@apollo/client';
+import { GET_UOM } from '@/api/graphqlApiSlice';
 export interface VehicleFormValues {
 	hazardousStorage: boolean;
 	temperatureControl: boolean;
@@ -203,6 +205,11 @@ const VehicleForm: React.FC = () => {
 	if (uomErr) {
 		console.log("uom err:", uomErr)
 	}
+
+	const { loading, error:UOMErr, data:UOMData } = useQuery(GET_UOM);
+
+	if (loading) return <p>Loading...</p>;
+	if (UOMErr) return <p>Error: {UOMErr.message}</p>;
 	useEffect(() => {
 		if (uom && uom.uomList) {
 			const unitsofMeasure = uom.uomList.map((item: { unit_name: string }) => item.unit_name);

@@ -17,7 +17,8 @@ import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 import { Location } from './Locations';
 import { CarrierFormBE } from '../BusinessPartnersForms/CarriersForm';
 import { CustomButtonFilled } from '../ReusableComponents/ButtonsComponent';
-
+import { useQuery } from '@apollo/client';
+import { GET_DEVICES } from '@/api/graphqlApiSlice';
 
 interface DeviceMasterValues {
   id: string;
@@ -54,6 +55,13 @@ const DeviceMaster: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editRow, setEditRow] = useState<DeviceMasterValues | null>(null);
   const { data, error, isLoading, refetch } = useGetDeviceMasterQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize });
+// GraphqlAPi
+  const { loading, error:deviceERR, data:GetDEVICES } = useQuery(GET_DEVICES, {
+    variables: { page: paginationModel.page + 1, limit: paginationModel.pageSize },
+  });
+
+  if (loading) return <p>Loading devices...</p>;
+  if (deviceERR) return <p>Error: {deviceERR.message}</p>;
   const [postDevice, { isLoading: postDeviceLoading, isSuccess: postSuccess, }] = usePostDeviceMasterMutation();
   const [editDevice, { isLoading: editDeviceLoading, isSuccess: editSuccess }] = useEditDeviceMasterMutation();
   const [deleteDevice, { isLoading: deleteDeviceLoading, isSuccess: deleteSuccess }] = useDeleteDeviceMasterMutation()

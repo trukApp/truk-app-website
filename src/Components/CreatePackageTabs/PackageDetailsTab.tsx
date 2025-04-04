@@ -16,7 +16,8 @@ import {
 } from "@/api/apiSlice";
 import { Product } from "@/app/productmaster/page";
 import { CustomButtonFilled, CustomButtonOutlined } from "../ReusableComponents/ButtonsComponent";
-
+import { useQuery } from '@apollo/client';
+import { SEARCH_PRODUCTS } from '@/api/graphqlApiSlice';
 interface PackageDetails {
   productId: string;
   productName: string;
@@ -51,6 +52,11 @@ const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
     skip: searchKey.length < 3,
   });
 
+// graphqlAPi
+  const { loading, error, data, refetch } = useQuery(SEARCH_PRODUCTS, {
+    variables: { searchKey: "", page: 1, limit: 10 },
+    skip: true, // Skip initial execution until search is performed
+  });
   const allProductList = allProducts?.products || [];
   const filteredProducts = filteredProductsData?.results || [];
 

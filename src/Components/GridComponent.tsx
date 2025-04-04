@@ -7,7 +7,8 @@ import {
 } from "@mui/x-data-grid";
 import { CircularProgress  } from "@mui/material";
 import { useGetDataCountQuery } from "@/api/apiSlice";
-
+import { useQuery } from '@apollo/client';
+import { GET_COUNTS } from "@/api/graphqlApiSlice";
 interface DataCounts {
   vehicles: number;
   products: number;
@@ -60,6 +61,15 @@ export const DataGridComponent: React.FC<PaginationComponentProps> = ({
 
   const computedRowCount =  data?.counts?.[activeEntity] ?? 0;
 
+
+  const { loading, error, data:getCount } = useQuery(GET_COUNTS, {
+    fetchPolicy: 'cache-and-network',
+  });
+
+  if (loading) return <p>Loading counts...</p>;
+  if (error) return <p>Error fetching counts: {error.message}</p>;
+
+  const counts = getCount?.getCounts?.counts || {};
   return (
     <div style={{ height: 500, width: "100%", fontFamily: "Poppins", marginTop: "-30px" }}>
       <DataGrid

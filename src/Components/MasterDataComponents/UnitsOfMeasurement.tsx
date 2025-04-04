@@ -30,7 +30,8 @@ import {
 } from "@/api/apiSlice";
 import DataGridSkeletonLoader from "../ReusableComponents/DataGridSkeletonLoader";
 import SnackbarAlert from "../ReusableComponents/SnackbarAlerts";
-
+import { useQuery } from '@apollo/client';
+import { GET_UOM } from '@/api/graphqlApiSlice';
 interface FormValues {
 	unitName: string;
 	unitDescription: string;
@@ -153,6 +154,11 @@ const UnitsOfMeasurement: React.FC = () => {
 		console.error("Error fetching uom:", error);
 		// Handle the error case
 	}
+// graphQl API
+	const { loading, error:getUOMErr, data:UOMData } = useQuery(GET_UOM);
+
+	if (loading) return <p>Loading...</p>;
+	if (getUOMErr) return <p>Error: {getUOMErr.message}</p>;
 	const validationSchema = Yup.object({
 		unitName: Yup.string().required("Unit Name is required"),
 		unitDescription: Yup.string().required("Unit Description is required"),
