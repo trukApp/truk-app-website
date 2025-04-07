@@ -183,6 +183,7 @@ const LiveTracking: React.FC = () => {
         return R * c;
     };
 
+    // If the vehicle deviates more than 500 meters from the suggested route, a deviation alert will be triggered.
     const checkRouteDeviation = () => {
         if (!selectedVehicle) return;
         const vehicleLat = parseFloat(selectedVehicle.latitude);
@@ -204,6 +205,7 @@ const LiveTracking: React.FC = () => {
         }
     };
 
+    // It checks for any deviation every 5 seconds.
     useEffect(() => {
         const deviationInterval = setInterval(() => {
             checkRouteDeviation();
