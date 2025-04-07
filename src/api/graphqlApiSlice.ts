@@ -211,3 +211,28 @@ export const GET_LANES = gql`
     }
   }
 `;
+export const SEARCH_LOCATIONS = gql`
+query SearchLocations($searchKey: String!, $page: Int, $limit: Int) {
+  searchLocations(searchKey: $searchKey, page: $page, limit: $limit) {
+    loc_ID
+    city
+    state
+    pincode
+    loc_type
+  }
+}
+`;
+export const GET_ALL_LOCATIONS = gql`
+  query GetAllLocations($page: Int, $limit: Int) {
+    getAllLocations(page: $page, limit: $limit) {
+      message
+      locations {
+        loc_ID
+        city
+        state
+        pincode
+        loc_type
+      }
+    }
+  }
+`;

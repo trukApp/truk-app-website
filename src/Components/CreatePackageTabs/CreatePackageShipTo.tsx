@@ -10,6 +10,8 @@ import { Location } from '../MasterDataComponents/Locations';
 import { IShipFrom } from './CreatePackageShipFrom';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 import { CustomButtonFilled, CustomButtonOutlined } from '../ReusableComponents/ButtonsComponent';
+import { useLazyQuery, useQuery} from "@apollo/client";
+import { GET_ALL_LOCATIONS, SEARCH_LOCATIONS } from '@/api/graphqlApiSlice';
 interface ShipToProps {
     onNext: (values: IShipFrom) => void;
     onBack: () => void;
@@ -58,7 +60,20 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
     const [showSuggestions, setShowSuggestions] = useState(false);
     const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
     const displayLocations = searchKey ? filteredLocations?.results || [] : allLocations;
+// graphqlAPI
+const [searchLocations, { loading: LocationLoading, data: filteredLocationsData }] = useLazyQuery(SEARCH_LOCATIONS);
 
+const handleSearch = () => {
+  if (searchKey.length >= 3) {
+    searchLocations({ variables: { searchKey, page: 1, limit: 5 } });
+  }
+};
+const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL_LOCATIONS, {
+    // variables: { page, limit: 10 },
+  });
+
+  if (getallLoads) return <p>Loading...</p>;
+  if (er) return <p>Error: {er.message}</p>;
     const getAllLocations = displayLocations.filter(
         (location: Location) => location.loc_ID !== shipFromReduxValues?.locationId
     );

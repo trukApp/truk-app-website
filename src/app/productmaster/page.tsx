@@ -42,8 +42,8 @@ import { Location } from '@/Components/MasterDataComponents/Locations';
 import { Package } from '@/Components/MasterDataComponents/PackagingInfo';
 import { CustomButtonFilled } from '@/Components/ReusableComponents/ButtonsComponent';
 import { withAuthComponent } from '@/Components/WithAuthComponent';
-import { useQuery } from "@apollo/client";
-import { GET_ALL_PRODUCTS,GET_ALL_PACKAGES,GET_LOCATIONS } from '@/api/graphqlApiSlice';
+import { useQuery ,useLazyQuery} from "@apollo/client";
+import { GET_ALL_PRODUCTS,GET_ALL_PACKAGES,GET_LOCATIONS,SEARCH_LOCATIONS,GET_ALL_LOCATIONS} from '@/api/graphqlApiSlice';
 // const client = new GraphQLClient('https://truk-be.onrender.com/graphql', {
 //   headers: {
 //     Authorization: `Bearer ${localStorage.getItem("token")}`, 
@@ -150,6 +150,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
     const productsData = isLoading ? productsFromServer : productsDataFromClient;
     const [showForm, setShowForm] = useState(false);
     const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery({})
+    
     const { data: packagesData, isLoading: isPackageLoading } = useGetPackageMasterQuery({})
     const [createNewProduct, { isLoading: createLoading }] = useCreateProductMutation();
     const [deleteProduct, { isLoading: deleteProductLoading }] = useDeleteProductMutation()
@@ -158,6 +159,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
     const [searchKey, setSearchKey] = useState('');
     const [showSuggestions, setShowSuggestions] = useState(false);
     const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
+
     const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
     const getAllPackages = packagesData?.packages.length > 0 ? packagesData?.packages : []
     const allProductsData = productsData?.products || [];
@@ -177,8 +179,22 @@ const { data: allProductsDatas, loading: productsLoading, error: productsError, 
     variables: { page: 1, limit: 10 },
   });
   
+  const [searchLocations, { loading: LocationLoading, data: filteredLocationsData }] = useLazyQuery(SEARCH_LOCATIONS);
+
+  const handleSearch = () => {
+    if (searchKey.length >= 3) {
+      searchLocations({ variables: { searchKey, page: 1, limit: 5 } });
+    }
+  };
 
 
+     //graphQlAPI
+     const { loading, error, data } = useQuery(GET_ALL_LOCATIONS, {
+        // variables: { page, limit: 10 },
+      });
+    
+      if (loading) return <p>Loading...</p>;
+      if (error) return <p>Error: {error.message}</p>;
 
 
 

@@ -8,7 +8,7 @@ import { useGetAllProductsQuery, useGetLocationMasterQuery, useGetPackageMasterQ
 import { Location } from '../MasterDataComponents/Locations';
 import moment from 'moment';
 import { useQuery } from "@apollo/client";
-import { GET_ALL_PACKAGES, } from '@/api/graphqlApiSlice';
+import { GET_ALL_LOCATIONS, GET_ALL_PACKAGES, } from '@/api/graphqlApiSlice';
 
 export interface Product {
     prod_ID: string;
@@ -61,6 +61,13 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
     const { data: packagesData } = useGetPackageMasterQuery({})
         // graphqlAPI
         const { data: allPackagesDatas, loading: packagesLoading, error: packagesError } = useQuery(GET_ALL_PACKAGES);
+
+        const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL_LOCATIONS, {
+            // variables: { page, limit: 10 },
+          });
+        
+          if (getallLoads) return <p>Loading...</p>;
+          if (er) return <p>Error: {er.message}</p>;
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
     const getAllPackages = packagesData?.packages.length > 0 ? packagesData?.packages : []
 

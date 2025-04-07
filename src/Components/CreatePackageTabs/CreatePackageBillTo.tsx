@@ -11,7 +11,8 @@ import { Location } from '../MasterDataComponents/Locations';
 import { IShipFrom } from './CreatePackageShipFrom';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 import { CustomButtonFilled, CustomButtonOutlined } from '../ReusableComponents/ButtonsComponent';
-
+import { useLazyQuery, useQuery} from "@apollo/client";
+import { GET_ALL_LOCATIONS, SEARCH_LOCATIONS } from '@/api/graphqlApiSlice';
 interface ShipFromProps {
     onNext: (values: IShipFrom) => void;
     onBack: () => void;
@@ -59,6 +60,20 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
     const displayLocations = searchKey ? filteredLocations?.results || [] : allLocations;
     console.log("display:", displayLocations)
 
+    // graphqlAPI
+    const [searchLocations, { loading: LocationLoading, data: filteredLocationsData }] = useLazyQuery(SEARCH_LOCATIONS);
+
+    const handleSearch = () => {
+      if (searchKey.length >= 3) {
+        searchLocations({ variables: { searchKey, page: 1, limit: 5 } });
+      }
+    };
+    const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL_LOCATIONS, {
+        // variables: { page, limit: 10 },
+      });
+    
+      if (getallLoads) return <p>Loading...</p>;
+      if (er) return <p>Error: {er.message}</p>;
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");

@@ -28,7 +28,7 @@ import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 import { Location } from '../MasterDataComponents/Locations';
 import { Lane } from '../MasterDataComponents/Lanes';
 import { useQuery } from '@apollo/client';
-import { GET_LANES } from '@/api/graphqlApiSlice';
+import { GET_ALL_LOCATIONS, GET_LANES } from '@/api/graphqlApiSlice';
 interface CarrierFormFE {
     id: string;
     carrierId: string,
@@ -73,6 +73,13 @@ const CarrierForm: React.FC = () => {
     const [editCarrier, { isLoading: editCarrierLoading }] = useEditCarrierMasterMutation()
     const [deleteCarrier, { isLoading: deleteCarrierLoading }] = useDeleteCarrierMasterMutation()
     const { data: locationsData, isLoading: isLocationLoading } = useGetLocationMasterQuery({})
+       //graphQlAPI
+       const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL_LOCATIONS, {
+        // variables: { page, limit: 10 },
+      });
+    
+      if (getallLoads) return <p>Loading...</p>;
+      if (er) return <p>Error: {er.message}</p>;
     const { data: lanesData } = useGetLanesMasterQuery([]);
 
     const [page, setPage] = useState(1);

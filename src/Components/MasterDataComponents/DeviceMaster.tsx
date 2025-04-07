@@ -18,8 +18,9 @@ import { Location } from './Locations';
 import { CarrierFormBE } from '../BusinessPartnersForms/CarriersForm';
 import { CustomButtonFilled } from '../ReusableComponents/ButtonsComponent';
 import { useQuery } from '@apollo/client';
-import { GET_DEVICES } from '@/api/graphqlApiSlice';
-
+import { GET_ALL_LOCATIONS, GET_DEVICES } from '@/api/graphqlApiSlice';
+import { useLazyQuery} from "@apollo/client";
+import { SEARCH_LOCATIONS } from '@/api/graphqlApiSlice';
 interface DeviceMasterValues {
   id: string;
   deviceId: string;
@@ -73,6 +74,20 @@ const DeviceMaster: React.FC = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
   const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
+  // graphqlAPI
+  const [searchLocations, { loading: LocationLoading, data: filteredLocationsData }] = useLazyQuery(SEARCH_LOCATIONS);
+
+  const handleSearch = () => {
+    if (searchKey.length >= 3) {
+      searchLocations({ variables: { searchKey, page: 1, limit: 5 } });
+    }
+  };
+  const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL_LOCATIONS, {
+    // variables: { page, limit: 10 },
+  });
+
+  if (getallLoads) return <p>Loading...</p>;
+  if (er) return <p>Error: {er.message}</p>;
   const getLocationDetails = (loc_ID: string) => {
     const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
     if (!location) return "Location details not available";

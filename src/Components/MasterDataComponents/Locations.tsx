@@ -32,6 +32,8 @@ import MassUpload from '../MassUpload/MassUpload';
 import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 import { CustomButtonFilled } from '../ReusableComponents/ButtonsComponent';
+import { GET_ALL_LOCATIONS } from '@/api/graphqlApiSlice';
+import { useQuery } from '@apollo/client';
 
 export interface Location {
   location_id: number;
@@ -123,8 +125,13 @@ const Locations: React.FC = () => {
   }
 
   const locationsMaster = data?.locations
+//graphQlAPi
+  const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL_LOCATIONS, {
+    // variables: { page, limit: 10 },
+  });
 
-
+  if (getallLoads) return <p>Loading...</p>;
+  if (er) return <p>Error: {er.message}</p>;
   const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
     setPaginationModel(newPaginationModel);
   };

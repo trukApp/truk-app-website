@@ -35,7 +35,9 @@ import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 import { Location } from './Locations';
 import { CustomButtonFilled } from '../ReusableComponents/ButtonsComponent';
 import { useQuery } from '@apollo/client';
-import { GET_LANES } from '@/api/graphqlApiSlice';
+import { GET_ALL_LOCATIONS, GET_LANES } from '@/api/graphqlApiSlice';
+import { useLazyQuery} from "@apollo/client";
+import { SEARCH_LOCATIONS } from '@/api/graphqlApiSlice';
 interface LaneDetails {
   // General Data
   id: string;
@@ -120,6 +122,30 @@ const TransportationLanes = () => {
   const { data: destinationFilteredLocations } = useGetFilteredLocationsQuery(searchKeyDestination.length >= 3 ? searchKeyDestination : null, { skip: searchKeyDestination.length < 3 });
   const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
   const displayLocationsDest = searchKeyDestination ? destinationFilteredLocations?.results || [] : getAllLocations;
+
+
+  // graphqlAPI
+  const [searchLocations, { loading: LocationLoading, data: filteredLocationsData }] = useLazyQuery(SEARCH_LOCATIONS);
+
+  const handleSearch = () => {
+    if (searchKey.length >= 3) {
+      searchLocations({ variables: { searchKey, page: 1, limit: 5 } });
+    }
+  };
+  const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL_LOCATIONS, {
+    // variables: { page, limit: 10 },
+  });
+
+  if (getallLoads) return <p>Loading...</p>;
+  if (er) return <p>Error: {er.message}</p>;
+  // graphqlAPI
+  const [searchDestinationLocations, { loading: DestinationLoading, data: filteredDestinationLocations }] = useLazyQuery(SEARCH_LOCATIONS);
+
+  const handleDestinationSearch = () => {
+    if (searchKeyDestination.length >= 3) {
+      searchLocations({ variables: { searchKey, page: 1, limit: 5 } });
+    }
+  };
   const getLocationDetails = (loc_ID: string) => {
     const location = getAllLocations.find((loc: Location) => loc?.loc_ID === loc_ID);
     if (!location) return "Location details not available";

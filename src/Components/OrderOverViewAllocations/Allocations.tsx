@@ -13,7 +13,7 @@ import AdditionalInformation from '@/Components/CreatePackageTabs/AddtionalInfor
 import { DeviceInfoBE } from "../MasterDataComponents/DeviceMaster";
 import { Location } from "../MasterDataComponents/Locations";
 import client from "@/lib/apollo-client";
-import { GET_ASSIGNED_ORDER ,GET_DEVICES} from '../../api/graphqlApiSlice';
+import { GET_ALL_LOCATIONS, GET_ASSIGNED_ORDER ,GET_DEVICES} from '../../api/graphqlApiSlice';
 import { useQuery } from "@apollo/client";
 
 interface Allocation {
@@ -156,6 +156,14 @@ console.log("display vehicles :", displayVehicles)
 
         return details.length > 0 ? details.join(", ") : "Location details not available";
     };
+
+    //graphQlAPI
+    const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL_LOCATIONS, {
+        // variables: { page, limit: 10 },
+      });
+    
+      if (getallLoads) return <p>Loading...</p>;
+      if (er) return <p>Error: {er.message}</p>;
 useEffect(() => {
     if (!searchKey) {
         setShowSuggestions(false);

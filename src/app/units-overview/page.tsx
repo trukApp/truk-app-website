@@ -6,7 +6,7 @@ import DataGridSkeletonLoader from '@/Components/ReusableComponents/DataGridSkel
 import { useGetAllPackagesForOrderQuery, useGetLocationMasterQuery, useGetPackageMasterQuery } from '@/api/apiSlice';
 import { Location } from '@/Components/MasterDataComponents/Locations';
 import { useQuery } from "@apollo/client";
-import {GET_ALL_PACKAGES } from '@/api/graphqlApiSlice';
+import {GET_ALL_LOCATIONS, GET_ALL_PACKAGES } from '@/api/graphqlApiSlice';
 
 export interface Product {
     prod_ID: string;
@@ -53,6 +53,13 @@ const PackagesTable = () => {
     const { data: packagesData } = useGetPackageMasterQuery({})
     // graphqlAPI
     const { data: allPackagesDatas, loading: packagesLoading, error: packagesError } = useQuery(GET_ALL_PACKAGES);
+       //graphQlAPI
+       const { loading, error, data } = useQuery(GET_ALL_LOCATIONS, {
+        // variables: { page, limit: 10 },
+      });
+    
+      if (loading) return <p>Loading...</p>;
+      if (error) return <p>Error: {error.message}</p>;
   
     const { data: packagesOrderData, error: allProductsFectchingError, isLoading: isPackagesLoading } = useGetAllPackagesForOrderQuery([]);
     if (allProductsFectchingError) {

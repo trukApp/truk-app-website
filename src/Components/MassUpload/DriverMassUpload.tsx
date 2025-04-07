@@ -18,6 +18,8 @@ import {
   driversColumnNames
 } from './CSVColumnNames';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
+import { GET_ALL_LOCATIONS } from '@/api/graphqlApiSlice';
+import { useQuery } from '@apollo/client';
 
 type EntityKey = 'drivers';
 
@@ -132,7 +134,13 @@ const DriverMassUpload: React.FC<MassUploadProps> = ({ arrayKey }) => {
     link.setAttribute('download', `${arrayKey}_template.csv`);
     link.click();
   };
+// graphQlAPi
+const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL_LOCATIONS, {
+  // variables: { page, limit: 10 },
+});
 
+if (getallLoads) return <p>Loading...</p>;
+if (er) return <p>Error: {er.message}</p>;
 
   const handleUpload = async () => {
     if (!file) {

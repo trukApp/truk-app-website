@@ -15,7 +15,8 @@ import MassUpload from '../MassUpload/MassUpload';
 import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 import { Location } from '../MasterDataComponents/Locations';
-
+import { useLazyQuery, useQuery} from "@apollo/client";
+import { GET_ALL_LOCATIONS, SEARCH_LOCATIONS } from '@/api/graphqlApiSlice';
 interface PartnerFunctions {
     forwarding_agent: string;
     goods_supplier: string;
@@ -93,11 +94,33 @@ const SupplierForm: React.FC = () => {
     const [showSuggestions, setShowSuggestions] = useState(false);
     const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
     const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
+// graphqlAPI
+const [searchLocations, { loading: LocationLoading, data: filteredLocationsData }] = useLazyQuery(SEARCH_LOCATIONS);
 
+const handleSearch = () => {
+  if (searchKey.length >= 3) {
+    searchLocations({ variables: { searchKey, page: 1, limit: 5 } });
+  }
+};
+const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL_LOCATIONS, {
+    // variables: { page, limit: 10 },
+  });
+
+  if (getallLoads) return <p>Loading...</p>;
+  if (er) return <p>Error: {er.message}</p>;
     const [searchKeyDestination, setSearchKeyDestination] = useState('');
     const [showDestinations, setShowDestinations] = useState(false);
     const { data: destinationFilteredLocations } = useGetFilteredLocationsQuery(searchKeyDestination.length >= 3 ? searchKeyDestination : null, { skip: searchKeyDestination.length < 3 });
     const displayLocationsDest = searchKeyDestination ? destinationFilteredLocations?.results || [] : getAllLocations;
+
+    // graphqlAPI
+    const [searchDestinationLocations, { loading: DestinationLoading, data: filteredDestinationLocations }] = useLazyQuery(SEARCH_LOCATIONS);
+
+    const handleSearchDestination = () => {
+      if (searchKeyDestination.length >= 3) {
+        searchDestinationLocations({ variables: { searchKey, page: 1, limit: 5 } });
+      }
+    };
     const getLocationDetails = (loc_ID: string) => {
         const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
         if (!location) return "Location details not available";

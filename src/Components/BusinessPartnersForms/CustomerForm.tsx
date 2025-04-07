@@ -15,7 +15,8 @@ import MassUpload from '../MassUpload/MassUpload';
 import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 import { Location } from '../MasterDataComponents/Locations';
-
+import { useLazyQuery, useQuery} from "@apollo/client";
+import { GET_ALL_LOCATIONS, SEARCH_LOCATIONS } from '@/api/graphqlApiSlice';
 
 
 // Validation schema for CustomerForm
@@ -142,7 +143,20 @@ const CustomerForm: React.FC = () => {
     const [showDestinations, setShowDestinations] = useState(false);
     const { data: destinationFilteredLocations } = useGetFilteredLocationsQuery(searchKeyDestination.length >= 3 ? searchKeyDestination : null, { skip: searchKeyDestination.length < 3 });
     const displayLocationsDest = searchKeyDestination ? destinationFilteredLocations?.results || [] : getAllLocations;
+// graphqlAPI
+    const [searchLocations, { loading: LocationLoading, data: filteredLocationsData }] = useLazyQuery(SEARCH_LOCATIONS);
 
+    const handleSearch = () => {
+      if (searchKey.length >= 3) {
+        searchLocations({ variables: { searchKey, page: 1, limit: 5 } });
+      }
+    };
+    const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL_LOCATIONS, {
+        // variables: { page, limit: 10 },
+      });
+    
+      if (getallLoads) return <p>Loading...</p>;
+      if (er) return <p>Error: {er.message}</p>;
     const getLocationDetails = (loc_ID: string) => {
         const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
         if (!location) return "Location details not available";
