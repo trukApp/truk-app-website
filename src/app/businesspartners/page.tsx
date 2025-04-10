@@ -10,7 +10,6 @@ import CustomerForm from '@/Components/BusinessPartnersForms/CustomerForm';
 import DriverForm from '@/Components/BusinessPartnersForms/DriverForm';
 import SuppilerForm from '@/Components/BusinessPartnersForms/SuppilerForm';
 import CarriersForm from '@/Components/BusinessPartnersForms/CarriersForm';
-// import AgentForm from '@/Components/BusinessPartnersForms/AgentForm';
 import { withAuthComponent } from '@/Components/WithAuthComponent';
 
 const BusinessPartnersPage: React.FC = () => {

@@ -42,12 +42,11 @@ const validationSchema = Yup.object({
 
 const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
     const dispatch = useAppDispatch()
-    const { data: locationsData, error: getLocationsError, isLoading: isLocationLoading } = useGetLocationMasterQuery([])
+    const { data: locationsData, isLoading: isLocationLoading } = useGetLocationMasterQuery([])
     const [updateDefulatFromLocation, { isLoading: defaultLocationLoading }] = useUpdateShipToDefaultLocationIdMutation();
     const allLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
     const defaultLocationData = allLocations?.find((eachLocation: Location) =>
         eachLocation?.def_bill_to === 1)
-    // const defaultLocationDataInputText = `${defaultLocationData.loc_ID},${defaultLocationData?.loc_desc}, ${defaultLocationData.city}, ${defaultLocationData.state}, ${defaultLocationData.pincode}`
     const defaultLocationDataInputText = defaultLocationData
         ? `${defaultLocationData.loc_ID},${defaultLocationData.loc_desc}, ${defaultLocationData.city}, ${defaultLocationData.state}, ${defaultLocationData.pincode}`
         : '';
@@ -61,12 +60,11 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
     const [showSuggestions, setShowSuggestions] = useState(false);
     const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
     const displayLocations = searchKey ? filteredLocations?.results || [] : allLocations;
-
+    const shipFromLocationIdData = shipFromReduxValues?.locationId
+    const shipFromLocationId = shipFromLocationIdData?.split(',')[0] ?? '';
     const getAllLocations = displayLocations.filter(
-        (location: Location) => location.loc_ID !== shipFromReduxValues?.locationId
+        (location: Location) => location.loc_ID !== shipFromLocationId
     );
-
-    console.log("getDefaultLocationId: ", defaultLocationDataInputText)
     const shipFromInitialValues = {
         locationId: shipToReduxValues?.locationId || defaultLocationDataInputText || '',
         locationDescription: shipToReduxValues?.locationDescription || defaultLocationData?.loc_desc || '',
@@ -89,7 +87,7 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
         locationType: shipToReduxValues?.locationType || defaultLocationData?.loc_type || ''
     }
 
-    console.log("getLocationsError: ", getLocationsError)
+    // console.log("getLocationsError: ", getLocationsError)
 
     const handleLocationChange = (
         selectedLocationId: string,
@@ -143,7 +141,8 @@ const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
 
     const handleDefaultLocationChange = async (locId: string, defaultValue: number | boolean) => {
         try {
-            const response = await updateDefulatFromLocation({ locId: locId, defShipFrom: defaultValue ? 1 : 0 }).unwrap();
+            const updatedLocationId = locId?.split(',')[0] ?? '';
+            const response = await updateDefulatFromLocation({ locId: updatedLocationId, defShipFrom: defaultValue ? 1 : 0 }).unwrap();
             console.log("response: ", response)
         } catch (error) {
             console.log("Getting error while changing default value: ", error)
