@@ -61,6 +61,11 @@ interface AllocationsProps {
     orderId: string;
     allocatedPackageDetails: []
 }
+interface FormErrors {
+  truckId?: string;
+  driverId?: string;
+  deviceId?: string;
+}
 interface Product {
     prod_ID: string;
     quantity: number;
@@ -148,8 +153,6 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
     const { data: filteredVehicles, isLoading: filteredVehicleLoading } = useGetFilteredVehiclesQuery(searchKeyVehicle.length >= 3 ? searchKeyVehicle : null, { skip: searchKeyVehicle.length < 3 });
     const displayVehicles = searchKeyVehicle ? filteredVehicles?.results || [] : vehiclesData;
     // console.log("display vehicles :", displayVehicles)
-    const lastVehicle = vehiclesData?.[vehiclesData.length - 1] ?? null;
-
     const [assignModal, setAssignModal] = useState(false);
     const [selectedAllocation, setSelectedAllocation] = useState<Allocation | null>(null);
     const [postAssignOrder, { isLoading: isAssigning }] = usePostAssignOrderMutation()
@@ -253,12 +256,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
         driverId: "",
         deviceId: "",
     });
-    const [errors, setErrors] = useState({
-        truckId: "",
-        driverId: "",
-        deviceId: "",
-        });
-
+const [errors, setErrors] = useState<FormErrors>({});
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   const { name, value } = e.target;
 
@@ -294,7 +292,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
 
     const handleSubmit = async () => {
         let isValid = true;
-        const newErrors: any = {};
+        const newErrors: FormErrors = {};
 
         if (!formData.truckId) {
             newErrors.truckId = "Truck ID is required";

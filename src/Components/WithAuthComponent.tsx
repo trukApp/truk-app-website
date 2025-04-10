@@ -1,6 +1,6 @@
 "use client";
 
-import { SessionProvider, useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { CircularProgress } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import React, { useEffect } from 'react';

@@ -26,8 +26,7 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react"; // 👈 include useSession
 
-const Header = () => {
-   const [loading, setLoading] = useState(false);
+const Header = () => { 
   const [anchorElProfile, setAnchorElProfile] = useState<null | HTMLElement>(null);
   const [anchorElHamburger, setAnchorElHamburger] = useState<null | HTMLElement>(null);
   const router = useRouter();
@@ -75,13 +74,6 @@ const Header = () => {
 
   return (
     <>
-      <Backdrop
-            open={loading}
-            sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
-          >
-            <CircularProgress color="inherit" />
-        </Backdrop>
-      
       <AppBar position="fixed">
       <Toolbar>
         <Typography

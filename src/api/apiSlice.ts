@@ -1,4 +1,4 @@
-import { createApi, FetchArgs, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { BaseQueryApi, createApi, FetchArgs, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import apiConfig from "../Config/Config"; 
 import { getSession } from "next-auth/react";
 
@@ -25,8 +25,8 @@ const baseUrl = apiConfig.develpoment.apiBaseUrl;
 
 const customBaseQuery = async (
   args: string | FetchArgs,
-  api: any,
-  extraOptions: any
+  api:BaseQueryApi ,
+  extraOptions :{}
 ) => {
   const session = await getSession();
   const token = session?.user?.accessToken;
