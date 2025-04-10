@@ -47,7 +47,6 @@ import { withAuthComponent } from '@/Components/WithAuthComponent';
 export interface PackagingType {
     pac_ID: string;
     location: string;
-
 }
 export interface Product {
     locationId: string;
@@ -153,7 +152,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
     const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
     const getAllPackages = packagesData?.packages.length > 0 ? packagesData?.packages : []
     const allProductsData = productsData?.products || [];
-
+console.log('filteredLocations',filteredLocations)
     const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
         setPaginationModel(newPaginationModel);
     };
@@ -463,8 +462,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                     Product master
                 </Typography>
                 <Box display="flex" justifyContent="flex-end" gap={2}>
-                    <Button
-                        variant="contained"
+                    <Button 
                         onClick={() => setShowForm((prev) => !prev)}
                         className={style.createButton}
                     >

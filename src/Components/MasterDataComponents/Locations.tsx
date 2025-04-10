@@ -392,8 +392,7 @@ const Locations: React.FC = () => {
         </Typography>
         <Box display="flex" justifyContent="flex-end">
           <Box gap={2}>
-            <Button
-              variant="contained"
+            <Button 
               onClick={() => setShowForm((prev) => !prev)}
               className={styles.createButton}
             >

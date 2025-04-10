@@ -43,7 +43,8 @@ const TransportManagement = () => {
         {
       title: 'Vehicle',
       icon: <StorageIcon sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
-      onClick: () => router.push('/vehicle'),
+          // onClick: () => router.push('/vehicle'),
+      onClick: () => handleNavigation('/vehicle'),
     },
   ];
 

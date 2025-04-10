@@ -382,8 +382,7 @@ const CustomerForm: React.FC = () => {
                 onClose={() => setSnackbarOpen(false)}
             />
             <Box display="flex" justifyContent="flex-end" gap={2}>
-                <Button
-                    variant="contained"
+                <Button 
                     onClick={() => setShowForm((prev) => !prev)}
                     className={styles.createButton}
                 >

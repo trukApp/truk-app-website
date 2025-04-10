@@ -1,8 +1,8 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { GridColDef, DataGrid, GridRenderCellParams } from '@mui/x-data-grid';
-import { Box, Typography, IconButton } from '@mui/material';
+import { Box, Typography, IconButton, Backdrop, CircularProgress } from '@mui/material';
 import { Visibility } from '@mui/icons-material';
 import { useGetAllOrdersQuery } from '@/api/apiSlice';
 import moment from 'moment';
@@ -38,19 +38,21 @@ interface Order {
 
 
 const OrdersGrid: React.FC = () => {
+  const [loading, setLoading] = useState(false)
   const { data: allOrders, error, isLoading } = useGetAllOrdersQuery({});
   const router = useRouter();
 
-  if (isLoading) {
-    return <Typography>Loading...</Typography>;
-  }
+  // if (isLoading) {
+  //   return <Typography>Loading...</Typography>;
+  // }
 
   if (error) {
-    return <Typography color="error">Failed to load data.</Typography>;
+    return <Typography color="error">Failed to load data. Try after sometime.</Typography>;
   }
 
   const ordersData = allOrders?.orders || [];
   const handleViewOrder = (orderId: string) => {
+    setLoading(true)
     router.push(`/detailed-order-overview?order_ID=${orderId}`);
   };
 
@@ -75,6 +77,12 @@ const OrdersGrid: React.FC = () => {
 
   return (
     <Box sx={{ width: '100%', marginTop: 2 }}>
+        <Backdrop
+              open={loading || isLoading}
+              sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+            >
+              <CircularProgress color="inherit" />
+        </Backdrop>
       <Typography variant="h5" sx={{ marginBottom: 2, textAlign: 'center', fontWeight: 600 }}>
         Orders List
       </Typography>

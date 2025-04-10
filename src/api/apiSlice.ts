@@ -1,29 +1,47 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import apiConfig from "../Config/Config";
-// import { getAccessToken } from "./getAccessToken";
+import { createApi, FetchArgs, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import apiConfig from "../Config/Config"; 
 import { getSession } from "next-auth/react";
 
 // Define the base URL
 const baseUrl = apiConfig.develpoment.apiBaseUrl;
 
 // Base query with headers
-const baseQuery = fetchBaseQuery({
-  baseUrl,
-  prepareHeaders: async (headers) => {
-    try {
-      const session = await getSession();
-      const token = session?.user?.accessToken;
+// const baseQuery = fetchBaseQuery({
+//   baseUrl,
+//   prepareHeaders: async (headers) => {
+//     try {
+//       const session = await getSession();
+//       const token = session?.user?.accessToken;
+//       if (token) {
+//         headers.set("Authorization", `Bearer ${token}`);
+//       }
+//     } catch (error) {
+//       console.error("Error fetching headers", error);
+//     }
+
+//     return headers;
+//   },
+// });
+
+const customBaseQuery = async (
+  args: string | FetchArgs,
+  api: any,
+  extraOptions: any
+) => {
+  const session = await getSession();
+  const token = session?.user?.accessToken;
+  const rawBaseQuery = fetchBaseQuery({
+    baseUrl,
+    prepareHeaders: (headers) => {
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
       }
-    } catch (error) {
-      console.error("Error fetching headers", error);
-    }
+      return headers;
+    },
+  });
 
-    return headers;
-  },
-});
-
+  return rawBaseQuery(args, api, extraOptions);
+};
 // Define types for the API responses
 interface User {
   id: string;
@@ -33,7 +51,7 @@ interface User {
 
 export const apiSlice = createApi({
   reducerPath: "api",
-  baseQuery,
+  baseQuery:customBaseQuery,
   tagTypes: [
     "PARTNERS",
     "DRIVERS",
@@ -280,7 +298,7 @@ export const apiSlice = createApi({
 
     getFilteredVehicles: builder.query({
       query: (searchKey) => ({
-        url: `veh/search-trucks`,
+        url: `self/search-self-vehicles`,
         method: "GET",
         params: { searchKey },
       }),
@@ -633,7 +651,7 @@ export const apiSlice = createApi({
     getSingleVehicleMaster: builder.query({
       query: (params) => {
         return {
-          url: `veh/all-vehicles`,
+          url: `self/all-self-vehicles`,
           method: "GET",
           params,
         };
@@ -643,7 +661,7 @@ export const apiSlice = createApi({
 
     postSingleVehicleMaster: builder.mutation({
       query: (body) => ({
-        url: "veh/add-vehicles",
+        url: "self/add-self-vehicles",
         method: "POST",
         body,
       }),
@@ -652,7 +670,7 @@ export const apiSlice = createApi({
 
     editSingleVehicleMaster: builder.mutation({
       query: ({ body, truckId }) => ({
-        url: `veh/edit-vehicle?truk_id=${truckId}`,
+        url: `self/edit-self-vehicle?str_id=${truckId}`,
         method: "PUT",
         body,
       }),
@@ -661,7 +679,7 @@ export const apiSlice = createApi({
 
     deleteSingleVehicleMaster: builder.mutation({
       query: (truckId) => ({
-        url: `veh/delete-vehicle?truk_id=${truckId}`,
+        url: `self/delete-self-vehicle?str_id=${truckId}`,
         method: "DELETE",
       }),
       invalidatesTags: [{ type: "SingleVehicleMaster", id: "LIST" }],

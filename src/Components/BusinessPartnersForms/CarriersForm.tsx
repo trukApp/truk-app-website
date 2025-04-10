@@ -72,6 +72,7 @@ const CarrierForm: React.FC = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [editRow, setEditRow] = useState<CarrierFormFE | null>(null);;
     const { data, error, isLoading } = useGetCarrierMasterQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize })
+    console.log("carr : ", data)
     const [postCarrier, { isLoading: postCarrierLoading }] = usePostCarrierMasterMutation()
     const [editCarrier, { isLoading: editCarrierLoading }] = useEditCarrierMasterMutation()
     const [deleteCarrier, { isLoading: deleteCarrierLoading }] = useDeleteCarrierMasterMutation()
@@ -372,8 +373,7 @@ const CarrierForm: React.FC = () => {
                 onClose={() => setSnackbarOpen(false)}
             />
             <Box display="flex" justifyContent="flex-end" gap={2}>
-                <Button
-                    variant="contained"
+                <Button 
                     onClick={() => setShowForm((prev) => !prev)}
                     className={styles.createButton}
                 >
