@@ -12,8 +12,6 @@ import {
   Button,
   useTheme,
   useMediaQuery,
-  Backdrop,
-  CircularProgress,
 } from "@mui/material";
 import {
   Menu as MenuIcon,

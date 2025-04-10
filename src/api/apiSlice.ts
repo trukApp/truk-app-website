@@ -26,7 +26,7 @@ const baseUrl = apiConfig.develpoment.apiBaseUrl;
 const customBaseQuery = async (
   args: string | FetchArgs,
   api:BaseQueryApi ,
-  extraOptions :{}
+  extraOptions :Record<string, unknown>
 ) => {
   const session = await getSession();
   const token = session?.user?.accessToken;
