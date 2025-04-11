@@ -21,12 +21,10 @@ declare module "next-auth" {
     error?: string;
   }
 }
-const refreshAccessToken = async (refreshToken: string) => {
-  console.log("token to refresh the accessToken :", refreshToken);
+const refreshAccessToken = async (refreshToken: string) => { 
   try {
     const response = await fetch(
-      `https://dev-api.trukapp.com/truk/log/refresh-token`,
-      //  `http://192.168.10.33:8088/truk/log/refresh-token`,    // teja ofc
+      `https://dev-api.trukapp.com/truk/log/refresh-token`, 
       {
         method: "POST",
         headers: {
@@ -42,14 +40,13 @@ const refreshAccessToken = async (refreshToken: string) => {
     }
 
     const data = await response.json();
-    console.log("refreshtoken success response :", data);
     return {
       accessToken: data.accessToken,
       refreshToken: refreshToken,
       accessTokenExpires: Date.now() + 24 * 60 * 60 * 1000,
     };
   } catch (error) {
-    console.error("Refresh token error:", error);
+    console.error("Refresh token error:", error);0
     return {
       error: "RefreshAccessTokenError",
     };
@@ -123,31 +120,37 @@ export const options: NextAuthOptions = {
     async jwt({ token, user }) {
       // Initial sign-in
       if (user) {
+        console.log("initial USER :", user)
         return {
           id: user.id,
           accessToken: user.accessToken,
           refreshToken: user.refreshToken,
-          accessTokenExpires: Date.now() + 24 * 60 * 60 * 1000,
+          accessTokenExpires: Date.now() + 24 * 60 * 60 * 1000, //1 day
         };
       }
+
       const expiryToken = token.accessTokenExpires as number;
       console.log("token expires in milli secs:", expiryToken - Date.now());
-
       if (Date.now() < expiryToken) {
         return token;
       }
 
-      // Access token has expired, refresh it
-      try {
+        // Access token has expired, refresh it
+      console.log("refreshing please wait ....")
+          try {
         const refreshedToken = await refreshAccessToken(
           token.refreshToken as string
         );
-        console.log("refreshedToken", refreshedToken);
+            console.log("refreshedToken", refreshedToken);
+
+            token = {
+              id: token.id,
+              accessToken: refreshedToken.accessToken,
+              accessTokenExpires: refreshedToken.accessTokenExpires,
+              refreshToken: token.refreshToken,
+              }
         return {
-          ...token,
-          accessToken: refreshedToken.accessToken,
-          accessTokenExpires: refreshedToken.accessTokenExpires,
-          refreshToken: token.refreshToken,
+          ...token, 
         };
       } catch (error) {
         console.error("Failed to refresh token:", error);
@@ -161,17 +164,12 @@ export const options: NextAuthOptions = {
         accessToken: token.accessToken as string,
         refreshToken: token.refreshToken as string,
       };
-      session.expires = new Date(
-        Number(token.accessTokenExpires)
-      ).toISOString();
       if (token.error === "RefreshAccessTokenError") {
         session.error = "RefreshAccessTokenError";
       }
-
       return session;
     },
   },
-
   pages: {
     signIn: "/login",
     error: "/login",
@@ -181,8 +179,10 @@ export const options: NextAuthOptions = {
 
   session: {
     strategy: "jwt",
-    maxAge: 24 * 60 * 60,
-    // maxAge: 1* 60, // 1 minute
+    maxAge: 7 * 24 * 60 * 60, // session max gives the session active time (given refreshtoken expiry time)
+    updateAge : 23 * 60 * 60
+    // maxAge: 5 * 60,
+    // updateAge : 1 * 60
   },
 
   jwt: {

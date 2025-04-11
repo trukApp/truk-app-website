@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from 'next-auth/react';
-import { CircularProgress } from '@mui/material';
+import { Backdrop, CircularProgress, Typography } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import React, { useEffect } from 'react';
 
@@ -9,21 +9,30 @@ import React, { useEffect } from 'react';
 export const withAuthComponent = (WrappedComponent: React.FC): React.FC => {
   const AuthWrapper: React.FC = (props) => {
     const { data: session, status } = useSession();
-    const router = useRouter();
-    console.log("session from withAUth:", session)
+    const router = useRouter(); 
     useEffect(() => {
       if (status === 'unauthenticated') {
         router.push(`/login?callbackUrl=${encodeURIComponent(location.pathname)}`);
       }
     }, [status, router]);
         if (status === 'loading') {
-      return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-          <CircularProgress />
-        </div>
+      return ( 
+                    <Backdrop
+                        sx={{
+                            color: "#ffffff",
+                            zIndex: (theme) => theme.zIndex.drawer + 1,
+                        }} open={true}
+                    >
+          <CircularProgress color="inherit" />
+           <Typography sx={{ ml: 2 }}>Checking session...</Typography>
+                    </Backdrop>
       );
     }
- return session ? <WrappedComponent {...props} /> : null;
+    //  return session ? <WrappedComponent {...props} /> : null;
+        if (status === 'authenticated' && session) {
+            return <WrappedComponent {...props} />;
+          }
+    return null;
   };
   return AuthWrapper
 

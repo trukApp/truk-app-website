@@ -5,14 +5,12 @@ import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import Header from "@/Components/Header";
 import Footer from "@/Components/Footer";
-// import ReduxProvider from "@/store/ReduxProvider";
 import ReduxProvider from "@/store/redux-provider";
 import theme from "@/theme";
 import { Grid, Toolbar } from "@mui/material";
 import { Session } from "next-auth";
 
 const LayoutClientWrapper = ({ children, session }: { children: React.ReactNode; session: Session | null; }) => {
-    console.log("session from client:", session)
     return (
         <SessionProvider session={session}>
             <ThemeProvider theme={theme}>
