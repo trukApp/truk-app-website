@@ -143,14 +143,19 @@ export const options: NextAuthOptions = {
         );
             console.log("refreshedToken", refreshedToken);
 
-            token = {
-              id: token.id,
-              accessToken: refreshedToken.accessToken,
-              accessTokenExpires: refreshedToken.accessTokenExpires,
-              refreshToken: token.refreshToken,
-              }
+            // token = {
+            //   id: token.id,
+            //   accessToken: refreshedToken.accessToken,
+            //   accessTokenExpires: refreshedToken.accessTokenExpires,
+            //   refreshToken: token.refreshToken,
+            //   }
         return {
-          ...token, 
+          // ...token, 
+          id: token.id,
+          accessToken: refreshedToken.accessToken,
+          accessTokenExpires: refreshedToken.accessTokenExpires,
+          refreshToken: token.refreshToken,
+          
         };
       } catch (error) {
         console.error("Failed to refresh token:", error);
