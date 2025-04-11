@@ -46,7 +46,7 @@ const refreshAccessToken = async (refreshToken: string) => {
       accessTokenExpires: Date.now() + 24 * 60 * 60 * 1000,
     };
   } catch (error) {
-    console.error("Refresh token error:", error);0
+    console.error("Refresh token error:", error);
     return {
       error: "RefreshAccessTokenError",
     };
@@ -143,19 +143,14 @@ export const options: NextAuthOptions = {
         );
             console.log("refreshedToken", refreshedToken);
 
-            // token = {
-            //   id: token.id,
-            //   accessToken: refreshedToken.accessToken,
-            //   accessTokenExpires: refreshedToken.accessTokenExpires,
-            //   refreshToken: token.refreshToken,
-            //   }
+            token = {
+              id: token.id,
+              accessToken: refreshedToken.accessToken,
+              accessTokenExpires: refreshedToken.accessTokenExpires,
+              refreshToken: token.refreshToken,
+              }
         return {
-          // ...token, 
-          id: token.id,
-          accessToken: refreshedToken.accessToken,
-          accessTokenExpires: refreshedToken.accessTokenExpires,
-          refreshToken: token.refreshToken,
-          
+          ...token, 
         };
       } catch (error) {
         console.error("Failed to refresh token:", error);
