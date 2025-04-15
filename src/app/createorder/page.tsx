@@ -14,7 +14,8 @@ import SnackbarAlert from '@/Components/ReusableComponents/SnackbarAlerts';
 import { CustomButtonFilled, CustomButtonOutlined } from '@/Components/ReusableComponents/ButtonsComponent';
 import { setSelectedPackages, setSelectedTrucks } from '@/store/authSlice';
 import { useMediaQuery, useTheme } from '@mui/material';
-
+import { useQuery ,useLazyQuery} from "@apollo/client";
+import {GET_ALL_PACKAGES} from '@/api/graphqlApiSlice';
 interface ConfirmPayload {
     message?: string;
     totalCost?: number;
@@ -26,6 +27,8 @@ const CreateOrder: React.FC = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const dispatch = useAppDispatch();
+    // const selectedRoutes = useSelector((state: RootState) => state.auth.selectedRoutes);
+    // console.log('selectedRoutes create order pagetsx: ', selectedRoutes);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
@@ -40,26 +43,38 @@ const CreateOrder: React.FC = () => {
 
     useEffect(() => {
         if (packageSelectErr) {
-            setSnackbarMessage(`Please select the packages of same SHIP FROM location`);
+            console.log('packageSelectErr:', packageSelectErr);
+            if ("data" in packageSelectErr && packageSelectErr.data && typeof packageSelectErr.data === "object") {
+                const errorMessage = (packageSelectErr.data as { error?: string }).error;
+
+                if (errorMessage === "All packages must have the same pickup_date (ignoring time).") {
+                    setSnackbarMessage("All packages must have the same pickup date.");
+                } else {
+                    setSnackbarMessage("Please select the packages of the same SHIP FROM location.");
+                }
+            } else {
+                setSnackbarMessage("An unexpected error occurred.");
+            }
             setSnackbarSeverity("warning");
             setSnackbarOpen(true);
         }
     }, [packageSelectErr])
 
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
-    // const selectedTrucks = useAppSelector((state) => state.auth.selectedTrucks || []);
 
 
-    const { data: packagesData, error: allProductsFectchingError, isLoading: isPackagesLoading } = useGetAllPackagesForOrderQuery([]);
+    // const { data: packagesData, error: allProductsFectchingError, isLoading: isPackagesLoading } = useGetAllPackagesForOrderQuery([]);
+    const { data: packagesData, loading: isPackagesLoading, error: allProductsFectchingError } = useQuery(GET_ALL_PACKAGES);
+    console.log(packagesData)
     if (allProductsFectchingError) {
     }
 
-    const allPackagesData = packagesData?.packages || [];
+    const allPackagesData = packagesData?.getAllPackages.packages || [];
+    console.log(allPackagesData)
     const steps = ['Select Packages', 'Vehicle Optimization', 'Route Optimization', 'Load Optimization', 'Review Order'];
 
 
     const handleCreateOrder = async () => {
-        // const selectedOrderType = selectedTrucks[0]
         const createOrderBody = {
             scenario_label: conformOrderPayload?.message,
             total_cost: conformOrderPayload?.totalCost,
@@ -72,7 +87,9 @@ const CreateOrder: React.FC = () => {
         try {
             const response = await createOrder(createOrderBody).unwrap();
             if (response) {
-                setSnackbarMessage(`Order ID ${response?.order_ID} created successfully!`);
+                const orderIds = response.created_orders.map((order: { order_ID: string }) => order.order_ID).join(', ');
+                setSnackbarMessage(`Order ID(s) ${orderIds} created successfully!`);
+                // setSnackbarMessage(`Order ID ${response?.order_ID} created successfully!`);
                 setSnackbarSeverity("success");
                 setSnackbarOpen(true);
                 setActiveStep(0)

@@ -82,7 +82,7 @@ export const options: NextAuthOptions = {
         try {
           const response = await fetch(
             `https://dev-api.trukapp.com/truk/log/login`,
-            // `http://192.168.10.33:8088/truk/log/login`,    // teja ofc
+            // `http://z:8088/truk/log/login`,    // teja ofc
             {
               method: "POST",
               headers: {

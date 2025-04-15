@@ -98,71 +98,62 @@ const TransportationLanes = () => {
   const [showForm, setShowForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editRow, setEditRow] = useState<LaneDetails | null>(null);
-  const { data, error, isLoading } = useGetLanesMasterQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize });
-// GraphqlAPI
-  const [page, setPage] = useState(1);
-  const { loading, error:laneErr, data:laneData, refetch } = useQuery(GET_LANES, {
+  // const { data, error, isLoading } = useGetLanesMasterQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize });
+
+  const { loading, error:laneErr, data } = useQuery(GET_LANES, {
     variables: { page: paginationModel.page + 1, limit: paginationModel.pageSize },
   });
-
-  if (loading) return <p>Loading lanes...</p>;
-  if (laneErr) return <p>Error: {laneErr.message}</p>;
   const unitsofMeasurement = useSelector((state: RootState) => state.auth.unitsofMeasurement);
 
   const [postLane, { isLoading: postLaneLoading }] = usePostLaneMasterMutation();
   const [editLane, { isLoading: editLaneLoading }] = useEditLaneMasterMutation();
   const [deleteLane, { isLoading: deleteLaneLoading }] = useDeleteLaneMasterMutation()
-  const { data: locationsData, } = useGetLocationMasterQuery({});
-  const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
+  // const { data: locationsData, } = useGetLocationMasterQuery({});
+  // const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
+  const {data:locationsData,error: getLocationsError } = useQuery(GET_ALL_LOCATIONS, {
+    variables: { page:1, limit: 10 },
+  });
+ 
+const getAllLocations = locationsData?.getAllLocations?.locations.length > 0 ? locationsData?.getAllLocations?.locations : []
   const [searchKey, setSearchKey] = useState('');
   const [searchKeyDestination, setSearchKeyDestination] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showDestinations, setShowDestinations] = useState(false);
-  const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
-  const { data: destinationFilteredLocations } = useGetFilteredLocationsQuery(searchKeyDestination.length >= 3 ? searchKeyDestination : null, { skip: searchKeyDestination.length < 3 });
-  const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
-  const displayLocationsDest = searchKeyDestination ? destinationFilteredLocations?.results || [] : getAllLocations;
-
-
-  // graphqlAPI
-  const [searchLocations, { loading: LocationLoading, data: filteredLocationsData }] = useLazyQuery(SEARCH_LOCATIONS);
-
-  const handleSearch = () => {
-    if (searchKey.length >= 3) {
-      searchLocations({ variables: { searchKey, page: 1, limit: 5 } });
-    }
-  };
-  const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL_LOCATIONS, {
-    // variables: { page, limit: 10 },
+  // const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
+  const { loading:filteredLocationLoading,error:searnerr,  data:filteredLocations } = useQuery(SEARCH_LOCATIONS, {
+    variables: {searchKey },
+    skip: searchKey.length < 3, // Avoid fetching when input is too short
   });
+  // const { data: destinationFilteredLocations, isLoading: filteredDestinationLoading } = useGetFilteredLocationsQuery(searchKeyDestination.length >= 3 ? searchKeyDestination : null, { skip: searchKeyDestination.length < 3 });
 
-  if (getallLoads) return <p>Loading...</p>;
-  if (er) return <p>Error: {er.message}</p>;
+  const { loading:filteredDestinationLoading,error:Desearnerr,  data:destinationFilteredLocations } = useQuery(SEARCH_LOCATIONS, {
+    variables: {searchKey: searchKeyDestination },
+    skip: searchKeyDestination.length < 3, // Avoid fetching when input is too short
+  });
+  const displayLocations = searchKey ? filteredLocations?.searchLocations.results || [] : getAllLocations;
+  const displayLocationsDest = searchKeyDestination ? destinationFilteredLocations?.searchLocations.results || [] : getAllLocations;
+
+
+
+
   // graphqlAPI
   const [searchDestinationLocations, { loading: DestinationLoading, data: filteredDestinationLocations }] = useLazyQuery(SEARCH_LOCATIONS);
 
-  const handleDestinationSearch = () => {
-    if (searchKeyDestination.length >= 3) {
-      searchLocations({ variables: { searchKey, page: 1, limit: 5 } });
-    }
-  };
+ 
   const getLocationDetails = (loc_ID: string) => {
+    console.log(loc_ID)
     const location = getAllLocations.find((loc: Location) => loc?.loc_ID === loc_ID);
     if (!location) return "Location details not available";
     const details = [
-      location.address_1,
+      location.loc_ID,
+      location.loc_desc,
       location.city,
       location.state,
-      location.country,
       location.pincode,
-      location.loc_ID
     ].filter(Boolean);
-
     return details.length > 0 ? details.join(", ") : "Location details not available";
   };
-  if (error) {
-    console.error("Error fetching lanes:", error);
-  }
+ 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
@@ -295,7 +286,6 @@ const TransportationLanes = () => {
     }
   };
 
-
   const formik = useFormik({
     initialValues: {
       // General Data
@@ -341,10 +331,10 @@ const TransportationLanes = () => {
 
   useEffect(() => {
     if (editRow) {
-      const sourceLocId = editRow?.sourceLocationId ? editRow.sourceLocationId.split(", ").at(-1) ?? "" : "";
-       const destiLocId = editRow?.destinationLocationId ? editRow.destinationLocationId.split(", ").at(-1) ?? "" : "";
-      setSearchKey(sourceLocId || '')
-      setSearchKeyDestination(destiLocId|| '')
+      const sourceLocId = editRow?.sourceLocationId ? editRow.sourceLocationId.split(", ")[0] ?? "" : "";
+      const destiLocId = editRow?.destinationLocationId ? editRow.destinationLocationId.split(", ")[0] ?? "" : "";
+      setSearchKey(editRow?.sourceLocationId || '')
+      setSearchKeyDestination(editRow?.destinationLocationId || '')
       const editDistance = editRow.transportDistance.split(" ")
       const editDuration = editRow?.transportDuration.split(" ")
       const editCost = editRow.transportCost.split(" ");
@@ -375,10 +365,10 @@ const TransportationLanes = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editRow]);
 
-  const rows = data?.lanes.map((lane: Lane) => ({
+  const rows = data?.allLanes.lanes.map((lane: Lane) => ({
     id: lane?.ln_id,
     laneId: lane?.lane_ID,
-    sourceLocationId : getLocationDetails(lane?.src_loc_ID),
+    sourceLocationId: getLocationDetails(lane?.src_loc_ID),
     destinationLocationId: getLocationDetails(lane?.des_loc_ID),
     vehicleType: lane.lane_transport_data?.vehcle_type || "Unknown",
     transportStartDate: lane?.lane_transport_data?.start_time || "N/A",
@@ -392,11 +382,10 @@ const TransportationLanes = () => {
       : "N/A",
   }));
 
-
   const columns: GridColDef[] = [
     { field: "laneId", headerName: "Lane ID", width: 150 },
-    {field: "sourceLocationId",headerName: "Source Location ID",width: 250},
-    {field: "destinationLocationId",headerName: "Destination Location",width: 250},
+    { field: "sourceLocationId", headerName: "Source Location ID", width: 250 },
+    { field: "destinationLocationId", headerName: "Destination Location", width: 250 },
     { field: "vehicleType", headerName: "Vehicle Type", width: 150 },
     { field: "transportStartDate", headerName: "Transport Start Date", width: 180 },
     { field: "transportEndDate", headerName: "Transport End Date", width: 180 },
@@ -511,7 +500,7 @@ const TransportationLanes = () => {
                     }}
                   />
                   <div ref={wrapperRef} >
-                    {showSuggestions && displayLocations?.length > 0 && (
+                    {showSuggestions && (
                       <Paper
                         style={{
                           maxHeight: 200,
@@ -521,29 +510,39 @@ const TransportationLanes = () => {
                           width: "18%",
                         }}
                       >
-                        <List>
-                          {displayLocations.map((location: Location) => (
-                            <ListItem
-                              key={location.loc_ID}
-                              component="li"
-                              onClick={() => {
-                                setShowSuggestions(false)
-                                setSearchKey(location.loc_ID);
-                                formik.setFieldValue("sourceLocationId", location.loc_ID);
-                              }}
-                              sx={{ cursor: "pointer" }}
-                            >
-                              <Tooltip
-                                title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                placement="right"
+                        {displayLocations?.length > 0 ? (
+                          <List>
+                            {displayLocations.map((location: Location) => (
+                              <ListItem
+                                key={location.loc_ID}
+                                component="li"
+                                onClick={() => {
+                                  setShowSuggestions(false);
+                                  const selectedDisplay = `${location.loc_ID},${location?.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
+                                  setSearchKey(selectedDisplay);
+                                  formik.setFieldValue("sourceLocationId", location.loc_ID);
+                                }}
+                                sx={{ cursor: "pointer" }}
                               >
-                                <span style={{ fontSize: '13px' }}>{location.loc_ID}, {location.city}, {location.state}, {location.pincode}</span>
-                              </Tooltip>
-                            </ListItem>
-                          ))}
-                        </List>
+                                <Tooltip
+                                  title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                  placement="right"
+                                >
+                                  <span style={{ fontSize: '13px' }}>
+                                    {location.loc_ID}, {location.city}, {location.state}, {location.pincode}
+                                  </span>
+                                </Tooltip>
+                              </ListItem>
+                            ))}
+                          </List>
+                        ) : (
+                          <div style={{ padding: "10px", fontSize: "13px", color: "#777", textAlign: "center" }}>
+                            No results found
+                          </div>
+                        )}
                       </Paper>
                     )}
+
                   </div>
                 </Grid>
                 <Grid item xs={12} sm={6} md={2.4}>
@@ -571,7 +570,7 @@ const TransportationLanes = () => {
                         : ""
                     }
                     InputProps={{
-                      endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
+                      endAdornment: filteredDestinationLoading ? <CircularProgress size={20} /> : null,
                     }}
                   />
                   <div ref={wrapperRefDest} >
@@ -592,7 +591,8 @@ const TransportationLanes = () => {
                               component="li"
                               onClick={() => {
                                 setShowDestinations(false)
-                                setSearchKeyDestination(location.loc_ID);
+                                const selectedDisplay = `${location.loc_ID},${location?.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
+                                setSearchKeyDestination(selectedDisplay)
                                 formik.setFieldValue("destinationLocationId", location.loc_ID);
                               }}
                               sx={{ cursor: "pointer" }}
@@ -670,9 +670,17 @@ const TransportationLanes = () => {
                     id="transportDistance"
                     name="transportDistance"
                     label="Transport Distance* "
-                    type="number"
+                    type="number" 
+                    onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															formik.handleChange(e);
+														}
+													}}
                     value={formik.values.transportDistance}
-                    onChange={formik.handleChange}
+                    // onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     error={formik.touched.transportDistance && Boolean(formik.errors.transportDistance)}
                     helperText={formik.touched.transportDistance && formik.errors.transportDistance}
@@ -704,7 +712,15 @@ const TransportationLanes = () => {
                     label="Transport Duration* "
                     type="number"
                     value={formik.values.transportDuration}
-                    onChange={formik.handleChange}
+                    // onChange={formik.handleChange}
+                    onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															formik.handleChange(e);
+														}
+													}}
                     onBlur={formik.handleBlur}
                     error={formik.touched.transportDuration && Boolean(formik.errors.transportDuration)}
                     helperText={formik.touched.transportDuration && formik.errors.transportDuration}
@@ -731,10 +747,18 @@ const TransportationLanes = () => {
                     fullWidth
                     id="transportCost"
                     name="transportCost"
-                    label="Transport Cost(Rs.)* "
+                    label="Transport Cost (Rs.)* "
                     type="number"
                     value={formik.values.transportCost}
-                    onChange={formik.handleChange}
+                    // onChange={formik.handleChange}
+                    onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															formik.handleChange(e);
+														}
+													}}
                     onBlur={formik.handleBlur}
                     error={formik.touched.transportCost && Boolean(formik.errors.transportCost)}
                     helperText={formik.touched.transportCost && formik.errors.transportCost}
@@ -769,13 +793,13 @@ const TransportationLanes = () => {
       </Collapse>
 
       <div style={{ marginTop: "40px" }}>
-        {isLoading ? (
+        {loading ? (
           <DataGridSkeletonLoader columns={columns} />
         ) : (
           <DataGridComponent
             columns={columns}
             rows={rows}
-            isLoading={isLoading}
+            isLoading={loading}
             paginationModel={paginationModel}
             activeEntity='lanes'
             onPaginationModelChange={handlePaginationModelChange}

@@ -49,25 +49,24 @@ export interface Package {
 // }
 
 const PackagesTable = () => {
-    const { data: locationsData } = useGetLocationMasterQuery({})
-    const { data: packagesData } = useGetPackageMasterQuery({})
-    // graphqlAPI
-    const { data: allPackagesDatas, loading: packagesLoading, error: packagesError } = useQuery(GET_ALL_PACKAGES);
-       //graphQlAPI
-       const { loading, error, data } = useQuery(GET_ALL_LOCATIONS, {
-        // variables: { page, limit: 10 },
+    // const { data: locationsData } = useGetLocationMasterQuery({})
+    const {data:locationsData } = useQuery(GET_ALL_LOCATIONS, {
+        variables: { page:1, limit: 10 },
       });
-    
-      if (loading) return <p>Loading...</p>;
-      if (error) return <p>Error: {error.message}</p>;
+    // const { data: packagesData } = useGetPackageMasterQuery({})
+
+    const { data: packagesData, } = useQuery(GET_ALL_PACKAGES);
+    console.log(packagesData)
   
-    const { data: packagesOrderData, error: allProductsFectchingError, isLoading: isPackagesLoading } = useGetAllPackagesForOrderQuery([]);
+    // const { data: packagesOrderData, error: allProductsFectchingError, isLoading: isPackagesLoading } = useGetAllPackagesForOrderQuery([]);
+    const { data: packagesOrderData,  error: allProductsFectchingError, loading: isPackagesLoading} = useQuery(GET_ALL_PACKAGES);
+  
     if (allProductsFectchingError) {
     }
-    const allPackagesData = packagesOrderData?.packages || [];
+    const allPackagesData = packagesOrderData?.getAllPackages.packages || [];
     console.log("allpcakages :", allPackagesData)
-    const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
-    const getAllPackages = packagesData?.packages.length > 0 ? packagesData?.packages : []
+    const getAllLocations = locationsData?.getAllLocations?.locations.length > 0 ? locationsData?.getAllLocations?.locations : []
+    const getAllPackages = packagesData?.getAllPackages.packages.length > 0 ? packagesData?.getAllPackages.packages : []
     const getLocationDetails = (loc_ID: string) => {
         const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
         if (!location) return "Location details not available";

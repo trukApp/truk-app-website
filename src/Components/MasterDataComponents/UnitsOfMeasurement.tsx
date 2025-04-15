@@ -144,7 +144,9 @@ const UnitsOfMeasurement: React.FC = () => {
 	const [altUnitOptions, setAltUnitOptions] = useState<string[]>([]);
 	const [isEditing, setIsEditing] = useState(false);
 	const [editRow, setEditRow] = useState<FormValues | null>(null);
-	const { data, error, isLoading } = useGetUomMasterQuery([]);
+	// const { data, error, isLoading } = useGetUomMasterQuery([]);
+	const { loading:isLoading, error, data } = useQuery(GET_UOM);
+	console.log(data)
 	const [postUom, { isLoading: postUomLoading }] = usePostUomMasterMutation();
 	const [editUom, { isLoading: editUomLoading }] = useEditUomMasterMutation();
 	const [deleteUom, { isLoading: deleteUomLoading }] =
@@ -154,11 +156,8 @@ const UnitsOfMeasurement: React.FC = () => {
 		console.error("Error fetching uom:", error);
 		// Handle the error case
 	}
-// graphQl API
-	const { loading, error:getUOMErr, data:UOMData } = useQuery(GET_UOM);
 
-	if (loading) return <p>Loading...</p>;
-	if (getUOMErr) return <p>Error: {getUOMErr.message}</p>;
+
 	const validationSchema = Yup.object({
 		unitName: Yup.string().required("Unit Name is required"),
 		unitDescription: Yup.string().required("Unit Description is required"),
@@ -249,7 +248,7 @@ const UnitsOfMeasurement: React.FC = () => {
 			setIsEditing(false);
 		}
 	};
-	const rows = data?.uomList.map((unit: unitTypesBE) => ({
+	const rows = data?.allUOM.map((unit: unitTypesBE) => ({
 		id: unit.unit_id,
 		unitName: unit.unit_name,
 		unitDescription: unit.unit_desc,

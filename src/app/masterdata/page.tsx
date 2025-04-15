@@ -66,3 +66,4 @@ const MasterData: React.FC = () => {
 };
 
 export default withAuthComponent(MasterData);
+

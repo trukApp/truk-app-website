@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Formik, Form, Field, FormikProps } from 'formik';
 import * as Yup from 'yup';
-import { Checkbox, FormControlLabel, Grid, TextField, Tooltip, Backdrop, CircularProgress, Typography, Paper, List, ListItem } from '@mui/material';
+import { Checkbox, FormControlLabel, Grid, TextField, Backdrop, CircularProgress, Typography, Paper, List, ListItem } from '@mui/material';
 import styles from './CreatePackage.module.css';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setPackageBillTo } from '@/store/authSlice';
@@ -47,45 +47,43 @@ const validationSchema = Yup.object({
 
 const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
     const dispatch = useAppDispatch()
-    const { data: locationsData, isLoading: isLocationLoading } = useGetLocationMasterQuery([])
-    const [updateDefulatFromLocation, { isLoading: defaultLocationLoading }] = useUpdateBillToDefaultLocationIdMutation();
-    const allLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
-    const billToReduxValues = useAppSelector((state) => state.auth.packageBillTo)
-    const defaultLocationData = allLocations?.find((eachLocation: Location) =>
-        eachLocation?.def_bill_to === 1)
-    const [searchKey, setSearchKey] = useState(billToReduxValues?.locationId || defaultLocationData?.loc_ID || '');
-    const [showSuggestions, setShowSuggestions] = useState(false);
-    const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
-
-    const displayLocations = searchKey ? filteredLocations?.results || [] : allLocations;
-    console.log("display:", displayLocations)
-
-    // graphqlAPI
-    const [searchLocations, { loading: LocationLoading, data: filteredLocationsData }] = useLazyQuery(SEARCH_LOCATIONS);
-
-    const handleSearch = () => {
-      if (searchKey.length >= 3) {
-        searchLocations({ variables: { searchKey, page: 1, limit: 5 } });
-      }
-    };
-    const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL_LOCATIONS, {
-        // variables: { page, limit: 10 },
+    // const { data: locationsData, isLoading: isLocationLoading } = useGetLocationMasterQuery([])
+    const {data:locationsData,loading: isLocationLoading } = useQuery(GET_ALL_LOCATIONS, {
+        variables: { page:1, limit: 10 },
       });
-    
-      if (getallLoads) return <p>Loading...</p>;
-      if (er) return <p>Error: {er.message}</p>;
+    const allLocations = locationsData?.getAllLocations?.locations.length > 0 ? locationsData?.getAllLocations?.locations : []
+    const [updateDefulatFromLocation, { isLoading: defaultLocationLoading }] = useUpdateBillToDefaultLocationIdMutation();
+    // const allLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
+    const billToReduxValues = useAppSelector((state) => state.auth.packageBillTo)
+    const defaultLocationData = allLocations?.find((eachLocation: Location) => eachLocation?.def_bill_to === 1)
+    const defaultLocationDataInputText = defaultLocationData
+        ? `${defaultLocationData.loc_ID},${defaultLocationData.loc_desc}, ${defaultLocationData.city}, ${defaultLocationData.state}, ${defaultLocationData.pincode}`
+        : '';
+
+    const [searchKey, setSearchKey] = useState(billToReduxValues?.locationId || defaultLocationDataInputText || '');
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    // const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
+    const { loading:filteredLocationLoading, error:searnerr, data:filteredLocations } = useQuery(SEARCH_LOCATIONS, {
+        variables: { searchKey },
+        skip: searchKey.length < 3, // Avoid fetching when input is too short
+      });
+    const displayLocations = searchKey ? filteredLocations?.searchLocations.results || [] : allLocations;
+
+
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const [postLocation, { isLoading: postLocationLoading }] = usePostLocationMasterMutation({})
 
     const shipFromReduxValues = useAppSelector((state) => state.auth.packageShipFrom)
+    const shipFromLocationIdData = shipFromReduxValues?.locationId
+    const shipFromLocationId = shipFromLocationIdData?.split(',')[0] ?? '';
     const getAllLocations = displayLocations.filter(
-        (location: Location) => location.loc_ID !== shipFromReduxValues?.locationId
+        (location: Location) => location.loc_ID !== shipFromLocationId
     );
 
     const shipBillToInitialValues = {
-        locationId: billToReduxValues?.locationId || defaultLocationData?.loc_ID || '',
+        locationId: billToReduxValues?.locationId || defaultLocationDataInputText || '',
         locationDescription: billToReduxValues?.locationDescription || defaultLocationData?.loc_desc || '',
         contactPerson: billToReduxValues?.contactPerson || defaultLocationData?.contact_name || '',
         phoneNumber: billToReduxValues?.phoneNumber || defaultLocationData?.contact_phone_number || '',
@@ -158,7 +156,8 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
 
     const handleDefaultLocationChange = async (locId: string, defaultValue: number | boolean) => {
         try {
-            const response = await updateDefulatFromLocation({ locId: locId, defShipFrom: defaultValue ? 1 : 0 }).unwrap();
+            const updatedLocationId = locId?.split(',')[0] ?? '';
+            const response = await updateDefulatFromLocation({ locId: updatedLocationId, defShipFrom: defaultValue ? 1 : 0 }).unwrap();
             console.log("response: ", response)
         } catch (error) {
             console.log("Getting error while changing default value: ", error)
@@ -346,20 +345,17 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                                                                 component="li"
                                                                 onClick={() => {
                                                                     setShowSuggestions(false);
-                                                                    setSearchKey(location.loc_ID);
+                                                                    const selectedDisplay = `${location.loc_ID},${location?.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
+                                                                    setSearchKey(selectedDisplay);
+                                                                    // setSearchKey(location.loc_ID);
                                                                     handleLocationChange(location.loc_ID, setFieldValue);
-                                                                    setFieldValue("locationId", location.loc_ID);
+                                                                    setFieldValue("locationId", selectedDisplay);
                                                                 }}
                                                                 sx={{ cursor: "pointer" }}
                                                             >
-                                                                <Tooltip
-                                                                    title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                                                    placement="right"
-                                                                >
-                                                                    <span style={{ fontSize: "14px" }}>
-                                                                        {location.loc_ID}, {location.city}, {location.state}, {location.country}, {location.pincode}
-                                                                    </span>
-                                                                </Tooltip>
+                                                                <span style={{ fontSize: "14px" }}>
+                                                                    {location.loc_ID}, {location?.loc_desc}, {location.city}, {location.state}, {location.country}, {location.pincode}
+                                                                </span>
                                                             </ListItem>
                                                         ))}
                                                     </List>

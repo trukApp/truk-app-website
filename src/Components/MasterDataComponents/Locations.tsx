@@ -96,10 +96,11 @@ const validationSchema = Yup.object({
   city: Yup.string().required('City  is required'),
   state: Yup.string().required('State  is required'),
   country: Yup.string().required('Country is required'),
-  pincode: Yup.string().required('Pincode is required'),
-  locationContactName: Yup.string().required('Contact person name is required'),
-  locationContactNumber: Yup.string().required('Phone number is required'),
-  locationContactEmail: Yup.string().required('Email is required'),
+  pincode: Yup.string().matches(/^[0-9]{6}$/, "Pincode must be exactly 6 digits").required("Pincode is required"),
+  locationContactName: Yup.string().required('Contact person name is required'), 
+  locationContactNumber: Yup.string().matches(/^[0-9]{10}$/, "Phone number must be exactly 10 digits").required("Phone number is required"),
+  locationContactEmail: Yup.string().email("Enter a valid email").required("Email is required"),
+
   // vehiclesNearBy: Yup.array()
   // .min(1, 'Select at least one vehicle')
   // .required('Required'),
@@ -114,24 +115,22 @@ const Locations: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editRow, setEditRow] = useState<DataGridRow | null>(null);;
-  const { data, error, isLoading } = useGetLocationMasterQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize });
+  // const { data, error, isLoading } = useGetLocationMasterQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize });
+  const {data:locationsData,error: getLocationsError,loading:isLoading } = useQuery(GET_ALL_LOCATIONS, {
+    variables: { page:1, limit: 10 },
+  });
+  console.log(locationsData)
   const [postLocation, { isLoading: postLocationLoading }] = usePostLocationMasterMutation();
   const [editLocation, { isLoading: editLocationLoading }] = useEditLocationMasterMutation();
   const [deleteLocation, { isLoading: deleteLocationLoading }] = useDeleteLocationMasterMutation()
-  console.log('all locations :', data?.locations)
 
-  if (error) {
-    console.error("Error fetching locations:", error);
+
+  if (getLocationsError) {
+    console.error("Error fetching locations:", getLocationsError);
   }
 
-  const locationsMaster = data?.locations
-//graphQlAPi
-  const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL_LOCATIONS, {
-    // variables: { page, limit: 10 },
-  });
+  const locationsMaster =  locationsData?.getAllLocations?.locations.length > 0 ? locationsData?.getAllLocations?.locations : []
 
-  if (getallLoads) return <p>Loading...</p>;
-  if (er) return <p>Error: {er.message}</p>;
   const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
     setPaginationModel(newPaginationModel);
   };
@@ -304,7 +303,7 @@ const Locations: React.FC = () => {
   }, [editRow]);
   const { values, errors, touched, handleChange, handleBlur, handleSubmit } = formik;
 
-
+console.log(locationsMaster)
   const rows = locationsMaster?.map((location: Location) => ({
     id: location.location_id,
     locationId: location.loc_ID,
@@ -603,7 +602,7 @@ const Locations: React.FC = () => {
                     <TextField
                       fullWidth
                       size="small"
-                      label="Pincode*"
+                      label="Pincode*" type='number'
                       name="pincode"
                       value={values.pincode}
                       onChange={handleChange}

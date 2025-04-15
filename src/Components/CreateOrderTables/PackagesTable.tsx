@@ -8,7 +8,7 @@ import { useGetAllProductsQuery, useGetLocationMasterQuery, useGetPackageMasterQ
 import { Location } from '../MasterDataComponents/Locations';
 import moment from 'moment';
 import { useQuery } from "@apollo/client";
-import { GET_ALL_LOCATIONS, GET_ALL_PACKAGES, } from '@/api/graphqlApiSlice';
+import { GET_ALL_LOCATIONS, GET_ALL_PACKAGES, GET_ALL_PRODUCTS, } from '@/api/graphqlApiSlice';
 
 export interface Product {
     prod_ID: string;
@@ -52,24 +52,26 @@ interface PackagesTableProps {
 }
 
 const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackagesLoading }) => {
+    console.log(allPackagesData)
     const dispatch = useAppDispatch();
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
     const [selectionModel, setSelectionModel] = useState<number[]>([]);
-    const { data: locationsData } = useGetLocationMasterQuery({})
-    const { data: productsData } = useGetAllProductsQuery({})
-    const allProductsData = productsData?.products || [];
-    const { data: packagesData } = useGetPackageMasterQuery({})
-        // graphqlAPI
-        const { data: allPackagesDatas, loading: packagesLoading, error: packagesError } = useQuery(GET_ALL_PACKAGES);
+    const {data:locationsData,error: getLocationsError } = useQuery(GET_ALL_LOCATIONS, {
+        variables: { page:1, limit: 10 },
+      });
+    const getAllLocations = locationsData?.getAllLocations?.locations.length > 0 ? locationsData?.getAllLocations?.locations : []
+    // const { data: productsData } = useGetAllProductsQuery({})
+    const { data: productsData } = useQuery(GET_ALL_PRODUCTS, {
+        variables: {  },
+      });
 
-        const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL_LOCATIONS, {
-            // variables: { page, limit: 10 },
-          });
-        
-          if (getallLoads) return <p>Loading...</p>;
-          if (er) return <p>Error: {er.message}</p>;
-    const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
-    const getAllPackages = packagesData?.packages.length > 0 ? packagesData?.packages : []
+    const allProductsData = productsData?.getAllProducts.products || [];
+  
+    // const { data: packagesData } = useGetPackageMasterQuery({})
+        // graphqlAPI
+        const { data: packagesData } = useQuery(GET_ALL_PACKAGES);
+
+    const getAllPackages = packagesData?.getAllPackages.packages.length > 0 ? packagesData?.getAllPackages.packages : []
 
     const unorderedPackages = allPackagesData.filter(
         (eachPackage) => eachPackage?.package_status !== "ordered"
@@ -79,13 +81,14 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
         const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
         if (!location) return "Location details not available";
         const details = [
+            location.loc_ID,
             location.loc_desc,
             location.address_1,
             location.city,
             location.state,
             location.country,
             location.pincode,
-            location.loc_ID
+            
         ].filter(Boolean);
 
         return details.length > 0 ? details.join(", ") : "Location details not available";
@@ -197,7 +200,7 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
             },
         },
     ];
-
+console.log(unorderedPackages)
     const rows = unorderedPackages.map((pkg: Package) => ({
         id: pkg.pac_id,
         pack_ID: pkg.pack_ID,

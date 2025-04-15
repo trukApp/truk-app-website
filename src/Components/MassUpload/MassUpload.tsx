@@ -213,17 +213,32 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
     }
   };
 
-  const handleDownloadTemplate = () => {
-    const columnMappings = getColumnMappings();
-    const csvContent = `data:text/csv;charset=utf-8,${columnMappings
-      .map((col) => col.displayName)
-      .join(',')}`;
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `${arrayKey}_template.csv`);
-    link.click();
-  };
+  // const handleDownloadTemplate = () => {
+  //   const columnMappings = getColumnMappings();
+  //   const csvContent = `data:text/csv;charset=utf-8,${columnMappings
+  //     .map((col) => col.displayName)
+  //     .join(',')}`;
+  //   const encodedUri = encodeURI(csvContent);
+  //   const link = document.createElement('a');
+  //   link.setAttribute('href', encodedUri);
+  //   link.setAttribute('download', `${arrayKey}_template.csv`);
+  //   link.click();
+  // };
+
+const handleDownloadTemplate = () => {
+  const columnMappings = getColumnMappings();
+  
+  const headers = columnMappings.map(col => `"${col.displayName.padEnd(20, ' ')}"`).join(",");
+
+  const csvContent = `data:text/csv;charset=utf-8,${headers}`;
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", `${arrayKey}_template.csv`);
+  link.click();
+};
+
+
   return (
     <Box>
       <SnackbarAlert

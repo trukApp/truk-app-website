@@ -50,6 +50,8 @@ export const apiSlice = createApi({
     "Orders",
     "AssignedOrders",
     "SingleVehicleMaster",
+    "DataCount",
+    "ValidateRoute"
   ],
   endpoints: (builder) => ({
     userLogin: builder.mutation<User, { phone: string; password: string }>({
@@ -175,7 +177,7 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "CARRIER", id: "LIST" }],
+      invalidatesTags: [{ type: "CARRIER", id: "LIST" }, { type: "DataCount", id: "LIST" }],
     }),
 
     editCarrierMaster: builder.mutation({
@@ -505,7 +507,7 @@ export const apiSlice = createApi({
         url: `data/count-data`,
         method: "GET",
       }),
-      // providesTags: [{ type: "ProductMaster", id: "LIST" }],
+      providesTags: [{ type: "DataCount", id: "LIST" }],
     }),
 
     //Packages API'S
@@ -631,7 +633,7 @@ export const apiSlice = createApi({
     getSingleVehicleMaster: builder.query({
       query: (params) => {
         return {
-          url: `veh/all-vehicles`,
+          url: `self/all-self-vehicles`,
           method: "GET",
           params,
         };
@@ -671,6 +673,14 @@ export const apiSlice = createApi({
         method: "GET",
         params,
       }),
+    }),
+    postValidateRoute: builder.mutation({
+      query: (body) => ({
+        url: "route/validate-route",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "ValidateRoute" }],
     }),
   }),
 });
@@ -744,4 +754,5 @@ export const {
   useDeleteSingleVehicleMasterMutation,
   useGetAssignedOrderByIdQuery,
   useGetFilteredProductsQuery,
+  usePostValidateRouteMutation,
 } = apiSlice;

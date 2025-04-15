@@ -1,9 +1,12 @@
-import { ApolloClient, InMemoryCache, ApolloProvider } from "@apollo/client";
+import { ApolloClient, InMemoryCache } from "@apollo/client";
 
-const client = new ApolloClient({
-  uri: "http://localhost:8088/graphql", 
-  // uri: 'https://truk-be.onrender.com/graphql',
+const graphclient = new ApolloClient({
+  uri: "https://truk-be.onrender.com/graphql",
   cache: new InMemoryCache(),
 });
 
-export default client;
+export default graphclient;
+
+'https://truk-be.onrender.com'
+
+// uri: "http://localhost:8088/graphql",

@@ -18,7 +18,7 @@ import { Location } from './Locations';
 import { CarrierFormBE } from '../BusinessPartnersForms/CarriersForm';
 import { CustomButtonFilled } from '../ReusableComponents/ButtonsComponent';
 import { useQuery } from '@apollo/client';
-import { GET_ALL_LOCATIONS, GET_DEVICES } from '@/api/graphqlApiSlice';
+import { GET_ALL_LOCATIONS, GET_ALL_DEVICES,GET_CARRIERS } from '@/api/graphqlApiSlice';
 import { useLazyQuery} from "@apollo/client";
 import { SEARCH_LOCATIONS } from '@/api/graphqlApiSlice';
 interface DeviceMasterValues {
@@ -55,49 +55,44 @@ const DeviceMaster: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editRow, setEditRow] = useState<DeviceMasterValues | null>(null);
-  const { data, error, isLoading, refetch } = useGetDeviceMasterQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize });
+  // const { data, error, isLoading, refetch } = useGetDeviceMasterQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize });
 // GraphqlAPi
-  const { loading, error:deviceERR, data:GetDEVICES } = useQuery(GET_DEVICES, {
-    variables: { page: paginationModel.page + 1, limit: paginationModel.pageSize },
-  });
-
-  if (loading) return <p>Loading devices...</p>;
-  if (deviceERR) return <p>Error: {deviceERR.message}</p>;
+const { loading, error, data,refetch } = useQuery(GET_ALL_DEVICES, {
+  variables: { page:  paginationModel.page + 1, limit: paginationModel.pageSize },
+});
+console.log(data)
   const [postDevice, { isLoading: postDeviceLoading, isSuccess: postSuccess, }] = usePostDeviceMasterMutation();
   const [editDevice, { isLoading: editDeviceLoading, isSuccess: editSuccess }] = useEditDeviceMasterMutation();
   const [deleteDevice, { isLoading: deleteDeviceLoading, isSuccess: deleteSuccess }] = useDeleteDeviceMasterMutation()
-  const { data: locationsData, } = useGetLocationMasterQuery({});
-  const { data: carriersData, isLoading: isCarrierLoading } = useGetCarrierMasterQuery({});
-  const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
-  const getAllCarriers = carriersData?.carriers.length > 0 ? carriersData?.carriers : [];
+  // const { data: locationsData, } = useGetLocationMasterQuery({});
+  const {data:locationsData,error: getLocationsError } = useQuery(GET_ALL_LOCATIONS, {
+    variables: { page:1, limit: 10 },
+  });
+const getAllLocations = locationsData?.getAllLocations?.locations.length > 0 ? locationsData?.getAllLocations?.locations : []
+  // const { data: carriersData, isLoading: isCarrierLoading } = useGetCarrierMasterQuery({});
+  const { data: carriersData, loading: isCarrierLoading, } = useQuery(GET_CARRIERS, {});
+  // const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
+  const getAllCarriers = carriersData?.allCarriers.carriers.length > 0 ? carriersData?.allCarriers.carriers : [];
   const [searchKey, setSearchKey] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
-  const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
-  // graphqlAPI
-  const [searchLocations, { loading: LocationLoading, data: filteredLocationsData }] = useLazyQuery(SEARCH_LOCATIONS);
-
-  const handleSearch = () => {
-    if (searchKey.length >= 3) {
-      searchLocations({ variables: { searchKey, page: 1, limit: 5 } });
-    }
-  };
-  const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL_LOCATIONS, {
-    // variables: { page, limit: 10 },
+  // const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
+  const { loading:filteredLocationLoading, error:searnerr, data:filteredLocations } = useQuery(SEARCH_LOCATIONS, {
+    variables: { searchKey },
+    skip: searchKey.length < 3, // Avoid fetching when input is too short
   });
+  const displayLocations = searchKey ? filteredLocations?.searchLocations.results || [] : getAllLocations;
 
-  if (getallLoads) return <p>Loading...</p>;
-  if (er) return <p>Error: {er.message}</p>;
+
   const getLocationDetails = (loc_ID: string) => {
     const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
     if (!location) return "Location details not available";
     const details = [
-      location.address_1,
+      location.loc_ID,
+      location.loc_desc,
       location.city,
       location.state,
-      location.country,
       location.pincode,
-      location.loc_ID
+      
       
     ].filter(Boolean);
 
@@ -111,10 +106,9 @@ const DeviceMaster: React.FC = () => {
     const locationDetails = carrier_loc_of_operation && carrier_loc_of_operation.length > 0
       ? carrier_loc_of_operation.join(", ")
       : "No locations available";
-    return `${carrier_name}, ${carrier_address}, Locations: ${locationDetails}, ${carrier.carrier_ID}`;
+    return `${carrier.carrier_ID}, ${carrier_name}, ${carrier_address}, Locations: ${locationDetails}`;
   };
 
-  console.log('getAll carriers :', getAllCarriers)
   useEffect(() => {
     if (postSuccess || editSuccess || deleteSuccess) {
       refetch();
@@ -159,6 +153,7 @@ const DeviceMaster: React.FC = () => {
           setSnackbarSeverity("success");
           setSnackbarOpen(true);
           setSearchKey('')
+          setShowForm(false)
         }
       }
       else {
@@ -169,6 +164,7 @@ const DeviceMaster: React.FC = () => {
           setSnackbarSeverity("success");
           setSnackbarOpen(true);
           setSearchKey('')
+          setShowForm(false)
         }
       }
 
@@ -251,7 +247,7 @@ const DeviceMaster: React.FC = () => {
     validationSchema,
     onSubmit: handleFormSubmit
   });
-  const rows = data?.devices.map((device: DeviceInfoBE) => ({
+  const rows = data?.getAllDevices.devices.map((device: DeviceInfoBE) => ({
     id: device.device_id,
     deviceId: device.dev_ID,
     deviceType: device.device_type,
@@ -295,9 +291,9 @@ const DeviceMaster: React.FC = () => {
 
   useEffect(() => {
     if (editRow) {
-      const locId = editRow?.locationId ? editRow.locationId.split(", ").at(-1) ?? "" : "";
-       const carrId = editRow?.carrierId ? editRow.carrierId.split(", ").at(-1) ?? "" : "";
-      setSearchKey(locId)
+      const locId = editRow?.locationId ? editRow.locationId.split(", ")[0] ?? "" : "";
+       const carrId = editRow?.carrierId ? editRow.carrierId.split(", ")[0] ?? "" : "";
+      setSearchKey(editRow?.locationId )
       formik.setValues({
         id: editRow.id || '',
         deviceId: editRow.deviceId,
@@ -427,20 +423,19 @@ const DeviceMaster: React.FC = () => {
               <Grid item xs={12} sm={6} md={2.4}>
                 <FormControl
                   fullWidth
-                  size="small"
+                  size="small" 
                   error={
                     formik.touched.carrierId && Boolean(formik.errors.carrierId)
                   }
                 >
                   <InputLabel>Carrier ID</InputLabel>
-                  <Select fullWidth renderValue={(selected) => selected}
+                  <Select fullWidth 
                     label="Carrier ID"
                     name="carrierId"
                     value={formik.values.carrierId}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                   >
-
                     {isCarrierLoading ? (
                       <MenuItem disabled>
                         <CircularProgress size={20} color="inherit" />
@@ -448,13 +443,12 @@ const DeviceMaster: React.FC = () => {
                       </MenuItem>
                     ) : (
                       getAllCarriers?.map((carrier: CarrierFormBE) => (
-                        <MenuItem key={carrier?.carrier_ID} value={String(carrier.carrier_ID)}>
+                        <MenuItem  key={carrier?.carrier_ID} value={String(carrier.carrier_ID)} >
                           <Tooltip
                             title={`${carrier?.carrier_name}, ${carrier?.carrier_address}`}
                             placement="right" arrow
                           >
-                            {/* <span style={{ flex: 1 }}>{carrier?.carrier_name}, {carrier?.carrier_address}, {carrier?.carrier_ID}</span> */}
-                             <Typography noWrap>
+                            <Typography noWrap>
                                 {carrier?.carrier_name}, {carrier?.carrier_address}, {carrier?.carrier_ID}
                               </Typography>
                           </Tooltip>
@@ -517,17 +511,17 @@ const DeviceMaster: React.FC = () => {
                             component="li"
                             onClick={() => {
                               setShowSuggestions(false)
-                              setSearchKey(location.loc_ID);
-                              // handleLocationChange(location.loc_ID, setFieldValue);
+                              const selectedDisplay = `${location.loc_ID},${location?.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
+                              setSearchKey(selectedDisplay);
                               formik.setFieldValue("locationId", location.loc_ID);
                             }}
                             sx={{ cursor: "pointer" }}
                           >
                             <Tooltip
-                              title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                              title={`${location.loc_desc}, ${location.address_1}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
                               placement="right"
                             >
-                              <span style={{ fontSize: '14px' }}>{location.loc_ID}, {location.city}, {location.state}, {location.pincode}</span>
+                              <span style={{ fontSize: '14px' }}>{location.loc_ID}, {location.loc_desc}, {location.city}, {location.state}, {location.pincode}</span>
                             </Tooltip>
                           </ListItem>
                         ))}
@@ -563,13 +557,13 @@ const DeviceMaster: React.FC = () => {
 
 
       <div style={{ marginTop: "40px" }}>
-        {isLoading ? (
+        {loading ? (
           <DataGridSkeletonLoader columns={columns} />
         ) : (
           <DataGridComponent
             columns={columns}
             rows={rows}
-            isLoading={isLoading}
+            isLoading={loading}
             paginationModel={paginationModel}
             activeEntity='devices'
             onPaginationModelChange={handlePaginationModelChange}

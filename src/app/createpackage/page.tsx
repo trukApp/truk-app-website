@@ -107,7 +107,6 @@ const CreatePackage = () => {
 
     const handleSubmit = async () => {
         const firstUnfilledIndex = completedSteps.findIndex((step) => !step);
-        console.log("firstunfilled ", firstUnfilledIndex)
         if (firstUnfilledIndex !== -1) {
             setSnackbarMessage("Some steps are unfilled! Navigating to first unfilled step...");
             setSnackbarSeverity("warning");
@@ -116,18 +115,21 @@ const CreatePackage = () => {
             return;
         } else {
             try {
+                const shipFromLocationId = shipFromReduxValues?.locationId.split(",")[0]
+                const shipToLocationId = shipToReduxValues?.locationId.split(",")[0]
+                const billToLocationId = billToReduxValues?.locationId.split(",")[0]
                 const createPackageBody = {
                     packages: [
                         {
-                            ship_from: shipFromReduxValues?.locationId,
-                            ship_to: shipToReduxValues?.locationId,
+                            ship_from: shipFromLocationId,
+                            ship_to: shipToLocationId,
                             product_ID: productListFromRedux.map((product) => ({
                                 prod_ID: product.productId,
                                 quantity: product.quantity,
                                 package_info: product?.packagingType
                             })),
                             package_info: productListFromRedux[0]?.packagingType,
-                            bill_to: billToReduxValues?.locationId,
+                            bill_to: billToLocationId,
                             return_label: packageAddtionalInfoFromRedux?.returnLabel ? 1 : 0,
                             additional_info: {
                                 reference_id: packageAddtionalInfoFromRedux?.referenceId,

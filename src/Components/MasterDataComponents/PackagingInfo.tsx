@@ -51,10 +51,13 @@ const PackagingForm = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editRow, setEditRow] = useState<PackageInfo | null>(null);;
   const [showForm, setShowForm] = useState(false);
-  const { data, error, isLoading } = useGetPackageMasterQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize })
-  const { data: allData } = useGetPackageMasterQuery({});
-      // graphqlAPI
-      const { data: allPackagesDatas, loading: packagesLoading, error: packagesError } = useQuery(GET_ALL_PACKAGES);
+  // const { data, error, isLoading } = useGetPackageMasterQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize })
+  // const { data: allData } = useGetPackageMasterQuery({});
+
+  const { data, loading:isLoading, error } = useQuery(GET_ALL_PACKAGES, {
+    variables:{page: paginationModel.page + 1, limit: paginationModel.pageSize}
+  });
+  const { data: allData} = useQuery(GET_ALL_PACKAGES);
   const [postPackage, { isLoading: postPackageLoading }] = usePostPackageMasterMutation()
   const [editPackage, { isLoading: editPackageLoading }] = useEditPackageMasterMutation()
   const [deletePackage, { isLoading: deletePackageLoading }] = useDeletePackageMasterMutation()
@@ -205,7 +208,7 @@ const PackagingForm = () => {
   };
 
 
-  const rows = data?.packages.map((packageItem: Package) => ({
+  const rows = data?.getAllPackages.packages.map((packageItem: Package) => ({
     id: packageItem?.package_id,
     packagingTypeId: packageItem.pac_ID,
     packagingTypeName: packageItem?.packaging_type_name,
@@ -341,7 +344,15 @@ const PackagingForm = () => {
                   label="Package length" type='number'
                   value={formik.values.packagingLength}
                   onBlur = {formik.handleBlur}
-                  onChange={formik.handleChange}
+                  // onChange={formik.handleChange}
+                  onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															formik.handleChange(e);
+														}
+													}}
                   error={formik.touched.packagingLength && Boolean(formik.errors.packagingLength)}
                   helperText={formik.touched.packagingLength && formik.errors.packagingLength}
                   size="small"
@@ -355,7 +366,15 @@ const PackagingForm = () => {
                   onBlur = {formik.handleBlur}
                   label="Package width" type='number'
                   value={formik.values.packagingWidth}
-                  onChange={formik.handleChange}
+                  // onChange={formik.handleChange}
+                  onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															formik.handleChange(e);
+														}
+													}}
                   error={formik.touched.packagingWidth && Boolean(formik.errors.packagingWidth)}
                   helperText={formik.touched.packagingWidth && formik.errors.packagingWidth}
                   size="small"
@@ -368,7 +387,15 @@ const PackagingForm = () => {
                   name="packagingHeight"
                   label="Package height" type='number'
                   value={formik.values.packagingHeight}
-                  onChange={formik.handleChange}
+                  // onChange={formik.handleChange}
+                  onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															formik.handleChange(e);
+														}
+													}}
                   onBlur = {formik.handleBlur}
                   error={formik.touched.packagingHeight && Boolean(formik.errors.packagingHeight)}
                   helperText={formik.touched.packagingHeight && formik.errors.packagingHeight}
@@ -446,7 +473,7 @@ const PackagingForm = () => {
           <DataGridComponent
             columns={columns}
             rows={rows}
-            rowCount={allData && allData?.length}
+            rowCount={allData?.getAllPackages && allData?.getAllPackages.length}
             isLoading={isLoading}
             paginationModel={paginationModel}
             activeEntity='packages'

@@ -22,6 +22,8 @@ export interface Allocation {
 }
 
 export interface Truck {
+    occupiedVolume: number;
+    occupiedWeight: number;
     label: string;
     totalCost: number;
     allocations: Allocation[];
@@ -51,11 +53,19 @@ const TrucksTable: React.FC<TrucksTableProps> = ({ trucks }) => {
         { field: "leftoverVolume", headerName: "Left over volume", width: 180 },
         { field: "unallocatedPackages", headerName: "Unallocated Packages", width: 180 },
     ];
-
+console.log("trucss :" ,trucks)
     const rows = trucks.flatMap((truck, index) => [
         {
             id: index + 1,
-            ...truck
+            ...truck,
+            cost: truck.cost?.toFixed(2),
+            totalWeightCapacity: truck?.totalWeightCapacity?.toFixed(2),
+            occupiedWeight: truck?.occupiedWeight?.toFixed(2),
+            totalVolumeCapacity: truck?.totalVolumeCapacity?.toFixed(2),
+            occupiedVolume: truck?.occupiedVolume?.toFixed(2),
+            leftoverWeight: parseFloat(truck?.leftoverWeight)?.toFixed(2),
+            leftoverVolume: truck?.leftoverVolume.toFixed(2),
+            
         },
     ]);
 

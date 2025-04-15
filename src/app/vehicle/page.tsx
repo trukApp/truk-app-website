@@ -22,7 +22,7 @@ import SnackbarAlert from "@/Components/ReusableComponents/SnackbarAlerts";
 import { VehicleDetails } from "@/Components/MasterDataComponents/Vehicles";
 import { withAuthComponent } from "@/Components/WithAuthComponent";
 import { useQuery } from "@apollo/client";
-import { GET_ALL_VEHICLES } from '@/api/graphqlApiSlice';
+import { GET_ALL_SELF_VEHICLES, GET_ALL_VEHICLES, GET_VEHICLES } from '@/api/graphqlApiSlice';
 export interface TruckFormDetails {
     truckId: string;
     id: string;
@@ -67,20 +67,27 @@ const VehicleOnly: React.FC = () => {
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const [isEditing, setIsEditing] = useState(false);
     const [editRow, setEditRow] = useState<TruckFormDetails | null>(null);
-    const { data, error, isLoading } = useGetSingleVehicleMasterQuery({
+    // const { data, error, isLoading } = useGetSingleVehicleMasterQuery({
         // page: paginationModel.page + 1, limit: paginationModel.pageSize
+    // });
+    const { loading:isLoading,error,  data } = useQuery(GET_ALL_SELF_VEHICLES, {
+		
     });
-    const { data: vehiclesData, isLoading: isVehiclesLoading } = useGetVehicleMasterQuery({});
+    // const { data: vehiclesData, isLoading: isVehiclesLoading } = useGetVehicleMasterQuery({});
+
+    const { loading:isVehiclesLoading, data:vehiclesData } = useQuery(GET_VEHICLES, {
+		 
+	  });
     const [postVehicle, { isLoading: postVehicleLoading }] = usePostSingleVehicleMasterMutation();
     const [editVehicle, { isLoading: editVehicleLoading }] = useEditSingleVehicleMasterMutation();
     const [deleteVehicle, { isLoading: deleteVehicleLoading }] = useDeleteSingleVehicleMasterMutation();
-    console.log('all single vehs  :', data?.data)
-    const getAllVehicles = vehiclesData?.vehicles
+    console.log('all single vehs  :', data?.getAllSelfVehicles.data)
+    const getAllVehicles = vehiclesData?.getVehicles.vehicles
 
     if (error) {
         console.log("err in loading vehicles data :", error);
     }
-    const vehiclesMaster = data?.data;
+    const vehiclesMaster = data?.getAllSelfVehicles.data;
     // const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
     //     setPaginationModel(newPaginationModel);
     // };

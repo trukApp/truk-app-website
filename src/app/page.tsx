@@ -11,34 +11,33 @@ import { useEffect } from "react";
 import { setUnitsofMeasurement } from "@/store/authSlice";
 import { useQuery } from '@apollo/client';
 import { GET_UOM } from '@/api/graphqlApiSlice';
-
-
+import { useAppSelector } from "@/store";
 export default function Home() {
   const dispatch = useDispatch();
-  const { data: uom, error: uomErr } = useGetUomMasterQuery([])
-  if (uomErr) {
-    console.log("uom err:", uomErr)
-  }
+  // const { data: uom, error: uomErr } = useGetUomMasterQuery([])
+  // console.log(uom)
+  // if (uomErr) {
+  //   console.log("uom err:", uomErr)
+  // }
 
 
   const { loading, error, data } = useQuery(GET_UOM);
-
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error.message}</p>;
   useEffect(() => {
-    if (uom && uom.uomList) {
-      const unitsofMeasure = uom.uomList.map((item: { unit_name: string }) => item.unit_name);
+    if (data && data.allUOM) {
+      const unitsofMeasure = data.allUOM.map((item: { unit_name: string }) => item.unit_name);
       dispatch(setUnitsofMeasurement(unitsofMeasure));
     }
 
-    if (uomErr) {
-      console.error("uom error:", uomErr);
+    if (error) {
+      console.error("uom error:", error);
     }
-  }, [uom, uomErr, dispatch]);
+  }, [data, error, dispatch]);
+  
 
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error:  {error.message}</p>;
   return (
-    <Grid sx={{ marginLeft: { xs: 0, md: '30px' } }}>
-
+    <Grid sx={{ marginLeft: { xs: 0, md: '30px' }, marginTop: '30px' }}>
       <SettingsComponent />
       <TransportManagement />
       <TransportPlanning />
@@ -47,3 +46,6 @@ export default function Home() {
     </Grid>
   );
 }
+
+// export default withAuthComponent(Home)
+

@@ -5,6 +5,23 @@ import { FormValues } from "@/Components/CreatePackageTabs/PickUpAndDropOffDetai
 import { Truck } from "@/Components/CreateOrderTables/TrucksTable";
 import { Package } from "@/Components/CreateOrderTables/PackagesTable";
 
+export interface Address {
+  address: string;
+  latitude: number;
+  longitude: number;
+}
+export interface Route {
+  distance: string;
+  duration: string;
+  start: Address;
+  end: Address;
+  loadAfterStop: number;
+}
+export interface ISelectedRoute {
+  route: Route;
+  routeIndex: number | null;
+  vehicle: string;
+}
 export interface IShipFrom {
   addressLine1: string;
   addressLine2: string;
@@ -65,6 +82,27 @@ export interface IPackageTax {
   taxRate: string;
 }
 
+export interface DriverPointDeviation {
+  lat: number;
+  lng: number;
+  time: string;
+  deviationDistanceKM: string;
+  reason: string;
+}
+
+interface DeviationState {
+  message: string;
+  order_ID: string;
+  vehicle_ID: string;
+  expected_distance: string;
+  actual_distance: string;
+  start_deviation_km: string;
+  end_deviation_km: string;
+  deviation_detected: boolean;
+  deviation_reasons: string[];
+  driverPointDeviations: DriverPointDeviation[];
+}
+
 export interface IAuthState {
   authState: boolean;
   bablu: string;
@@ -74,6 +112,7 @@ export interface IAuthState {
   unitsofMeasurement: string[];
   selectedPackages: Array<Package>;
   createOrderDesination: string;
+  selectedRoutes: ISelectedRoute[];
   packageShipFrom: IShipFrom | null;
   packageShipTo: IShipTo | null;
   packagesDetails: Array<IProductDetail>;
@@ -83,6 +122,7 @@ export interface IAuthState {
   packageTax: IPackageTax | null;
   completedState: boolean[];
   filters: ConfigFilters;
+  deviationData: DeviationState | null;
 }
 
 export interface ConfigFilters {
@@ -109,12 +149,14 @@ const initialState: IAuthState = {
   packagePickAndDropTimings: null,
   packageTax: null,
   completedState: [],
+  selectedRoutes: [],
   filters: {
     checkValidity: true,
     checkDowntime: true,
     sortUnlimitedUsage: true,
     sortOwnership: true,
   },
+  deviationData: null,
 };
 
 export const authSlice = createSlice({
@@ -185,6 +227,12 @@ export const authSlice = createSlice({
     setFilters: (state, action: PayloadAction<ConfigFilters>) => {
       state.filters = action.payload;
     },
+    setSelectedRoutes: (state, action: PayloadAction<ISelectedRoute[]>) => {
+      state.selectedRoutes = action.payload;
+    },
+    setDeviationData: (state, action: PayloadAction<DeviationState>) => {
+      state.deviationData = action.payload;
+    },
   },
 });
 
@@ -208,6 +256,8 @@ export const {
   setCompletedState,
   resetCompletedSteps,
   setFilters,
+  setSelectedRoutes,
+  setDeviationData,
 } = authSlice.actions;
 
 export const authReducer = authSlice.reducer;

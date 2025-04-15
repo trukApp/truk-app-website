@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Box, Button, Collapse, Grid, TextField, FormControlLabel, Checkbox, Backdrop, CircularProgress, Tooltip, List, Paper, ListItem } from '@mui/material';
+import { Box, Button, Collapse, Grid, TextField, FormControlLabel, Checkbox, Backdrop, CircularProgress, List, Paper, ListItem } from '@mui/material';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { DataGridComponent } from '../GridComponent';
@@ -16,7 +16,7 @@ import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 import { Location } from '../MasterDataComponents/Locations';
 import { useLazyQuery, useQuery} from "@apollo/client";
-import { GET_ALL_LOCATIONS, SEARCH_LOCATIONS } from '@/api/graphqlApiSlice';
+import { GET_ALL_LOCATIONS, SEARCH_LOCATIONS,GET_BUSINESS_PARTNERS } from '@/api/graphqlApiSlice';
 interface PartnerFunctions {
     forwarding_agent: string;
     goods_supplier: string;
@@ -48,7 +48,7 @@ export interface Customer {
     partner_functions: PartnerFunctions;
     correspondence: Correspondence;
     location_loc_ID: string;
-    loc_of_source_loc_ID: string
+    loc_of_source_loc_ID: string;
 }
 
 const initialSupplierValues = {
@@ -57,7 +57,7 @@ const initialSupplierValues = {
     locationId: '',
     pincode: '',
     city: '',
-    district: '',
+    state: '',
     country: '',
     contactPerson: '',
     contactNumber: '',
@@ -66,7 +66,8 @@ const initialSupplierValues = {
     podRelevant: false,
     orderingAddress: '',
     goodsSupplier: '',
-    forwardingAgent: ''
+    forwardingAgent: '',
+    supplier_id: ''
 };
 
 
@@ -80,57 +81,60 @@ const SupplierForm: React.FC = () => {
     const [showForm, setShowForm] = useState(false);
     const [updateRecord, setUpdateRecord] = useState(false);
     const [formInitialValues, setFormInitialValues] = useState(initialSupplierValues);
-    const [updateRecordData, setUpdateRecordData] = useState({});
+    const [updateRecordData, setUpdateRecordData] = useState<Customer | null>(null);
     const [updateRecordId, setUpdateRecordId] = useState(0)
+    const [searchKeyDestination, setSearchKeyDestination] = useState('');
+    const [showDestinations, setShowDestinations] = useState(false);
+    const [searchKey, setSearchKey] = useState('');
+    const [showSuggestions, setShowSuggestions] = useState(false);
     const [updatePartnerDetails, { isLoading: postVendorLoading }] = useEditBusinessPartnerMutation();
     const [customerRegistration, { isLoading: editVendorLoading }] = useCustomerRegistrationMutation();
     const [deleteBusinessPartner, { isLoading: deleteVendorLoading }] = useDeleteBusinessPartnerMutation()
-    const { data, error, isLoading } = useGetAllVendorsDataQuery({
-        partner_type: "vendor", page: paginationModel.page + 1, limit: paginationModel.pageSize
-    })
-    const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery([])
-    const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
-    const [searchKey, setSearchKey] = useState('');
-    const [showSuggestions, setShowSuggestions] = useState(false);
-    const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
-    const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
-// graphqlAPI
-const [searchLocations, { loading: LocationLoading, data: filteredLocationsData }] = useLazyQuery(SEARCH_LOCATIONS);
+    // const { data, error, isLoading } = useGetAllVendorsDataQuery({
+    //     partner_type: "vendor", page: paginationModel.page + 1, limit: paginationModel.pageSize
+    // })
 
-const handleSearch = () => {
-  if (searchKey.length >= 3) {
-    searchLocations({ variables: { searchKey, page: 1, limit: 5 } });
-  }
-};
-const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL_LOCATIONS, {
-    // variables: { page, limit: 10 },
-  });
+    const { data, loading, error } = useQuery(GET_BUSINESS_PARTNERS, {
+        variables: {
+          partner_type: "vendor", // example
+        },
+        
+      });
+    const {data:locationsData,error: getLocationsError } = useQuery(GET_ALL_LOCATIONS, {
+        variables: { page:1, limit: 10 },
+      });
+    const getAllLocations = locationsData?.getAllLocations?.locations.length > 0 ? locationsData?.getAllLocations?.locations : []
 
-  if (getallLoads) return <p>Loading...</p>;
-  if (er) return <p>Error: {er.message}</p>;
-    const [searchKeyDestination, setSearchKeyDestination] = useState('');
-    const [showDestinations, setShowDestinations] = useState(false);
-    const { data: destinationFilteredLocations } = useGetFilteredLocationsQuery(searchKeyDestination.length >= 3 ? searchKeyDestination : null, { skip: searchKeyDestination.length < 3 });
-    const displayLocationsDest = searchKeyDestination ? destinationFilteredLocations?.results || [] : getAllLocations;
+    // const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
+    const { loading:filteredLocationLoading, error:searnerr, data:filteredLocations } = useQuery(SEARCH_LOCATIONS, {
+        variables: { searchKey },
+        skip: searchKey.length < 3, // Avoid fetching when input is too short
+      });
+    const displayLocations = searchKey ? filteredLocations?.searchLocations.results || [] : getAllLocations;
 
-    // graphqlAPI
-    const [searchDestinationLocations, { loading: DestinationLoading, data: filteredDestinationLocations }] = useLazyQuery(SEARCH_LOCATIONS);
 
-    const handleSearchDestination = () => {
-      if (searchKeyDestination.length >= 3) {
-        searchDestinationLocations({ variables: { searchKey, page: 1, limit: 5 } });
-      }
-    };
+
+
+    // const { data: destinationFilteredLocations,isLoading: filteredDestinationLoading } = useGetFilteredLocationsQuery(searchKeyDestination.length >= 3 ? searchKeyDestination : null, { skip: searchKeyDestination.length < 3 });
+    console.log(searchKeyDestination)
+    const { loading:filteredDestinationLoading,error:Desearnerr,  data:destinationFilteredLocations } = useQuery(SEARCH_LOCATIONS, {
+        variables: {searchKey: searchKeyDestination },
+        skip: searchKeyDestination.length < 3, // Avoid fetching when input is too short
+      });
+    
+      console.log(destinationFilteredLocations)
+    const displayLocationsDest = searchKeyDestination ? destinationFilteredLocations?.searchLocations.results || [] : getAllLocations;
+
     const getLocationDetails = (loc_ID: string) => {
         const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
         if (!location) return "Location details not available";
         const details = [
-            location.address_1,
-            location.address_2,
+            location.loc_ID,
+            location?.loc_dec,
             location.city,
             location.state,
+            location.pincode,
             location.country,
-            location.pincode
         ].filter(Boolean);
 
         return details.length > 0 ? details.join(", ") : "Location details not available";
@@ -138,7 +142,7 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
     if (getLocationsError) {
         console.log("getLocationsError: ", getLocationsError)
     }
-    const vendorsData = data?.partners.length > 0 ? data?.partners : []
+    const vendorsData = data?.getBusinessPartners.partners.length > 0 ? data?.getBusinessPartners.partners : []
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
@@ -171,7 +175,7 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
     const mapRowToInitialValues = (rowData: Customer) => ({
         supplierID: rowData.supplier_id || '',
         name: rowData.name || '',
-        locationId: rowData.loc_ID || '',
+        locationId: rowData.location_loc_ID || '',
         pincode: rowData.location_pincode || '',
         state: rowData.location_state || '',
         city: rowData.location_city || '',
@@ -180,11 +184,13 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
         contactPerson: rowData?.correspondence?.contact_person || '',
         contactNumber: rowData?.correspondence?.contact_number || '',
         emailId: rowData?.correspondence?.email || '',
-        locationOfSource: rowData.loc_of_source,
+        locationOfSource: rowData.loc_of_source_loc_ID,
         podRelevant: rowData?.pod_relevant === 1,
         forwardingAgent: rowData?.partner_functions?.forwarding_agent || '',
         goodsSupplier: rowData?.partner_functions?.goods_supplier || '',
         orderingAddress: rowData?.partner_functions?.ordering_address || '',
+        supplier_id: rowData.supplier_id || '',
+
     });
 
     const handleDelete = async (rowData: Customer) => {
@@ -219,51 +225,33 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
 
 
     const handleEdit = async (rowData: Customer) => {
-        console.log("rowdata :", rowData)
         setShowForm(true)
         setUpdateRecord(true)
         setUpdateRecordData(rowData)
         setUpdateRecordId(rowData?.partner_id)
         const updatedInitialValues = await mapRowToInitialValues(rowData);
-        const locId = rowData?.location_loc_ID ? rowData.location_loc_ID.split(", ").at(-1) ?? "" : "";
-        const sourceLocationId = rowData?.loc_of_source_loc_ID ? rowData.loc_of_source_loc_ID.split(", ").at(-1) ?? "" : "";
-        console.log("locId: ", sourceLocationId, locId)
         setFormInitialValues(updatedInitialValues);
-        setSearchKey(locId)
-        setSearchKeyDestination(sourceLocationId)
+        console.log(rowData?.location_loc_ID, rowData?.loc_of_source_loc_ID)
+        setSearchKey(rowData?.loc_ID)
+        setSearchKeyDestination(rowData?.loc_of_source)
     };
-
 
     const columns: GridColDef[] = [
         { field: 'supplier_id', headerName: 'Supplier ID', width: 150 },
         { field: 'name', headerName: 'Name', width: 200 },
-        // { field: 'loc_ID', headerName: 'Supplier Location ID', width: 150 },
         {
             field: "loc_ID",
             headerName: "Supplier Location ID",
-            width: 150,
-            // renderCell: (params) => (
-            //     <Tooltip title={getLocationDetails(params.value)} arrow>
-            //         <span>{params.value}</span>
-            //     </Tooltip>
-            // ),
+            width: 250,
         },
-        { field: 'location_pincode', headerName: 'Supplier Pincode', width: 100 },
-        { field: 'location_city', headerName: 'Supplier City', width: 150 },
-        { field: 'location_state', headerName: 'Supplier State', width: 150 },
-        { field: 'location_country', headerName: 'Supplier Country', width: 150 },
-        // { field: 'loc_of_source', headerName: 'Source Location ID', width: 150 },
         {
             field: "loc_of_source",
             headerName: "Source Location ID",
-            width: 200,
-            // renderCell: (params) => (
-            //     <Tooltip title={getLocationDetails(params.value)} arrow>
-            //         <span>{params.value}</span>
-            //     </Tooltip>
-            // ),
+            width: 250,
         },
-        // { field: 'pod_relevant', headerName: 'Pod relevant', width: 150 },
+        { field: "contact_person", headerName: "Contact Person", width: 200 },
+        { field: "contact_number", headerName: "Contact Number", width: 150 },
+        { field: "email", headerName: "Email", width: 200 },
         {
             field: 'actions',
             headerName: 'Actions',
@@ -287,20 +275,18 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
         },
     ];
 
-    // const rows = vendorsData.map((item: Customer) => ({
-    //     id: item.partner_id,
-    //     ...item,
-
-    // }));
-
     const rows = vendorsData.map((item: Customer) => ({
         id: item.partner_id,
         ...item,
         loc_of_source: getLocationDetails(item?.loc_of_source),
-        loc_ID: getLocationDetails(item?.loc_ID)
+        loc_ID: getLocationDetails(item?.loc_ID),
+        contact_person: item.correspondence?.contact_person || "",
+        contact_number: item.correspondence?.contact_number || "",
+        email: item.correspondence?.email || "",
+        // ordering_address: getVendorDetails(item.partner_functions?.ordering_address) || "",
+        // goods_supplier: getVendorDetails(item.partner_functions?.goods_supplier) || "",
+        // forwarding_agent: getVendorDetails(item.partner_functions?.forwarding_agent) || "",
     }));
-
-
 
     const supplierValidationSchema = Yup.object({
         // supplierId: Yup.string().required('Supplier ID is required'),
@@ -310,12 +296,15 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
         city: Yup.string().required('City is required'),
         country: Yup.string().required('Country is required'),
         contactPerson: Yup.string().required('Contact Person is required'),
-        contactNumber: Yup.string().required('Contact Number is required'),
+       contactNumber: Yup.string()
+            .matches(/^\d{10}$/, 'Contact number must be exactly 10 digits')
+            .max(10, 'Contact number cannot exceed 10 digits')
+            .required('Contact number is required'),
         emailId: Yup.string().email('Invalid email format').required('Email ID is required'),
-        locationOfSource: Yup.string().required('Location is required'),
-        orderingAddress: Yup.string().required('Ship To Party is required'),
-        goodsSupplier: Yup.string().required('Sold To Party is required'),
-        forwardingAgent: Yup.string().required('Bill To Party is required')
+        locationOfSource: Yup.string().required('Location of source is required'),
+        orderingAddress: Yup.string().required('Ordering address is required'),
+        goodsSupplier: Yup.string().required('Goods supplier is required'),
+        forwardingAgent: Yup.string().required('Forwarding agent is required')
     });
 
     const handleSupplierSubmit = async (values: typeof initialSupplierValues, { resetForm }: { resetForm: () => void }) => {
@@ -342,7 +331,7 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
                 ]
             }
             const editBody = {
-                ...updateRecordData,
+                supplier_id: updateRecordData?.supplier_id,
                 name: values?.name,
                 partner_type: "vendor",
                 loc_ID: values?.locationId,
@@ -367,7 +356,7 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
                     setShowForm(false)
                     setUpdateRecord(false)
                     setUpdateRecordId(0)
-                    setUpdateRecordData({})
+                    setUpdateRecordData(null)
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
                     setSearchKey('')
@@ -382,7 +371,7 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
                     setShowForm(false)
                     setUpdateRecord(false)
                     setUpdateRecordId(0)
-                    setUpdateRecordData({})
+                    setUpdateRecordData(null)
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
                     setSearchKey('')
@@ -397,8 +386,6 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
             setSnackbarOpen(true);
         }
     };
-
-
 
     return (
         <div className={styles.formsMainContainer}>
@@ -513,7 +500,9 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
                                                                 component="li"
                                                                 onClick={() => {
                                                                     setShowSuggestions(false)
-                                                                    setSearchKey(location.loc_ID);
+                                                                    const selectedDisplay = `${location.loc_ID},${location?.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
+                                                                    setSearchKey(selectedDisplay);
+                                                                    // setSearchKey(location.loc_ID);
                                                                     setFieldValue("locationId", location.loc_ID)
                                                                     const matchedLocation = getAllLocations.find((loc: Location) => loc.loc_ID === location.loc_ID);
 
@@ -536,12 +525,7 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
                                                                 }}
                                                                 sx={{ cursor: "pointer" }}
                                                             >
-                                                                <Tooltip
-                                                                    title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                                                    placement="right"
-                                                                >
-                                                                    <span style={{ fontSize: '13px' }}>{location.loc_ID}, {location.city}, {location.state}, {location.pincode}</span>
-                                                                </Tooltip>
+                                                                <span style={{ fontSize: '13px' }}>{location.loc_ID},{location?.loc_desc}, {location.city}, {location.state}, {location.pincode}</span>
                                                             </ListItem>
                                                         ))}
                                                     </List>
@@ -557,9 +541,6 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
                                             name="pincode" disabled
                                             value={values.pincode}
                                             onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.pincode && Boolean(errors.pincode)}
-                                            helperText={touched.pincode && errors.pincode}
                                         />
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={2.4}>
@@ -570,32 +551,16 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
                                             value={values.city}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
-                                            error={touched.city && Boolean(errors.city)}
-                                            helperText={touched.city && errors.city}
                                         />
                                     </Grid>
-                                    {/* <Grid item xs={12} sm={6} md={2.4}>
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="District"
-                                            name="district"
-                                            value={values.district}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.district && Boolean(errors.district)}
-                                            helperText={touched.district && errors.district}
-                                        />
-                                    </Grid> */}
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small' disabled
-                                            label="Country"
-                                            name="country"
-                                            value={values.country}
+                                            label="State"
+                                            name="state"
+                                            value={values.state}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
-                                            error={touched.country && Boolean(errors.country)}
-                                            helperText={touched.country && errors.country}
                                         />
                                     </Grid>
                                 </Grid>
@@ -618,7 +583,7 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
-                                            label="Contact Number"
+                                            label="Contact Number" type="number"
                                             name="contactNumber"
                                             value={values.contactNumber}
                                             onChange={handleChange}
@@ -649,7 +614,7 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
                                             fullWidth
                                             name="locationOfSource"
                                             size="small"
-                                            label="Search for Location of Source... "
+                                            label="Location of Source"
                                             onFocus={() => {
                                                 if (!searchKeyDestination) {
                                                     setSearchKeyDestination(values?.locationOfSource[0] || "");
@@ -661,7 +626,6 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
                                                 setShowDestinations(true)
                                             }
                                             }
-                                            // onBlur={handleBlur}
                                             value={searchKeyDestination}
                                             error={touched?.locationOfSource && Boolean(errors?.locationOfSource)}
                                             helperText={
@@ -670,7 +634,7 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
                                                     : ""
                                             }
                                             InputProps={{
-                                                endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
+                                                endAdornment: filteredDestinationLoading ? <CircularProgress size={20} /> : null,
                                             }}
                                         />
                                         <div ref={wrapperRefDest} >
@@ -691,17 +655,19 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
                                                                 component="li"
                                                                 onClick={() => {
                                                                     setShowDestinations(false)
-                                                                    setSearchKeyDestination(location.loc_ID);
+                                                                    const selectedDisplay = `${location.loc_ID},${location?.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
+                                                                    setSearchKeyDestination(selectedDisplay);
+                                                                    // setSearchKeyDestination(location.loc_ID);
                                                                     setFieldValue("locationOfSource", location.loc_ID);
                                                                 }}
                                                                 sx={{ cursor: "pointer" }}
                                                             >
-                                                                <Tooltip
+                                                                {/* <Tooltip
                                                                     title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
                                                                     placement="right"
                                                                 >
-                                                                    <span style={{ fontSize: '13px' }}>{location.loc_ID}, {location.city}, {location.state}, {location.pincode}</span>
-                                                                </Tooltip>
+                                                                </Tooltip> */}
+                                                                <span style={{ fontSize: '13px' }}>{location.loc_ID},{location?.loc_desc}, {location.city}, {location.state}, {location.pincode}</span>
                                                             </ListItem>
                                                         ))}
                                                     </List>
@@ -797,13 +763,13 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
             </Collapse>
 
             <div style={{ marginTop: "40px" }}>
-                {isLoading ? (
+                {loading ? (
                     <DataGridSkeletonLoader columns={columns} />
                 ) : (
                     <DataGridComponent
                         columns={columns}
                         rows={rows}
-                        isLoading={isLoading}
+                        isLoading={loading}
                         paginationModel={paginationModel}
                         activeEntity='vendors'
                         onPaginationModelChange={handlePaginationModelChange}
@@ -815,4 +781,3 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
 };
 
 export default SupplierForm;
-

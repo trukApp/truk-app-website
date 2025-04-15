@@ -3,7 +3,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
-import { TextField, Grid, Box, Typography, Checkbox, FormControlLabel, MenuItem, Button, Collapse, IconButton, Backdrop, CircularProgress, Tooltip, Paper, List, ListItem } from "@mui/material";
+import {
+	TextField, Grid, Box, Typography, Checkbox, FormControlLabel, MenuItem, Button, Collapse, IconButton, Backdrop, CircularProgress, Paper, List, ListItem
+	// ,Tooltip
+} from "@mui/material";
 import { DataGridComponent } from "../GridComponent";
 import { GridColDef, GridPaginationModel } from "@mui/x-data-grid";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
@@ -20,7 +23,7 @@ import { Location } from "./Locations";
 import SnackbarAlert from "../ReusableComponents/SnackbarAlerts";
 import { setUnitsofMeasurement } from "@/store/authSlice";
 import { useQuery ,useLazyQuery} from '@apollo/client';
-import { GET_ALL_LOCATIONS, GET_UOM ,SEARCH_LOCATIONS} from '@/api/graphqlApiSlice';
+import { GET_ALL_LOCATIONS, GET_UOM ,SEARCH_LOCATIONS,GET_VEHICLES} from '@/api/graphqlApiSlice';
 
 export interface VehicleFormValues {
 	hazardousStorage: boolean;
@@ -189,45 +192,42 @@ const VehicleForm: React.FC = () => {
 	const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
 	const [isEditing, setIsEditing] = useState(false);
 	const [editRow, setEditRow] = useState<VehicleFormValues | null>(null);
-	const { data, error, isLoading } = useGetVehicleMasterQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize });
+	// const { data, error, isLoading } = useGetVehicleMasterQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize });
+	const { loading:isLoading, error, data } = useQuery(GET_VEHICLES, {
+		variables: {page: paginationModel.page + 1, limit: paginationModel.pageSize  },
+	  });
+	  console.log(data)
 	const [postVehicle, { isLoading: postVehicleLoading }] = usePostVehicleMasterMutation();
 	const [editVehicle, { isLoading: editVehicleLoading }] = useEditVehicleMasterMutation();
 	const [deleteVehicle, { isLoading: deleteVehicleLoading }] = useDeleteVehicleMasterMutation();
 	const wrapperRef = useRef<HTMLDivElement>(null);
-	console.log('all vehs :', data)
-	const { data: locationsData } = useGetLocationMasterQuery({});
-	const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
-
+	// const { data: locationsData } = useGetLocationMasterQuery({});
+	// const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
+	const {data:locationsData,error: getLocationsError } = useQuery(GET_ALL_LOCATIONS, {
+		variables: { page:1, limit: 10 },
+	  });
+	const getAllLocations = locationsData?.getAllLocations?.locations.length > 0 ? locationsData?.getAllLocations?.locations : []
 	const [searchKey, setSearchKey] = useState('');
 	const [showSuggestions, setShowSuggestions] = useState(false);
-	const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
-	const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
-	// graphqlAPI
-    const [searchLocations, { loading: LocationLoading, data: filteredLocationsData }] = useLazyQuery(SEARCH_LOCATIONS);
-
-    const handleSearch = () => {
-      if (searchKey.length >= 3) {
-        searchLocations({ variables: { searchKey, page: 1, limit: 5 } });
-      }
-    };
-	const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL_LOCATIONS, {
-        // variables: { page, limit: 10 },
+	// const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
+	const { loading:filteredLocationLoading, error:searnerr, data:filteredLocations } = useQuery(SEARCH_LOCATIONS, {
+        variables: { searchKey },
+        skip: searchKey.length < 3, // Avoid fetching when input is too short
       });
-    
-      if (getallLoads) return <p>Loading...</p>;
-      if (er) return <p>Error: {er.message}</p>;
-	const { data: uom, error: uomErr } = useGetUomMasterQuery([])
+	const displayLocations = searchKey ? filteredLocations?.searchLocations.results || [] : getAllLocations;
+
+	
+
+	// const { data: uom, error: uomErr } = useGetUomMasterQuery([])
+	const {  error:uomErr, data:uom } = useQuery(GET_UOM);
 	if (uomErr) {
 		console.log("uom err:", uomErr)
 	}
 
-	const { loading, error:UOMErr, data:UOMData } = useQuery(GET_UOM);
 
-	if (loading) return <p>Loading...</p>;
-	if (UOMErr) return <p>Error: {UOMErr.message}</p>;
 	useEffect(() => {
-		if (uom && uom.uomList) {
-			const unitsofMeasure = uom.uomList.map((item: { unit_name: string }) => item.unit_name);
+		if (uom?.allUOM && uom?.allUOM) {
+			const unitsofMeasure = uom?.allUOM?.map((item: { unit_name: string }) => item.unit_name);
 			dispatch(setUnitsofMeasurement(unitsofMeasure));
 		}
 
@@ -254,17 +254,16 @@ const VehicleForm: React.FC = () => {
 		const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
 		if (!location) return "Location details not available";
 		const details = [
-			location.address_1 ,
+			location.loc_ID,
+			location.desc,
 			location.city,
 			location.state,
-			location.country,
 			location.pincode,
-			location.loc_ID
 		].filter(Boolean);
 
 		return details.length > 0 ? details.join(", ") : "Location details not available";
 	};
-	const vehiclesMaster = data?.vehicles;
+	const vehiclesMaster = data?.getVehicles.vehicles;
 	const unitsofMeasurement = useSelector(
 		(state: RootState) => state.auth.unitsofMeasurement
 	);
@@ -343,13 +342,12 @@ const VehicleForm: React.FC = () => {
 			const editMaxLength = editRow.maxLength.split(" ");
 			const editMaxWidth = editRow.maxWidth.split(" ");
 			const editMaxHeight = editRow.maxHeight.split(" ");
-			const locId = editRow?.locationId ? editRow.locationId.split(", ").at(-1) ?? "" : "";
-			console.log("locID :", locId)
-			setSearchKey(locId)
+			const locId = editRow?.locationId ? editRow.locationId.split(", ")[0] ?? "" : "";
+			setSearchKey(editRow?.locationId)
 			setInitialValues(() => ({
 				id: "",
 				vehicleId: editRow?.vehicleId,
-				locationId: locId ,
+				locationId: locId,
 				timeZone: editRow?.timeZone,
 				unlimitedUsage: editRow.unlimitedUsage,
 				individualResources: editRow.individualResources,
@@ -407,10 +405,10 @@ const VehicleForm: React.FC = () => {
 	const rows = vehiclesMaster?.map((vehicle: VehicleDetails) => ({
 		id: vehicle?.veh_id,
 		vehicleId: vehicle.vehicle_ID,
-		locationId : getLocationDetails(vehicle.loc_ID),
+		locationId: getLocationDetails(vehicle.loc_ID),
 		timeZone: vehicle.time_zone,
 		unlimitedUsage: vehicle?.unlimited_usage,
-		individualResources: vehicle?.individual_resource == null ? ''  : vehicle?.individual_resource ,
+		individualResources: vehicle?.individual_resource == null ? '' : vehicle?.individual_resource,
 		validityFrom: vehicle.transportation_details.validity_from,
 		validityTo: vehicle.transportation_details.validity_to,
 		vehicleType: vehicle.transportation_details.vehicle_type,
@@ -433,9 +431,7 @@ const VehicleForm: React.FC = () => {
 		doorWidth: vehicle.doorWidth,
 		doorHeight: vehicle.doorHeight,
 		doorLength: vehicle.doorLength,
-
 		avgCost: vehicle.additional_details.cost_per_ton,
-
 		downtimeStart: vehicle?.downtimes?.downtime_starts_from,
 		downtimeEnd: vehicle?.downtimes?.downtime_ends_from,
 		downtimeLocation: vehicle?.downtimes?.downtime_location,
@@ -449,54 +445,32 @@ const VehicleForm: React.FC = () => {
 
 	const columns: GridColDef[] = [
 		{ field: "vehicleId", headerName: "Vehicle ID", width: 150 },
-		{
-			field: "locationId",
-			headerName: "Location",
-			width: 250,
-			// renderCell: (params) => (
-			// 	<Tooltip title={getLocationDetails(params.value)} arrow>
-			// 		<span>{params.value}</span>
-			// 	</Tooltip>
-			// ),
-		},
-		{ field: "timeZone", headerName: "Time Zone", width: 150 },
-		{
-			field: "unlimitedUsage",
-			headerName: "Unlimited Usage",
-			width: 150,
-			type: "boolean",
-		},
-		{
-			field: "individualResources",
-			headerName: "Individual Resources",
-			width: 150,
-		},
-		{ field: "validityFrom", headerName: "Validity From", width: 150 },
-		{ field: "validityTo", headerName: "Validity To", width: 150 },
+		{ field: "locationId", headerName: "Location", width: 250 },
+		{ field: "timeZone", headerName: "Time Zone", width: 100 },
+		{ field: "unlimitedUsage", headerName: "Unlimited Usage", width: 80, type: "boolean", },
+		{ field: "individualResources", headerName: "Individual Resources", width: 80 },
+		{ field: "validityFrom", headerName: "Validity From", width: 100 },
+		{ field: "validityTo", headerName: "Validity To", width: 100 },
 		{ field: "vehicleType", headerName: "Vehicle Type", width: 150 },
 		{ field: "vehicleGroup", headerName: "Vehicle Group", width: 150 },
 		{ field: "ownership", headerName: "Ownership", width: 150 },
-		{ field: "payloadWeight", headerName: "Payload Weight", width: 150 },
-		{ field: "cubicCapacity", headerName: "Cubic Capacity", width: 150 },
-		{ field: "interiorLength", headerName: "Interior Length", width: 150 },
-		{ field: "interiorWidth", headerName: "Interior Width", width: 150 },
-		{ field: "interiorHeight", headerName: "Interior Height", width: 150 },
-		{ field: "tareWeight", headerName: "Tare Weight", width: 150 },
-		{ field: "maxGrossWeight", headerName: "Max Gross Weight", width: 150 },
-		{ field: "tareVolume", headerName: "Tare Volume", width: 150 },
-		{ field: "maxLength", headerName: "Max Length", width: 150 },
-		{ field: "maxWidth", headerName: "Max Width", width: 150 },
-		{ field: "maxHeight", headerName: "Max Height", width: 150 },
-		{ field: "downtimeStart", headerName: "Downtime Start", width: 150 },
-		{ field: "downtimeEnd", headerName: "Downtime End", width: 150 },
+		{ field: "payloadWeight", headerName: "Payload Weight", width: 100 },
+		{ field: "cubicCapacity", headerName: "Cubic Capacity", width: 100 },
+		{ field: "interiorLength", headerName: "Interior Length", width: 100 },
+		{ field: "interiorWidth", headerName: "Interior Width", width: 100 },
+		{ field: "interiorHeight", headerName: "Interior Height", width: 100 },
+		{ field: "tareWeight", headerName: "Tare Weight", width: 100 },
+		{ field: "maxGrossWeight", headerName: "Max Gross Weight", width: 100 },
+		{ field: "tareVolume", headerName: "Tare Volume", width: 100 },
+		{ field: "maxLength", headerName: "Max Length", width: 100 },
+		{ field: "maxWidth", headerName: "Max Width", width: 100 },
+		{ field: "maxHeight", headerName: "Max Height", width: 100 },
+		{ field: "downtimeStart", headerName: "Downtime Start", width: 120 },
+		{ field: "downtimeEnd", headerName: "Downtime End", width: 120 },
 		{ field: "downtimeLocation", headerName: "Downtime Location", width: 200 },
-		{
-			field: "downtimeDescription",
-			headerName: "Downtime Description",
-			width: 250,
-		},
+		{ field: "downtimeDescription", headerName: "Downtime Description", width: 250 },
 		{ field: "downtimeReason", headerName: "Downtime Reason", width: 200 },
-		{ field: "avgCost", headerName: "Average Cost", width: 150 },
+		{ field: "avgCost", headerName: "Average Cost (Rs.)", width: 150 },
 		{
 			field: "actions",
 			headerName: "Actions",
@@ -519,12 +493,13 @@ const VehicleForm: React.FC = () => {
 		{ resetForm }: { resetForm: () => void }
 	) => {
 		try {
+			// console.log('qwerty')
 			const body = {
 				vehicles: [
 					{
 						loc_ID: values.locationId,
 						unlimited_usage: `${values.unlimitedUsage ? 1 : 0}`,
-						individual_resource: `${values.unlimitedUsage ?  null : values.individualResources }`,
+						individual_resource: `${values.unlimitedUsage ? null : values.individualResources}`,
 						transportation_details: {
 							validity_from: values.validityFrom,
 							validity_to: values.validityTo,
@@ -573,7 +548,7 @@ const VehicleForm: React.FC = () => {
 			const editBody = {
 				loc_ID: values.locationId,
 				unlimited_usage: `${values.unlimitedUsage ? 1 : 0}`,
-				individual_resource: `${values.unlimitedUsage ?  null : values.individualResources }`,
+				individual_resource: `${values.unlimitedUsage ? null : values.individualResources}`,
 				transportation_details: {
 					validity_from: values.validityFrom,
 					validity_to: values.validityTo,
@@ -618,8 +593,9 @@ const VehicleForm: React.FC = () => {
 				temp_controlled_vehicle: values.temperatureControl,
 			};
 
+			// console.log("Edit body: ", editBody)
 			if (isEditing && editRow) {
-				console.log('qwerty')
+				// console.log('edit api section : ', editBody)
 				const vehicleId = editRow.id;
 				const response = await editVehicle({
 					body: editBody,
@@ -636,6 +612,7 @@ const VehicleForm: React.FC = () => {
 				}
 
 			} else {
+				// console.log('post api section : ', body)
 				const response = await postVehicle(body).unwrap();
 				if (response?.created_records) {
 					setSnackbarMessage(`Vehicle ID ${response.created_records[0]} created successfully!`);
@@ -646,7 +623,6 @@ const VehicleForm: React.FC = () => {
 					setSnackbarOpen(true);
 					setSearchKey('')
 				}
-
 			}
 		} catch (error) {
 			console.error("API Error:", error);
@@ -826,20 +802,16 @@ const VehicleForm: React.FC = () => {
 																		component="li"
 																		onClick={() => {
 																			setShowSuggestions(false);
-																			setSearchKey(location.loc_ID);
+																			const selectedDisplay = `${location.loc_ID},${location?.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
+																			setSearchKey(selectedDisplay);
 																			setFieldValue("locationId", location.loc_ID);
 																			setFieldValue("timeZone", location.time_zone);
 																		}}
 																		sx={{ cursor: "pointer" }}
 																	>
-																		<Tooltip
-																			title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-																			placement="right"
-																		>
-																			<span style={{ fontSize: "13px" }}>
-																				{location.loc_ID}, {location.city}, {location.state}, {location.pincode}
-																			</span>
-																		</Tooltip>
+																		<span style={{ fontSize: "13px" }}>
+																			{location.loc_ID},{location.loc_desc}, {location.city}, {location.state}, {location.pincode}
+																		</span>
 																	</ListItem>
 																))}
 															</List>
@@ -869,9 +841,7 @@ const VehicleForm: React.FC = () => {
 															onChange={(e) => {
 																const checked = e.target.checked;
 																setFieldValue("unlimitedUsage", checked);
-																console.log("unlimited checked ", checked)
 																if (checked) {
-																	console.log("inidvidual resources :", values.individualResources)
 																	setFieldValue("individualResources", null);
 																	setFieldValue("individualResources", '');
 																}
@@ -889,8 +859,15 @@ const VehicleForm: React.FC = () => {
 														label="Individual Resources*"
 														name="individualResources"
 														type="number"
-														value={!values.unlimitedUsage ? values.individualResources :   "" }
-														onChange={(e) => setFieldValue("individualResources", e.target.value ? Number(e.target.value) :   "")}
+														value={!values.unlimitedUsage ? values.individualResources : ""}
+														onChange={(e) => {
+															const inputValue = e.target.value;
+															const numericValue = Number(inputValue);
+
+															if (numericValue > 0 || inputValue === "") {
+																setFieldValue("individualResources", inputValue ? numericValue : "");
+															}
+														}}
 														onBlur={handleBlur}
 														size="small"
 														error={touched.individualResources && Boolean(errors.individualResources)}
@@ -1009,7 +986,15 @@ const VehicleForm: React.FC = () => {
 													name="payloadWeight"
 													type="number"
 													value={values.payloadWeight}
-													onChange={handleChange}
+													// onChange={handleChange}
+													onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															handleChange(e);
+														}
+													}}
 													onBlur={handleBlur}
 													error={
 														touched.payloadWeight &&
@@ -1047,7 +1032,15 @@ const VehicleForm: React.FC = () => {
 													name="cubicCapacity"
 													type="number"
 													value={values.cubicCapacity}
-													onChange={handleChange}
+													// onChange={handleChange}
+													onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															handleChange(e);
+														}
+													}}
 													onBlur={handleBlur}
 													error={
 														touched.cubicCapacity &&
@@ -1085,7 +1078,14 @@ const VehicleForm: React.FC = () => {
 													name="interiorLength"
 													type="number"
 													value={values.interiorLength}
-													onChange={handleChange}
+													onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															handleChange(e);
+														}
+													}}
 													onBlur={handleBlur}
 													error={
 														touched.interiorLength &&
@@ -1123,7 +1123,14 @@ const VehicleForm: React.FC = () => {
 													name="interiorWidth"
 													type="number"
 													value={values.interiorWidth}
-													onChange={handleChange}
+													onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															handleChange(e);
+														}
+													}}
 													onBlur={handleBlur}
 													error={
 														touched.interiorWidth &&
@@ -1161,7 +1168,14 @@ const VehicleForm: React.FC = () => {
 													name="interiorHeight"
 													type="number"
 													value={values.interiorHeight}
-													onChange={handleChange}
+													onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															handleChange(e);
+														}
+													}}
 													onBlur={handleBlur}
 													error={
 														touched.interiorHeight &&
@@ -1205,7 +1219,14 @@ const VehicleForm: React.FC = () => {
 													name="maxGrossWeight"
 													type="number"
 													value={values.maxGrossWeight}
-													onChange={handleChange}
+													onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															handleChange(e);
+														}
+													}}
 													onBlur={handleBlur}
 													error={
 														touched.maxGrossWeight &&
@@ -1243,7 +1264,14 @@ const VehicleForm: React.FC = () => {
 													name="tareWeight"
 													type="number"
 													value={values.tareWeight}
-													onChange={handleChange}
+													onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															handleChange(e);
+														}
+													}}
 													onBlur={handleBlur}
 													error={
 														touched.tareWeight && Boolean(errors.tareWeight)
@@ -1278,7 +1306,14 @@ const VehicleForm: React.FC = () => {
 													name="tareVolume"
 													type="number"
 													value={values.tareVolume}
-													onChange={handleChange}
+													onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															handleChange(e);
+														}
+													}}
 													onBlur={handleBlur}
 													error={
 														touched.tareVolume && Boolean(errors.tareVolume)
@@ -1313,7 +1348,15 @@ const VehicleForm: React.FC = () => {
 													name="maxLength"
 													type="number"
 													value={values.maxLength}
-													onChange={handleChange}
+													// onChange={handleChange}
+													onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															handleChange(e);
+														}
+													}}
 													onBlur={handleBlur}
 													error={touched.maxLength && Boolean(errors.maxLength)}
 													helperText={touched.maxLength && errors.maxLength}
@@ -1346,7 +1389,14 @@ const VehicleForm: React.FC = () => {
 													name="maxWidth"
 													type="number"
 													value={values.maxWidth}
-													onChange={handleChange}
+													onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															handleChange(e);
+														}
+													}}
 													onBlur={handleBlur}
 													error={touched.maxWidth && Boolean(errors.maxWidth)}
 													helperText={touched.maxWidth && errors.maxWidth}
@@ -1379,7 +1429,14 @@ const VehicleForm: React.FC = () => {
 													name="maxHeight"
 													type="number"
 													value={values.maxHeight}
-													onChange={handleChange}
+													onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															handleChange(e);
+														}
+													}}
 													onBlur={handleBlur}
 													error={touched.maxHeight && Boolean(errors.maxHeight)}
 													helperText={touched.maxHeight && errors.maxHeight}
@@ -1419,7 +1476,6 @@ const VehicleForm: React.FC = () => {
 													type="date"
 													value={
 														values.downtimeStart
-
 													}
 													onChange={handleChange}
 													onBlur={handleBlur}
@@ -1437,7 +1493,6 @@ const VehicleForm: React.FC = () => {
 													type="date"
 													value={
 														values.downtimeEnd
-
 													}
 													onChange={handleChange}
 													onBlur={handleBlur}
@@ -1493,11 +1548,18 @@ const VehicleForm: React.FC = () => {
 											<Grid item xs={12} sm={6} md={2.4}>
 												<TextField
 													fullWidth
-													label="Avg. Cost of Transportation (Price Per Ton)*"
+													label="Avg. Cost of (Price Per Ton in Rs.)*"
 													name="avgCost"
 													type="number"
 													value={values.avgCost}
-													onChange={handleChange}
+													onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															handleChange(e);
+														}
+													}}
 													onBlur={handleBlur}
 													size="small"
 													error={touched.avgCost && Boolean(errors.avgCost)}
@@ -1594,7 +1656,6 @@ const VehicleForm: React.FC = () => {
 				</Collapse>
 			</Box>
 
-			{/* Data grid */}
 			<div style={{ marginTop: "40px" }}>
 				{isLoading ? (
 					<DataGridSkeletonLoader columns={columns} />

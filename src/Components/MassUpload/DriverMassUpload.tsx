@@ -60,8 +60,11 @@ const DriverMassUpload: React.FC<MassUploadProps> = ({ arrayKey }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { data } = useGetLocationMasterQuery([]);
-  const locationMasterData = data?.locations;
+  // const { data } = useGetLocationMasterQuery([]);
+  const {data:locationsData,error: getLocationsError,loading:isLoading } = useQuery(GET_ALL_LOCATIONS, {
+    variables: { page:1, limit: 10 },
+  });
+  const locationMasterData = locationsData?.getAllLocations?.locations.length > 0 ? locationsData?.getAllLocations?.locations : []
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
@@ -134,13 +137,7 @@ const DriverMassUpload: React.FC<MassUploadProps> = ({ arrayKey }) => {
     link.setAttribute('download', `${arrayKey}_template.csv`);
     link.click();
   };
-// graphQlAPi
-const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL_LOCATIONS, {
-  // variables: { page, limit: 10 },
-});
 
-if (getallLoads) return <p>Loading...</p>;
-if (er) return <p>Error: {er.message}</p>;
 
   const handleUpload = async () => {
     if (!file) {

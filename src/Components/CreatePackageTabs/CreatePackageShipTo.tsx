@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Formik, Form, Field, FormikProps } from 'formik';
-import { Grid, TextField, Checkbox, FormControlLabel, Tooltip, Backdrop, CircularProgress, Typography, Paper, List, ListItem } from '@mui/material'
+import { Grid, TextField, Checkbox, FormControlLabel, Backdrop, CircularProgress, Typography, Paper, List, ListItem } from '@mui/material'
 import * as Yup from 'yup';
 import styles from './CreatePackage.module.css';
 import { useAppDispatch, useAppSelector } from '@/store';
@@ -44,23 +44,33 @@ const validationSchema = Yup.object({
 
 const ShipFrom: React.FC<ShipToProps> = ({ onNext, onBack }) => {
     const dispatch = useAppDispatch()
-    const { data: locationsData, error: getLocationsError, isLoading: isLocationLoading } = useGetLocationMasterQuery([])
+    const {data:locationsData,loading: isLocationLoading } = useQuery(GET_ALL_LOCATIONS, {
+        variables: { page:1, limit: 10 },
+      });
+    const allLocations = locationsData?.getAllLocations?.locations.length > 0 ? locationsData?.getAllLocations?.locations : []
     const [updateDefulatFromLocation, { isLoading: defaultLocationLoading }] = useUpdateShipToDefaultLocationIdMutation();
-    const allLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
+  
     const defaultLocationData = allLocations?.find((eachLocation: Location) =>
         eachLocation?.def_bill_to === 1)
-
+    const defaultLocationDataInputText = defaultLocationData
+        ? `${defaultLocationData.loc_ID},${defaultLocationData.loc_desc}, ${defaultLocationData.city}, ${defaultLocationData.state}, ${defaultLocationData.pincode}`
+        : '';
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const [postLocation, { isLoading: postLocationLoading }] = usePostLocationMasterMutation({})
     const shipToReduxValues = useAppSelector((state) => state.auth.packageShipTo)
     const shipFromReduxValues = useAppSelector((state) => state.auth.packageShipFrom)
-    const [searchKey, setSearchKey] = useState(shipToReduxValues?.locationId || defaultLocationData?.loc_ID || '');
+    const [searchKey, setSearchKey] = useState(shipToReduxValues?.locationId || defaultLocationDataInputText || '');
     const [showSuggestions, setShowSuggestions] = useState(false);
-    const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
-    const displayLocations = searchKey ? filteredLocations?.results || [] : allLocations;
-// graphqlAPI
+    // const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
+    const { loading:filteredLocationLoading, error:searnerr, data:filteredLocations } = useQuery(SEARCH_LOCATIONS, {
+        variables: { searchKey },
+        skip: searchKey.length < 3, // Avoid fetching when input is too short
+      });
+    const displayLocations = searchKey ? filteredLocations?.searchLocations.results || [] : allLocations;
+    const shipFromLocationIdData = shipFromReduxValues?.locationId
+    const shipFromLocationId = shipFromLocationIdData?.split(',')[0] ?? '';// graphqlAPI
 const [searchLocations, { loading: LocationLoading, data: filteredLocationsData }] = useLazyQuery(SEARCH_LOCATIONS);
 
 const handleSearch = () => {
@@ -68,19 +78,12 @@ const handleSearch = () => {
     searchLocations({ variables: { searchKey, page: 1, limit: 5 } });
   }
 };
-const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL_LOCATIONS, {
-    // variables: { page, limit: 10 },
-  });
 
-  if (getallLoads) return <p>Loading...</p>;
-  if (er) return <p>Error: {er.message}</p>;
     const getAllLocations = displayLocations.filter(
-        (location: Location) => location.loc_ID !== shipFromReduxValues?.locationId
+        (location: Location) => location.loc_ID !== shipFromLocationId
     );
-
-    console.log("getDefaultLocationId: ", defaultLocationData)
     const shipFromInitialValues = {
-        locationId: shipToReduxValues?.locationId || defaultLocationData?.loc_ID || '',
+        locationId: shipToReduxValues?.locationId || defaultLocationDataInputText || '',
         locationDescription: shipToReduxValues?.locationDescription || defaultLocationData?.loc_desc || '',
         contactPerson: shipToReduxValues?.contactPerson || defaultLocationData?.contact_name || '',
         phoneNumber: shipToReduxValues?.phoneNumber || defaultLocationData?.contact_phone_number || '',
@@ -101,7 +104,7 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
         locationType: shipToReduxValues?.locationType || defaultLocationData?.loc_type || ''
     }
 
-    console.log("getLocationsError: ", getLocationsError)
+    // console.log("getLocationsError: ", getLocationsError)
 
     const handleLocationChange = (
         selectedLocationId: string,
@@ -155,7 +158,8 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
 
     const handleDefaultLocationChange = async (locId: string, defaultValue: number | boolean) => {
         try {
-            const response = await updateDefulatFromLocation({ locId: locId, defShipFrom: defaultValue ? 1 : 0 }).unwrap();
+            const updatedLocationId = locId?.split(',')[0] ?? '';
+            const response = await updateDefulatFromLocation({ locId: updatedLocationId, defShipFrom: defaultValue ? 1 : 0 }).unwrap();
             console.log("response: ", response)
         } catch (error) {
             console.log("Getting error while changing default value: ", error)
@@ -346,18 +350,20 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
                                                                 component="li"
                                                                 onClick={() => {
                                                                     setShowSuggestions(false)
-                                                                    setSearchKey(location.loc_ID);
+                                                                    const selectedDisplay = `${location.loc_ID},${location?.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
+                                                                    setSearchKey(selectedDisplay);
+                                                                    // setSearchKey(location.loc_ID);
                                                                     handleLocationChange(location.loc_ID, setFieldValue);
-                                                                    setFieldValue("locationId", location.loc_ID);
+                                                                    setFieldValue("locationId", selectedDisplay);
                                                                 }}
                                                                 sx={{ cursor: "pointer" }}
                                                             >
-                                                                <Tooltip
+                                                                {/* <Tooltip
                                                                     title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
                                                                     placement="right"
                                                                 >
-                                                                    <span style={{ fontSize: '14px' }}>{location.loc_ID}, {location.city}, {location.state}, {location.country}, {location.pincode}</span>
-                                                                </Tooltip>
+                                                                </Tooltip> */}
+                                                                <span style={{ fontSize: '14px' }}>{location.loc_ID},{location?.loc_desc}, {location.city}, {location.state}, {location.country}, {location.pincode}</span>
                                                             </ListItem>
                                                         ))}
                                                     </List>
@@ -372,9 +378,6 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
                                             as={TextField} disabled
                                             label="Location Description*"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
-
-                                        // error={touched?.locationDescription && Boolean(errors?.locationDescription)}
-                                        // helperText={touched?.locationDescription && errors?.locationDescription}
                                         />
                                     </Grid>
                                     <Grid item xs={12} md={2.4}>
@@ -383,8 +386,6 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
                                             as={TextField} disabled
                                             label="Latitude*"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                        // error={touched?.latitude && Boolean(errors?.latitude)}
-                                        // helperText={touched?.latitude && errors?.latitude}
                                         />
                                     </Grid>
                                     <Grid item xs={12} md={2.4}>
@@ -393,8 +394,6 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
                                             as={TextField}
                                             label="Longitude*" disabled
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                        // error={touched?.longitude && Boolean(errors?.longitude)}
-                                        // helperText={touched?.longitude && errors?.longitude}
                                         />
                                     </Grid>
                                     <Grid item xs={12} md={2.4}>
@@ -403,8 +402,6 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
                                             as={TextField}
                                             label="Time zone*"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                        // error={touched?.timeZone && Boolean(errors?.timeZone)}
-                                        // helperText={touched?.timeZone && errors?.timeZone}
                                         />
                                     </Grid>
                                     <Grid item xs={12} md={2.4}>
@@ -413,8 +410,6 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
                                             as={TextField}
                                             label="Location type*"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                        // error={touched?.locationType && Boolean(errors?.locationType)}
-                                        // helperText={touched?.locationType && errors?.locationType}
                                         />
                                     </Grid>
                                     <Grid item xs={12} md={2.4}>
@@ -423,8 +418,6 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
                                             as={TextField} disabled
                                             label="GLN Code"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                        // error={touched?.glnCode && Boolean(errors?.glnCode)}
-                                        // helperText={touched?.glnCode && errors?.glnCode}
                                         />
                                     </Grid>
 
@@ -434,8 +427,6 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
                                             as={TextField}
                                             label="IATA Code"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                        // error={touched?.iataCode && Boolean(errors?.iataCode)}
-                                        // helperText={touched?.iataCode && errors?.iataCode}
                                         />
                                     </Grid>
                                 </Grid>
@@ -448,9 +439,6 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
                                             as={TextField}
                                             label="Address Line 1*"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
-
-                                        // error={touched?.addressLine1 && Boolean(errors?.addressLine1)}
-                                        // helperText={touched?.addressLine1 && errors?.addressLine1}
                                         />
                                     </Grid>
                                     <Grid item xs={12} md={2.4}>
@@ -478,9 +466,6 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
                                             as={TextField}
                                             label="State*"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
-
-                                        // error={touched?.state && Boolean(errors?.state)}
-                                        // helperText={touched?.state && errors?.state}
                                         />
                                     </Grid>
                                     <Grid item xs={12} md={2.4}>
@@ -489,9 +474,6 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
                                             as={TextField} disabled
                                             label="Country*"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
-
-                                        // error={touched?.country && Boolean(errors?.country)}
-                                        // helperText={touched?.country && errors?.country}
                                         />
                                     </Grid>
                                     <Grid item xs={12} md={2.4}>
@@ -501,8 +483,6 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
                                             label="Pincode*" disabled
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
                                             required
-                                        // error={touched?.pincode && Boolean(errors?.pincode)}
-                                        // helperText={touched?.pincode && errors?.pincode}
                                         />
                                     </Grid>
                                 </Grid>
@@ -514,9 +494,6 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
                                             as={TextField} disabled
                                             label="Contact Person*"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
-
-                                        // error={touched?.contactPerson && Boolean(errors?.contactPerson)}
-                                        // helperText={touched?.contactPerson && errors?.contactPerson}
                                         />
                                     </Grid>
                                     <Grid item xs={12} md={2.4}>
@@ -530,8 +507,6 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
                                             label="Phone Number*"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
                                             type='number'
-                                        // error={touched?.phoneNumber && Boolean(errors?.phoneNumber)}
-                                        // helperText={touched?.phoneNumber && errors?.phoneNumber}
                                         />
                                     </Grid>
                                     <Grid item xs={12} md={2.4}>
@@ -540,9 +515,6 @@ const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL
                                             as={TextField}
                                             label="Email Address*"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
-
-                                        // error={touched?.email && Boolean(errors?.email)}
-                                        // helperText={touched?.email && errors?.email}
                                         />
                                     </Grid>
                                 </Grid>

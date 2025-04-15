@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     Box, Button, Collapse, Grid, TextField, IconButton,
     FormControl,
@@ -11,6 +11,10 @@ import {
     FormControlLabel,
     Checkbox,
     Tooltip,
+    Paper,
+    List,
+    ListItem,
+    Chip,
 } from '@mui/material';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
@@ -19,7 +23,7 @@ import { DataGridComponent } from '../GridComponent';
 import { GridColDef, GridPaginationModel } from '@mui/x-data-grid';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { useGetCarrierMasterQuery, usePostCarrierMasterMutation, useEditCarrierMasterMutation, useDeleteCarrierMasterMutation, useGetLocationMasterQuery, useGetLanesMasterQuery } from '@/api/apiSlice';
+import { useGetCarrierMasterQuery, usePostCarrierMasterMutation, useEditCarrierMasterMutation, useDeleteCarrierMasterMutation, useGetLocationMasterQuery, useGetLanesMasterQuery, useGetFilteredLocationsQuery } from '@/api/apiSlice';
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MassUpload from '../MassUpload/MassUpload';
@@ -28,7 +32,7 @@ import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 import { Location } from '../MasterDataComponents/Locations';
 import { Lane } from '../MasterDataComponents/Lanes';
 import { useQuery } from '@apollo/client';
-import { GET_ALL_LOCATIONS, GET_LANES } from '@/api/graphqlApiSlice';
+import { GET_ALL_LOCATIONS, GET_LANES ,GET_CARRIERS,SEARCH_LOCATIONS} from '@/api/graphqlApiSlice';
 interface CarrierFormFE {
     id: string;
     carrierId: string,
@@ -60,69 +64,96 @@ export interface CarrierFormBE {
     carrier_network_portal: number;
 }
 
+const initialCarrierValues = {
+    id: '',
+    carrierId: '',
+    name: '',
+    address: '',
+    contactPerson: '',
+    contactNumber: '',
+    emailId: '',
+    vehicleTypes: [] as string[],
+    locationIds: [] as string[],
+    laneIds: [] as string[],
+    deviceDetails: '',
+    enrollSpotAuction: false,
+    preferredCarrier: false,
+};
+
 const CarrierForm: React.FC = () => {
+     const wrapperRef = useRef<HTMLDivElement>(null);
     const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10, });
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const [showForm, setShowForm] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-    const [editRow, setEditRow] = useState<CarrierFormFE | null>(null);;
-    const { data, error, isLoading } = useGetCarrierMasterQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize })
+    const [searchKey, setSearchKey] = useState('');
+    const [page, setPage] = useState(1);
+    const [initialValues, setInitialValues] = useState(initialCarrierValues)
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [editRow, setEditRow] = useState<CarrierFormFE | null>(null);
+    const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL_LOCATIONS, {
+         variables: { page, limit: 10 },
+      });
+    
+      
+      const { data: carrerData, loading: carrerLoading, error } = useQuery(GET_CARRIERS, {
+        variables: { page: paginationModel.page + 1, limit: paginationModel.pageSize },
+    });
+
+    // const { data: lanesData } = useGetLanesMasterQuery([]);
+     
+    const { loading, error:laneErr, data:laneData,  } = useQuery(GET_LANES);
+    
+    // const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
+    const { data:filteredLocations, loading:filteredLocationLoading  } = useQuery(SEARCH_LOCATIONS, {
+        variables: { searchKey },
+        skip: !searchKey, // skip if no key
+      });
     const [postCarrier, { isLoading: postCarrierLoading }] = usePostCarrierMasterMutation()
     const [editCarrier, { isLoading: editCarrierLoading }] = useEditCarrierMasterMutation()
     const [deleteCarrier, { isLoading: deleteCarrierLoading }] = useDeleteCarrierMasterMutation()
-    const { data: locationsData, isLoading: isLocationLoading } = useGetLocationMasterQuery({})
+
+    // const { data: locationsData, isLoading: isLocationLoading } = useGetLocationMasterQuery({})
        //graphQlAPI
-       const { loading:getallLoads, error:er, data:getallLocations } = useQuery(GET_ALL_LOCATIONS, {
-        // variables: { page, limit: 10 },
-      });
-    
-      if (getallLoads) return <p>Loading...</p>;
-      if (er) return <p>Error: {er.message}</p>;
-    const { data: lanesData } = useGetLanesMasterQuery([]);
-
-    const [page, setPage] = useState(1);
-    const { loading, error:laneErr, data:laneData, refetch } = useQuery(GET_LANES, {
-      variables: { },
-    });
   
-    if (loading) return <p>Loading lanes...</p>;
-    if (laneErr) return <p>Error: {laneErr.message}</p>;
+  
 
-    const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
+ 
+  
+    const getAllLocations = getallLocations?.getAllLocations?.locations.length > 0 ? getallLocations?.getAllLocations?.locations : []
+  
+
+    const displayLocations = searchKey ? filteredLocations?.searchLocations?.results || [] : getAllLocations;
+    console.log(displayLocations)
     const getLocationDetails = (loc_ID: string) => {
         const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
         if (!location) return "Location details not available";
         const details = [
             location.loc_ID,
-            location.address_1,
-            location.address_2,
+            location.loc_desc,
             location.city,
             location.state,
-            location.country,
-            location.pincode
+            location.pincode,
         ].filter(Boolean);
         return details.length > 0 ? details.join(", ") : "Location details not available";
     };
 
-    const getAllLanes = lanesData?.lanes.length > 0 ? lanesData?.lanes : []
-    if (error) {
-        console.log("err while getting carrier info :", error)
-    }
+    const getAllLanes = laneData?.allLanes.lanes.length > 0 ? laneData?.allLanes.lanes : []
+    // if (error) {
+    //     console.log("err while getting carrier info :", error)
+    // }
 
     const getLaneDetails = (lane_ID: string) => {
-        const lane = lanesData?.lanes.find((l: Lane) => l.lane_ID === lane_ID);
+        const lane = laneData?.allLanes?.lanes.find((l: Lane) => l.lane_ID === lane_ID);
         if (!lane) return "Lane details not available";
         const sourceLocationDetails = [
             lane.src_loc_ID,
             lane.src_loc_desc,
             lane.src_city,
             lane.src_state,
-            lane.src_latitude,
-            lane.src_longitude,
             lane_ID
-
         ].filter(Boolean).join(", ");
 
         const destinationLocationDetails = [
@@ -130,17 +161,27 @@ const CarrierForm: React.FC = () => {
             lane.des_loc_desc,
             lane.des_city,
             lane.des_state,
-            lane.des_latitude,
-            lane.des_longitude,
             lane_ID
         ].filter(Boolean).join(", ");
         return `Source: ${sourceLocationDetails} | Destination: ${destinationLocationDetails}`;
     };
 
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+    
     const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
         setPaginationModel(newPaginationModel);
     };
-    const vehicleTypeOptions = ['Truck', 'Van', 'Container', 'Trailer'];
+    // const vehicleTypeOptions = ['Truck', 'Van', 'Container', 'Trailer'];
     const handleEdit = (row: CarrierFormFE) => {
         setShowForm(true)
         setIsEditing(true)
@@ -176,22 +217,6 @@ const CarrierForm: React.FC = () => {
         }
     };
 
-    const initialCarrierValues = {
-        id: '',
-        carrierId: '',
-        name: '',
-        address: '',
-        contactPerson: '',
-        contactNumber: '',
-        emailId: '',
-        vehicleTypes: [] as string[],
-        locationIds: [] as string[],
-        laneIds: [] as string[],
-        deviceDetails: '',
-        enrollSpotAuction: false,
-        preferredCarrier: false,
-    };
-    const [initialValues, setInitialValues] = useState(initialCarrierValues)
 
     useEffect(() => {
         if (editRow) {
@@ -217,9 +242,11 @@ const CarrierForm: React.FC = () => {
         name: Yup.string().required('Name is required'),
         address: Yup.string().required('Address is required'),
         contactPerson: Yup.string().required('Contact Person is required'),
-        contactNumber: Yup.string().required('Contact Number is required'),
+        contactNumber: Yup.string()
+        .matches(/^[0-9]{10}$/, "Contact number must be exactly 10 digits")
+        .required("Contact number is required"),
         emailId: Yup.string().email('Invalid email format').required('Email ID is required'),
-        vehicleTypes: Yup.array().of(Yup.string()).min(1, 'Select at least one vehicle type'),
+        vehicleTypes: Yup.string().required('Vehicle type is required'),
         locationIds: Yup.array().of(Yup.string()).min(1, 'Select at least one location').required('Location is required'),
         laneIds: Yup.array().of(Yup.string()).min(1, 'Select at least one lane').required('Lane IDs are required'),
     });
@@ -257,6 +284,7 @@ const CarrierForm: React.FC = () => {
                 carrier_lanes: values.laneIds
             }
             if (isEditing && editRow) {
+                console.log('edit body : ', editBody)
                 const carrierId = editRow.id
                 const response = await editCarrier({ body: editBody, carrierId }).unwrap()
                 if (response?.updated_record) {
@@ -269,6 +297,7 @@ const CarrierForm: React.FC = () => {
                 }
             }
             else {
+                console.log("post body : ", body)
                 const response = await postCarrier(body).unwrap();
                 if (response?.created_records) {
                     setSnackbarMessage(`Carrier ID ${response.created_records[0]} created successfully!`);
@@ -278,7 +307,6 @@ const CarrierForm: React.FC = () => {
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
                 }
-
             }
         } catch (error) {
             console.error('API Error:', error);
@@ -288,22 +316,21 @@ const CarrierForm: React.FC = () => {
         }
     };
 
-    const rows = data?.carriers.map((carrier: CarrierFormBE) => {
+    const rows = carrerData?.allCarriers.carriers.map((carrier: CarrierFormBE) => {
         const locationIds = Array.isArray(carrier.carrier_loc_of_operation)
-            ? carrier.carrier_loc_of_operation
-            : [carrier.carrier_loc_of_operation];
+            ? carrier?.carrier_loc_of_operation
+            : [carrier?.carrier_loc_of_operation];
 
-        const laneIds = Array.isArray(carrier.carrier_lanes)
+        const laneIds = Array.isArray(carrier?.carrier_lanes)
             ? carrier.carrier_lanes
             : [carrier.carrier_lanes];
-
         const locationDetails = locationIds
             .map((id) => getLocationDetails(id))
-            .join(" | ");
+            .join("\n");
 
         const laneDetails = laneIds
             .map((id) => getLaneDetails(id))
-            .join(" || ");
+            .join("\n");
 
         return {
             id: carrier.cr_id,
@@ -330,22 +357,9 @@ const CarrierForm: React.FC = () => {
         { field: 'contactNumber', headerName: 'Contact Number', width: 150 },
         { field: 'emailId', headerName: 'Email ID', width: 150 },
         { field: 'vehicleTypes', headerName: 'Vehicle Types', width: 150 },
-        {
-            field: "allLocationIdsDetails",
-            headerName: "Locations",
-            width: 250,
-        },
-        {
-            field: "allLaneIdsDetails",
-            headerName: "Lane Details",
-            width: 250,
-        },
-        {
-            field: 'preferredCarrier',
-            headerName: 'Is enrolled on carrier network portal',
-            flex: 1,
-            renderCell: (params) => params.value ? 'Yes' : 'No'
-        },
+        {field: "allLocationIdsDetails", headerName: "Locations",width: 250},
+        {field: "allLaneIdsDetails",headerName: "Lane Details",width: 250},
+        {field: 'preferredCarrier',headerName: 'Is enrolled on carrier network portal',width: 150,renderCell: (params) => params.value ? 'Yes' : 'No'},
         {
             field: "actions",
             headerName: "Actions",
@@ -368,7 +382,9 @@ const CarrierForm: React.FC = () => {
             ),
         },
     ];
-
+    if (getallLoads) return <p>Loading...</p>;
+    if (er) return <p>Error: {er.message}</p>;
+  
     return (
         <div className={styles.formsMainContainer}>
             <Backdrop
@@ -376,7 +392,7 @@ const CarrierForm: React.FC = () => {
                     color: "#ffffff",
                     zIndex: (theme) => theme.zIndex.drawer + 1,
                 }}
-                open={postCarrierLoading || editCarrierLoading || deleteCarrierLoading}
+                open={postCarrierLoading || editCarrierLoading || deleteCarrierLoading || getallLoads}
             >
                 <CircularProgress color="inherit" />
             </Backdrop>
@@ -468,12 +484,17 @@ const CarrierForm: React.FC = () => {
                                         <TextField
                                             fullWidth size="small"
                                             label="Contact Number"
-                                            name="contactNumber"
+                                            name="contactNumber" type='number'
                                             value={values.contactNumber}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
                                             error={touched.contactNumber && Boolean(errors.contactNumber)}
-                                            helperText={touched.contactNumber && errors.contactNumber}
+                                            helperText={touched.contactNumber && errors.contactNumber} 
+                                                    inputProps={{
+                                                    maxLength: 10,
+                                                    inputMode: "numeric",
+                                                    pattern: "[0-9]*"  
+                                                }}
                                         />
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={4}>
@@ -488,71 +509,136 @@ const CarrierForm: React.FC = () => {
                                             helperText={touched.emailId && errors.emailId}
                                         />
                                     </Grid>
-
                                 </Grid>
 
                                 <h3 className={styles.mainHeading}>Transport Data</h3>
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} sm={6} md={4}>
+                                        <TextField
+                                            fullWidth size="small"
+                                            label="Vehicle Types Handling (Van, Truck...)*"
+                                            name="vehicleTypes"
+                                            value={values.vehicleTypes}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.vehicleTypes && Boolean(errors.vehicleTypes)}
+                                            helperText={touched.vehicleTypes && errors.vehicleTypes}
+                                        />
+                                    </Grid>
+                                    {/* <Grid item xs={12} sm={6} md={4}>
                                         <FormControl fullWidth size="small" error={touched.vehicleTypes && Boolean(errors.vehicleTypes)}>
                                             <InputLabel>Vehicle Types Handling</InputLabel>
                                             <Select
                                                 multiple
-                                                label="Vehicle Types Handling"
+                                                label="Vehicle Types Handling (Van,Truck"
                                                 name="vehicleTypes"
                                                 value={values.vehicleTypes}
                                                 onChange={handleChange}
                                                 onBlur={handleBlur}
-                                                renderValue={(selected) => (selected as string[]).join(', ')}
+                                                // renderValue={(selected) => (selected as string[]).join(', ')}
                                             >
-                                                {vehicleTypeOptions.map((type) => (
-                                                    <MenuItem key={type} value={type}>
-                                                        {type}
-                                                    </MenuItem>
-                                                ))}
                                             </Select>
                                             {touched.vehicleTypes && errors.vehicleTypes && (
                                                 <FormHelperText>{errors.vehicleTypes}</FormHelperText>
                                             )}
                                         </FormControl>
-                                    </Grid>
+                                    </Grid> */}
                                     <Grid item xs={12} sm={6} md={4}>
-                                        <FormControl fullWidth size="small" error={touched.locationIds && Boolean(errors.locationIds)}>
-                                            <InputLabel>Locations of Operation (Location IDs)</InputLabel>
-                                            <Select
-                                                multiple
-                                                label="Locations of Operation (Location IDs)"
-                                                name="locationIds"
-                                                value={values.locationIds}
-                                                onChange={handleChange}
-                                                onBlur={handleBlur}
-                                                renderValue={(selected) => (selected as string[]).join(', ')}
+                                        <TextField
+                                            fullWidth
+                                            size="small"
+                                            label="Locations of Operation (Location IDs)"
+                                            onFocus={() => {
+                                            if (!searchKey) {
+                                                setSearchKey("");
+                                                setShowSuggestions(true);
+                                            }
+                                            }}
+                                            onChange={(e) => {
+                                            setSearchKey(e.target.value);
+                                            setShowSuggestions(true);
+                                            }}
+                                            value={searchKey}
+                                            error={touched.locationIds && Boolean(errors.locationIds)}
+                                            helperText={
+                                            touched.locationIds && typeof errors.locationIds === "string"
+                                                ? errors.locationIds
+                                                : ""
+                                            }
+                                            InputProps={{
+                                            endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
+                                            }}
+                                        />
+                                        <div ref={wrapperRef}>
+                                            {showSuggestions && displayLocations?.length > 0 && (
+                                            <Paper
+                                                style={{
+                                                maxHeight: 200,
+                                                overflowY: "auto",
+                                                position: "absolute",
+                                                zIndex: 10,
+                                                width: "100%",
+                                                }}
                                             >
-                                                {isLocationLoading ? (
-                                                    <MenuItem disabled>
-                                                        <CircularProgress size={20} color="inherit" />
-                                                        <span style={{ marginLeft: "10px" }}>Loading...</span>
-                                                    </MenuItem>
-                                                ) : (
-                                                    getAllLocations?.map((location: Location) => (
-                                                        <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
-                                                            <Tooltip
-                                                                title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                                                placement="right"
-                                                            >
-                                                                <span style={{ flex: 1 }}>{location.loc_ID}</span>
-                                                            </Tooltip>
-                                                        </MenuItem>
-                                                    ))
-                                                )}
-                                            </Select>
-                                            {touched.locationIds && errors.locationIds && (
-                                                <FormHelperText>{errors.locationIds}</FormHelperText>
+                                                <List>
+                                                {displayLocations.map((location: Location) => (
+                                                    <ListItem
+                                                    key={location.loc_ID}
+                                                    component="li"
+                                                    onClick={() => {
+                                                        setShowSuggestions(false);
+                                                        // const selectedDisplay = `${location.loc_ID}, ${location.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
+                                                        if (!values.locationIds.includes(location.loc_ID)) {
+                                                            setFieldValue("locationIds", [...values.locationIds, location.loc_ID]);
+                                                        }
+                                                        setSearchKey("");
+                                                    }}
+                                                    sx={{ cursor: "pointer" }}
+                                                    >
+                                                    <Tooltip
+                                                        title={`${location.loc_desc}, ${location.address_1}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                                        placement="right"
+                                                    >
+                                                        <span style={{ fontSize: "14px" }}>
+                                                        {location.loc_ID}, {location.loc_desc}, {location.city}, {location.state}, {location.pincode}
+                                                        </span>
+                                                    </Tooltip>
+                                                    </ListItem>
+                                                ))}
+                                                </List>
+                                            </Paper>
                                             )}
-                                        </FormControl>
-
+                                        </div>
+                                        {values.locationIds.length > 0 && (
+                                             <Paper
+                                            style={{
+                                            marginTop: 8,
+                                            padding: 8,
+                                            minHeight: 40,
+                                            background: "#f5f5f5",
+                                            }}
+                                        >
+                                            {values.locationIds.map((locId: string) => {
+                                            const location = displayLocations.find((loc:Location) => loc.loc_ID === locId);
+                                            return (
+                                                <Chip
+                                                key={locId}
+                                                label={`${location?.loc_ID}, ${location?.loc_desc}`}
+                                                onDelete={() => {
+                                                    setFieldValue(
+                                                    "locationIds",
+                                                    values.locationIds.filter((id) => id !== locId)
+                                                    );
+                                                }}
+                                                style={{ margin: 4 }}
+                                                />
+                                            );
+                                            })}
+                                        </Paper>
+                                        ) }
                                     </Grid>
-                                    <Grid item xs={12} sm={6} md={4}>
+
+                                    {/* <Grid item xs={12} sm={6} md={4}>
                                         <FormControl fullWidth size="small" error={touched.laneIds && Boolean(errors.laneIds)}>
                                             <InputLabel>Lane IDs</InputLabel>
                                             <Select
@@ -562,15 +648,11 @@ const CarrierForm: React.FC = () => {
                                                 value={values.laneIds}
                                                 onChange={handleChange}
                                                 onBlur={handleBlur}
-                                                renderValue={(selected) => (selected as string[]).join(', ')}
+                                                // renderValue={(selected) => (selected as string[]).join(', ')}
                                             >
                                                 {getAllLanes?.map((lane: Lane) => (
                                                     <MenuItem key={lane.lane_ID} value={String(lane.lane_ID)}>
-                                                        <Tooltip
-                                                            title={`${lane.src_loc_desc}, ${lane.src_city}, ${lane.src_state} to ${lane.des_loc_desc}, ${lane.des_city}, ${lane.des_state} `}
-                                                            placement="right">
-                                                            <span style={{ flex: 1 }}>{lane.lane_ID}</span>
-                                                        </Tooltip>
+                                                            <span style={{ flex: 1 }}> {lane.lane_ID} :- {lane.src_loc_desc} to {lane.des_loc_desc}</span>
                                                     </MenuItem>
                                                 ))}
                                             </Select>
@@ -579,7 +661,62 @@ const CarrierForm: React.FC = () => {
                                             )}
                                         </FormControl>
 
+                                    </Grid> */}
+                                    <Grid item xs={12} sm={6} md={4}>
+                                        <FormControl fullWidth size="small" error={touched.laneIds && Boolean(errors.laneIds)}>
+                                            <InputLabel >Lane IDs</InputLabel>
+                                            <Select
+                                            multiple 
+                                            name="laneIds"
+                                            value={values.laneIds}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            renderValue={() => null}
+                                            >
+                                            {getAllLanes?.map((lane: Lane) => (
+                                                <MenuItem key={lane.lane_ID} value={String(lane.lane_ID)}>
+                                                <span style={{ flex: 1 }}>
+                                                    {lane.lane_ID} :- {lane.src_loc_desc} to {lane.des_loc_desc}
+                                                </span>
+                                                </MenuItem>
+                                            ))}
+                                            </Select>
+                                            {touched.laneIds && errors.laneIds && <FormHelperText>{errors.laneIds}</FormHelperText>}
+                                        </FormControl>
+                                        {values.laneIds.length > 0 && (
+                                            <Paper
+                                            style={{
+                                                marginTop: 8,
+                                                padding: 8,
+                                                minHeight: 40,
+                                                background: "#f5f5f5",
+                                                display: "flex",
+                                                flexWrap: "wrap",
+                                                gap: 8,
+                                            }}
+                                            >
+                                            {values.laneIds.map((laneId: string) => {
+                                                const lane = getAllLanes.find((l:Lane) => String(l.lane_ID) === laneId);
+                                                return (
+                                                <Chip
+                                                    key={laneId}
+                                                    label={`${lane?.lane_ID} : ${lane?.src_loc_desc} to ${lane?.des_loc_desc}`}
+                                                    onDelete={() => {
+                                                    setFieldValue(
+                                                        "laneIds",
+                                                        values.laneIds.filter((id) => id !== laneId)
+                                                    );
+                                                    }}
+                                                    style={{ margin: 4 }}
+                                                />
+                                                );
+                                            })}
+                                            </Paper>
+                                        )}
                                     </Grid>
+
+
+
                                 </Grid>
                                 <Grid item xs={12} sm={6} md={4}>
                                     <FormControlLabel
@@ -622,13 +759,13 @@ const CarrierForm: React.FC = () => {
                 </Box>
             </Collapse>
             <div style={{ marginTop: "40px" }}>
-                {isLoading ? (
+                {carrerLoading ? (
                     <DataGridSkeletonLoader columns={columns} />
                 ) : (
                     <DataGridComponent
                         columns={columns}
                         rows={rows}
-                        isLoading={isLoading}
+                        isLoading={carrerLoading}
                         paginationModel={paginationModel}
                         activeEntity='carriers'
                         onPaginationModelChange={handlePaginationModelChange}

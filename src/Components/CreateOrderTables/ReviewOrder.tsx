@@ -4,7 +4,11 @@ import { Box, Typography, Paper, Grid } from '@mui/material';
 import { DataGrid, GridCellParams, } from '@mui/x-data-grid';
 import { Truck } from './TrucksTable'
 import { Product } from './PackagesTable';
-import { useGetAllProductsQuery } from '@/api/apiSlice';
+import { useGetAllProductsQuery, useGetLocationMasterQuery } from '@/api/apiSlice';
+import { Location } from '../MasterDataComponents/Locations';
+import moment from 'moment';
+import { useQuery } from '@apollo/client';
+import { GET_ALL_LOCATIONS, GET_ALL_PRODUCTS } from '@/api/graphqlApiSlice';
 
 interface TrucksTableProps {
     trucks: Truck[];
@@ -19,11 +23,33 @@ interface PackageDetails {
 const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks }) => {
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
     const selectedTrucks = trucks
-
+    // const { data: locationsData } = useGetLocationMasterQuery({})
+    const {data:locationsData } = useQuery(GET_ALL_LOCATIONS, {
+        variables: { page:1, limit: 10 },
+      });
+     const getAllLocations = locationsData?.getAllLocations.locations.length > 0 ? locationsData?.getAllLocations.locations : []
     console.log("selectedPackages: ", selectedPackages)
+ const getLocationDescription = (loc_ID: string) => {
+        const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
+        if (!location) return "Location details not available";
+     const details = [
+            location.loc_ID,
+            location.loc_desc,
+            location.address_1,
+            location.city,
+            location.state,
+            location.pincode,
+            
+        ].filter(Boolean);
 
-    const { data: productsData } = useGetAllProductsQuery({})
-    const allProductsData = productsData?.products || [];
+        return details.length > 0 ? details.join(", ") : "Location details not available";
+    };
+    // const { data: productsData } = useGetAllProductsQuery({})
+    const { data: productsData } = useQuery(GET_ALL_PRODUCTS, {
+        variables: {  },
+      });
+
+    const allProductsData = productsData?.getAllProducts.products || [];
 
     const getProductDetails = (productID: string) => {
         const productInfo = allProductsData.find((product: Product) => product.product_ID === productID);
@@ -37,9 +63,9 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks }) => {
     };
 
     const packageColumns = [
-        { field: 'pack_ID', headerName: 'Package ID', flex: 1 },
-        { field: 'ship_from', headerName: 'Ship From', flex: 1 },
-        { field: 'ship_to', headerName: 'Ship To', flex: 1 },
+        { field: 'pack_ID', headerName: 'Package ID', width:150 },
+        { field: 'ship_from', headerName: 'Ship From', width:250 },
+        { field: 'ship_to', headerName: 'Ship To', width:250 },
         {
             field: 'products',
             headerName: 'Product Details',
@@ -64,11 +90,11 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks }) => {
                 );
             },
         },
-        { field: 'invoice', headerName: 'Invoice', flex: 1 },
-        { field: 'reference_id', headerName: 'Reference ID', flex: 1 },
-        { field: 'pickup_date_time', headerName: 'Pickup Date & Time', flex: 1 },
-        { field: 'dropoff_date_time', headerName: 'Dropoff Date & Time', flex: 1 },
-        { field: 'tax_info', headerName: 'Tax Info', flex: 1 },
+        { field: 'invoice', headerName: 'Invoice', width:150 },
+        { field: 'reference_id', headerName: 'Reference ID', width:150  },
+        { field: 'pickup_date_time', headerName: 'Pickup Date & Time', width:180  },
+        { field: 'dropoff_date_time', headerName: 'Dropoff Date & Time', width:180  },
+        { field: 'tax_info', headerName: 'Tax Info', width:150  },
         // { field: 'return_label', headerName: 'Return Label', flex: 1 }
         {
             field: 'return_label',
@@ -84,13 +110,13 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks }) => {
     const packageRows = selectedPackages.map((pkg, index) => ({
         id: index,
         pack_ID: pkg.pack_ID,
-        ship_from: pkg.ship_from,
-        ship_to: pkg.ship_to,
+        ship_from: getLocationDescription(pkg.ship_from),
+        ship_to: getLocationDescription(pkg.ship_to),
         products: pkg.product_ID || [],
         invoice: pkg.additional_info?.invoice || 'N/A',
         reference_id: pkg.additional_info?.reference_id || 'N/A',
-        pickup_date_time: pkg.pickup_date_time,
-        dropoff_date_time: pkg.dropoff_date_time,
+        pickup_date_time : moment(pkg.pickup_date_time).format("DD MMM YYYY, hh:mm A"),
+        dropoff_date_time: moment(pkg.dropoff_date_time).format("DD MMM YYYY, hh:mm A"),
         tax_info: pkg.tax_info?.tax_rate || 'N/A',
         return_label: pkg.return_label ? 'Yes' : 'No'
     }));
@@ -131,27 +157,26 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks }) => {
                                         Vehicle ID: <strong>{vehicle.vehicle_ID}</strong>
                                     </Typography>
                                     <Typography>
-                                        Total Weight Capacity: <strong>{vehicle.totalWeightCapacity} kg</strong>
+                                        Total Weight Capacity: <strong>{vehicle?.totalWeightCapacity?.toFixed(2)} kg</strong>
                                     </Typography>
                                     <Typography>
-                                        Leftover Weight: <strong>{vehicle.leftoverWeight} kg</strong>
+                                        Leftover Weight: <strong>{parseFloat(vehicle?.leftoverWeight)?.toFixed(2)} kg</strong>
                                     </Typography>
                                     <Typography>
-                                        Total Volume Capacity: <strong>{vehicle.totalVolumeCapacity} m³</strong>
+                                        Total Volume Capacity: <strong>{vehicle?.totalVolumeCapacity?.toFixed(2)} m³</strong>
                                     </Typography>
                                     <Typography>
-                                        Leftover Volume: <strong>{vehicle.leftoverVolume} m³</strong>
+                                        Leftover Volume: <strong>{vehicle.leftoverVolume.toFixed(2)} m³</strong>
                                     </Typography>
                                     <Typography>
-                                        Estimated Cost: <strong>₹{vehicle.cost}</strong>
+                                        Estimated Cost: <strong>₹{vehicle.cost.toFixed(2)}</strong>
                                     </Typography>
-
                                     {vehicle.loadArrangement && vehicle.loadArrangement.length > 0 ? (
                                         <Box sx={{ mt: 2, height: 300, backgroundColor: "white", borderRadius: 1, overflow: "hidden" }}>
                                             <DataGrid
                                                 rows={vehicle.loadArrangement.map((item: PackageDetails, i) => ({
                                                     id: item.stop || i + 1,
-                                                    location: item.location || "N/A",
+                                                    location: (item.location) || "N/A",
                                                     packages: item.packages ? item.packages.join(", ") : "N/A",
                                                 }))}
                                                 columns={[

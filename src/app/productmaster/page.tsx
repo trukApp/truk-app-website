@@ -44,13 +44,6 @@ import { CustomButtonFilled } from '@/Components/ReusableComponents/ButtonsCompo
 import { withAuthComponent } from '@/Components/WithAuthComponent';
 import { useQuery ,useLazyQuery} from "@apollo/client";
 import { GET_ALL_PRODUCTS,GET_ALL_PACKAGES,GET_LOCATIONS,SEARCH_LOCATIONS,GET_ALL_LOCATIONS} from '@/api/graphqlApiSlice';
-// const client = new GraphQLClient('https://truk-be.onrender.com/graphql', {
-//   headers: {
-//     Authorization: `Bearer ${localStorage.getItem("token")}`, 
-//   },
-// });
-
-
 export interface PackagingType {
     pac_ID: string;
     location: string;
@@ -144,74 +137,72 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
     };
     const [updateRecord, setUpdateRecord] = useState(false);
     const [formInitialValues, setFormInitialValues] = useState(productFormInitialValues);
-    const [updateRecordData, setUpdateRecordData] = useState({});
     const [updateRecordId, setUpdateRecordId] = useState(0)
-    const { data: productsDataFromClient, error: allProductsFectchingError, isLoading } = useGetAllProductsQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize })
-    const productsData = isLoading ? productsFromServer : productsDataFromClient;
+    // const { data: productsDataFromClient, isLoading } = useGetAllProductsQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize })
+    const { data: allProductsDatas, loading: productsLoading, error: productsError, refetch } = useQuery(GET_ALL_PRODUCTS, {
+        variables: { page: paginationModel.page + 1, limit: paginationModel.pageSize },
+      });
+     
+    const productsData = productsLoading ? productsFromServer : allProductsDatas.getAllProducts;
     const [showForm, setShowForm] = useState(false);
-    const { data: locationsData, error: getLocationsError } = useGetLocationMasterQuery({})
+    // const { data: locationsData, } = useGetLocationMasterQuery({})
+
+       //graphQlAPI
+       const {data:locationsData } = useQuery(GET_ALL_LOCATIONS, {
+        variables: { page:1, limit: 10 },
+      });
     
-    const { data: packagesData, isLoading: isPackageLoading } = useGetPackageMasterQuery({})
+    // const { data: packagesData, isLoading: isPackageLoading } = useGetPackageMasterQuery({})
+    const { data: allPackagesData, loading: packagesLoading, error: packagesError } = useQuery(GET_ALL_PACKAGES);
     const [createNewProduct, { isLoading: createLoading }] = useCreateProductMutation();
     const [deleteProduct, { isLoading: deleteProductLoading }] = useDeleteProductMutation()
     const [updateProductDetails, { isLoading: updateProductLoading }] = useEditProductMutation();
-    const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
+    const getAllLocations = locationsData?.getAllLocations?.locations.length > 0 ? locationsData?.getAllLocations.locations : []
+    console.log(getAllLocations)
     const [searchKey, setSearchKey] = useState('');
     const [showSuggestions, setShowSuggestions] = useState(false);
-    const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
+    // const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
 
-    const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
-    const getAllPackages = packagesData?.packages.length > 0 ? packagesData?.packages : []
+    const { loading:LocationLoading, error:searnerr, data:filteredLocationsData } = useQuery(SEARCH_LOCATIONS, {
+        variables: { searchKey },
+        skip: searchKey.length < 3, // Avoid fetching when input is too short
+      });
+   console.log(filteredLocationsData)
+    const displayLocations = searchKey ? filteredLocationsData?.searchLocations?.results || [] : getAllLocations;
+
+    const getAllPackages = allPackagesData?.getAllPackages?.packages.length > 0 ? allPackagesData?.getAllPackages?.packages : []
     const allProductsData = productsData?.products || [];
+    const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
+        setPaginationModel(newPaginationModel);
+    };
 
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+                setShowSuggestions(false);
+            }
+        }
+    
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []); // ✅ Added dependencies
+    
 
-    console.log("Getting all product errors: ", allProductsFectchingError)
-    console.log("getLocationsError: ", getLocationsError)
+    // GraphQl Querys
 
-// GraphQl Querys
-const { data: allProductsDatas, loading: productsLoading, error: productsError, refetch } = useQuery(GET_ALL_PRODUCTS, {
-    variables: { page: paginationModel.page + 1, limit: paginationModel.pageSize },
-  });
-  
-  const { data: allPackagesData, loading: packagesLoading, error: packagesError } = useQuery(GET_ALL_PACKAGES);
+   
+
   
   const { loading:locationLoading, error:locationError, data:allLocations } = useQuery(GET_LOCATIONS, {
     variables: { page: 1, limit: 10 },
   });
   
-  const [searchLocations, { loading: LocationLoading, data: filteredLocationsData }] = useLazyQuery(SEARCH_LOCATIONS);
-
-  const handleSearch = () => {
-    if (searchKey.length >= 3) {
-      searchLocations({ variables: { searchKey, page: 1, limit: 5 } });
-    }
-  };
+ 
 
 
-     //graphQlAPI
-     const { loading, error, data } = useQuery(GET_ALL_LOCATIONS, {
-        // variables: { page, limit: 10 },
-      });
-    
-      if (loading) return <p>Loading...</p>;
-      if (error) return <p>Error: {error.message}</p>;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
-        setPaginationModel(newPaginationModel);
-    };
+  
     const validationSchema = Yup.object({
         productName: Yup.string().required('Product name is required'),
         productDescription: Yup.string().required('Product Description is required'),
@@ -221,36 +212,34 @@ const { data: allProductsDatas, loading: productsLoading, error: productsError, 
         salesUoM: Yup.string().required('Sales Unit of Measure is required'),
         locationId: Yup.string().required('Location id is required'),
         packagingType: Yup.string().required('packaging type is required'),
+        hsncode: Yup.string().required('Hsn code is required'),
     });
 
     const getLocationDetails = (loc_ID: string) => {
-            const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
-            if (!location) return "Location details not available";
-            const details = [
-                location.address_1 ,
-                location.city,
-                location.state,
-                location.country,
-                location.pincode,
-                location.loc_ID
-            ].filter(Boolean);
-    
-            return details.length > 0 ? details.join(", ") : "Location details not available";
-    };
-const getPackageDetails = (pack_ID: string) => {
-    const packageData = getAllPackages.find((pack: Package) => pack.pac_ID === pack_ID);
-    console.log("packageData : ", packageData)
-    return packageData 
-        ? `${packageData.packaging_type_name}, ${packageData.pac_ID}` 
-        : "NA";
-};
+        const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
+        if (!location) return "Location details not available";
+        const details = [
+            location.loc_ID,
+            location.loc_desc,
+            location.city,
+            location.state,
+            location.pincode,
+        ].filter(Boolean);
 
+        return details.length > 0 ? details.join(", ") : "Location details not available";
+    };
+
+    const getPackageDetails = (pack_ID: string) => {
+        const packageData = getAllPackages.find((pack: Package) => pack.pac_ID === pack_ID);
+        return packageData
+            ? `${packageData.packaging_type_name}, ${packageData.pac_ID}`
+            : "NA";
+    };
 
     const mapRowToInitialValues = (selectedProduct: Product) => {
-        const locId = selectedProduct?.locationId ? selectedProduct?.locationId.split(", ").at(-1) ?? "" : "";
+        const locId = selectedProduct?.locationId ? selectedProduct?.locationId.split(", ")[0] ?? "" : "";
         const packIdd = selectedProduct?.packagingType ? selectedProduct?.packagingType.split(", ").at(-1) ?? "" : "";
-        console.log('package det :' , selectedProduct )
-        setSearchKey(locId || '')
+        setSearchKey(selectedProduct?.locationId || '')
         const weightUnit = selectedProduct.weight.split(' ')
         const volumeUnit = selectedProduct.volume.split(' ')
         return (
@@ -266,7 +255,7 @@ const getPackageDetails = (pack_ID: string) => {
                 expirationDate: selectedProduct.expiration || '',
                 bestBeforeDate: selectedProduct.best_before || '',
                 stackingFactor: selectedProduct?.stacking_factor || '',
-                documents: selectedProduct.documents || '' ,
+                documents: selectedProduct.documents || '',
                 locationId: locId || '',
                 packagingType: packIdd || '',
                 generatePackagingLabel: selectedProduct?.packingLabel || false,
@@ -285,18 +274,14 @@ const getPackageDetails = (pack_ID: string) => {
     const handleEdit = async (rowData: Product) => {
         setShowForm(true)
         setUpdateRecord(true)
-        setUpdateRecordData(rowData)
         const updatedInitialValues = await mapRowToInitialValues(rowData);
         setUpdateRecordId(rowData?.id)
-
         setFormInitialValues(updatedInitialValues);
     };
 
     const handleDelete = async (row: Product) => {
         const confirmDelete = window.confirm(`Are you sure you want to delete ? This action cannot be undone.`);
-
         if (!confirmDelete) return;
-
         try {
             const productId = row?.id;
             const response = await deleteProduct(productId);
@@ -313,13 +298,10 @@ const getPackageDetails = (pack_ID: string) => {
         }
     };
 
-
     const columns = [
         { field: 'product_ID', headerName: 'Product ID', width: 150 },
         { field: 'productName', headerName: 'Product Name', width: 150 },
         { field: 'product_desc', headerName: 'Product Description', width: 200 },
-        // { field: 'sales_uom', headerName: 'Sales UOM', width: 150 },
-        // { field: 'basic_uom', headerName: 'Basic UOM', width: 150 },
         { field: 'weight', headerName: 'Weight', width: 150 },
         { field: 'volume', headerName: 'Volume', width: 150 },
         { field: 'expiration', headerName: 'Expiration Date', width: 150 },
@@ -352,6 +334,7 @@ const getPackageDetails = (pack_ID: string) => {
             ),
         },
     ];
+
     const rows = allProductsData.map((product: Product) => ({
         id: product.prod_id,
         product_ID: product.product_ID,
@@ -378,7 +361,6 @@ const getPackageDetails = (pack_ID: string) => {
         hazardous: product?.hazardous
 
     }));
-
 
     const handleSubmit = async (values: typeof productFormInitialValues, { resetForm }: { resetForm: () => void }) => {
         try {
@@ -418,8 +400,7 @@ const getPackageDetails = (pack_ID: string) => {
             }
 
             const editProductBody = {
-                ...updateRecordData,
-
+                // ...updateRecordData,
                 product_name: values?.productName,
                 product_desc: values?.productDescription,
                 basic_uom: values?.basicUoM,
@@ -450,6 +431,7 @@ const getPackageDetails = (pack_ID: string) => {
             }
 
             if (updateRecord) {
+                console.log('editBody :', editProductBody)
                 const response = await updateProductDetails({ body: editProductBody, productId: updateRecordId }).unwrap();
                 if (response?.updated_record) {
                     setSnackbarMessage(`Product ID ${response.updated_record} updated successfully!`);
@@ -458,12 +440,13 @@ const getPackageDetails = (pack_ID: string) => {
                     setShowForm(false)
                     setUpdateRecord(false)
                     setUpdateRecordId(0)
-                    setUpdateRecordData({})
+                    // setUpdateRecordData({})
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
                     setSearchKey('')
                 }
             } else {
+                console.log('post body : ', createProductBody)
                 const response = await createNewProduct(createProductBody).unwrap();
                 if (response?.created_records) {
                     setSnackbarMessage(`Product ID ${response.created_records[0]} created successfully!`);
@@ -471,7 +454,7 @@ const getPackageDetails = (pack_ID: string) => {
                     setShowForm(false)
                     setUpdateRecord(false)
                     setUpdateRecordId(0)
-                    setUpdateRecordData({})
+                    // setUpdateRecordData({})
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
                     setSearchKey('')
@@ -488,17 +471,8 @@ const getPackageDetails = (pack_ID: string) => {
             setSearchKey('')
         }
     };
-    useEffect(() => {
-        function handleClickOutside(event: MouseEvent) {
-            if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
-                setShowSuggestions(false);
-            }
-        }
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, []);
+
+
 
     return (
         <>
@@ -507,7 +481,7 @@ const getPackageDetails = (pack_ID: string) => {
                     color: "#fff",
                     zIndex: (theme) => theme.zIndex.drawer + 1
                 }}
-                open={isLoading || createLoading || deleteProductLoading || updateProductLoading}>
+                open={productsLoading || createLoading || deleteProductLoading || updateProductLoading}>
                 <CircularProgress color="inherit" />
             </Backdrop>
 
@@ -628,7 +602,15 @@ const getPackageDetails = (pack_ID: string) => {
                                                 label="Weight"
                                                 name="weightUoM"
                                                 value={values.weightUoM}
-                                                onChange={handleChange}
+                                                // onChange={handleChange}
+                                                onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															handleChange(e);
+														}
+													}}
                                                 onBlur={handleBlur}
                                                 error={touched.weightUoM && Boolean(errors.weightUoM)}
                                                 helperText={touched.weightUoM && errors.weightUoM}
@@ -657,7 +639,15 @@ const getPackageDetails = (pack_ID: string) => {
                                                 label="Volume" type='number'
                                                 name="volumeUoM"
                                                 value={values.volumeUoM}
-                                                onChange={handleChange}
+                                                // onChange={handleChange}
+                                                onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															handleChange(e);
+														}
+													}}
                                                 onBlur={handleBlur}
                                                 error={touched.volumeUoM && Boolean(errors.volumeUoM)}
                                                 helperText={touched.volumeUoM && errors.volumeUoM}
@@ -797,6 +787,13 @@ const getPackageDetails = (pack_ID: string) => {
                                                 value={values.hsncode}
                                                 onChange={handleChange}
                                                 onBlur={handleBlur}
+                                                error={
+                                                    touched.hsncode &&
+                                                    Boolean(errors.hsncode)
+                                                }
+                                                helperText={
+                                                    touched.hsncode && errors.hsncode
+                                                }
                                             />
                                         </Grid>
 
@@ -819,7 +816,7 @@ const getPackageDetails = (pack_ID: string) => {
 
                                         <Grid item xs={12} sm={6} md={2.4}>
                                             <TextField
-                                                fullWidth 
+                                                fullWidth
                                                 error={touched.locationId && Boolean(errors.locationId)}
                                                 helperText={touched.locationId && errors.locationId}
                                                 name="locationId"
@@ -839,7 +836,7 @@ const getPackageDetails = (pack_ID: string) => {
                                                 // onBlur={handleBlur}
                                                 value={searchKey}
                                                 InputProps={{
-                                                    endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
+                                                    endAdornment: LocationLoading ? <CircularProgress size={20} /> : null,
                                                 }}
                                             />
                                             <div ref={wrapperRef} >
@@ -859,8 +856,9 @@ const getPackageDetails = (pack_ID: string) => {
                                                                     key={location.loc_ID}
                                                                     component="li"
                                                                     onClick={() => {
+                                                                        const selectedDisplay = `${location.loc_ID},${location?.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
+                                                                        setSearchKey(selectedDisplay);
                                                                         setShowSuggestions(false)
-                                                                        setSearchKey(location.loc_ID);
                                                                         setFieldValue("locationId", location.loc_ID);
                                                                     }}
                                                                     sx={{ cursor: "pointer" }}
@@ -886,9 +884,8 @@ const getPackageDetails = (pack_ID: string) => {
                                                     value={values.packagingType}
                                                     onChange={(e) => setFieldValue('packagingType', e.target.value)}
                                                     onBlur={handleBlur}
-                                                    renderValue={(selected) => selected}
                                                 >
-                                                    {isPackageLoading ? (
+                                                    {packagesLoading ? (
                                                         <MenuItem disabled>
                                                             <CircularProgress size={20} color="inherit" />
                                                             <span style={{ marginLeft: "10px" }}>Loading...</span>
@@ -907,7 +904,7 @@ const getPackageDetails = (pack_ID: string) => {
                                                     )}
                                                 </Select>
                                                 {touched.packagingType && errors.packagingType && (
-                                                    <FormHelperText style={{color:'red'}}>{errors.packagingType}</FormHelperText>
+                                                    <FormHelperText style={{ color: 'red' }}>{errors.packagingType}</FormHelperText>
                                                 )}
                                             </FormControl>
                                         </Grid>
@@ -1012,13 +1009,13 @@ const getPackageDetails = (pack_ID: string) => {
                     </Box>
                 </Collapse>
                 <div style={{ marginTop: "40px" }}>
-                    {isLoading ? (
+                    {productsLoading ? (
                         <DataGridSkeletonLoader columns={columns} />
                     ) : (
                         <DataGridComponent
                             columns={columns}
                             rows={rows}
-                            isLoading={isLoading}
+                            isLoading={productsLoading}
                             paginationModel={paginationModel}
                             onPaginationModelChange={handlePaginationModelChange}
                             activeEntity='products'
