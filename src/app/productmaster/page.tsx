@@ -154,6 +154,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
     
     // const { data: packagesData, isLoading: isPackageLoading } = useGetPackageMasterQuery({})
     const { data: allPackagesData, loading: packagesLoading, error: packagesError } = useQuery(GET_ALL_PACKAGES);
+    console.log(allPackagesData)
     const [createNewProduct, { isLoading: createLoading }] = useCreateProductMutation();
     const [deleteProduct, { isLoading: deleteProductLoading }] = useDeleteProductMutation()
     const [updateProductDetails, { isLoading: updateProductLoading }] = useEditProductMutation();
@@ -163,12 +164,13 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
     const [showSuggestions, setShowSuggestions] = useState(false);
     // const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
 
-    const { loading:LocationLoading, error:searnerr, data:filteredLocationsData } = useQuery(SEARCH_LOCATIONS, {
-        variables: { searchKey },
+
+      const { loading:LocationLoading,  data:filteredLocations } = useQuery(SEARCH_LOCATIONS, {
+        variables: {searchKey: searchKey },
         skip: searchKey.length < 3, // Avoid fetching when input is too short
       });
-   console.log(filteredLocationsData)
-    const displayLocations = searchKey ? filteredLocationsData?.searchLocations?.results || [] : getAllLocations;
+   console.log(filteredLocations)
+    const displayLocations = searchKey ? filteredLocations?.searchLocations?.results || [] : getAllLocations;
 
     const getAllPackages = allPackagesData?.getAllPackages?.packages.length > 0 ? allPackagesData?.getAllPackages?.packages : []
     const allProductsData = productsData?.products || [];

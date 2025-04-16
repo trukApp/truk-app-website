@@ -159,6 +159,7 @@ const CustomerForm: React.FC = () => {
         variables: {searchKey: searchKeyDestination },
         skip: searchKeyDestination.length < 3, // Avoid fetching when input is too short
       });
+      console.log(destinationFilteredLocations)
     const displayLocationsDest = searchKeyDestination ? destinationFilteredLocations?.searchLocations?.results || [] : getAllLocations;
 
  

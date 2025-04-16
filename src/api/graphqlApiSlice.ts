@@ -351,9 +351,9 @@ export const GET_ALL_PRODUCTS = gql`
 `;
 
 
-export const GET_ALL_PACKAGES = gql`
-  query GetAllPackages($page: Int, $limit: Int) {
-    getAllPackages(page: $page, limit: $limit) {
+export const ALL_PACKAGES = gql`
+  query AllPackages($page: Int, $limit: Int) {
+    allPackages(page: $page, limit: $limit) {
       message
       packages {
         pac_id
@@ -364,6 +364,7 @@ export const GET_ALL_PACKAGES = gql`
         ship_to
         return_label
         pickup_date_time
+        dimensions_uom
         dropoff_date_time
         package_status
         additional_info {
@@ -380,6 +381,28 @@ export const GET_ALL_PACKAGES = gql`
       }
     }
   }
+  
+`;
+
+export const GET_ALL_PACKAGES = gql`
+  query GetAllPackages($page: Int, $limit: Int) {
+    getAllPackages(page: $page, limit: $limit) {
+      message
+      packages {
+        pac_ID
+        package_id
+        handling_unit_type
+        pack_length
+        pack_volume
+        pack_volume_uom
+        pack_width
+        pack_height
+        dimensions_uom
+        packaging_type_name
+      }
+
+ }
+}
 `;
 
 
@@ -484,9 +507,93 @@ export const GET_ALL_SELF_VEHICLES = gql`
 
 
 
+// export const GET_VEHICLES = gql`
+//   query GetVehicles($page: Int, $limit: Int) {
+//     getVehicles(page: $page, limit: $limit) {
+//       message
+//       vehicles {
+//         veh_id
+//         vehicle_ID
+//         loc_desc
+//         city
+//         state
+//         latitude
+//         longitude
+//         pincode
+//         country
+//         time_zone
+//         loc_ID
+//         loc_type
+
+//   gln_code
+//   iata_code
+//   unlimited_usage
+//   fragile_vehicle
+//   hazardous_proof
+//   danger_proof
+//   temp_controlled_vehicle
+//   individual_resource
+ 
+//   capacity{
+//     cubic_capacity
+//   interior_width
+//   payload_weight
+//   interior_height
+//   interior_length
+//   }
+ 
+//   vehicle_group{
+//     vehicle_type
+//   vehicle_group_desc
+//   }
+//   downtimes {
+//     reason
+//   downtime_desc
+//   downtime_location
+//   downtime_starts_from
+//   downtime_ends_from
+//   }
+//         physical_properties {
+//           max_width
+//           max_height
+
+  
+//   max_length
+//   tare_volume
+//   tare_weight
+//   max_gross_weight
+//         }
+//         transportation_details {
+//           vehicle_type
+//           ownership
+
+     
+//   validity_from
+//   validity_to
+
+//   vehicle_group
+//         }
+//         additional_details {
+//           cost_per_ton
+//         }
+//       }
+
+
+
+
+  
+
+
+
+  
+
+//     }
+//   }
+// `;
+
 export const GET_VEHICLES = gql`
-  query GetVehicles($page: Int, $limit: Int) {
-    getVehicles(page: $page, limit: $limit) {
+  query GetVehicles {
+    getVehicles {
       message
       vehicles {
         veh_id
@@ -501,72 +608,56 @@ export const GET_VEHICLES = gql`
         time_zone
         loc_ID
         loc_type
-
-  gln_code
-  iata_code
-  unlimited_usage
-  fragile_vehicle
-  hazardous_proof
-  danger_proof
-  temp_controlled_vehicle
-  individual_resource
- 
-  capacity{
-    cubic_capacity
-  interior_width
-  payload_weight
-  interior_height
-  interior_length
-  }
- 
-  vehicle_group{
-    vehicle_type
-  vehicle_group_desc
-  }
-  downtimes {
-    reason
-  downtime_desc
-  downtime_location
-  downtime_starts_from
-  downtime_ends_from
-  }
+        gln_code
+        iata_code
+        unlimited_usage
+        fragile_vehicle
+        hazardous_proof
+        danger_proof
+        temp_controlled_vehicle
+        individual_resource
+        capacity {
+          cubic_capacity
+          interior_width
+          payload_weight
+          interior_height
+          interior_length
+        }
+        vehicle_group {
+          vehicle_type
+          vehicle_group_desc
+        }
+        downtimes {
+          reason
+          downtime_desc
+          downtime_location
+          downtime_starts_from
+          downtime_ends_from
+        }
         physical_properties {
           max_width
           max_height
-
-  
-  max_length
-  tare_volume
-  tare_weight
-  max_gross_weight
+          max_length
+          tare_volume
+          tare_weight
+          max_gross_weight
         }
         transportation_details {
           vehicle_type
           ownership
-
-     
-  validity_from
-  validity_to
-
-  vehicle_group
+          validity_from
+          validity_to
+          vehicle_group
         }
         additional_details {
           cost_per_ton
         }
       }
-
-
-
-
-  
-
-
-
-  
-
     }
   }
 `;
+
+
 export const GET_COUNTS = gql`
   query GetCounts {
     getCounts {
@@ -587,16 +678,7 @@ export const GET_COUNTS = gql`
     }
   }
 `;
-export const SEARCH_PRODUCTS = gql`
-  query SearchProducts($searchKey: String!, $page: Int, $limit: Int) {
-    searchProducts(searchKey: $searchKey, page: $page, limit: $limit) {
-      product_ID
-      product_name
-      sku_num
-      hsn_code
-    }
-  }
-`;
+
 
 export const GET_UOM = gql`
   query GetUOM {
@@ -669,7 +751,7 @@ export const GET_LANES = gql`
 `;
 
 export const SEARCH_LOCATIONS = gql`
-  query SearchLocations($searchKey: String, $page: Int, $limit: Int) {
+  query searchLocations($searchKey: String, $page: Int, $limit: Int) {
     searchLocations(searchKey: $searchKey, page: $page, limit: $limit) {
       message
       searchKey
@@ -801,6 +883,43 @@ export const SEARCH_DRIVERS = gql`
         dri_ID
         driver_name
         driver_correspondence
+      }
+    }
+  }
+`;
+export const GET_COUNT_DATA = gql`
+  query GetCountData{
+    getCountData {
+      message
+      counts {
+        vehicles
+        products
+        locations
+        lanes
+        devices
+        drivers
+        carriers
+        customers
+        vendors
+        packages
+        uoms
+      }
+    }
+  }
+`;
+
+
+
+
+export const SEARCH_PRODUCTS = gql`
+  query SearchProducts($searchKey: String!, $page: Int, $limit: Int) {
+    searchProducts(searchKey: $searchKey, page: $page, limit: $limit) {
+      message
+      results {
+        product_ID
+        product_name
+        sku_num
+        hsn_code
       }
     }
   }

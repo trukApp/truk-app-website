@@ -57,7 +57,8 @@ const PackagingForm = () => {
   const { data, loading:isLoading, error } = useQuery(GET_ALL_PACKAGES, {
     variables:{page: paginationModel.page + 1, limit: paginationModel.pageSize}
   });
-  const { data: allData} = useQuery(GET_ALL_PACKAGES);
+  console.log(data)
+  // const { data: allData} = useQuery(GET_ALL_PACKAGES);
   const [postPackage, { isLoading: postPackageLoading }] = usePostPackageMasterMutation()
   const [editPackage, { isLoading: editPackageLoading }] = useEditPackageMasterMutation()
   const [deletePackage, { isLoading: deletePackageLoading }] = useDeletePackageMasterMutation()
@@ -473,7 +474,7 @@ const PackagingForm = () => {
           <DataGridComponent
             columns={columns}
             rows={rows}
-            rowCount={allData?.getAllPackages && allData?.getAllPackages.length}
+            rowCount={data?.getAllPackages && data?.getAllPackages.length}
             isLoading={isLoading}
             paginationModel={paginationModel}
             activeEntity='packages'

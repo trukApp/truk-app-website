@@ -45,20 +45,18 @@ const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
  
   const [searchKey, setSearchKey] = useState("");
 
-  const {
-    data: filteredProductsData,
-    isFetching: isFilteredLoading
-  } = useGetFilteredProductsQuery(searchKey.length >= 3 ? searchKey : null, {
-    skip: searchKey.length < 3,
-  });
+  // const {
+  //   data: filteredProductsData,
+  //   isFetching: isFilteredLoading
+  // } = useGetFilteredProductsQuery(searchKey.length >= 3 ? searchKey : null, {
+  //   skip: searchKey.length < 3,
+  // });
 
-// graphqlAPi
-  const { loading, error, data, refetch } = useQuery(SEARCH_PRODUCTS, {
-    variables: { searchKey: "", page: 1, limit: 10 },
-    skip: true, // Skip initial execution until search is performed
+  const { data:filteredProductsData, loading:isFilteredLoading } = useQuery(SEARCH_PRODUCTS, {
+    variables: { searchKey },
   });
   const allProductList = allProducts?.getAllProducts.products || [];
-  const filteredProducts = filteredProductsData?.results || [];
+  const filteredProducts = filteredProductsData?.searchProducts.results || [];
 
   const productOptions = searchKey.length >= 3 ? filteredProducts : allProductList;
 

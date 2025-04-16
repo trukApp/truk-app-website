@@ -6,7 +6,7 @@ import DataGridSkeletonLoader from '@/Components/ReusableComponents/DataGridSkel
 import { useGetAllPackagesForOrderQuery, useGetLocationMasterQuery, useGetPackageMasterQuery } from '@/api/apiSlice';
 import { Location } from '@/Components/MasterDataComponents/Locations';
 import { useQuery } from "@apollo/client";
-import {GET_ALL_LOCATIONS, GET_ALL_PACKAGES } from '@/api/graphqlApiSlice';
+import {GET_ALL_LOCATIONS, GET_ALL_PACKAGES,ALL_PACKAGES } from '@/api/graphqlApiSlice';
 
 export interface Product {
     prod_ID: string;
@@ -59,12 +59,11 @@ const PackagesTable = () => {
     console.log(packagesData)
   
     // const { data: packagesOrderData, error: allProductsFectchingError, isLoading: isPackagesLoading } = useGetAllPackagesForOrderQuery([]);
-    const { data: packagesOrderData,  error: allProductsFectchingError, loading: isPackagesLoading} = useQuery(GET_ALL_PACKAGES);
-  
+    const { data: packagesOrderData,  error: allProductsFectchingError, loading: isPackagesLoading} = useQuery(ALL_PACKAGES);
+  console.log(packagesOrderData)
     if (allProductsFectchingError) {
     }
-    const allPackagesData = packagesOrderData?.getAllPackages.packages || [];
-    console.log("allpcakages :", allPackagesData)
+    const allPackagesData = packagesOrderData?.allPackages.packages || [];
     const getAllLocations = locationsData?.getAllLocations?.locations.length > 0 ? locationsData?.getAllLocations?.locations : []
     const getAllPackages = packagesData?.getAllPackages.packages.length > 0 ? packagesData?.getAllPackages.packages : []
     const getLocationDetails = (loc_ID: string) => {

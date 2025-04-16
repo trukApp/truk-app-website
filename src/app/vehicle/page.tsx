@@ -70,30 +70,33 @@ const VehicleOnly: React.FC = () => {
     // const { data, error, isLoading } = useGetSingleVehicleMasterQuery({
         // page: paginationModel.page + 1, limit: paginationModel.pageSize
     // });
-    const { loading:isLoading,error,  data } = useQuery(GET_ALL_SELF_VEHICLES, {
-		
-    });
+    const { loading:isLoading,error,  data } = useQuery(GET_ALL_SELF_VEHICLES);
     // const { data: vehiclesData, isLoading: isVehiclesLoading } = useGetVehicleMasterQuery({});
-
-    const { loading:isVehiclesLoading, data:vehiclesData } = useQuery(GET_VEHICLES, {
+    const vehiclesMaster = data?.getAllSelfVehicles.data;
+    // const { loading:isVehiclesLoading, data:vehiclesData } = useQuery(GET_VEHICLES, {
 		 
-	  });
+	//   });
+    console.log(vehiclesMaster)
     const [postVehicle, { isLoading: postVehicleLoading }] = usePostSingleVehicleMasterMutation();
     const [editVehicle, { isLoading: editVehicleLoading }] = useEditSingleVehicleMasterMutation();
     const [deleteVehicle, { isLoading: deleteVehicleLoading }] = useDeleteSingleVehicleMasterMutation();
-    console.log('all single vehs  :', data?.getAllSelfVehicles.data)
-    const getAllVehicles = vehiclesData?.getVehicles.vehicles
+    // console.log('all single vehs  :', data?.getAllSelfVehicles.data)
+    const {data:vehiclesData, loading:isVehiclesLoading } = useQuery(GET_VEHICLES);
+    const getAllVehicles = vehiclesData?.getVehicles.vehicles ||[]
+    console.log(getAllVehicles)
 
-    if (error) {
-        console.log("err in loading vehicles data :", error);
-    }
-    const vehiclesMaster = data?.getAllSelfVehicles.data;
+    // if (error) {
+    //     console.log("err in loading vehicles data :", error);
+    // }
+  
+    // console.log(vehiclesMaster)
     // const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
     //     setPaginationModel(newPaginationModel);
     // };
 
     // graphql API
-    const { data: getSingleVehicleMaster, loading: getSingleVehicleMasterLoading, error:Error } = useQuery(GET_ALL_VEHICLES);
+    // const { data: getSingleVehicleMaster, loading: getSingleVehicleMasterLoading, error:Error } = useQuery(GET_ALL_VEHICLES);
+    // console.log(getSingleVehicleMaster)
     const [showForm, setShowForm] = useState(false);
     const initialFormValues = {
         id: "",
@@ -395,7 +398,7 @@ const VehicleOnly: React.FC = () => {
                                                             </MenuItem>
                                                         ) : (
                                                             getAllVehicles?.map((vehicle: VehicleDetails) => (
-                                                                <MenuItem key={vehicle?.vehicle_ID} value={String(vehicle.vehicle_ID)}>
+                                                                <MenuItem key={vehicle?.vehicle_ID} value={String(vehicle?.vehicle_ID)}>
                                                                     {/* <Tooltip
                                                                         title={`${vehicle?.avgCost}`}
                                                                         placement="right"
