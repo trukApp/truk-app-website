@@ -25,6 +25,11 @@ const TransportExecution = () => {
     { title: 'Dock management', icon: <Warehouse sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} /> },
     { title: 'Operations', icon: <Settings sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} /> },
     { title: 'Tracking', icon: <Route sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} /> },
+    {
+      title: 'Order bidding',
+      icon: <LocalShipping sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
+      onClick: () => handleNavigation('/order-bidding'),
+    },
   ];
 
   return (

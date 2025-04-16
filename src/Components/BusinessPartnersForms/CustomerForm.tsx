@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { TextField, Grid, Button, Collapse, Box, FormControlLabel, Checkbox, Autocomplete, Backdrop, CircularProgress,  Paper, List, ListItem, Typography } from '@mui/material';
+import { TextField, Grid, Button, Collapse, Box, FormControlLabel, Checkbox, Autocomplete, Backdrop, CircularProgress, Paper, List, ListItem, Typography } from '@mui/material';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import styles from './BusinessPartners.module.css';
@@ -23,9 +23,9 @@ const customerValidationSchema = Yup.object().shape({
         .matches(/^\d{6}$/, 'Pincode must be 6 digits')
         .required('Pincode is required'),
     contactNumber: Yup.string()
-    .matches(/^\d{10}$/, 'Contact number must be exactly 10 digits')
-    .max(10, 'Contact number cannot exceed 10 digits')
-    .required('Contact number is required'),
+        .matches(/^\d{10}$/, 'Contact number must be exactly 10 digits')
+        .max(10, 'Contact number cannot exceed 10 digits')
+        .required('Contact number is required'),
     emailId: Yup.string()
         .email('Invalid email address')
         .required('Email is required'),
@@ -132,13 +132,12 @@ const CustomerForm: React.FC = () => {
     const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
     const [showSuggestions, setShowSuggestions] = useState(false);
     // const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
-    const displayLocations = searchKey === "" ?  getAllLocations : filteredLocations?.results || [] ;
+    const displayLocations = searchKey === "" ? getAllLocations : filteredLocations?.results || [];
 
     const [searchKeyDestination, setSearchKeyDestination] = useState('');
     const [showDestinations, setShowDestinations] = useState(false);
-    const { data: destinationFilteredLocations,isLoading: filteredDestinationLoading } = useGetFilteredLocationsQuery(searchKeyDestination.length >= 3 ? searchKeyDestination : null, { skip: searchKeyDestination.length < 3 });
+    const { data: destinationFilteredLocations, isLoading: filteredDestinationLoading } = useGetFilteredLocationsQuery(searchKeyDestination.length >= 3 ? searchKeyDestination : null, { skip: searchKeyDestination.length < 3 });
     const displayLocationsDest = searchKeyDestination ? destinationFilteredLocations?.results || [] : getAllLocations;
-   console.log("display locations : ", displayLocations)
     const getLocationDetails = (loc_ID: string) => {
         const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
         if (!location) return "Location details not available";
@@ -156,12 +155,12 @@ const CustomerForm: React.FC = () => {
     if (getLocationsError) {
         console.log("getLocationsError: ", getLocationsError)
     }
-        useEffect(() => {
-            if (!searchKey) {
-                setShowSuggestions(false);
-    
-            }
-        }, [searchKey]);
+    useEffect(() => {
+        if (!searchKey) {
+            setShowSuggestions(false);
+
+        }
+    }, [searchKey]);
     const customersData = data?.partners.length > 0 ? data?.partners : []
     const getCustomerDetails = (customer_id: string) => {
         const customer = customersData.find((customer: Customer) => customer.customer_id === customer_id);
@@ -173,7 +172,7 @@ const CustomerForm: React.FC = () => {
             customer.location_state,
             customer.location_country,
             customer.location_pincode,
-            
+
         ].filter(Boolean);
         return details.length > 0 ? details.join(", ") : "Customer details not available";
     };
@@ -382,7 +381,7 @@ const CustomerForm: React.FC = () => {
                 onClose={() => setSnackbarOpen(false)}
             />
             <Box display="flex" justifyContent="flex-end" gap={2}>
-                <Button 
+                <Button
                     onClick={() => setShowForm((prev) => !prev)}
                     className={styles.createButton}
                 >
@@ -490,8 +489,8 @@ const CustomerForm: React.FC = () => {
                                                                         setFieldValue('country', matchedLocation.country || '');
                                                                         setFieldValue('pincode', matchedLocation.pincode || '');
                                                                     } else {
-                                                                        setFieldValue('address1',  '');
-                                                                        setFieldValue('address2',  '');
+                                                                        setFieldValue('address1', '');
+                                                                        setFieldValue('address2', '');
                                                                         setFieldValue('city', '');
                                                                         setFieldValue('district', '');
                                                                         setFieldValue('state', '');
@@ -504,12 +503,12 @@ const CustomerForm: React.FC = () => {
                                                                 <span style={{ fontSize: '13px' }}>{location.loc_ID}, {location?.loc_desc}, {location.city}, {location.state}, {location.pincode}</span>
                                                             </ListItem>
                                                         ))}
-                                                    </List>) : 
-                                                        (
-                                                            <Typography variant="body2" color="textSecondary">
-                                                                No results found
-                                                            </Typography>
-                                                        )
+                                                    </List>) :
+                                                    (
+                                                        <Typography variant="body2" color="textSecondary">
+                                                            No results found
+                                                        </Typography>
+                                                    )
                                                     }
                                                 </Paper>
                                             )}
@@ -577,8 +576,8 @@ const CustomerForm: React.FC = () => {
                                             label="Contact Number*"
                                             name="contactNumber"
                                             value={values.contactNumber}
-                                            onChange={handleChange} type="number" 
-                                            onBlur={handleBlur} 
+                                            onChange={handleChange} type="number"
+                                            onBlur={handleBlur}
                                             error={touched.contactNumber && Boolean(errors.contactNumber)}
                                             helperText={touched.contactNumber && errors.contactNumber}
                                         />
