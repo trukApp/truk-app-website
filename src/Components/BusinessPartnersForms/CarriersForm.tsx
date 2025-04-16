@@ -45,7 +45,23 @@ interface CarrierFormFE {
     deviceDetails: string,
     enrollSpotAuction: boolean,
     preferredCarrier: boolean,
+    carrier_network_portal: number;
+    // isContract: number;
+    contractValidUpto: string;
+    pricing: Pricing,
+    pricingUnit: string;
+    pricingCost: string;
+    pricingCriteria: string;
+    contractSigned: string;
+    isContract: boolean;
 };
+
+interface Pricing {
+    pricing: string;
+    pricingUnit: string;
+    cost: string;
+    cost_criteria_per: string
+}
 export interface CarrierFormBE {
     carrier_loc_of_operation: string[];
     carrier_lanes: string[];
@@ -60,10 +76,19 @@ export interface CarrierFormBE {
     carrier_ID: string;
     cr_id: string;
     carrier_network_portal: number;
+    isContract: number;
+    contractValidUpto: string;
+    pricing: Pricing,
+    contract: number;
+    cost: string;
+    contract_valid_upto: string;
+
+
+
 }
 
 const CarrierForm: React.FC = () => {
-     const wrapperRef = useRef<HTMLDivElement>(null);
+    const wrapperRef = useRef<HTMLDivElement>(null);
     const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10, });
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -122,18 +147,18 @@ const CarrierForm: React.FC = () => {
         return `Source: ${sourceLocationDetails} | Destination: ${destinationLocationDetails}`;
     };
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
-        setShowSuggestions(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-    
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+                setShowSuggestions(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
     const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
         setPaginationModel(newPaginationModel);
     };
@@ -173,6 +198,7 @@ const CarrierForm: React.FC = () => {
         }
     };
 
+    console.log("editRow: ", editRow)
     const initialCarrierValues = {
         id: '',
         carrierId: '',
@@ -187,6 +213,10 @@ const CarrierForm: React.FC = () => {
         deviceDetails: '',
         enrollSpotAuction: false,
         preferredCarrier: false,
+        contractValidUpto: "",
+        pricing: "",
+        pricingUnit: "",
+        isContract: false,
     };
     const [initialValues, setInitialValues] = useState(initialCarrierValues)
 
@@ -205,22 +235,51 @@ const CarrierForm: React.FC = () => {
                 laneIds: editRow?.laneIds || [],
                 deviceDetails: editRow?.deviceDetails || '',
                 enrollSpotAuction: editRow?.enrollSpotAuction || false,
-                preferredCarrier: editRow?.preferredCarrier || false,
-            }))
+                preferredCarrier: !!editRow?.preferredCarrier, // convert "1" or truthy to boolean
+                contractValidUpto: editRow?.contractValidUpto || "",
+                pricing: editRow?.pricingCost || "",
+                pricingUnit: editRow?.pricingCriteria || "",
+                isContract: !!editRow?.contractSigned, // convert to boolean
+            }));
         }
     }, [editRow]);
+
+
+    // useEffect(() => {
+    //     if (editRow) {
+    //         setInitialValues(() => ({
+    //             id: editRow?.id || '',
+    //             carrierId: editRow?.carrierId || '',
+    //             name: editRow?.name || '',
+    //             address: editRow?.address || '',
+    //             contactPerson: editRow?.contactPerson || '',
+    //             contactNumber: editRow?.contactNumber || '',
+    //             emailId: editRow?.emailId || '',
+    //             vehicleTypes: editRow?.vehicleTypes || [],
+    //             locationIds: editRow?.locationIds || [],
+    //             laneIds: editRow?.laneIds || [],
+    //             deviceDetails: editRow?.deviceDetails || '',
+    //             enrollSpotAuction: editRow?.enrollSpotAuction || false,
+    //             preferredCarrier: editRow?.preferredCarrier || false,
+    //         }))
+    //     }
+    // }, [editRow]);
 
     const carrierValidationSchema = Yup.object({
         name: Yup.string().required('Name is required'),
         address: Yup.string().required('Address is required'),
         contactPerson: Yup.string().required('Contact Person is required'),
         contactNumber: Yup.string()
-        .matches(/^[0-9]{10}$/, "Contact number must be exactly 10 digits")
-        .required("Contact number is required"),
+            .matches(/^[0-9]{10}$/, "Contact number must be exactly 10 digits")
+            .required("Contact number is required"),
         emailId: Yup.string().email('Invalid email format').required('Email ID is required'),
         vehicleTypes: Yup.string().required('Vehicle type is required'),
         locationIds: Yup.array().of(Yup.string()).min(1, 'Select at least one location').required('Location is required'),
         laneIds: Yup.array().of(Yup.string()).min(1, 'Select at least one lane').required('Lane IDs are required'),
+        contractValidUpto: Yup.string().required("Contract date is required"),
+        pricing: Yup.number().typeError("Must be a number").required("Pricing is required"),
+        pricingUnit: Yup.string().required("Please select a unit"),
+        isContract: Yup.boolean(),
     });
 
     const handleCarrierSubmit = async (values: CarrierFormFE) => {
@@ -238,7 +297,13 @@ const CarrierForm: React.FC = () => {
                         carrier_network_portal: `${values.preferredCarrier ? 1 : 0}`,
                         vehicle_types_handling: values.vehicleTypes,
                         carrier_loc_of_operation: values.locationIds,
-                        carrier_lanes: values.laneIds
+                        carrier_lanes: values.laneIds,
+                        contract: `${values?.isContract ? 1 : 0}`,
+                        contract_valid_upto: values?.contractValidUpto,
+                        pricing: {
+                            cost: values?.pricing,
+                            cost_criteria_per: values?.pricingUnit
+                        }
                     },
                 ]
             }
@@ -253,8 +318,15 @@ const CarrierForm: React.FC = () => {
                 carrier_network_portal: `${values.preferredCarrier ? 1 : 0}`,
                 vehicle_types_handling: values.vehicleTypes,
                 carrier_loc_of_operation: values.locationIds,
-                carrier_lanes: values.laneIds
+                carrier_lanes: values.laneIds,
+                contract: `${values?.isContract ? 1 : 0}`,
+                contract_valid_upto: values?.contractValidUpto,
+                pricing: {
+                    cost: values?.pricing,
+                    cost_criteria_per: values?.pricingUnit
+                }
             }
+            console.log("body: ", body)
             if (isEditing && editRow) {
                 console.log('edit body : ', editBody)
                 const carrierId = editRow.id
@@ -317,7 +389,11 @@ const CarrierForm: React.FC = () => {
             allLaneIdsDetails: laneDetails,
             preferredCarrier: carrier.carrier_network_portal,
             locationIds: locationIds,
-            laneIds: laneIds
+            laneIds: laneIds,
+            contractSigned: carrier.contract === 1,
+            contractValidUpto: carrier.contract_valid_upto,
+            pricingCost: carrier.pricing?.cost,
+            pricingCriteria: carrier.pricing?.cost_criteria_per,
         };
     }) || [];
 
@@ -329,9 +405,14 @@ const CarrierForm: React.FC = () => {
         { field: 'contactNumber', headerName: 'Contact Number', width: 150 },
         { field: 'emailId', headerName: 'Email ID', width: 150 },
         { field: 'vehicleTypes', headerName: 'Vehicle Types', width: 150 },
-        {field: "allLocationIdsDetails", headerName: "Locations",width: 250},
-        {field: "allLaneIdsDetails",headerName: "Lane Details",width: 250},
-        {field: 'preferredCarrier',headerName: 'Is enrolled on carrier network portal',width: 150,renderCell: (params) => params.value ? 'Yes' : 'No'},
+        { field: "allLocationIdsDetails", headerName: "Locations", width: 250 },
+        { field: "allLaneIdsDetails", headerName: "Lane Details", width: 250 },
+        { field: 'contractSigned', headerName: 'Contract Signed', width: 150, renderCell: (params) => params.value ? 'Yes' : 'No' },
+        { field: 'contractValidUpto', headerName: 'Contract Valid Upto', width: 150 },
+        { field: 'pricingCost', headerName: 'Pricing Cost', width: 120 },
+        { field: 'pricingCriteria', headerName: 'Cost Criteria', width: 150 },
+
+        { field: 'preferredCarrier', headerName: 'Is enrolled on carrier network portal', width: 150, renderCell: (params) => params.value ? 'Yes' : 'No' },
         {
             field: "actions",
             headerName: "Actions",
@@ -373,7 +454,7 @@ const CarrierForm: React.FC = () => {
                 onClose={() => setSnackbarOpen(false)}
             />
             <Box display="flex" justifyContent="flex-end" gap={2}>
-                <Button 
+                <Button
                     onClick={() => setShowForm((prev) => !prev)}
                     className={styles.createButton}
                 >
@@ -458,12 +539,12 @@ const CarrierForm: React.FC = () => {
                                             onChange={handleChange}
                                             onBlur={handleBlur}
                                             error={touched.contactNumber && Boolean(errors.contactNumber)}
-                                            helperText={touched.contactNumber && errors.contactNumber} 
-                                                    inputProps={{
-                                                    maxLength: 10,
-                                                    inputMode: "numeric",
-                                                    pattern: "[0-9]*"  
-                                                }}
+                                            helperText={touched.contactNumber && errors.contactNumber}
+                                            inputProps={{
+                                                maxLength: 10,
+                                                inputMode: "numeric",
+                                                pattern: "[0-9]*"
+                                            }}
                                         />
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={4}>
@@ -518,93 +599,93 @@ const CarrierForm: React.FC = () => {
                                             size="small"
                                             label="Locations of Operation (Location IDs)"
                                             onFocus={() => {
-                                            if (!searchKey) {
-                                                setSearchKey("");
-                                                setShowSuggestions(true);
-                                            }
+                                                if (!searchKey) {
+                                                    setSearchKey("");
+                                                    setShowSuggestions(true);
+                                                }
                                             }}
                                             onChange={(e) => {
-                                            setSearchKey(e.target.value);
-                                            setShowSuggestions(true);
+                                                setSearchKey(e.target.value);
+                                                setShowSuggestions(true);
                                             }}
                                             value={searchKey}
                                             error={touched.locationIds && Boolean(errors.locationIds)}
                                             helperText={
-                                            touched.locationIds && typeof errors.locationIds === "string"
-                                                ? errors.locationIds
-                                                : ""
+                                                touched.locationIds && typeof errors.locationIds === "string"
+                                                    ? errors.locationIds
+                                                    : ""
                                             }
                                             InputProps={{
-                                            endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
+                                                endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
                                             }}
                                         />
                                         <div ref={wrapperRef}>
                                             {showSuggestions && displayLocations?.length > 0 && (
-                                            <Paper
-                                                style={{
-                                                maxHeight: 200,
-                                                overflowY: "auto",
-                                                position: "absolute",
-                                                zIndex: 10,
-                                                width: "100%",
-                                                }}
-                                            >
-                                                <List>
-                                                {displayLocations.map((location: Location) => (
-                                                    <ListItem
-                                                    key={location.loc_ID}
-                                                    component="li"
-                                                    onClick={() => {
-                                                        setShowSuggestions(false);
-                                                        // const selectedDisplay = `${location.loc_ID}, ${location.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
-                                                        if (!values.locationIds.includes(location.loc_ID)) {
-                                                            setFieldValue("locationIds", [...values.locationIds, location.loc_ID]);
-                                                        }
-                                                        setSearchKey("");
+                                                <Paper
+                                                    style={{
+                                                        maxHeight: 200,
+                                                        overflowY: "auto",
+                                                        position: "absolute",
+                                                        zIndex: 10,
+                                                        width: "100%",
                                                     }}
-                                                    sx={{ cursor: "pointer" }}
-                                                    >
-                                                    <Tooltip
-                                                        title={`${location.loc_desc}, ${location.address_1}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                                        placement="right"
-                                                    >
-                                                        <span style={{ fontSize: "14px" }}>
-                                                        {location.loc_ID}, {location.loc_desc}, {location.city}, {location.state}, {location.pincode}
-                                                        </span>
-                                                    </Tooltip>
-                                                    </ListItem>
-                                                ))}
-                                                </List>
-                                            </Paper>
+                                                >
+                                                    <List>
+                                                        {displayLocations.map((location: Location) => (
+                                                            <ListItem
+                                                                key={location.loc_ID}
+                                                                component="li"
+                                                                onClick={() => {
+                                                                    setShowSuggestions(false);
+                                                                    // const selectedDisplay = `${location.loc_ID}, ${location.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
+                                                                    if (!values.locationIds.includes(location.loc_ID)) {
+                                                                        setFieldValue("locationIds", [...values.locationIds, location.loc_ID]);
+                                                                    }
+                                                                    setSearchKey("");
+                                                                }}
+                                                                sx={{ cursor: "pointer" }}
+                                                            >
+                                                                <Tooltip
+                                                                    title={`${location.loc_desc}, ${location.address_1}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                                                    placement="right"
+                                                                >
+                                                                    <span style={{ fontSize: "14px" }}>
+                                                                        {location.loc_ID}, {location.loc_desc}, {location.city}, {location.state}, {location.pincode}
+                                                                    </span>
+                                                                </Tooltip>
+                                                            </ListItem>
+                                                        ))}
+                                                    </List>
+                                                </Paper>
                                             )}
                                         </div>
                                         {values.locationIds.length > 0 && (
-                                             <Paper
-                                            style={{
-                                            marginTop: 8,
-                                            padding: 8,
-                                            minHeight: 40,
-                                            background: "#f5f5f5",
-                                            }}
-                                        >
-                                            {values.locationIds.map((locId: string) => {
-                                            const location = displayLocations.find((loc:Location) => loc.loc_ID === locId);
-                                            return (
-                                                <Chip
-                                                key={locId}
-                                                label={`${location?.loc_ID}, ${location?.loc_desc}`}
-                                                onDelete={() => {
-                                                    setFieldValue(
-                                                    "locationIds",
-                                                    values.locationIds.filter((id) => id !== locId)
-                                                    );
+                                            <Paper
+                                                style={{
+                                                    marginTop: 8,
+                                                    padding: 8,
+                                                    minHeight: 40,
+                                                    background: "#f5f5f5",
                                                 }}
-                                                style={{ margin: 4 }}
-                                                />
-                                            );
-                                            })}
-                                        </Paper>
-                                        ) }
+                                            >
+                                                {values.locationIds.map((locId: string) => {
+                                                    const location = displayLocations.find((loc: Location) => loc.loc_ID === locId);
+                                                    return (
+                                                        <Chip
+                                                            key={locId}
+                                                            label={`${location?.loc_ID}, ${location?.loc_desc}`}
+                                                            onDelete={() => {
+                                                                setFieldValue(
+                                                                    "locationIds",
+                                                                    values.locationIds.filter((id) => id !== locId)
+                                                                );
+                                                            }}
+                                                            style={{ margin: 4 }}
+                                                        />
+                                                    );
+                                                })}
+                                            </Paper>
+                                        )}
                                     </Grid>
 
                                     {/* <Grid item xs={12} sm={6} md={4}>
@@ -635,51 +716,51 @@ const CarrierForm: React.FC = () => {
                                         <FormControl fullWidth size="small" error={touched.laneIds && Boolean(errors.laneIds)}>
                                             <InputLabel >Lane IDs</InputLabel>
                                             <Select
-                                            multiple 
-                                            name="laneIds"
-                                            value={values.laneIds}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            renderValue={() => null}
+                                                multiple
+                                                name="laneIds"
+                                                value={values.laneIds}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                renderValue={() => null}
                                             >
-                                            {getAllLanes?.map((lane: Lane) => (
-                                                <MenuItem key={lane.lane_ID} value={String(lane.lane_ID)}>
-                                                <span style={{ flex: 1 }}>
-                                                    {lane.lane_ID} :- {lane.src_loc_desc} to {lane.des_loc_desc}
-                                                </span>
-                                                </MenuItem>
-                                            ))}
+                                                {getAllLanes?.map((lane: Lane) => (
+                                                    <MenuItem key={lane.lane_ID} value={String(lane.lane_ID)}>
+                                                        <span style={{ flex: 1 }}>
+                                                            {lane.lane_ID} :- {lane.src_loc_desc} to {lane.des_loc_desc}
+                                                        </span>
+                                                    </MenuItem>
+                                                ))}
                                             </Select>
                                             {touched.laneIds && errors.laneIds && <FormHelperText>{errors.laneIds}</FormHelperText>}
                                         </FormControl>
                                         {values.laneIds.length > 0 && (
                                             <Paper
-                                            style={{
-                                                marginTop: 8,
-                                                padding: 8,
-                                                minHeight: 40,
-                                                background: "#f5f5f5",
-                                                display: "flex",
-                                                flexWrap: "wrap",
-                                                gap: 8,
-                                            }}
+                                                style={{
+                                                    marginTop: 8,
+                                                    padding: 8,
+                                                    minHeight: 40,
+                                                    background: "#f5f5f5",
+                                                    display: "flex",
+                                                    flexWrap: "wrap",
+                                                    gap: 8,
+                                                }}
                                             >
-                                            {values.laneIds.map((laneId: string) => {
-                                                const lane = getAllLanes.find((l:Lane) => String(l.lane_ID) === laneId);
-                                                return (
-                                                <Chip
-                                                    key={laneId}
-                                                    label={`${lane?.lane_ID} : ${lane?.src_loc_desc} to ${lane?.des_loc_desc}`}
-                                                    onDelete={() => {
-                                                    setFieldValue(
-                                                        "laneIds",
-                                                        values.laneIds.filter((id) => id !== laneId)
+                                                {values.laneIds.map((laneId: string) => {
+                                                    const lane = getAllLanes.find((l: Lane) => String(l.lane_ID) === laneId);
+                                                    return (
+                                                        <Chip
+                                                            key={laneId}
+                                                            label={`${lane?.lane_ID} : ${lane?.src_loc_desc} to ${lane?.des_loc_desc}`}
+                                                            onDelete={() => {
+                                                                setFieldValue(
+                                                                    "laneIds",
+                                                                    values.laneIds.filter((id) => id !== laneId)
+                                                                );
+                                                            }}
+                                                            style={{ margin: 4 }}
+                                                        />
                                                     );
-                                                    }}
-                                                    style={{ margin: 4 }}
-                                                />
-                                                );
-                                            })}
+                                                })}
                                             </Paper>
                                         )}
                                     </Grid>
@@ -687,6 +768,77 @@ const CarrierForm: React.FC = () => {
 
 
                                 </Grid>
+
+                                <h3 className={styles.mainHeading}>Addtional Information</h3>
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12} sm={6} md={4}>
+                                        <TextField
+                                            fullWidth
+                                            size="small"
+                                            type="date"
+                                            label="Contract Valid Upto"
+                                            name="contractValidUpto"
+                                            InputLabelProps={{ shrink: true }}
+                                            value={values.contractValidUpto}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.contractValidUpto && Boolean(errors.contractValidUpto)}
+                                            helperText={touched.contractValidUpto && errors.contractValidUpto}
+                                        />
+                                    </Grid>
+
+                                    {/* Pricing input field */}
+                                    <Grid item xs={6} sm={3} md={2}>
+                                        <TextField
+                                            fullWidth
+                                            size="small"
+                                            label="Pricing"
+                                            name="pricing"
+                                            value={values.pricing}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.pricing && Boolean(errors.pricing)}
+                                            helperText={touched.pricing && errors.pricing}
+                                        />
+                                    </Grid>
+
+                                    {/* Dropdown for pricing unit */}
+                                    <Grid item xs={6} sm={3} md={2}>
+                                        <FormControl fullWidth size="small" error={touched.pricingUnit && Boolean(errors.pricingUnit)}>
+                                            <InputLabel>Unit</InputLabel>
+                                            <Select
+                                                name="pricingUnit"
+                                                value={values.pricingUnit}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                label="Unit"
+                                            >
+                                                <MenuItem value="per_km">Per KM</MenuItem>
+                                                <MenuItem value="per_ton">Per Ton</MenuItem>
+                                            </Select>
+                                            {touched.pricingUnit && errors.pricingUnit && (
+                                                <FormHelperText>{errors.pricingUnit}</FormHelperText>
+                                            )}
+                                        </FormControl>
+                                    </Grid>
+
+                                    {/* Contract checkbox */}
+                                    <Grid item xs={12} sm={6} md={4} display="flex" alignItems="center">
+                                        <FormControlLabel
+                                            control={
+                                                <Checkbox
+                                                    name="isContract"
+                                                    checked={values.isContract}
+                                                    onChange={(e) => setFieldValue('isContract', e.target.checked)}
+                                                // color="primary"
+                                                />
+                                            }
+                                            label="Is Contract"
+                                        />
+                                    </Grid>
+                                </Grid>
+
+
                                 <Grid item xs={12} sm={6} md={4}>
                                     <FormControlLabel
                                         control={

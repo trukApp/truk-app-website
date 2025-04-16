@@ -35,6 +35,7 @@ const CreateOrder: React.FC = () => {
     const [selectTheTrucks, { error: packageSelectErr, isLoading: truckSelectionLoading }] = useSelectTheProductsMutation();
     const [createOrder, { error: createOrderError, isLoading: confirmOrderLoading }] = useConfomOrderMutation();
     const [selectTrucks, setSelectTrucks] = useState<Truck[]>([]);
+    const [unAllocatedPackages, setUnAllocatedPackages] = useState<[]>([]);
     const [conformOrderPayload, setConformOrderPayload] = useState<ConfirmPayload>({});
     const [modalOpen, setModalOpen] = useState(false);
     const [noVechilePopup, setNoVechilePopup] = useState(false);
@@ -133,6 +134,7 @@ const CreateOrder: React.FC = () => {
                     setConformOrderPayload(response)
                     console.log('response: ', response)
                     setSelectTrucks(response?.allocations);
+                    setUnAllocatedPackages(response?.unallocatedPackages)
                     setActiveStep((prev) => prev + 1);
                 }
 
@@ -269,7 +271,7 @@ const CreateOrder: React.FC = () => {
 
                 {activeStep === 1 && (
                     <div>
-                        <TrucksTable trucks={selectTrucks} />
+                        <TrucksTable trucks={selectTrucks} unAllocatedPackages={unAllocatedPackages} />
                     </div>
                 )}
 

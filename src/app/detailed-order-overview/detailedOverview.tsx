@@ -34,7 +34,7 @@ const OrderDetailedOverview: React.FC = () => {
                             <Typography variant="body1" sx={{ fontSize: { xs: '15px', md: '17px' } }}>Total Cost: <strong>₹{parseFloat(orderData.total_cost).toFixed(2)}</strong></Typography>
                         </Grid>
                         <Grid item xs={12} sm={6}>
-                            <Typography variant="body1" sx={{ fontSize: { xs: '15px', md: '17px' } }}>Created at: <strong>{moment(orderData.created_at).format("DD MMM YYYY, hh:mm A")}</strong></Typography>
+                            <Typography variant="body1" sx={{ fontSize: { xs: '15px', md: '17px' } }}>Created at: <strong>{moment(orderData.created_at).format("DD MMM YYYY")}</strong></Typography>
                         </Grid>
                     </Grid>
                 </Paper>
