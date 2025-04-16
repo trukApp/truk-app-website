@@ -47,7 +47,6 @@ import { GET_ALL_PRODUCTS,GET_ALL_PACKAGES,GET_LOCATIONS,SEARCH_LOCATIONS,GET_AL
 export interface PackagingType {
     pac_ID: string;
     location: string;
-
 }
 export interface Product {
     locationId: string;
@@ -499,8 +498,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                 </Typography>
             
                 <Box display="flex" justifyContent="flex-end" gap={2}>
-                    <Button
-                        variant="contained"
+                    <Button 
                         onClick={() => setShowForm((prev) => !prev)}
                         className={style.createButton}
                     >

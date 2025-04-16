@@ -208,12 +208,12 @@ console.log(unorderedPackages)
         ship_to: getLocationDescription(pkg.ship_to),
         package_info: getPackageDetails(pkg.package_info),
         bill_to: getLocationDescription(pkg.bill_to),
-        return_label: pkg.return_label,
+        return_label: pkg?.return_label,
         pickup_date_time: formatPickupDateTime(pkg.pickup_date_time),
         dropoff_date_time: formatPickupDateTime(pkg.dropoff_date_time),
-        tax_rate: pkg.tax_info.tax_rate,
-        product_details: pkg.product_ID ?? [],
-        additional_info: pkg.additional_info,
+        tax_rate: pkg?.tax_info?.tax_rate,
+        product_details: pkg?.product_ID ?? [],
+        additional_info: pkg?.additional_info,
     }));
 
 

@@ -82,6 +82,7 @@ const handleSearch = () => {
     const getAllLocations = displayLocations.filter(
         (location: Location) => location.loc_ID !== shipFromLocationId
     );
+    console.log("shipToReduxValues: ", shipToReduxValues)
     const shipFromInitialValues = {
         locationId: shipToReduxValues?.locationId || defaultLocationDataInputText || '',
         locationDescription: shipToReduxValues?.locationDescription || defaultLocationData?.loc_desc || '',

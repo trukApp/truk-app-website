@@ -15,7 +15,7 @@ import { CustomButtonFilled, CustomButtonOutlined } from '@/Components/ReusableC
 import { setSelectedPackages, setSelectedTrucks } from '@/store/authSlice';
 import { useMediaQuery, useTheme } from '@mui/material';
 import { useQuery ,useLazyQuery} from "@apollo/client";
-import {GET_ALL_PACKAGES} from '@/api/graphqlApiSlice';
+import {ALL_PACKAGES, GET_ALL_PACKAGES} from '@/api/graphqlApiSlice';
 interface ConfirmPayload {
     message?: string;
     totalCost?: number;
@@ -36,6 +36,7 @@ const CreateOrder: React.FC = () => {
     const [selectTheTrucks, { error: packageSelectErr, isLoading: truckSelectionLoading }] = useSelectTheProductsMutation();
     const [createOrder, { error: createOrderError, isLoading: confirmOrderLoading }] = useConfomOrderMutation();
     const [selectTrucks, setSelectTrucks] = useState<Truck[]>([]);
+    const [unAllocatedPackages, setUnAllocatedPackages] = useState<[]>([]);
     const [conformOrderPayload, setConformOrderPayload] = useState<ConfirmPayload>({});
     const [modalOpen, setModalOpen] = useState(false);
     const [noVechilePopup, setNoVechilePopup] = useState(false);
@@ -64,12 +65,12 @@ const CreateOrder: React.FC = () => {
 
 
     // const { data: packagesData, error: allProductsFectchingError, isLoading: isPackagesLoading } = useGetAllPackagesForOrderQuery([]);
-    const { data: packagesData, loading: isPackagesLoading, error: allProductsFectchingError } = useQuery(GET_ALL_PACKAGES);
+    const { data: packagesData, loading: isPackagesLoading, error: allProductsFectchingError } = useQuery(ALL_PACKAGES);
     console.log(packagesData)
     if (allProductsFectchingError) {
     }
 
-    const allPackagesData = packagesData?.getAllPackages.packages || [];
+    const allPackagesData = packagesData?.allPackages.packages || [];
     console.log(allPackagesData)
     const steps = ['Select Packages', 'Vehicle Optimization', 'Route Optimization', 'Load Optimization', 'Review Order'];
 
@@ -137,6 +138,7 @@ const CreateOrder: React.FC = () => {
                     setConformOrderPayload(response)
                     console.log('response: ', response)
                     setSelectTrucks(response?.allocations);
+                    setUnAllocatedPackages(response?.unallocatedPackages)
                     setActiveStep((prev) => prev + 1);
                 }
 
@@ -273,7 +275,7 @@ const CreateOrder: React.FC = () => {
 
                 {activeStep === 1 && (
                     <div>
-                        <TrucksTable trucks={selectTrucks} />
+                        <TrucksTable trucks={selectTrucks} unAllocatedPackages={unAllocatedPackages} />
                     </div>
                 )}
 

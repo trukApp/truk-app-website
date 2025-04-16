@@ -23,12 +23,15 @@ import { VehicleDetails } from "@/Components/MasterDataComponents/Vehicles";
 import { withAuthComponent } from "@/Components/WithAuthComponent";
 import { useQuery } from "@apollo/client";
 import { GET_ALL_SELF_VEHICLES, GET_ALL_VEHICLES, GET_VEHICLES } from '@/api/graphqlApiSlice';
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
 export interface TruckFormDetails {
     truckId: string;
     id: string;
     vehicleId: string;
     isAvailable: boolean;
     costing: string;
+    cost_criteria_per: string;
     insurance: string;
     registration: string;
     permit: string;
@@ -37,12 +40,16 @@ export interface TruckFormDetails {
 export interface TruckDetails {
     id: string;
     vehicle_ID: string;
-    act_truk_ID: string;
-    act_vehicle_num: string;
+    strk_ID: string;
+    self_vehicle_num: string;
     available: number;
-    costing: string;
-    truk_id: string;
-    vehicle_docs: {
+    costing: {
+        cost: string;
+        cost_criteria_per: string;
+    };
+    str_id: string;
+    self_vehicle_docs
+: {
         insurance: string;
         permit: string;
         registration: string
@@ -97,6 +104,9 @@ const VehicleOnly: React.FC = () => {
     // graphql API
     // const { data: getSingleVehicleMaster, loading: getSingleVehicleMasterLoading, error:Error } = useQuery(GET_ALL_VEHICLES);
     // console.log(getSingleVehicleMaster)
+    const unitsofMeasurement = useSelector(
+            (state: RootState) => state.auth.unitsofMeasurement
+        );
     const [showForm, setShowForm] = useState(false);
     const initialFormValues = {
         id: "",
@@ -105,6 +115,7 @@ const VehicleOnly: React.FC = () => {
         vehicleNumber: "",
         isAvailable: false,
         costing: "",
+        cost_criteria_per: unitsofMeasurement[0],
         insurance: "",
         registration: "",
         permit: "",
@@ -121,6 +132,7 @@ const VehicleOnly: React.FC = () => {
                 vehicleNumber: editRow?.vehicleNumber || "",
                 isAvailable: editRow?.isAvailable ?? false,
                 costing: editRow?.costing || "",
+                cost_criteria_per: editRow?.cost_criteria_per || '' ,
                 insurance: editRow?.insurance || "",
                 registration: editRow?.registration || "",
                 permit: editRow?.permit || "",
@@ -131,8 +143,9 @@ const VehicleOnly: React.FC = () => {
                 truckId: "",
                 vehicleId: "",
                 vehicleNumber: "",
-                isAvailable: false,
+                isAvailable: true,
                 costing: "",
+                cost_criteria_per:unitsofMeasurement[0],
                 insurance: "",
                 registration: "",
                 permit: "",
@@ -141,23 +154,29 @@ const VehicleOnly: React.FC = () => {
     }, [editRow]);
 
 
-    const rows = vehiclesMaster?.map((vehicle: TruckDetails) => ({
-        id: vehicle?.truk_id,
-        truckId: vehicle?.act_truk_ID,
-        vehicleId: vehicle?.vehicle_ID,
-        vehicleNumber: vehicle?.act_vehicle_num,
-        isAvailable: vehicle?.available,
-        costing: vehicle?.costing,
-        insurance: vehicle?.vehicle_docs?.insurance,
-        registration: vehicle?.vehicle_docs?.registration,
-        permit: vehicle?.vehicle_docs?.permit,
-    }));
+    const rows = vehiclesMaster?.map((vehicle: TruckDetails) => {
+        return (
+            {
+            id: vehicle?.str_id,
+            truckId: vehicle?.strk_ID,
+            vehicleId: vehicle?.vehicle_ID,
+            vehicleNumber: vehicle?.self_vehicle_num,
+            isAvailable: vehicle?.available,
+            costing: vehicle?.costing.cost,
+            cost_criteria_per: vehicle?.costing?.cost_criteria_per,
+            insurance: vehicle?.self_vehicle_docs?.insurance,
+            registration: vehicle?.self_vehicle_docs?.registration,
+            permit: vehicle?.self_vehicle_docs?.permit,
+        })
+    }
+ );
 
     const columns: GridColDef[] = [
         { field: "truckId", headerName: "Truck ID", width: 150 },
         { field: "vehicleId", headerName: "Vehicle Id", width: 150 },
         { field: "vehicleNumber", headerName: "Vehicle number", width: 150 },
         { field: "costing", headerName: "Costing", width: 150 },
+        { field: "cost_criteria_per", headerName: "Cost criteria per", width: 150 },
         { field: "isAvailable", headerName: "Is available", width: 150 },
         { field: "insurance", headerName: "Insurance", width: 150 },
         { field: "registration", headerName: "Registration", width: 150 },
@@ -188,10 +207,13 @@ const VehicleOnly: React.FC = () => {
                 vehicles: [
                     {
                         vehicle_ID: values.vehicleId,
-                        act_vehicle_num: values.vehicleNumber,
+                        self_vehicle_num: values.vehicleNumber,
                         available: values.isAvailable,
-                        costing: values.costing,
-                        vehicle_docs: {
+                        costing: {
+                            cost:values.costing,
+                            cost_criteria_per: values.cost_criteria_per, 
+                        },
+                        self_vehicle_docs: {
                             insurance: values.insurance,
                             registration: values.registration,
                             permit: values.permit
@@ -201,29 +223,31 @@ const VehicleOnly: React.FC = () => {
             };
             const editBody = {
                 vehicle_ID: values.vehicleId,
-                act_vehicle_num: values.vehicleNumber,
+                self_vehicle_num: values.vehicleNumber,
                 available: values.isAvailable,
-                costing: values.costing,
-                vehicle_docs: {
+                costing: {
+                    cost:values.costing,
+                    cost_criteria_per: values.cost_criteria_per,         
+                },
+                self_vehicle_docs: {
                     insurance: values.insurance,
                     registration: values.registration,
                     permit: values.permit
                 }
             }
             if (isEditing && editRow) {
-                console.log('qwerty')
-                const truckId = editRow.id;
-                console.log("trucke id to edit :", truckId)
+                const truckId = editRow?.id;
+                console.log("truck id to edit :", truckId)
                 const response = await editVehicle({
                     body: editBody,
                     truckId,
                 }).unwrap();
                 console.log("edit response :", response)
                 if (response?.updated_record) {
-                    setSnackbarMessage(`Vehicle ID ${response.updated_record} updated successfully!`);
-                    resetForm();
-                    setShowForm(false)
-                    setIsEditing(false)
+                    setSnackbarMessage(`Vehicle ID ${response?.updated_record} updated successfully!`);
+                    // resetForm();
+                    // setShowForm(false)
+                    // setIsEditing(false)
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
                 }
@@ -233,25 +257,26 @@ const VehicleOnly: React.FC = () => {
                 console.log("post response :", response)
                 if (response?.created_records) {
                     setSnackbarMessage(`Vehicle ID ${response.created_records[0]} created successfully!`);
-                    resetForm();
-                    setShowForm(false)
-                    setIsEditing(false)
+                    // resetForm();
+                    // setShowForm(false)
+                    // setIsEditing(false)
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
 
                 }
 
             }
+            
         } catch (error) {
             console.error("API Error:", error);
             setSnackbarMessage("Something went wrong! please try again");
             setSnackbarSeverity("error");
             setSnackbarOpen(true);
-            setShowForm(false);
-            resetForm();
-            setIsEditing(false)
-
+            
         }
+        resetForm();
+        setShowForm(false)
+        setIsEditing(false)
     };
 
     const handleEdit = (row: TruckFormDetails) => {
@@ -261,8 +286,8 @@ const VehicleOnly: React.FC = () => {
     };
     const handleDelete = async (row: TruckDetails) => {
         const truckId = row?.id;
+        console.log("truck to delete : ", truckId)
         if (!truckId) {
-            console.error("Row ID is missing");
             setSnackbarMessage("Error: Vehicle ID is missing!");
             setSnackbarSeverity("error");
             setSnackbarOpen(true);
@@ -288,6 +313,7 @@ const VehicleOnly: React.FC = () => {
             setSnackbarOpen(true);
         }
     };
+
 
     return (
         <>
@@ -432,16 +458,40 @@ const VehicleOnly: React.FC = () => {
                                                 <TextField
                                                     fullWidth
                                                     size="small"
-                                                    label="Cost (Rs.)"
+                                                    label="Cost (Rs.)*"
                                                     name="costing" type='number'
                                                     value={values.costing}
-                                                    onChange={handleChange}
+                                                    onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															handleChange(e);
+														}
+													}}
                                                     onBlur={handleBlur}
                                                     error={touched.costing && Boolean(errors.costing)}
                                                     helperText={touched.costing && errors.costing}
                                                 />
                                             </Grid>
-                                            <Grid item xs={12} sm={6} md={2.4}>
+                                            <Grid item xs={isEditing ? 6 : 12} sm={isEditing ? 3: 6} md={isEditing ? 1.2 :2.4}>
+                                                <TextField
+                                                                  fullWidth
+                                                                  select
+                                                                  onBlur={handleBlur}
+                                                                  name="cost_criteria_per"
+                                                                  value={values.cost_criteria_per || ""}
+                                                                  onChange={handleChange}
+                                                                  size="small"
+                                                                >
+                                                                  {unitsofMeasurement.map((unit) => (
+                                                                    <MenuItem key={unit} value={unit}>
+                                                                      {unit}
+                                                                    </MenuItem>
+                                                                  ))}
+                                                                </TextField>
+                                            </Grid>
+                                            <Grid item xs={isEditing ? 6 : 12} sm={isEditing ? 3: 6} md={isEditing ? 1.2 :2.4}>
                                                 <FormControlLabel
                                                     control={
                                                         <Checkbox
@@ -463,7 +513,7 @@ const VehicleOnly: React.FC = () => {
                                             <Grid item xs={12} sm={6} md={1.6}>
                                                 <TextField
                                                     fullWidth
-                                                    label="Insurance"
+                                                    label="Insurance*"
                                                     name="insurance"
                                                     value={values.insurance}
                                                     onChange={handleChange}
@@ -481,7 +531,7 @@ const VehicleOnly: React.FC = () => {
                                             <Grid item xs={12} sm={6} md={1.6}>
                                                 <TextField
                                                     fullWidth
-                                                    label="Registration number"
+                                                    label="Registration number*"
                                                     name="registration"
                                                     value={values.registration}
                                                     onChange={handleChange}
@@ -499,7 +549,7 @@ const VehicleOnly: React.FC = () => {
                                             <Grid item xs={12} sm={6} md={1.6}>
                                                 <TextField
                                                     fullWidth
-                                                    label="Permit"
+                                                    label="Permit*"
                                                     name="permit"
                                                     value={values.permit}
                                                     onChange={handleChange}

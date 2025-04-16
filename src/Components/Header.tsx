@@ -24,12 +24,12 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react"; // 👈 include useSession
 
-const Header = () => {
+const Header = () => { 
   const [anchorElProfile, setAnchorElProfile] = useState<null | HTMLElement>(null);
   const [anchorElHamburger, setAnchorElHamburger] = useState<null | HTMLElement>(null);
   const router = useRouter();
   const currentPath = usePathname();
-  const { data: session } = useSession(); // 👈 get session info
+  const { data: session } = useSession();  
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
@@ -71,7 +71,8 @@ const Header = () => {
   };
 
   return (
-    <AppBar position="fixed">
+    <>
+      <AppBar position="fixed">
       <Toolbar>
         <Typography
           variant="h6"
@@ -83,7 +84,7 @@ const Header = () => {
         </Typography>
 
         {/* ✅ Show only login/signup buttons if on login or signup page */}
-        {isAuthPage ? (
+        {isAuthPage || !session ? (
           <>
             <Button color="inherit" href="/login">
               Login
@@ -217,6 +218,8 @@ const Header = () => {
         )}
       </Toolbar>
     </AppBar>
+    </>
+
   );
 
 };

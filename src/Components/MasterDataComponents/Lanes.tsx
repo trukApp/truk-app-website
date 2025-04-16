@@ -438,7 +438,6 @@ const getAllLocations = locationsData?.getAllLocations?.locations.length > 0 ? l
       <Box display="flex" justifyContent="flex-end">
         <Box  >
           <Button
-            variant="contained"
             onClick={() => setShowForm((prev) => !prev)}
             className={styles.createButton}
           >

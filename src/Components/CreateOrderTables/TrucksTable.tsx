@@ -39,9 +39,10 @@ export interface Truck {
 
 interface TrucksTableProps {
     trucks: Truck[];
+    unAllocatedPackages: []
 }
 
-const TrucksTable: React.FC<TrucksTableProps> = ({ trucks }) => {
+const TrucksTable: React.FC<TrucksTableProps> = ({ trucks, unAllocatedPackages }) => {
     const columns: GridColDef[] = [
         { field: "vehicle_ID", headerName: "Vehicle ID", width: 180 },
         { field: "cost", headerName: "Total cost", width: 180 },
@@ -53,7 +54,8 @@ const TrucksTable: React.FC<TrucksTableProps> = ({ trucks }) => {
         { field: "leftoverVolume", headerName: "Left over volume", width: 180 },
         { field: "unallocatedPackages", headerName: "Unallocated Packages", width: 180 },
     ];
-console.log("trucss :" ,trucks)
+    console.log("trucss :", trucks)
+    console.log("unAllocatedPackages: ", unAllocatedPackages)
     const rows = trucks.flatMap((truck, index) => [
         {
             id: index + 1,
@@ -65,7 +67,7 @@ console.log("trucss :" ,trucks)
             occupiedVolume: truck?.occupiedVolume?.toFixed(2),
             leftoverWeight: parseFloat(truck?.leftoverWeight)?.toFixed(2),
             leftoverVolume: truck?.leftoverVolume.toFixed(2),
-            
+
         },
     ]);
 

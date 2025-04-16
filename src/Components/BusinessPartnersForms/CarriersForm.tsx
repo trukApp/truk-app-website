@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Box, Button, Collapse, Grid, TextField, IconButton,
     FormControl,
@@ -11,10 +11,7 @@ import {
     FormControlLabel,
     Checkbox,
     Tooltip,
-    Paper,
-    List,
-    ListItem,
-    Chip,
+    // Checkbox, FormControlLabel,
 } from '@mui/material';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
@@ -23,7 +20,7 @@ import { DataGridComponent } from '../GridComponent';
 import { GridColDef, GridPaginationModel } from '@mui/x-data-grid';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { useGetCarrierMasterQuery, usePostCarrierMasterMutation, useEditCarrierMasterMutation, useDeleteCarrierMasterMutation, useGetLocationMasterQuery, useGetLanesMasterQuery, useGetFilteredLocationsQuery } from '@/api/apiSlice';
+import { useGetCarrierMasterQuery, usePostCarrierMasterMutation, useEditCarrierMasterMutation, useDeleteCarrierMasterMutation, useGetLocationMasterQuery, useGetLanesMasterQuery } from '@/api/apiSlice';
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MassUpload from '../MassUpload/MassUpload';
@@ -81,13 +78,12 @@ const initialCarrierValues = {
 };
 
 const CarrierForm: React.FC = () => {
-     const wrapperRef = useRef<HTMLDivElement>(null);
     const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10, });
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const [showForm, setShowForm] = useState(false);
-    const [isEditing, setIsEditing] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);z
     const [searchKey, setSearchKey] = useState('');
     const [page, setPage] = useState(1);
     const [initialValues, setInitialValues] = useState(initialCarrierValues)
@@ -128,15 +124,24 @@ const CarrierForm: React.FC = () => {
     const displayLocations = searchKey ? filteredLocations?.searchLocations?.results || [] : getAllLocations;
     console.log(displayLocations)
     const getLocationDetails = (loc_ID: string) => {
+        // Find the location object from the array
         const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
+
+        // Return a fallback message if location not found
         if (!location) return "Location details not available";
+
+        // Gather the location details, filter out any falsy values (e.g., empty strings, null, undefined)
         const details = [
             location.loc_ID,
-            location.loc_desc,
+            location.address_1,
+            location.address_2,
             location.city,
             location.state,
-            location.pincode,
+            location.country,
+            location.pincode
         ].filter(Boolean);
+
+        // Return the combined details or a fallback message if no valid details
         return details.length > 0 ? details.join(", ") : "Location details not available";
     };
 
@@ -148,12 +153,15 @@ const CarrierForm: React.FC = () => {
     const getLaneDetails = (lane_ID: string) => {
         const lane = laneData?.allLanes?.lanes.find((l: Lane) => l.lane_ID === lane_ID);
         if (!lane) return "Lane details not available";
+
+        // Extract source and destination location details
         const sourceLocationDetails = [
             lane.src_loc_ID,
             lane.src_loc_desc,
             lane.src_city,
             lane.src_state,
-            lane_ID
+            lane.src_latitude,
+            lane.src_longitude
         ].filter(Boolean).join(", ");
 
         const destinationLocationDetails = [
@@ -161,27 +169,18 @@ const CarrierForm: React.FC = () => {
             lane.des_loc_desc,
             lane.des_city,
             lane.des_state,
-            lane_ID
+            lane.des_latitude,
+            lane.des_longitude
         ].filter(Boolean).join(", ");
+
+        // Return combined source and destination location details
         return `Source: ${sourceLocationDetails} | Destination: ${destinationLocationDetails}`;
     };
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
-        setShowSuggestions(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-    
     const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
         setPaginationModel(newPaginationModel);
     };
-    // const vehicleTypeOptions = ['Truck', 'Van', 'Container', 'Trailer'];
+    const vehicleTypeOptions = ['Truck', 'Van', 'Container', 'Trailer'];
     const handleEdit = (row: CarrierFormFE) => {
         setShowForm(true)
         setIsEditing(true)
@@ -191,6 +190,7 @@ const CarrierForm: React.FC = () => {
     const handleDelete = async (row: CarrierFormFE) => {
         const packageId = row?.id;
         if (!packageId) {
+            console.error("Row ID is missing");
             setSnackbarMessage("Error: Vehicle ID is missing!");
             setSnackbarSeverity("error");
             setSnackbarOpen(true);
@@ -242,13 +242,14 @@ const CarrierForm: React.FC = () => {
         name: Yup.string().required('Name is required'),
         address: Yup.string().required('Address is required'),
         contactPerson: Yup.string().required('Contact Person is required'),
-        contactNumber: Yup.string()
-        .matches(/^[0-9]{10}$/, "Contact number must be exactly 10 digits")
-        .required("Contact number is required"),
+        contactNumber: Yup.string().required('Contact Number is required'),
         emailId: Yup.string().email('Invalid email format').required('Email ID is required'),
-        vehicleTypes: Yup.string().required('Vehicle type is required'),
+        vehicleTypes: Yup.array().of(Yup.string()).min(1, 'Select at least one vehicle type'),
         locationIds: Yup.array().of(Yup.string()).min(1, 'Select at least one location').required('Location is required'),
         laneIds: Yup.array().of(Yup.string()).min(1, 'Select at least one lane').required('Lane IDs are required'),
+        // deviceDetails: Yup.string().required('Device Details are required'),
+        // enrollSpotAuction: Yup.boolean(),
+        // preferredCarrier: Yup.boolean(),
     });
 
     const handleCarrierSubmit = async (values: CarrierFormFE) => {
@@ -284,7 +285,6 @@ const CarrierForm: React.FC = () => {
                 carrier_lanes: values.laneIds
             }
             if (isEditing && editRow) {
-                console.log('edit body : ', editBody)
                 const carrierId = editRow.id
                 const response = await editCarrier({ body: editBody, carrierId }).unwrap()
                 if (response?.updated_record) {
@@ -297,7 +297,6 @@ const CarrierForm: React.FC = () => {
                 }
             }
             else {
-                console.log("post body : ", body)
                 const response = await postCarrier(body).unwrap();
                 if (response?.created_records) {
                     setSnackbarMessage(`Carrier ID ${response.created_records[0]} created successfully!`);
@@ -307,6 +306,7 @@ const CarrierForm: React.FC = () => {
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
                 }
+
             }
         } catch (error) {
             console.error('API Error:', error);
@@ -357,9 +357,64 @@ const CarrierForm: React.FC = () => {
         { field: 'contactNumber', headerName: 'Contact Number', width: 150 },
         { field: 'emailId', headerName: 'Email ID', width: 150 },
         { field: 'vehicleTypes', headerName: 'Vehicle Types', width: 150 },
-        {field: "allLocationIdsDetails", headerName: "Locations",width: 250},
-        {field: "allLaneIdsDetails",headerName: "Lane Details",width: 250},
-        {field: 'preferredCarrier',headerName: 'Is enrolled on carrier network portal',width: 150,renderCell: (params) => params.value ? 'Yes' : 'No'},
+        {
+            field: "locationIds",
+            headerName: "Locations",
+            width: 150,
+            renderCell: (params) => {
+                const locationIds = Array.isArray(params.value) ? params.value : [params.value];
+                const allLocs = locationIds.join(" | ")
+                const locationDetails = locationIds
+                    .map((id) => getLocationDetails(id))
+                    .join(" | ");
+
+                return (
+                    <Tooltip title={locationDetails} arrow>
+                        <span>{allLocs}</span>
+                    </Tooltip>
+                );
+            },
+        }
+
+
+        ,
+
+        // { field: 'laneIds', headerName: 'Lane IDs', width: 150 },
+        {
+            field: "lane_ID",
+            headerName: "Lane Details",
+            width: 200,
+            renderCell: (params) => {
+                // Ensure params.value is an array, otherwise treat it as a single lane ID
+                const laneIDs = Array.isArray(params.row.laneIds) ? params.row.laneIds : [params.row.laneIds];
+
+                const allLanes = laneIDs.join(" | ")
+                console.log('lane id s :', laneIDs)
+                const laneDetails = laneIDs
+                    .map((id: string) => getLaneDetails(id))
+                    .join(" | "); // Combine the details of all lanes into a single string
+
+                return (
+                    <Tooltip title={laneDetails} arrow>
+                        <span>{allLanes}</span>
+                        {/* <span>fghm</span> */}
+                    </Tooltip>
+                );
+            },
+        },
+        // { field: 'deviceDetails', headerName: 'Device Details', flex: 2 },
+        // {
+        //     field: 'enrollSpotAuction',
+        //     headerName: 'Spot Auction',
+        //     flex: 1,
+        //     renderCell: (params) => params.value ? 'Yes' : 'No'
+        // },
+        {
+            field: 'preferredCarrier',
+            headerName: 'Is enrolled on carrier network portal',
+            flex: 1,
+            renderCell: (params) => params.value ? 'Yes' : 'No'
+        },
         {
             field: "actions",
             headerName: "Actions",
@@ -422,24 +477,24 @@ const CarrierForm: React.FC = () => {
                         validationSchema={carrierValidationSchema}
                         onSubmit={handleCarrierSubmit}
                     >
-                        {({ values, handleChange, handleBlur, errors, touched, resetForm,
+                        {({ values, handleChange, handleBlur, errors, touched, resetForm ,
                             setFieldValue
                         }) => (
                             <Form>
                                 <h3 className={styles.mainHeading}>General Data</h3>
                                 <Grid container spacing={2}>
-                                    {isEditing &&
+                                    {isEditing && 
                                         <Grid item xs={12} sm={6} md={4}>
-                                            <TextField disabled
-                                                fullWidth size="small"
-                                                label="Carrier ID"
-                                                name="carrierId"
-                                                value={values.carrierId}
-                                                onChange={handleChange}
-                                                onBlur={handleBlur}
-                                            />
-                                        </Grid>}
-
+                                        <TextField disabled
+                                            fullWidth size="small"
+                                            label="Carrier ID"
+                                            name="carrierId"
+                                            value={values.carrierId}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                        />
+                                    </Grid>}
+                              
                                     <Grid item xs={12} sm={6} md={4}>
                                         <TextField
                                             fullWidth size="small"
@@ -484,17 +539,12 @@ const CarrierForm: React.FC = () => {
                                         <TextField
                                             fullWidth size="small"
                                             label="Contact Number"
-                                            name="contactNumber" type='number'
+                                            name="contactNumber"
                                             value={values.contactNumber}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
                                             error={touched.contactNumber && Boolean(errors.contactNumber)}
-                                            helperText={touched.contactNumber && errors.contactNumber} 
-                                                    inputProps={{
-                                                    maxLength: 10,
-                                                    inputMode: "numeric",
-                                                    pattern: "[0-9]*"  
-                                                }}
+                                            helperText={touched.contactNumber && errors.contactNumber}
                                         />
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={4}>
@@ -509,14 +559,15 @@ const CarrierForm: React.FC = () => {
                                             helperText={touched.emailId && errors.emailId}
                                         />
                                     </Grid>
+
                                 </Grid>
 
                                 <h3 className={styles.mainHeading}>Transport Data</h3>
                                 <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6} md={4}>
+                                    {/* <Grid item xs={12} sm={6} md={4}>
                                         <TextField
                                             fullWidth size="small"
-                                            label="Vehicle Types Handling (Van, Truck...)*"
+                                            label="Vehicle Types Handling"
                                             name="vehicleTypes"
                                             value={values.vehicleTypes}
                                             onChange={handleChange}
@@ -524,121 +575,87 @@ const CarrierForm: React.FC = () => {
                                             error={touched.vehicleTypes && Boolean(errors.vehicleTypes)}
                                             helperText={touched.vehicleTypes && errors.vehicleTypes}
                                         />
-                                    </Grid>
-                                    {/* <Grid item xs={12} sm={6} md={4}>
+                                    </Grid> */}
+                                    <Grid item xs={12} sm={6} md={4}>
                                         <FormControl fullWidth size="small" error={touched.vehicleTypes && Boolean(errors.vehicleTypes)}>
                                             <InputLabel>Vehicle Types Handling</InputLabel>
                                             <Select
                                                 multiple
-                                                label="Vehicle Types Handling (Van,Truck"
+                                                label="Vehicle Types Handling"
                                                 name="vehicleTypes"
                                                 value={values.vehicleTypes}
-                                                onChange={handleChange}
-                                                onBlur={handleBlur}
-                                                // renderValue={(selected) => (selected as string[]).join(', ')}
+                                                onChange={handleChange} // Formik's change handler
+                                                onBlur={handleBlur}     // Formik's blur handler
+                                                renderValue={(selected) => (selected as string[]).join(', ')} // Display selected items as comma-separated list
                                             >
+                                                {vehicleTypeOptions.map((type) => (
+                                                    <MenuItem key={type} value={type}>
+                                                        {type}
+                                                    </MenuItem>
+                                                ))}
                                             </Select>
                                             {touched.vehicleTypes && errors.vehicleTypes && (
                                                 <FormHelperText>{errors.vehicleTypes}</FormHelperText>
                                             )}
                                         </FormControl>
-                                    </Grid> */}
-                                    <Grid item xs={12} sm={6} md={4}>
-                                        <TextField
-                                            fullWidth
-                                            size="small"
-                                            label="Locations of Operation (Location IDs)"
-                                            onFocus={() => {
-                                            if (!searchKey) {
-                                                setSearchKey("");
-                                                setShowSuggestions(true);
-                                            }
-                                            }}
-                                            onChange={(e) => {
-                                            setSearchKey(e.target.value);
-                                            setShowSuggestions(true);
-                                            }}
-                                            value={searchKey}
-                                            error={touched.locationIds && Boolean(errors.locationIds)}
-                                            helperText={
-                                            touched.locationIds && typeof errors.locationIds === "string"
-                                                ? errors.locationIds
-                                                : ""
-                                            }
-                                            InputProps={{
-                                            endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
-                                            }}
-                                        />
-                                        <div ref={wrapperRef}>
-                                            {showSuggestions && displayLocations?.length > 0 && (
-                                            <Paper
-                                                style={{
-                                                maxHeight: 200,
-                                                overflowY: "auto",
-                                                position: "absolute",
-                                                zIndex: 10,
-                                                width: "100%",
-                                                }}
-                                            >
-                                                <List>
-                                                {displayLocations.map((location: Location) => (
-                                                    <ListItem
-                                                    key={location.loc_ID}
-                                                    component="li"
-                                                    onClick={() => {
-                                                        setShowSuggestions(false);
-                                                        // const selectedDisplay = `${location.loc_ID}, ${location.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
-                                                        if (!values.locationIds.includes(location.loc_ID)) {
-                                                            setFieldValue("locationIds", [...values.locationIds, location.loc_ID]);
-                                                        }
-                                                        setSearchKey("");
-                                                    }}
-                                                    sx={{ cursor: "pointer" }}
-                                                    >
-                                                    <Tooltip
-                                                        title={`${location.loc_desc}, ${location.address_1}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                                        placement="right"
-                                                    >
-                                                        <span style={{ fontSize: "14px" }}>
-                                                        {location.loc_ID}, {location.loc_desc}, {location.city}, {location.state}, {location.pincode}
-                                                        </span>
-                                                    </Tooltip>
-                                                    </ListItem>
-                                                ))}
-                                                </List>
-                                            </Paper>
-                                            )}
-                                        </div>
-                                        {values.locationIds.length > 0 && (
-                                             <Paper
-                                            style={{
-                                            marginTop: 8,
-                                            padding: 8,
-                                            minHeight: 40,
-                                            background: "#f5f5f5",
-                                            }}
-                                        >
-                                            {values.locationIds.map((locId: string) => {
-                                            const location = displayLocations.find((loc:Location) => loc.loc_ID === locId);
-                                            return (
-                                                <Chip
-                                                key={locId}
-                                                label={`${location?.loc_ID}, ${location?.loc_desc}`}
-                                                onDelete={() => {
-                                                    setFieldValue(
-                                                    "locationIds",
-                                                    values.locationIds.filter((id) => id !== locId)
-                                                    );
-                                                }}
-                                                style={{ margin: 4 }}
-                                                />
-                                            );
-                                            })}
-                                        </Paper>
-                                        ) }
                                     </Grid>
+                                    <Grid item xs={12} sm={6} md={4}>
+                                        {/* <TextField
+                                            fullWidth size="small"
+                                            label="Locations of Operation (Location IDs)"
+                                            name="locationIds"
+                                            value={values.locationIds}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.locationIds && Boolean(errors.locationIds)}
+                                            helperText={touched.locationIds && errors.locationIds}
+                                        /> */}
+                                        <FormControl fullWidth size="small" error={touched.locationIds && Boolean(errors.locationIds)}>
+                                            <InputLabel>Locations of Operation (Location IDs)</InputLabel>
+                                            <Select
+                                                multiple
+                                                label="Locations of Operation (Location IDs)"
+                                                name="locationIds"
+                                                value={values.locationIds}
+                                                onChange={handleChange} // Handles updates to the selected values
+                                                onBlur={handleBlur}
+                                                renderValue={(selected) => (selected as string[]).join(', ')} // Display selected items as comma-separated
+                                            >
+                                                {isLocationLoading ? (
+                                                    <MenuItem disabled>
+                                                        <CircularProgress size={20} color="inherit" />
+                                                        <span style={{ marginLeft: "10px" }}>Loading...</span>
+                                                    </MenuItem>
+                                                ) : (
+                                                    getAllLocations?.map((location: Location) => (
+                                                        <MenuItem key={location.loc_ID} value={String(location.loc_ID)}>
+                                                            <Tooltip
+                                                                title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+                                                                placement="right"
+                                                            >
+                                                                <span style={{ flex: 1 }}>{location.loc_ID}</span>
+                                                            </Tooltip>
+                                                        </MenuItem>
+                                                    ))
+                                                )}
+                                            </Select>
+                                            {touched.locationIds && errors.locationIds && (
+                                                <FormHelperText>{errors.locationIds}</FormHelperText>
+                                            )}
+                                        </FormControl>
 
-                                    {/* <Grid item xs={12} sm={6} md={4}>
+                                    </Grid>
+                                    <Grid item xs={12} sm={6} md={4}>
+                                        {/* <TextField
+                                            fullWidth size="small"
+                                            label="Lane IDs"
+                                            name="laneIds"
+                                            value={values.laneIds}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.laneIds && Boolean(errors.laneIds)}
+                                            helperText={touched.laneIds && errors.laneIds}
+                                        /> */}
                                         <FormControl fullWidth size="small" error={touched.laneIds && Boolean(errors.laneIds)}>
                                             <InputLabel>Lane IDs</InputLabel>
                                             <Select
@@ -646,13 +663,22 @@ const CarrierForm: React.FC = () => {
                                                 label="Lane IDs"
                                                 name="laneIds"
                                                 value={values.laneIds}
-                                                onChange={handleChange}
-                                                onBlur={handleBlur}
-                                                // renderValue={(selected) => (selected as string[]).join(', ')}
+                                                onChange={handleChange} // Formik's handler for field change
+                                                onBlur={handleBlur}     // Formik's handler for field blur
+                                                renderValue={(selected) => (selected as string[]).join(', ')} // Display selected lanes as comma-separated
                                             >
+                                                {/* {getAllLanes.map((lane: { lane_ID: string }) => (
+                                            <MenuItem key={lane.lane_ID} value={lane.lane_ID}>
+                                                {lane.lane_ID}
+                                            </MenuItem>
+                                        ))} */}
                                                 {getAllLanes?.map((lane: Lane) => (
                                                     <MenuItem key={lane.lane_ID} value={String(lane.lane_ID)}>
-                                                            <span style={{ flex: 1 }}> {lane.lane_ID} :- {lane.src_loc_desc} to {lane.des_loc_desc}</span>
+                                                        <Tooltip
+                                                            title={`${lane.src_loc_desc}, ${lane.src_city}, ${lane.src_state} to ${lane.des_loc_desc}, ${lane.des_city}, ${lane.des_state} `}
+                                                            placement="right">
+                                                            <span style={{ flex: 1 }}>{lane.lane_ID}</span>
+                                                        </Tooltip>
                                                     </MenuItem>
                                                 ))}
                                             </Select>
@@ -661,62 +687,7 @@ const CarrierForm: React.FC = () => {
                                             )}
                                         </FormControl>
 
-                                    </Grid> */}
-                                    <Grid item xs={12} sm={6} md={4}>
-                                        <FormControl fullWidth size="small" error={touched.laneIds && Boolean(errors.laneIds)}>
-                                            <InputLabel >Lane IDs</InputLabel>
-                                            <Select
-                                            multiple 
-                                            name="laneIds"
-                                            value={values.laneIds}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            renderValue={() => null}
-                                            >
-                                            {getAllLanes?.map((lane: Lane) => (
-                                                <MenuItem key={lane.lane_ID} value={String(lane.lane_ID)}>
-                                                <span style={{ flex: 1 }}>
-                                                    {lane.lane_ID} :- {lane.src_loc_desc} to {lane.des_loc_desc}
-                                                </span>
-                                                </MenuItem>
-                                            ))}
-                                            </Select>
-                                            {touched.laneIds && errors.laneIds && <FormHelperText>{errors.laneIds}</FormHelperText>}
-                                        </FormControl>
-                                        {values.laneIds.length > 0 && (
-                                            <Paper
-                                            style={{
-                                                marginTop: 8,
-                                                padding: 8,
-                                                minHeight: 40,
-                                                background: "#f5f5f5",
-                                                display: "flex",
-                                                flexWrap: "wrap",
-                                                gap: 8,
-                                            }}
-                                            >
-                                            {values.laneIds.map((laneId: string) => {
-                                                const lane = getAllLanes.find((l:Lane) => String(l.lane_ID) === laneId);
-                                                return (
-                                                <Chip
-                                                    key={laneId}
-                                                    label={`${lane?.lane_ID} : ${lane?.src_loc_desc} to ${lane?.des_loc_desc}`}
-                                                    onDelete={() => {
-                                                    setFieldValue(
-                                                        "laneIds",
-                                                        values.laneIds.filter((id) => id !== laneId)
-                                                    );
-                                                    }}
-                                                    style={{ margin: 4 }}
-                                                />
-                                                );
-                                            })}
-                                            </Paper>
-                                        )}
                                     </Grid>
-
-
-
                                 </Grid>
                                 <Grid item xs={12} sm={6} md={4}>
                                     <FormControlLabel
@@ -729,13 +700,56 @@ const CarrierForm: React.FC = () => {
                                         label="Is enrolled on carrier network portal"
                                     />
                                 </Grid>
+
+                                {/* <h3 className={styles.mainHeading}>Devices</h3>
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12} sm={6} md={4}>
+                                        <TextField
+                                            fullWidth size="small"
+                                            label="Device Details"
+                                            name="deviceDetails"
+                                            value={values.deviceDetails}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.deviceDetails && Boolean(errors.deviceDetails)}
+                                            helperText={touched.deviceDetails && errors.deviceDetails}
+                                        />
+                                    </Grid>
+                                </Grid> */}
+
+                                {/* <h3 className={styles.mainHeading}>Spot Auction</h3>
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12} sm={6} md={4}>
+                                        <FormControlLabel
+                                            control={
+                                                <Checkbox
+                                                    checked={values.enrollSpotAuction}
+                                                    onChange={(e) => setFieldValue('enrollSpotAuction', e.target.checked)}
+                                                />
+                                            }
+                                            label="Enroll for Spot Auction"
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} sm={6} md={4}>
+                                        <FormControlLabel
+                                            control={
+                                                <Checkbox
+                                                    checked={values.preferredCarrier}
+                                                    onChange={(e) => setFieldValue('preferredCarrier', e.target.checked)}
+                                                />
+                                            }
+                                            label="Preferred Carrier"
+                                        />
+                                    </Grid>
+                                </Grid> */}
+
                                 <Box marginTop={3} textAlign="center">
                                     <Button
                                         type="submit"
                                         variant="contained"
                                         sx={{
-                                            backgroundColor: "#83214F",
-                                            color: "#fff",
+                                            backgroundColor: "#83214F", // Custom button background color
+                                            color: "#fff", // Text color
                                             "&:hover": {
                                                 backgroundColor: "#fff",
                                                 color: "#83214F"

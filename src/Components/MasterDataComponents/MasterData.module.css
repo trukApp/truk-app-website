@@ -1,9 +1,9 @@
 .createButton {
-  text-transform: capitalize;
-  text-decoration: underline;
+  text-transform: capitalize !important;
+  text-decoration: underline !important;
   background-color: transparent !important;
   box-shadow: none !important;
   color: inherit;
   font-weight: bold;
-  font-size: medium;
+  
 }

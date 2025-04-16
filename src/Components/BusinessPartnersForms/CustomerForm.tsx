@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { TextField, Grid, Button, Collapse, Box, FormControlLabel, Checkbox, Autocomplete, Backdrop, CircularProgress,  Paper, List, ListItem, Typography } from '@mui/material';
-import { Formik, Form } from 'formik';
+import { TextField, Grid, Button, Collapse, Box, FormControlLabel, Checkbox, Select, MenuItem, FormHelperText, FormControl, InputLabel, SelectChangeEvent, Autocomplete, Backdrop, CircularProgress, Tooltip, ListItem, List, Typography, Paper } from '@mui/material';
+import { Formik, Form, FormikProps } from 'formik';
 import * as Yup from 'yup';
 import styles from './BusinessPartners.module.css';
 import { DataGridComponent } from '../GridComponent';
 import { GridColDef, GridPaginationModel } from '@mui/x-data-grid';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { useCustomerRegistrationMutation, useDeleteBusinessPartnerMutation, useEditBusinessPartnerMutation, useGetAllCustomersDataQuery, useGetFilteredLocationsQuery, useGetLocationMasterQuery } from '@/api/apiSlice';
+import { useCustomerRegistrationMutation, useDeleteBusinessPartnerMutation, useEditBusinessPartnerMutation, useGetAllCustomersDataQuery, useGetLocationMasterQuery } from '@/api/apiSlice';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
@@ -23,21 +23,24 @@ const customerValidationSchema = Yup.object().shape({
     pincode: Yup.string()
         .matches(/^\d{6}$/, 'Pincode must be 6 digits')
         .required('Pincode is required'),
+    city: Yup.string().required('City is required'),
+    // district: Yup.string().required('District is required'),
+    country: Yup.string().required('Country is required'),
     contactNumber: Yup.string()
-    .matches(/^\d{10}$/, 'Contact number must be exactly 10 digits')
-    .max(10, 'Contact number cannot exceed 10 digits')
-    .required('Contact number is required'),
+        .matches(/^\d{10}$/, 'Contact number must be 10 digits')
+        .required('Contact number is required'),
     emailId: Yup.string()
         .email('Invalid email address')
         .required('Email is required'),
-    contactPerson: Yup.string().required('Contact person is required'),
-    locationOfSource: Yup.string().required('Location of source is required'),
 });
+
+
 interface PartnerFunctions {
     ship_to_party: string;
     sold_to_party: string;
     bill_to_party: string;
 }
+
 interface Correspondence {
     contact_person: string;
     contact_number: string;
@@ -62,13 +65,11 @@ interface Customer {
     loc_of_source_country: string;
     partner_functions: PartnerFunctions;
     correspondence: Correspondence;
-    loc_ID: string;
-    location_loc_ID: string;
-    loc_of_source_loc_ID: string
+    loc_ID: string
 }
 
 const initialCustomerValues = {
-    customerId: '',
+    customerId :'',
     name: '',
     locationId: '',
     pincode: '',
@@ -79,12 +80,13 @@ const initialCustomerValues = {
     contactPerson: '',
     contactNumber: '',
     emailId: '',
-    locationOfSource: '',
+    locationOfSource: [] as string[],
     podRelevant: false,
     shipToParty: '',
     soldToParty: '',
     billToParty: '',
 };
+
 
 const CustomerForm: React.FC = () => {
     const wrapperRef = useRef<HTMLDivElement>(null);
@@ -96,7 +98,7 @@ const CustomerForm: React.FC = () => {
     const [showForm, setShowForm] = useState(false);
     const [updateRecord, setUpdateRecord] = useState(false);
     const [formInitialValues, setFormInitialValues] = useState(initialCustomerValues);
-    const [updateRecordData, setUpdateRecordData] = useState<Customer | null>(null);
+    const [updateRecordData, setUpdateRecordData] = useState({});
     const [updateRecordId, setUpdateRecordId] = useState(0)
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [searchKey, setSearchKey] = useState('');
@@ -169,12 +171,11 @@ const CustomerForm: React.FC = () => {
     const getLocationDetails = (loc_ID: string) => {
         const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
         if (!location) return "Location details not available";
-        const details = [
-            location.loc_ID,
-            location?.loc_dec,
+          const details = [
+            location.address_1,
+            location.address_2,
             location.city,
             location.state,
-            location.pincode,
             location.country,
         ].filter(Boolean);
 
@@ -213,9 +214,9 @@ const CustomerForm: React.FC = () => {
         setPaginationModel(newPaginationModel);
     };
     const mapRowToInitialValues = (rowData: Customer) => ({
-        customerId: rowData.customer_id || '',
+        customerId : rowData.customerId || '',
         name: rowData.name || '',
-        locationId: rowData.location_loc_ID || '',
+        locationId: rowData.loc_ID || '',
         pincode: rowData.location_pincode || '',
         state: rowData.location_state || '',
         city: rowData.location_city || '',
@@ -224,39 +225,49 @@ const CustomerForm: React.FC = () => {
         contactPerson: rowData?.correspondence?.contact_person || '',
         contactNumber: rowData?.correspondence?.contact_number || '',
         emailId: rowData?.correspondence?.email || '',
-        locationOfSource: rowData.loc_of_source_loc_ID,
+        locationOfSource: [rowData.loc_of_source],
         podRelevant: rowData?.pod_relevant === 1,
         shipToParty: rowData?.partner_functions?.ship_to_party || '',
         soldToParty: rowData?.partner_functions?.sold_to_party || '',
         billToParty: rowData?.partner_functions?.bill_to_party || '',
     });
 
-    const rows = customersData.map((item: Customer) => {
-        return {
-            id: item.partner_id,
-            ...item,
-            loc_of_source: getLocationDetails(item?.loc_of_source),
-            loc_ID: getLocationDetails(item?.loc_ID),
-            contact_person: item.correspondence?.contact_person || "",
-            contact_number: item.correspondence?.contact_number || "",
-            email: item.correspondence?.email || "",
-            bill_to_party: getCustomerDetails(item.partner_functions?.bill_to_party) || "",
-            ship_to_party: getCustomerDetails(item.partner_functions?.ship_to_party) || "",
-            sold_to_party: getCustomerDetails(item.partner_functions?.sold_to_party) || "",
-        };
-    });
+
+    const rows = customersData.map((item: Customer) => ({
+        id: item.partner_id,
+        ...item,
+    }));
 
     const columns: GridColDef[] = [
         { field: 'customer_id', headerName: 'Customer ID', width: 150 },
         { field: 'name', headerName: 'Name', width: 200 },
-        { field: "loc_ID", headerName: "Customer Location ID", width: 250 },
-        { field: "loc_of_source", headerName: "Source Location ID", width: 250 },
-        { field: "contact_person", headerName: "Contact Person", width: 200 },
-        { field: "contact_number", headerName: "Contact Number", width: 150 },
-        { field: "email", headerName: "Email", width: 200 },
-        { field: "bill_to_party", headerName: "Bill To Party", width: 250 },
-        { field: "ship_to_party", headerName: "Ship To Party", width: 250 },
-        { field: "sold_to_party", headerName: "Sold To Party", width: 250 },
+        // { field: 'loc_ID', headerName: 'Customer Location ID', width: 150 },
+            {
+            field: "loc_ID",
+            headerName: "Custmer Location ID",
+            width: 150,
+            renderCell: (params) => (
+              <Tooltip title={getLocationDetails(params.value)} arrow>
+                <span>{params.value}</span>
+              </Tooltip>
+            ),
+          },
+        { field: 'location_pincode', headerName: 'Customer Pincode', width: 100 },
+        { field: 'location_city', headerName: 'Customer City', width: 150 },
+        { field: 'location_state', headerName: 'Customer State', width: 150 },
+        { field: 'location_country', headerName: 'Customer Country', width: 150 },
+        // { field: 'loc_of_source', headerName: 'Source Location ID', width: 150 },
+            {
+            field: "loc_of_source",
+            headerName: "Source Location ID",
+            width: 150,
+            renderCell: (params) => (
+              <Tooltip title={getLocationDetails(params.value)} arrow>
+                <span>{params.value}</span>
+              </Tooltip>
+            ),
+          },
+        // { field: 'pod_relevant', headerName: 'Pod relevant', width: 150 },
         {
             field: 'actions',
             headerName: 'Actions',
@@ -285,15 +296,15 @@ const CustomerForm: React.FC = () => {
         setUpdateRecord(true)
         setUpdateRecordData(rowData)
         const updatedInitialValues = await mapRowToInitialValues(rowData);
-        setSearchKey(rowData?.loc_ID);
-        setSearchKeyDestination(rowData?.loc_of_source)
         setFormInitialValues(updatedInitialValues);
         setUpdateRecordId(rowData?.partner_id)
     };
 
     const handleDelete = async (rowData: Customer) => {
         const confirmDelete = window.confirm(`Are you sure you want to delete ? This action cannot be undone.`);
+
         if (!confirmDelete) return;
+
         try {
             const deleteId = rowData?.partner_id;
             const response = await deleteBusinessPartner(deleteId);
@@ -302,6 +313,7 @@ const CustomerForm: React.FC = () => {
                 setSnackbarSeverity("info");
                 setSnackbarOpen(true);
             }
+
         } catch (error) {
             console.error("Delete error:", error);
             setSnackbarMessage("Failed to delete customer. Please try again.");
@@ -309,6 +321,7 @@ const CustomerForm: React.FC = () => {
             setSnackbarOpen(true);
         }
     };
+
 
     const handleCustomerSubmit = async (values: typeof initialCustomerValues, { resetForm }: { resetForm: () => void }) => {
         try {
@@ -333,8 +346,9 @@ const CustomerForm: React.FC = () => {
                     }
                 ]
             }
+
             const editBody = {
-                customer_id: updateRecordData?.customer_id,
+                ...updateRecordData,
                 name: values?.name,
                 partner_type: "customer",
                 loc_ID: values?.locationId,
@@ -351,8 +365,6 @@ const CustomerForm: React.FC = () => {
                     bill_to_party: values?.billToParty
                 }
             }
-            console.log("post body: ", body)
-            console.log("editBody: ", editBody)
             if (updateRecord) {
                 const response = await updatePartnerDetails({ body: editBody, partnerId: updateRecordId }).unwrap();
                 if (response?.updated_record) {
@@ -362,11 +374,9 @@ const CustomerForm: React.FC = () => {
                     setUpdateRecord(false)
                     setFormInitialValues(initialCustomerValues)
                     setUpdateRecordId(0)
-                    setUpdateRecordData(null)
+                    setUpdateRecordData({})
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
-                    setSearchKey('')
-                    setSearchKeyDestination('')
                 }
             } else {
                 const response = await customerRegistration(body).unwrap();
@@ -376,14 +386,13 @@ const CustomerForm: React.FC = () => {
                     setShowForm(false)
                     setUpdateRecord(false)
                     setUpdateRecordId(0)
-                    setUpdateRecordData(null)
+                    setUpdateRecordData({})
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
-                    resetForm()
-                    setSearchKey('')
-                    setSearchKeyDestination('')
                 }
             }
+
+
         } catch (error) {
             console.error('API Error:', error);
             setSnackbarMessage('Something went wrong! Please try again.');
@@ -433,22 +442,23 @@ const CustomerForm: React.FC = () => {
                             <Form>
                                 <h3 className={styles.mainHeading}>General Data</h3>
                                 <Grid container spacing={2}>
-                                    {updateRecord &&
+                                    {updateRecord && 
                                         <Grid item xs={12} sm={6} md={2.4}>
-                                            <TextField disabled
-                                                fullWidth size='small'
-                                                label="Customer ID"
-                                                name="customerId"
-                                                value={values.customerId}
-                                                onChange={handleChange}
-                                                onBlur={handleBlur}
-                                            />
-                                        </Grid>
+                                        <TextField disabled
+                                            fullWidth size='small'
+                                            label="Customer ID"
+                                            name="customerId"
+                                            value={values.customerId}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                        />
+                                    </Grid>
                                     }
+                                     
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
-                                            label="Name*"
+                                            label="Name"
                                             name="name"
                                             value={values.name}
                                             onChange={handleChange}
@@ -519,8 +529,8 @@ const CustomerForm: React.FC = () => {
                                                                         setFieldValue('country', matchedLocation.country || '');
                                                                         setFieldValue('pincode', matchedLocation.pincode || '');
                                                                     } else {
-                                                                        setFieldValue('address1',  '');
-                                                                        setFieldValue('address2',  '');
+                                                                        setFieldValue('address1', '');
+                                                                        setFieldValue('address2', '');
                                                                         setFieldValue('city', '');
                                                                         setFieldValue('district', '');
                                                                         setFieldValue('state', '');
@@ -533,12 +543,12 @@ const CustomerForm: React.FC = () => {
                                                                 <span style={{ fontSize: '13px' }}>{location.loc_ID}, {location?.loc_desc}, {location.city}, {location.state}, {location.pincode}</span>
                                                             </ListItem>
                                                         ))}
-                                                    </List>) : 
-                                                        (
-                                                            <Typography variant="body2" color="textSecondary">
-                                                                No results found
-                                                            </Typography>
-                                                        )
+                                                    </List>) :
+                                                    (
+                                                        <Typography variant="body2" color="textSecondary">
+                                                            No results found
+                                                        </Typography>
+                                                    )
                                                     }
                                                 </Paper>
                                             )}
@@ -552,6 +562,8 @@ const CustomerForm: React.FC = () => {
                                             value={values.pincode}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
+                                            error={touched.pincode && Boolean(errors.pincode)}
+                                            helperText={touched.pincode && errors.pincode}
                                         />
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={2.4}>
@@ -562,6 +574,8 @@ const CustomerForm: React.FC = () => {
                                             value={values.city}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
+                                            error={touched.city && Boolean(errors.city)}
+                                            helperText={touched.city && errors.city}
                                         />
                                     </Grid>
                                     <Grid item xs={12} sm={6} md={2.4}>
@@ -572,9 +586,11 @@ const CustomerForm: React.FC = () => {
                                             value={values.state}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
+                                            error={touched.state && Boolean(errors.state)}
+                                            helperText={touched.state && errors.state}
                                         />
                                     </Grid>
-                                    {/* <Grid item xs={12} sm={6} md={2.4}>
+                                    <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
                                             label="Country" disabled
@@ -582,8 +598,10 @@ const CustomerForm: React.FC = () => {
                                             value={values.country}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
+                                            error={touched.country && Boolean(errors.country)}
+                                            helperText={touched.country && errors.country}
                                         />
-                                    </Grid> */}
+                                    </Grid>
                                 </Grid>
 
                                 <h3 className={styles.mainHeading}>Correspondence</h3>
@@ -591,7 +609,7 @@ const CustomerForm: React.FC = () => {
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
-                                            label="Contact Person*"
+                                            label="Contact Person"
                                             name="contactPerson"
                                             value={values.contactPerson}
                                             onChange={handleChange}
@@ -603,11 +621,11 @@ const CustomerForm: React.FC = () => {
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
-                                            label="Contact Number*"
+                                            label="Contact Number"
                                             name="contactNumber"
                                             value={values.contactNumber}
-                                            onChange={handleChange} type="number" 
-                                            onBlur={handleBlur} 
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
                                             error={touched.contactNumber && Boolean(errors.contactNumber)}
                                             helperText={touched.contactNumber && errors.contactNumber}
                                         />
@@ -615,7 +633,7 @@ const CustomerForm: React.FC = () => {
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
-                                            label="Email ID*"
+                                            label="Email ID"
                                             name="emailId"
                                             value={values.emailId}
                                             onChange={handleChange}
@@ -627,6 +645,7 @@ const CustomerForm: React.FC = () => {
                                 </Grid>
 
                                 <h3 className={styles.mainHeading}>Shipping</h3>
+                                <Grid container spacing={2} style={{ marginBottom: '30px' }}>
                                 <Grid container spacing={2} style={{ marginBottom: '30px' }}>
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
@@ -701,17 +720,30 @@ const CustomerForm: React.FC = () => {
                                     </Grid>
                                 </Grid>
 
+                                    <Grid item xs={12}>
+                                        <FormControlLabel
+                                            control={
+                                                <Checkbox
+                                                    checked={values.podRelevant}
+                                                    onChange={(e) => setFieldValue('podRelevant', e.target.checked)}
+                                                />
+                                            }
+                                            label="POD Relevant"
+                                        />
+                                    </Grid>
+                                </Grid>
+
                                 <h3 className={styles.mainHeading}>Partner Functions</h3>
                                 <Grid container spacing={2} style={{ marginBottom: '30px' }}>
                                     {['shipToParty', 'soldToParty', 'billToParty'].map((field) => (
                                         <Grid item xs={12} sm={6} md={2.4} key={field}>
                                             <Autocomplete
                                                 options={customersData}
-                                                getOptionLabel={(option) => `${option.customer_id} - ${option.name}`}
+                                                getOptionLabel={(option) => `${option.customer_id}`}
                                                 renderOption={(props, option) => (
-                                                    <li {...props}>
-                                                        {option.customer_id} - {option.name}, {option.location_city}, {option.location_state}, {option.location_country}, {option.location_pincode}
-                                                    </li>
+                                                    <Tooltip placement='right' title={`${option.name}, ${option.location_city}, ${option.location_state}, ${option.location_country}, ${option.location_pincode}`} arrow>
+                                                        <li {...props}>{option.customer_id}</li>
+                                                    </Tooltip>
                                                 )}
                                                 renderInput={(params) => (
                                                     <TextField
@@ -728,27 +760,24 @@ const CustomerForm: React.FC = () => {
                                                 onChange={(event, newValue) => {
                                                     setFieldValue(field, newValue ? newValue.customer_id : '');
                                                 }}
-
-                                                // 🛠 Modified: Fix value comparison to avoid type errors
-                                                isOptionEqualToValue={(option, value) => option.customer_id === value?.customer_id}
+                                                isOptionEqualToValue={(option, value) => option.customer_id === value}
                                             />
                                         </Grid>
                                     ))}
                                 </Grid>
-
                                 <Box marginTop={3} textAlign="center">
                                     <Button
                                         type="submit"
                                         variant="contained"
                                         sx={{
-                                            backgroundColor: "#83214F",
-                                            color: "#fff",
+                                            backgroundColor: "#83214F", 
+                                            color: "#fff", 
                                             "&:hover": {
-                                                backgroundColor: "#fff",
-                                                color: "#83214F"
+                                            backgroundColor: "#fff", 
+                                            color: "#83214F"  
                                             }
                                         }}
-                                    >
+                                        >
                                         {updateRecord ? "Update Customer" : "Create customer"}
                                     </Button>
 
@@ -757,9 +786,7 @@ const CustomerForm: React.FC = () => {
                                         onClick={() => {
                                             setFormInitialValues(initialCustomerValues)
                                             setUpdateRecord(false)
-                                            resetForm()
-                                            setSearchKey('')
-                                            setSearchKeyDestination('')
+                                            resetForm() 
                                         }}
                                         style={{ marginLeft: "10px" }}>Reset
                                     </Button>
@@ -790,3 +817,4 @@ const CustomerForm: React.FC = () => {
 };
 
 export default CustomerForm;
+

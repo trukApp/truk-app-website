@@ -700,8 +700,7 @@ const VehicleForm: React.FC = () => {
 				</Typography>
 				<Box display="flex" justifyContent="flex-end">
 					<Box>
-						<Button
-							variant="contained"
+						<Button 
 							onClick={() => setShowForm((prev) => !prev)}
 							className={styles.createButton}
 						>
