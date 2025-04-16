@@ -45,10 +45,13 @@ const CreateOrder: React.FC = () => {
             console.log('packageSelectErr:', packageSelectErr);
             if ("data" in packageSelectErr && packageSelectErr.data && typeof packageSelectErr.data === "object") {
                 const errorMessage = (packageSelectErr.data as { error?: string }).error;
-
                 if (errorMessage === "All packages must have the same pickup_date (ignoring time).") {
-                    setSnackbarMessage("All packages must have the same pickup date.");
-                } else {
+                    setSnackbarMessage("Selected packages must have the same pickup date.");
+                }
+                else if (errorMessage === 'No valid package IDs provided.') {
+                    setSnackbarMessage("Please select at least one package to place the order.");
+                }
+                else {
                     setSnackbarMessage("Please select the packages of the same SHIP FROM location.");
                 }
             } else {
