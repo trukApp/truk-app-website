@@ -48,7 +48,7 @@ interface CarrierFormFE {
     carrier_network_portal: number;
     // isContract: number;
     contractValidUpto: string;
-    pricing: Pricing,
+    pricing: string,
     pricingUnit: string;
     pricingCost: string;
     pricingCriteria: string;
@@ -57,8 +57,8 @@ interface CarrierFormFE {
 };
 
 interface Pricing {
-    pricing: string;
-    pricingUnit: string;
+    // pricing: string;
+    // pricingUnit: string;
     cost: string;
     cost_criteria_per: string
 }
@@ -331,6 +331,7 @@ const CarrierForm: React.FC = () => {
                 console.log('edit body : ', editBody)
                 const carrierId = editRow.id
                 const response = await editCarrier({ body: editBody, carrierId }).unwrap()
+                console.log("carr edit:", response)
                 if (response?.updated_record) {
                     setSnackbarMessage(`Carrier ID ${response.updated_record} updated successfully!`);
                     setInitialValues(initialCarrierValues)

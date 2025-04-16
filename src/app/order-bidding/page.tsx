@@ -21,7 +21,7 @@ const OrderBidding: React.FC = () => {
     console.log("allOrders: ", allOrders)
     const handleViewOrder = (orderId: string) => {
         setLoading(true)
-        router.push(`/detailed-order-overview?order_ID=${orderId}`);
+        router.push(`/detailed-order-overview?order_ID=${orderId}&from=order-bidding`);
     };
 
     const ordersColumns: GridColDef[] = [

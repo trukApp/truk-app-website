@@ -9,6 +9,8 @@ import moment from "moment";
 const OrderDetailedOverview: React.FC = () => {
     const searchParams = useSearchParams();
     const orderId = searchParams.get('order_ID') || '';
+    const from = searchParams.get('from');
+    console.log('from:', from)
     const { data: order, isLoading } = useGetOrderByIdQuery({ orderId });
     const orderData = order?.order;
     const allocatedPackageDetails = order?.allocated_packages_details
