@@ -257,8 +257,7 @@ const PackagingForm = () => {
         onClose={() => setSnackbarOpen(false)}
       />
       <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
-        <Button
-          variant="contained"
+        <Button 
           onClick={() => setShowForm((prev) => !prev)}
           className={styles.createButton}
         >

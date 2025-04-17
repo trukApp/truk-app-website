@@ -312,7 +312,7 @@ const DeviceMaster: React.FC = () => {
       </Typography>
       <Box display="flex" justifyContent="flex-end" >
         <Button
-          variant="contained"
+          // variant="contained"
           onClick={() => setShowForm((prev) => !prev)}
           className={styles.createButton}
         >

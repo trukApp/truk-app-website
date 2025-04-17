@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Box, Collapse, IconButton, Paper, Typography, Grid, Button, useTheme, useMediaQuery, TextField, Modal, MenuItem, Backdrop, CircularProgress, List, ListItem } from "@mui/material";
+import { Box, Collapse, IconButton, Paper, Typography, Grid, Button, useTheme, useMediaQuery, TextField, Modal, MenuItem, Backdrop, CircularProgress, List, ListItem, FormControl, InputLabel, Select, FormHelperText, FormControlLabel, Checkbox } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { useRouter } from 'next/navigation';
-import { useEditAssignOrderOrderMutation, useGetAllDriversDataQuery, useGetAllProductsQuery, useGetAssignedOrderByIdQuery, useGetDeviceMasterQuery, useGetFilteredDriversQuery, useGetFilteredVehiclesQuery, useGetLocationMasterQuery, useGetOrderByIdQuery, useGetSingleVehicleMasterQuery, usePostAssignOrderMutation } from "@/api/apiSlice";
+import { useEditAssignOrderOrderMutation, useGetAllDriversDataQuery, useGetAllProductsQuery, useGetAssignedOrderByIdQuery, useGetDeviceMasterQuery, useGetFilteredDriversQuery, useGetFilteredVehiclesQuery, useGetLocationMasterQuery, useGetOrderByIdQuery, useGetSingleVehicleMasterQuery, useGetVehicleMasterQuery, usePostAssignOrderMutation, usePostSingleVehicleMasterMutation } from "@/api/apiSlice";
 import SnackbarAlert from "../ReusableComponents/SnackbarAlerts";
 import { Driver } from "../BusinessPartnersForms/DriverForm";
 import moment from 'moment';
@@ -11,7 +11,24 @@ import Image from "next/image";
 import AdditionalInformation from '@/Components/CreatePackageTabs/AddtionalInformation';
 import { DeviceInfoBE } from "../MasterDataComponents/DeviceMaster";
 import { Location } from "../MasterDataComponents/Locations";
+import { Form, Formik } from "formik";
+import * as Yup from "yup";
+import { VehicleDetails } from "../MasterDataComponents/Vehicles";
+import { TruckFormDetails } from "@/app/vehicle/page";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
 
+const style = {
+    position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        bgcolor: "white",
+                        boxShadow: 24,
+                        p: 3,
+                        borderRadius: 2,
+                        width: { xs: "100%", md: "60%" },
+};
 interface RoutePoint {
     start: {
         address: string;
@@ -43,6 +60,11 @@ interface AllocationsProps {
     allocations: Allocation[];
     orderId: string;
     allocatedPackageDetails: []
+}
+interface FormErrors {
+  truckId?: string;
+  driverId?: string;
+  deviceId?: string;
 }
 interface Product {
     prod_ID: string;
@@ -87,6 +109,17 @@ export interface ProductDetails {
 }
 
 const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocatedPackageDetails }) => {
+    const validationSchema = Yup.object({
+        vehicleId: Yup.string().required("Vehicle id is required"),
+        vehicleNumber: Yup.string().required("Vehicle number is required"),
+        isAvailable: Yup.boolean(),
+        costing: Yup.string().required("Cost is required"),
+        insurance: Yup.string().required("Insurance is required"),
+        registration: Yup.string().required("Registration number is required"),
+        permit: Yup.string().required("Permit is required"),
+    
+    });
+    const [postVehicle, { isLoading: postVehicleLoading }] = usePostSingleVehicleMasterMutation();
     const { refetch: refetchOrderById } = useGetOrderByIdQuery({ orderId }, { skip: true });
     const wrapperRef = useRef<HTMLDivElement>(null);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -112,7 +145,8 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
         : [];
     const { data: filteredDrivers, isLoading: filteredDriversLoading } = useGetFilteredDriversQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
     const displayDrivers = searchKey ? filteredDrivers?.results || [] : getAvailableDrivers;
-
+    const { data: vehiclesTrucksData, isLoading: isVehiclesLoading } = useGetVehicleMasterQuery({});
+    const getAllVehicles = vehiclesTrucksData?.vehicles
     const [searchKeyVehicle, setSearchKeyVehicle] = useState('');
     const [showSuggestionsVehicle, setShowSuggestionsVehicle] = useState(false);
     const vehiclesData = allVehicleTrucks?.data.length > 0 ? allVehicleTrucks?.data : []
@@ -143,6 +177,57 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
 
         return details.length > 0 ? details.join(", ") : "Location details not available";
     };
+  const [open, setOpen] = useState(false);
+    const handleClose = () => setOpen(false); 
+  const handleAssignSubmit = async (values: TruckFormDetails, { resetForm }: { resetForm: () => void }) => {
+        console.log('Form Values:', values);
+        try {
+            const body = {
+                vehicles: [
+                    {
+                        vehicle_ID: values.vehicleId,
+                        self_vehicle_num: values.vehicleNumber,
+                        available: values.isAvailable,
+                        costing: {
+                            cost:values.costing,
+                            cost_criteria_per: values.cost_criteria_per,         
+                        },
+                        self_vehicle_docs: {
+                            insurance: values.insurance,
+                            registration: values.registration,
+                            permit: values.permit
+                        }
+                    },
+                ],
+            };
+            const response = await postVehicle(body).unwrap();
+            console.log("post response :", response)
+                if (response?.created_records) {
+                    setSnackbarMessage(`Vehicle ID ${response?.created_records[0]} created successfully!`);
+                    setSnackbarSeverity("success");
+                } 
+        } catch (error) {
+            console.error("API Error:", error);
+            setSnackbarMessage("Something went wrong! please try again");
+            setSnackbarSeverity("error");
+      }
+            setSnackbarOpen(true);
+            handleClose();
+            resetForm();
+    };
+    const unitsofMeasurement = useSelector((state: RootState) => state.auth.unitsofMeasurement);
+    const initialFormValues = {
+        id: "",
+        truckId: "",
+        vehicleId: "",
+        vehicleNumber: "",
+        isAvailable: true,
+        costing: "",
+        cost_criteria_per:  unitsofMeasurement[0],
+        insurance: "",
+        registration: "",
+        permit: "",
+    };
     useEffect(() => {
         if (!searchKey) {
             setShowSuggestions(false);
@@ -158,13 +243,9 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
     const getProductDetails = (productID: string) => {
         const productInfo = allProductsData.find((product: ProductDetails) => product.product_ID === productID);
         if (!productInfo) return "Package details not available";
-        const details = [
-            productInfo.product_name,
-            productInfo.product_ID,
-        ].filter(Boolean);
+        const details = [productInfo.product_name,productInfo.product_ID].filter(Boolean);
         return details.length > 0 ? details.join("-") : "Product details not available";
     };
-
     const devicesData = allDevices?.devices.length > 0 ? allDevices?.devices : []
     if (driverLoading || vehTrucksLoading) {
         console.log("driver loading")
@@ -175,10 +256,14 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
         driverId: "",
         deviceId: "",
     });
-
+const [errors, setErrors] = useState<FormErrors>({});
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+  const { name, value } = e.target;
+
+  setFormData(prev => ({ ...prev, [name]: value }));
+  setErrors(prev => ({ ...prev, [name]: "" }));
+};
+
 
     const handleToggle = (vehicleId: string) => {
         setExpanded((prev) => ({ ...prev, [vehicleId]: !prev[vehicleId] }));
@@ -206,28 +291,56 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
     };
 
     const handleSubmit = async () => {
-        console.log("formData: ", formData)
-        try {
-            if (assignedOrder.data.length === 0) {
+        let isValid = true;
+        const newErrors: FormErrors = {};
+
+        if (!formData.truckId) {
+            newErrors.truckId = "Truck ID is required";
+            isValid = false;
+        }
+
+        if (!formData.driverId) {
+            newErrors.driverId = "Driver ID is required";
+            isValid = false;
+        }
+
+        if (!formData.deviceId) {
+            newErrors.deviceId = "Device ID is required";
+            isValid = false;
+        }
+
+        setErrors(newErrors);
+        if (isValid) {
+            console.log("Form submitted:", formData);
+            try {
+            const vehicleSelfTruck = formData.truckId.split(',')
+            if (assignedOrder?.data?.length === 0) {
                 if (!selectedAllocation) return;
                 const body = {
                     order_ID: orderId,
                     assigned_vehicle_data: [
+                        // {
+                        //     strk_ID: formData.truckId,
+                        //     dri_ID: formData.driverId,
+                        //     dev_ID: formData.deviceId,
+                        //     vehicle_ID: selectedAllocation?.vehicle_ID
+                        // },
                         {
-                            act_truk_ID: formData.truckId,
-                            dri_ID: formData.driverId,
-                            dev_ID: formData.deviceId,
-                            vehicle_ID: selectedAllocation?.vehicle_ID
-                        },
+                                strk_ID: vehicleSelfTruck[1],
+                                self_vehicle_num:vehicleSelfTruck[0],
+                                dri_ID: formData.driverId,
+                                dev_ID: formData.deviceId
+                        }
                     ],
                     self_transport: 1,
                     pod: {},
                     pod_doc: ""
                 };
+                console.log('assign body : ', body)
                 const response = await postAssignOrder(body).unwrap();
                 console.log("assign response :", response)
                 setAssignModal(false);
-                setSnackbarMessage(`Assined successfully!`);
+                setSnackbarMessage(`Vehicle assined successfully!`);
                 setSnackbarSeverity("success");
                 setSnackbarOpen(true);
                 console.log('response:', response)
@@ -240,7 +353,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                 await refetchOrderById();
             } else {
                 const newVehicle = {
-                    act_truk_ID: formData.truckId,
+                    strk_ID: vehicleSelfTruck[1],
                     dri_ID: formData.driverId,
                     dev_ID: formData.deviceId,
                     vehicle_ID: selectedAllocation?.vehicle_ID
@@ -260,7 +373,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
 
         } catch (error) {
             console.log("Getting error while assiging the vechile: ", error)
-        }
+        }}
 
     }
     useEffect(() => {
@@ -283,10 +396,13 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
         }
     }, [orderId, fetchOrderById]);
 
-    if (isFetching) return <p>Loading...</p>;
+    if (isFetching) return <p>Loading...</p>
     if (error) return <p>Error fetching order details</p>;
     console.log('order by id:', order?.order?.order_status);
 
+    const handleCreateVehicle = () => {
+        setOpen(true)
+    }
     return (
         <Box>
             <Backdrop
@@ -294,7 +410,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                     color: "#ffffff",
                     zIndex: (theme) => theme.zIndex.drawer + 1,
                 }}
-                open={isAssigning || editAssignLoading || deviceLoading}
+                open={postVehicleLoading || isAssigning || editAssignLoading || deviceLoading}
             >
                 <CircularProgress color="inherit" />
             </Backdrop>
@@ -304,6 +420,210 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                 severity={snackbarSeverity}
                 onClose={() => setSnackbarOpen(false)}
             />
+            <Modal open={open} onClose={handleClose}>
+        <Box sx={style} >
+
+
+          <Formik
+            initialValues={initialFormValues}
+            validationSchema={validationSchema}
+            onSubmit={handleAssignSubmit}
+          >
+            {({ values,errors,touched,handleChange,handleBlur,setFieldValue,resetForm }) => (
+              <Form>
+                                    <Grid>
+                                        <Grid container spacing={2}>
+                                            <Grid item xs={12} sm={6} md={2.4}>
+                                                <FormControl
+                                                    fullWidth
+                                                    size="small"
+                                                    error={touched.vehicleId && Boolean(errors.vehicleId)}
+                                                >
+                                                    <InputLabel>Vehicle ID*</InputLabel>
+                                                    <Select
+                                                        label="Vehicle ID*"
+                                                        name="vehicleId"
+                                                        value={values.vehicleId}
+                                                        onChange={handleChange}
+                                                        onBlur={handleBlur}
+                                                    >
+                                                        {isVehiclesLoading ? (
+                                                            <MenuItem disabled>
+                                                                <CircularProgress size={20} color="inherit" />
+                                                                <span style={{ marginLeft: "10px" }}>Loading...</span>
+                                                            </MenuItem>
+                                                        ) : (
+                                                            getAllVehicles?.map((vehicle: VehicleDetails) => (
+                                                                <MenuItem key={vehicle?.vehicle_ID} value={String(vehicle.vehicle_ID)}>
+                                                                    <span style={{ flex: 1 }}>{vehicle?.vehicle_ID}</span>
+                                                                </MenuItem>
+                                                            ))
+                                                        )}
+                                                    </Select>
+                                                    {touched.vehicleId && errors.vehicleId && (
+                                                        <FormHelperText>{errors.vehicleId}</FormHelperText>
+                                                    )}
+                                                </FormControl>
+                                            </Grid>
+                                            <Grid item xs={12} sm={6} md={2.4}>
+                                                <TextField
+                                                    fullWidth
+                                                    label="Vehicle Number*"
+                                                    name="vehicleNumber"
+                                                    value={values.vehicleNumber}
+                                                    onChange={handleChange}
+                                                    onBlur={handleBlur}
+                                                    error={touched.vehicleNumber && Boolean(errors.vehicleNumber)}
+                                                    helperText={touched.vehicleNumber && errors.vehicleNumber}
+                                                    size="small"
+                                                />
+                                            </Grid>
+                                            <Grid item xs={12} sm={6} md={2.4}>
+                                                <TextField
+                                                    fullWidth
+                                                    size="small"
+                                                    label="Cost (Rs.)*"
+                                                    name="costing" type='number'
+                                                    value={values.costing}
+                                                // onChange={handleChange}
+                                                onChange={(e) => {
+														const inputValue = e.target.value;
+														const numericValue = Number(inputValue);
+
+														if (numericValue > 0 || inputValue === "") {
+															handleChange(e);
+														}
+													}}
+                                                    onBlur={handleBlur}
+                                                    error={touched.costing && Boolean(errors.costing)}
+                                                    helperText={touched.costing && errors.costing}
+                                                />
+                                        </Grid>
+                                        <Grid item xs={12} sm={6} md={2.4}>
+                                                                                        <TextField
+                                                                                                          fullWidth
+                                                                                                          select
+                                                                                                          onBlur={handleBlur}
+                                                                                                          name="cost_criteria_per"
+                                                                                                          value={values.cost_criteria_per || ""}
+                                                                                                          onChange={handleChange}
+                                                                                                          size="small"
+                                                                                                        >
+                                                                                                          {unitsofMeasurement.map((unit) => (
+                                                                                                            <MenuItem key={unit} value={unit}>
+                                                                                                              {unit}
+                                                                                                            </MenuItem>
+                                                                                                          ))}
+                                                                                                        </TextField>
+                                                                                    </Grid>
+                                            <Grid item xs={12} sm={6} md={2.4}>
+                                                <FormControlLabel
+                                                    control={
+                                                        <Checkbox
+                                                            checked={values.isAvailable}
+                                                            onChange={(e) => {
+                                                                const checked = e.target.checked;
+                                                                setFieldValue("isAvailable", checked);
+                                                            }}
+                                                        />
+                                                    }
+                                                    label="Is vehicle available"
+                                                />
+                                            </Grid>
+                                        </Grid>
+                                        <Typography variant="h6" mt={3} mb={1}>
+                                            Vehicle documents
+                                        </Typography>
+                                        <Grid container spacing={2}>
+                                            <Grid item xs={12} sm={6} md={2.4}>
+                                                <TextField
+                                                    fullWidth
+                                                    label="Insurance*"
+                                                    name="insurance"
+                                                    value={values.insurance}
+                                                    onChange={handleChange}
+                                                    onBlur={handleBlur}
+                                                    error={
+                                                        touched.insurance &&
+                                                        Boolean(errors.insurance)
+                                                    }
+                                                    helperText={
+                                                        touched.insurance && errors.insurance
+                                                    }
+                                                    size="small"
+                                                />
+                                            </Grid>
+                                            <Grid item xs={12} sm={6} md={2.4}>
+                                                <TextField
+                                                    fullWidth
+                                                    label="Registration number*"
+                                                    name="registration"
+                                                    value={values.registration}
+                                                    onChange={handleChange}
+                                                    onBlur={handleBlur}
+                                                    error={
+                                                        touched.registration &&
+                                                        Boolean(errors.registration)
+                                                    }
+                                                    helperText={
+                                                        touched.registration && errors.registration
+                                                    }
+                                                    size="small"
+                                                />
+                                            </Grid>
+                                            <Grid item xs={12} sm={6} md={2.4}>
+                                                <TextField
+                                                    fullWidth
+                                                    label="Permit*"
+                                                    name="permit"
+                                                    value={values.permit}
+                                                    onChange={handleChange}
+                                                    onBlur={handleBlur}
+                                                    error={
+                                                        touched.permit &&
+                                                        Boolean(errors.permit)
+                                                    }
+                                                    helperText={
+                                                        touched.permit && errors.permit
+                                                    }
+                                                    size="small"
+                                                />
+                                            </Grid>
+                                        </Grid>
+
+                                        <Box mt={3} textAlign="center">
+                                            <Button
+                                                type="submit"
+                                                variant="contained"
+                                                sx={{
+                                                    backgroundColor: "#83214F",
+                                                    color: "#fff",
+                                                    "&:hover": {
+                                                        backgroundColor: "#fff",
+                                                        color: "#83214F"
+                                                    }
+                                                }}
+                                            > Submit
+                                            </Button>
+
+                                            <Button
+                                                variant="outlined"
+                                                color="secondary"
+                                                onClick={() => { 
+                                                    resetForm();
+                                                }}
+                                                style={{ marginLeft: "10px" }}
+                                            >
+                                                Reset
+                                            </Button>
+                                        </Box>
+                                    </Grid>
+                                </Form>
+            )}
+          </Formik>
+        </Box>
+      </Modal>
+
             <Typography variant="h6" gutterBottom color="#83214F" style={{ fontWeight: 'bold' }}>
                 Allocations
             </Typography>
@@ -331,7 +651,8 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                     </Typography>
 
                     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                        <Grid item xs={12} sm={6} md={2.4}>
+                        <Grid item xs={12} sm={6} md={2.4}  style={{ display: 'flex', flexDirection: 'row',gap:4 }}>
+                            <Grid>
                             <TextField
                                 fullWidth
                                 name="truckId"
@@ -346,7 +667,9 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                                 onChange={(e) => {
                                     setSearchKeyVehicle(e.target.value);
                                     setShowSuggestionsVehicle(true);
-                                }}
+                                    }}
+                                error={Boolean(errors.truckId)}
+                                helperText={errors.truckId}
                                 value={searchKeyVehicle}
                                 InputProps={{
                                     // endAdornment: filteredVehicleLoading ? <CircularProgress size={20} /> : null,
@@ -375,19 +698,19 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                                                     </Typography>
                                                 </ListItem>
                                             ) : (
-                                                displayVehicles.map((truck: { act_truk_ID: string, act_vehicle_num: string }) => (
+                                                displayVehicles.map((truck: { strk_ID: string, self_vehicle_num: string }) => (
                                                     <ListItem
-                                                        key={truck?.act_truk_ID}
+                                                        key={truck?.strk_ID}
                                                         component="li"
                                                         onClick={() => {
                                                             setShowSuggestionsVehicle(false);
-                                                            setSearchKeyVehicle(`${truck?.act_vehicle_num}, ${truck?.act_truk_ID}`);
-                                                            setFormData({ ...formData, truckId: truck?.act_vehicle_num });
+                                                            setSearchKeyVehicle(`${truck?.self_vehicle_num}, ${truck?.strk_ID}`);
+                                                            setFormData({ ...formData, truckId: `${truck?.self_vehicle_num}, ${truck?.strk_ID}`, });
                                                         }}
                                                         sx={{ cursor: "pointer" }}
                                                     >
                                                         <span style={{ fontSize: "13px" }}>
-                                                            {truck?.act_vehicle_num}, {truck?.act_truk_ID}
+                                                            {truck?.self_vehicle_num}, {truck?.strk_ID}
                                                         </span>
                                                     </ListItem>
                                                 ))
@@ -395,7 +718,17 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                                         </List>
                                     </Paper>
                                 )}
-                            </div>
+                                </div>
+                            </Grid>
+                            <Typography> OR </Typography>
+                            <Grid>
+                               <Typography 
+                                onClick={handleCreateVehicle} 
+                                sx={{ textDecoration: 'underline', cursor: 'pointer', marginLeft: 2 }}
+                                >
+                                Create new Truck
+                                </Typography>
+                            </Grid>
                         </Grid>
 
                         <Grid item xs={12} sm={6} md={2.4}>
@@ -414,6 +747,8 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                                     setSearchKey(e.target.value);
                                     setShowSuggestions(true);
                                 }}
+                                error={Boolean(errors.driverId)}
+                                helperText={errors.driverId}
                                 value={searchKey}
                             />
                             <div ref={wrapperRef} style={{ position: "relative" }}>
@@ -470,7 +805,9 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                             onChange={handleChange}
                             variant="outlined"
                             size="small"
-                            fullWidth
+                            fullWidth 
+                            error={Boolean(errors.deviceId)}
+                            helperText={errors.deviceId}
                         >
                             {devicesData?.map((device: DeviceInfoBE) => (
                                 <MenuItem key={device?.device_id} value={device.dev_ID}>

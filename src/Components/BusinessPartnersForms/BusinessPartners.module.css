@@ -6,7 +6,7 @@
 }
 
 .createButton {
-  text-transform: capitalize;
+  text-transform: capitalize !important;
   text-decoration: underline;
   background-color: transparent !important;
   box-shadow: none !important;

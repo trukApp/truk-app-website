@@ -24,6 +24,6 @@ body {
   text-decoration: underline;
   background-color: transparent !important;
   box-shadow: none !important;
-  color: inherit;
+  color: red;
   font-weight: bold;
 }
