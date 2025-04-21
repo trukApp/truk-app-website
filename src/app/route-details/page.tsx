@@ -1,17 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { RootState } from '@/store';
 import { useSelector } from 'react-redux';
-import { Typography, Paper, TablePagination } from "@mui/material";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow
-} from "@mui/material";
+// import { Typography, Paper, TablePagination } from "@mui/material";
+// import {
+//   Table,
+//   TableBody,
+//   TableCell,
+//   TableContainer,
+//   TableHead,
+//   TableRow
+// } from "@mui/material";
 
 // const routeData = {
 //   message: "Route deviation detected",
@@ -48,29 +48,29 @@ import {
 
 const RouteDetails = () => {
   const deviationData = useSelector((state: RootState) => state.auth.deviationData);
-  console.log('deviationData:;', deviationData);
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  // console.log('deviationData:;', deviationData);
+  // const [page, setPage] = useState(0);
+  // const [rowsPerPage, setRowsPerPage] = useState(10);
   if (!deviationData) {
     return <p className="text-center text-gray-600">No route deviation data available.</p>;
   }
 
 
-  const handleChangePage = (_: unknown, newPage: number) => {
-    setPage(newPage);
-  };
+  // const handleChangePage = (_: unknown, newPage: number) => {
+  //   setPage(newPage);
+  // };
 
-  const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
+  // const handleChangeRowsPerPage = (
+  //   event: React.ChangeEvent<HTMLInputElement>
+  // ) => {
+  //   setRowsPerPage(parseInt(event.target.value, 10));
+  //   setPage(0);
+  // };
 
-  const paginatedData = deviationData.driverPointDeviations?.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  );
+  // const paginatedData = deviationData.driverPointDeviations?.slice(
+  //   page * rowsPerPage,
+  //   page * rowsPerPage + rowsPerPage
+  // );
   return (
     <div className="max-w-4xl mx-auto p-6 bg-gray-100 rounded-lg shadow-lg">
       <h1 className="text-2xl font-bold text-center mb-4" style={{ color: '#83214F', textDecorationLine: 'underline' }}>
@@ -103,7 +103,7 @@ const RouteDetails = () => {
         </div>
       )}
 
-      <TableContainer component={Paper} elevation={3} sx={{ borderRadius: 2 }}>
+      {/* <TableContainer component={Paper} elevation={3} sx={{ borderRadius: 2 }}>
         <Typography variant="h6" fontWeight="bold" p={2}>
           Off-Route Points
         </Typography>
@@ -141,7 +141,7 @@ const RouteDetails = () => {
           onRowsPerPageChange={handleChangeRowsPerPage}
           rowsPerPageOptions={[5, 10, 25]}
         />
-      </TableContainer>
+      </TableContainer> */}
 
     </div>
   );
