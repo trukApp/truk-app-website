@@ -9,8 +9,12 @@ import ReduxProvider from "@/store/redux-provider";
 import theme from "@/theme";
 import { Grid, Toolbar } from "@mui/material";
 import { Session } from "next-auth";
+import { usePathname } from "next/navigation";
 
 const LayoutClientWrapper = ({ children, session }: { children: React.ReactNode; session: Session | null; }) => {
+      const pathname = usePathname();
+
+  const isLandingPage = pathname === "/" 
     return (
         <SessionProvider session={session}>
             <ThemeProvider theme={theme}>
@@ -21,9 +25,11 @@ const LayoutClientWrapper = ({ children, session }: { children: React.ReactNode;
                     <Grid
                         sx={{
                             // marginTop: { xs: "40px", md: "60px", },
-                            padding: "15px",
+                            // padding: "15px",
                             backgroundColor: "#FAF1F8",
-                            minHeight: "70vh",
+                            // minHeight: "70vh",
+                            marginLeft: { xs: 0, md: isLandingPage ? '0px' : '30px' },
+                            marginTop: isLandingPage ? '0px' : '30px',
                         }}
                     >
                         {children}
