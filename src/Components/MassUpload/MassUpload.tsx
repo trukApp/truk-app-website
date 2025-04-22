@@ -120,7 +120,7 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
     products: postProductMaster,
 
   };
- 
+
   const mapCsvToPayload = (
     data: ParsedRow[],
     columnMappings: ColumnMapping[]
@@ -131,15 +131,15 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
       columnMappings.forEach(({ displayName, key, nestedKey }) => {
         let value: string | string[] | undefined = row[displayName]?.trim();
         const arrayFields: string[] = ['carrier_loc_of_operation', 'carrier_lanes', 'vehicle_types_handling'];
-        
+
         if (arrayFields.includes(key) && value) {
           value = value.split(',').map((item) => item.trim());
         }
 
-        const dateFields: string[] = ['validity_from', 'validity_to','downtime_starts_from','downtime_ends_from','start_time','end_time','expiry_date','expiration','best_before'];
+        const dateFields: string[] = ['validity_from', 'validity_to', 'downtime_starts_from', 'downtime_ends_from', 'start_time', 'end_time', 'expiry_date', 'expiration', 'best_before'];
         if (dateFields.includes(key) && typeof value === 'string') {
-            const [day, month, year] = value.split('-');
-            value = `${year}-${month}-${day}`;
+          const [day, month, year] = value.split('-');
+          value = `${year}-${month}-${day}`;
         }
 
         if (nestedKey) {
@@ -225,18 +225,18 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
   //   link.click();
   // };
 
-const handleDownloadTemplate = () => {
-  const columnMappings = getColumnMappings();
-  
-  const headers = columnMappings.map(col => `"${col.displayName.padEnd(20, ' ')}"`).join(",");
+  const handleDownloadTemplate = () => {
+    const columnMappings = getColumnMappings();
 
-  const csvContent = `data:text/csv;charset=utf-8,${headers}`;
-  const encodedUri = encodeURI(csvContent);
-  const link = document.createElement("a");
-  link.setAttribute("href", encodedUri);
-  link.setAttribute("download", `${arrayKey}_template.csv`);
-  link.click();
-};
+    const headers = columnMappings.map(col => `"${col.displayName.padEnd(20, ' ')}"`).join(",");
+
+    const csvContent = `data:text/csv;charset=utf-8,${headers}`;
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `${arrayKey}_template.csv`);
+    link.click();
+  };
 
 
   return (
@@ -259,20 +259,20 @@ const handleDownloadTemplate = () => {
       {/* <Button variant="contained" onClick={() => setIsModalOpen(true)}>
         Upload CSV
       </Button> */}
-<Button
-  variant="contained"
-  onClick={() => setIsModalOpen(true)}
-  sx={{
-    backgroundColor: "#83214F", // Custom background color for normal state
-    color: "#fff",  
-    "&:hover": {
-      backgroundColor: '#fff',  
-      color: "#83214F" 
-    }
-  }}
->
-  Upload CSV
-</Button>
+      <Button
+        variant="contained"
+        onClick={() => setIsModalOpen(true)}
+        sx={{
+          backgroundColor: "#F08C24", // Custom background color for normal state
+          color: "#fff",
+          "&:hover": {
+            backgroundColor: '#fff',
+            color: "#F08C24"
+          }
+        }}
+      >
+        Upload CSV
+      </Button>
 
       <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <Box

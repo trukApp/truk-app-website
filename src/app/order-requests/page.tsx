@@ -7,7 +7,7 @@ import {
   Box,
   CircularProgress,
   Typography,
-  Chip, 
+  Chip,
   IconButton,
 } from '@mui/material';
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
@@ -37,8 +37,8 @@ interface CarrierAssignment {
 
 
 const OrderRequests: React.FC = () => {
-    const router = useRouter();
-     const [loading, setLoading] = useState(false)
+  const router = useRouter();
+  const [loading, setLoading] = useState(false)
   const carrier_ID = 'CR000008';
   const { data: carrierAssignments, isLoading: carrLoading } =
     useGetCarrierAssignmentReqQuery({ carrier_ID });
@@ -46,22 +46,23 @@ const OrderRequests: React.FC = () => {
   const assignments = carrierAssignments?.assignments || [];
 
   const handleNavigateToOrder = (orderId: string) => {
-        setLoading(true)
-        router.push(`/detailed-carrier-overview?order_ID=${orderId}&from=${carrier_ID}`);
-    }
+    setLoading(true)
+    router.push(`/detailed-carrier-overview?order_ID=${orderId}&from=${carrier_ID}`);
+  }
   const columns: GridColDef[] = [
     { field: 'id', headerName: '#', width: 70 },
     { field: 'cas_ID', headerName: 'Assignment ID', width: 160 },
     { field: 'order_ID', headerName: 'Order ID', width: 130 },
-    { field: 'assignment_status', headerName: 'Status', width: 130, renderCell: (params) => (
+    {
+      field: 'assignment_status', headerName: 'Status', width: 130, renderCell: (params) => (
         <Chip
           label={params.value}
           color={
             params.value === 'Confirmed'
               ? 'success'
               : params.value === 'Rejected'
-              ? 'error'
-              : 'warning'
+                ? 'error'
+                : 'warning'
           }
           size="small"
         />
@@ -89,22 +90,22 @@ const OrderRequests: React.FC = () => {
         )),
     },
     { field: 'start_loc_ID', headerName: 'Start Location', width: 150 },
-    { field: 'end_loc_ID', headerName: 'End Location', width: 150 }, 
-    { field: 'total_distance', headerName: 'Distance (km)', width: 130 }, 
+    { field: 'end_loc_ID', headerName: 'End Location', width: 150 },
+    { field: 'total_distance', headerName: 'Distance (km)', width: 130 },
     { field: 'confirmed_to', headerName: 'Confirmed To', width: 130 },
     { field: 'created_at', headerName: 'Created At', width: 210 },
-      { field: 'updated_at', headerName: 'Updated At', width: 210 },
-        {
-          field: 'view',
-          headerName: 'View',
-          width: 100,
-          sortable: false,
-          renderCell: (params: GridRenderCellParams) => (
-            <IconButton onClick={() => handleNavigateToOrder(params.row.order_ID)} sx={{ color: "#83214F" }}>
-              <Visibility />
-            </IconButton>
-          ),
-        },
+    { field: 'updated_at', headerName: 'Updated At', width: 210 },
+    {
+      field: 'view',
+      headerName: 'View',
+      width: 100,
+      sortable: false,
+      renderCell: (params: GridRenderCellParams) => (
+        <IconButton onClick={() => handleNavigateToOrder(params.row.order_ID)} sx={{ color: "#F08C24" }}>
+          <Visibility />
+        </IconButton>
+      ),
+    },
   ];
 
   const rows = assignments.map((a: CarrierAssignment, idx: number) => ({
@@ -118,7 +119,7 @@ const OrderRequests: React.FC = () => {
     allocated_vehicles: a.allocated_vehicles || [],
     allocated_packages: a.allocated_packages || [],
     start_loc_ID: a.start_loc_ID,
-    end_loc_ID: a.end_loc_ID, 
+    end_loc_ID: a.end_loc_ID,
     total_distance: a.assignment_cost?.total_distance || 'N/A',
     // total_weight: a.assignment_cost?.total_weight || 'N/A',
     cost_criteria_considered: a.assignment_cost?.cost_criteria_considered || 'N/A',

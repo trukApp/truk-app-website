@@ -19,7 +19,7 @@ const LoadOptimization: React.FC<TrucksTableProps> = ({ trucks }) => {
     console.log('selectedRoutesFromRedux: ', selectedRoutes);
     return (
         <Box sx={{ p: 2 }}>
-            <Typography variant="h5" gutterBottom color='#83214F' sx={{ fontWeight: 'bold', marginTop: '30px' }}>
+            <Typography variant="h5" gutterBottom color='#F08C24' sx={{ fontWeight: 'bold', marginTop: '30px' }}>
                 Load Optimization Details
             </Typography>
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
@@ -38,7 +38,7 @@ const LoadOptimization: React.FC<TrucksTableProps> = ({ trucks }) => {
 
                     return (
                         <Paper key={index} sx={{ my: 3, p: 3, borderRadius: 2, boxShadow: 3, width: '75%' }}>
-                            <Typography variant="h6" gutterBottom sx={{ mb: 2, fontWeight: 'bold', }} color='#83214F'>
+                            <Typography variant="h6" gutterBottom sx={{ mb: 2, fontWeight: 'bold', }} color='#F08C24'>
                                 Vehicle ID: {vehicle.vehicle_ID}
                             </Typography>
 

@@ -711,11 +711,11 @@ const CustomerForm: React.FC = () => {
                                         type="submit"
                                         variant="contained"
                                         sx={{
-                                            backgroundColor: "#83214F",
+                                            backgroundColor: "#F08C24",
                                             color: "#fff",
                                             "&:hover": {
                                                 backgroundColor: "#fff",
-                                                color: "#83214F"
+                                                color: "#F08C24"
                                             }
                                         }}
                                     >

@@ -46,17 +46,17 @@ const MasterData: React.FC = () => {
         sx={{
           marginBottom: "10px",
           "& .MuiTabs-indicator": {
-            backgroundColor: "#83214F",
+            backgroundColor: "#F08C24",
           },
         }}
       >
-        <Tab value="Vehicles" sx={{textTransform:'capitalize',fontSize:'16px'}} label="Vehicles" />
+        <Tab value="Vehicles" sx={{ textTransform: 'capitalize', fontSize: '16px' }} label="Vehicles" />
         {/* <Tab value="Vehicle group" sx={{textTransform:'capitalize',fontSize:'16px'}} label="Vehicle Group" /> */}
-        <Tab value="Device master"  sx={{textTransform:'capitalize',fontSize:'16px'}} label="Device Master" />
-        <Tab value="Lanes" sx={{textTransform:'capitalize',fontSize:'16px'}} label="Lanes" />
-        <Tab value="Locations" sx={{textTransform:'capitalize',fontSize:'16px'}} label="Locations" />
-        <Tab value="Packaging Info" sx={{textTransform:'capitalize',fontSize:'16px'}} label="Packaging Info" />
-        <Tab value="Uom" sx={{textTransform:'capitalize',fontSize:'16px'}} label="Units of Measurement" />
+        <Tab value="Device master" sx={{ textTransform: 'capitalize', fontSize: '16px' }} label="Device Master" />
+        <Tab value="Lanes" sx={{ textTransform: 'capitalize', fontSize: '16px' }} label="Lanes" />
+        <Tab value="Locations" sx={{ textTransform: 'capitalize', fontSize: '16px' }} label="Locations" />
+        <Tab value="Packaging Info" sx={{ textTransform: 'capitalize', fontSize: '16px' }} label="Packaging Info" />
+        <Tab value="Uom" sx={{ textTransform: 'capitalize', fontSize: '16px' }} label="Units of Measurement" />
       </Tabs>
 
       {/* Render Selected Component */}

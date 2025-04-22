@@ -37,7 +37,7 @@ const OrderBidding: React.FC = () => {
             width: 100,
             sortable: false,
             renderCell: (params: GridRenderCellParams) => (
-                <IconButton onClick={() => handleViewOrder(params.row.order_ID)} sx={{ color: "#83214F" }}>
+                <IconButton onClick={() => handleViewOrder(params.row.order_ID)} sx={{ color: "#F08C24" }}>
                     <Visibility />
                 </IconButton>
             ),

@@ -235,7 +235,7 @@ const LiveTracking: React.FC = () => {
 
     return (
         <div>
-            <p style={{ fontSize: '20px', color: "#83214F", textDecoration: 'underline', fontWeight: 'bold' }}>Suggested Vehicle Route</p>
+            <p style={{ fontSize: '20px', color: "#F08C24", textDecoration: 'underline', fontWeight: 'bold' }}>Suggested Vehicle Route</p>
             {vehicleSuggestRoute && vehicleSuggestRoute.length > 0 && (
                 <Box sx={{ marginBottom: 2 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', padding: 1, border: '1px solid #ccc', marginBottom: 1, gap: '10px' }}>
@@ -306,7 +306,7 @@ const LiveTracking: React.FC = () => {
 
             {selectedVehicle && (
                 <div>
-                    <h3 style={{ color: "#83214F", textDecoration: 'underline' }}>Vehicle Details</h3>
+                    <h3 style={{ color: "#F08C24", textDecoration: 'underline' }}>Vehicle Details</h3>
                     <p><strong>Registration:</strong> {selectedVehicle.regNo}</p>
                     <p><strong>Status:</strong> {selectedVehicle.status}</p>
                     <p><strong>Speed:</strong> {selectedVehicle.speed} km/h</p>

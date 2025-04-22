@@ -22,19 +22,19 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks }) => {
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
     const selectedTrucks = trucks
     const { data: locationsData } = useGetLocationMasterQuery({})
-     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
+    const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
     console.log("selectedPackages: ", selectedPackages)
- const getLocationDescription = (loc_ID: string) => {
+    const getLocationDescription = (loc_ID: string) => {
         const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
         if (!location) return "Location details not available";
-     const details = [
+        const details = [
             location.loc_ID,
             location.loc_desc,
             location.address_1,
             location.city,
             location.state,
             location.pincode,
-            
+
         ].filter(Boolean);
 
         return details.length > 0 ? details.join(", ") : "Location details not available";
@@ -54,9 +54,9 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks }) => {
     };
 
     const packageColumns = [
-        { field: 'pack_ID', headerName: 'Package ID', width:150 },
-        { field: 'ship_from', headerName: 'Ship From', width:250 },
-        { field: 'ship_to', headerName: 'Ship To', width:250 },
+        { field: 'pack_ID', headerName: 'Package ID', width: 150 },
+        { field: 'ship_from', headerName: 'Ship From', width: 250 },
+        { field: 'ship_to', headerName: 'Ship To', width: 250 },
         {
             field: 'products',
             headerName: 'Product Details',
@@ -81,11 +81,11 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks }) => {
                 );
             },
         },
-        { field: 'invoice', headerName: 'Invoice', width:150 },
-        { field: 'reference_id', headerName: 'Reference ID', width:150  },
-        { field: 'pickup_date_time', headerName: 'Pickup Date & Time', width:180  },
-        { field: 'dropoff_date_time', headerName: 'Dropoff Date & Time', width:180  },
-        { field: 'tax_info', headerName: 'Tax Info', width:150  },
+        { field: 'invoice', headerName: 'Invoice', width: 150 },
+        { field: 'reference_id', headerName: 'Reference ID', width: 150 },
+        { field: 'pickup_date_time', headerName: 'Pickup Date & Time', width: 180 },
+        { field: 'dropoff_date_time', headerName: 'Dropoff Date & Time', width: 180 },
+        { field: 'tax_info', headerName: 'Tax Info', width: 150 },
         // { field: 'return_label', headerName: 'Return Label', flex: 1 }
         {
             field: 'return_label',
@@ -106,7 +106,7 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks }) => {
         products: pkg.product_ID || [],
         invoice: pkg.additional_info?.invoice || 'N/A',
         reference_id: pkg.additional_info?.reference_id || 'N/A',
-        pickup_date_time : moment(pkg.pickup_date_time).format("DD MMM YYYY, hh:mm A"),
+        pickup_date_time: moment(pkg.pickup_date_time).format("DD MMM YYYY, hh:mm A"),
         dropoff_date_time: moment(pkg.dropoff_date_time).format("DD MMM YYYY, hh:mm A"),
         tax_info: pkg.tax_info?.tax_rate || 'N/A',
         return_label: pkg.return_label ? 'Yes' : 'No'
@@ -115,7 +115,7 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks }) => {
     return (
         <Box sx={{ p: 3 }}>
             <Paper sx={{ mb: 3, p: 2, borderRadius: 2, boxShadow: 3 }}>
-                <Typography variant="h6" gutterBottom sx={{ color: '#83214F' }}>Selected Packages</Typography>
+                <Typography variant="h6" gutterBottom sx={{ color: '#F08C24' }}>Selected Packages</Typography>
                 <div style={{ height: 400, width: '100%' }}>
                     <DataGrid
                         rows={packageRows}
@@ -128,7 +128,7 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks }) => {
             </Paper>
             <Grid>
                 <Paper sx={{ mb: 3, p: 2, borderRadius: 2, boxShadow: 3 }}>
-                    <Typography variant="h6" gutterBottom sx={{ color: '#83214F' }}>
+                    <Typography variant="h6" gutterBottom sx={{ color: '#F08C24' }}>
                         Load and Route Optimised vehicles
                     </Typography>
 

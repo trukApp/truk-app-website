@@ -15,10 +15,10 @@ interface LoginValues {
 
 const LoginPage: React.FC = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-      const [snackbarMessage, setSnackbarMessage] = useState("");
-      const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
-      const [callbackUrl, setCallbackUrl] = useState<string>('/');
-      const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
+  const [callbackUrl, setCallbackUrl] = useState<string>('/');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -29,21 +29,21 @@ const LoginPage: React.FC = () => {
   }, []);
 
   const validationSchema = Yup.object({
-  phone: Yup.string()
-    .matches(/^\d{10}$/, "Phone number must be exactly 10 digits")
-    .required("Phone number is required"),
-  
-  password: Yup.string()
-    .min(6, "Password must be at least 6 characters")
-    .matches(/[A-Z]/, "Must contain at least one uppercase letter")
-    .matches(/[a-z]/, "Must contain at least one lowercase letter")
-    .matches(/\d/, "Must contain at least one digit")
-    .matches(/[!@#$%^&*]/, "Must contain at least one special character (!@#$%^&*)")
-    .required("Password is required"),
-});
+    phone: Yup.string()
+      .matches(/^\d{10}$/, "Phone number must be exactly 10 digits")
+      .required("Phone number is required"),
 
-  
-  const handleLogin = async (values: { phone: string; password: string }, { setSubmitting, setFieldError }:  FormikHelpers<LoginValues>) => {
+    password: Yup.string()
+      .min(6, "Password must be at least 6 characters")
+      .matches(/[A-Z]/, "Must contain at least one uppercase letter")
+      .matches(/[a-z]/, "Must contain at least one lowercase letter")
+      .matches(/\d/, "Must contain at least one digit")
+      .matches(/[!@#$%^&*]/, "Must contain at least one special character (!@#$%^&*)")
+      .required("Password is required"),
+  });
+
+
+  const handleLogin = async (values: { phone: string; password: string }, { setSubmitting, setFieldError }: FormikHelpers<LoginValues>) => {
     try {
       const result = await signIn("credentials", {
         redirect: false,
@@ -52,15 +52,15 @@ const LoginPage: React.FC = () => {
       });
 
       if (result?.error) {
-            setSnackbarMessage(result?.error);
-            setSnackbarSeverity("error");
-            setSnackbarOpen(true);
+        setSnackbarMessage(result?.error);
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
 
       } else {
-            window.location.href = callbackUrl;
-            setSnackbarMessage("Login successful");
-            setSnackbarSeverity("success");
-            setSnackbarOpen(true);
+        window.location.href = callbackUrl;
+        setSnackbarMessage("Login successful");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
       }
     } catch (err) {
       console.log(err)
@@ -69,15 +69,15 @@ const LoginPage: React.FC = () => {
       setSubmitting(false);
     }
   };
- 
-return (
-  <Grid sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+
+  return (
+    <Grid sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
       <SnackbarAlert
-                open={snackbarOpen}
-                message={snackbarMessage}
-                severity={snackbarSeverity}
-                onClose={() => setSnackbarOpen(false)}
-            />
+        open={snackbarOpen}
+        message={snackbarMessage}
+        severity={snackbarSeverity}
+        onClose={() => setSnackbarOpen(false)}
+      />
       <Box display="flex" sx={{ height: "60vh" }}>
         <Box
           sx={{
@@ -90,7 +90,7 @@ return (
             alignSelf: "center",
           }}
         >
-          <Typography variant="h5" sx={{ fontWeight: 600 }} align="center" marginBottom="10px" color="#83214F">
+          <Typography variant="h5" sx={{ fontWeight: 600 }} align="center" marginBottom="10px" color="#F08C24">
             Login
           </Typography>
 
@@ -152,7 +152,7 @@ return (
           </Formik>
 
           {/* <Typography variant="body2" align="center" marginTop="10px">
-            Don&apos;t have an account ? <a href="/signup" style={{ color: "#83214F" }}>Sign up</a>
+            Don&apos;t have an account ? <a href="/signup" style={{ color: "#F08C24" }}>Sign up</a>
           </Typography> */}
         </Box>
       </Box>

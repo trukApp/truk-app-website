@@ -16,7 +16,8 @@ const SettingsComponent = () => {
   const tiles = [
     {
       title: 'User Settings', icon: <Settings sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
-  onClick: () => handleNavigation('/user-settings'),  },
+      onClick: () => handleNavigation('/user-settings'),
+    },
     {
       title: 'Config Settings',
       icon: <Build sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
@@ -29,7 +30,8 @@ const SettingsComponent = () => {
     },
     {
       title: 'System Connections', icon: <Link sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
-   onClick: () => handleNavigation('/system-connections'),  },
+      onClick: () => handleNavigation('/system-connections'),
+    },
   ];
 
   return (
@@ -42,7 +44,7 @@ const SettingsComponent = () => {
       </Backdrop>
 
       <Box>
-        <Typography variant="h6" sx={{ marginBottom: '1px', color: '#83214F', fontWeight: 'bold' }}>
+        <Typography variant="h6" sx={{ marginBottom: '1px', color: '#F08C24', fontWeight: 'bold' }}>
           Settings
         </Typography>
         <Box
@@ -73,7 +75,7 @@ const SettingsComponent = () => {
                 '&:hover': {
                   transform: 'translateY(-5px)',
                   boxShadow: 6,
-                  backgroundColor: '#FAF1F8',
+                  backgroundColor: '#FCF0DE',
                 },
                 cursor: 'pointer'
               }}

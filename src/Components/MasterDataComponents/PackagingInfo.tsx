@@ -68,20 +68,20 @@ const PackagingForm = () => {
           {
             packaging_type_name: values.packagingTypeName,
             dimensions_uom: values.packagingDimensionsUoM,
-            pack_length: values.packagingLength ,
+            pack_length: values.packagingLength,
             pack_width: values.packagingWidth,
             pack_height: values.packagingHeight,
-            handling_unit_type:  values.handlingUnitType,
+            handling_unit_type: values.handlingUnitType,
           }
         ]
       }
       const editBody = {
-            packaging_type_name: values.packagingTypeName,
-            dimensions_uom: values.packagingDimensionsUoM,
-            pack_length: values.packagingLength ,
-            pack_width: values.packagingWidth,
-            pack_height: values.packagingHeight,
-            handling_unit_type:  values.handlingUnitType,
+        packaging_type_name: values.packagingTypeName,
+        dimensions_uom: values.packagingDimensionsUoM,
+        pack_length: values.packagingLength,
+        pack_width: values.packagingWidth,
+        pack_height: values.packagingHeight,
+        handling_unit_type: values.handlingUnitType,
       }
       if (isEditing && editRow) {
         const packageId = editRow.id
@@ -93,7 +93,7 @@ const PackagingForm = () => {
           setIsEditing(false)
           setSnackbarSeverity("success");
           setSnackbarOpen(true);
-           
+
         }
 
       }
@@ -136,11 +136,11 @@ const PackagingForm = () => {
       packagingTypeId: '',
       packagingTypeName: '',
       packagingDimensionsUoM: 'm',
-      packagingLength: '', 
+      packagingLength: '',
       packagingWidth: '',
-      packagingHeight:'',
+      packagingHeight: '',
       handlingUnitType: '',
-      packagingDimensions:''
+      packagingDimensions: ''
     },
     validationSchema: Yup.object({
       packagingTypeName: Yup.string().required('Packaging Type Name is required'),
@@ -162,17 +162,17 @@ const PackagingForm = () => {
         packagingTypeId: editRow?.packagingTypeId,
         packagingTypeName: editRow?.packagingTypeName,
         packagingDimensionsUoM: editRow?.packagingDimensionsUoM,
-        packagingLength:dimensions[0],
+        packagingLength: dimensions[0],
         packagingWidth: dimensions[1],
         packagingHeight: dimensions[2],
         handlingUnitType: editRow?.handlingUnitType,
-        packagingDimensions : ''
+        packagingDimensions: ''
 
 
       });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editRow]); 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editRow]);
   const handleEdit = (row: PackageInfo) => {
     setShowForm(true)
     setIsEditing(true)
@@ -215,7 +215,7 @@ const PackagingForm = () => {
     packagingTypeId: packageItem.pac_ID,
     packagingTypeName: packageItem?.packaging_type_name,
     packagingDimensionsUoM: packageItem.dimensions_uom,
-    packagingDimensions: `${packageItem.pack_length} * ${packageItem.pack_width} * ${packageItem.pack_height}` ,
+    packagingDimensions: `${packageItem.pack_length} * ${packageItem.pack_width} * ${packageItem.pack_height}`,
     handlingUnitType: packageItem.handling_unit_type,
   }));
 
@@ -266,7 +266,7 @@ const PackagingForm = () => {
         onClose={() => setSnackbarOpen(false)}
       />
       <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
-        <Button 
+        <Button
           onClick={() => setShowForm((prev) => !prev)}
           className={styles.createButton}
         >
@@ -286,17 +286,17 @@ const PackagingForm = () => {
 
               {isEditing &&
                 <Grid item xs={12} md={2.4}>
-                <TextField
-                  fullWidth disabled
-                  id="packagingTypeId"
-                  name="packagingTypeId"
-                  label="ID (Auto-generated)"
-                  value={formik.values.packagingTypeId}
-                  onChange={formik.handleChange}
-                  InputProps={{ readOnly: true }}
-                  size="small"
-                />
-              </Grid> }
+                  <TextField
+                    fullWidth disabled
+                    id="packagingTypeId"
+                    name="packagingTypeId"
+                    label="ID (Auto-generated)"
+                    value={formik.values.packagingTypeId}
+                    onChange={formik.handleChange}
+                    InputProps={{ readOnly: true }}
+                    size="small"
+                  />
+                </Grid>}
 
 
               {/* Packaging Type Name */}
@@ -306,7 +306,7 @@ const PackagingForm = () => {
                   id="packagingTypeName"
                   name="packagingTypeName"
                   label="Packaging Type Name"
-                  onBlur = {formik.handleBlur}
+                  onBlur={formik.handleBlur}
                   value={formik.values.packagingTypeName}
                   onChange={formik.handleChange}
                   error={formik.touched.packagingTypeName && Boolean(formik.errors.packagingTypeName)}
@@ -344,16 +344,16 @@ const PackagingForm = () => {
                   name="packagingLength"
                   label="Package length" type='number'
                   value={formik.values.packagingLength}
-                  onBlur = {formik.handleBlur}
+                  onBlur={formik.handleBlur}
                   // onChange={formik.handleChange}
                   onChange={(e) => {
-														const inputValue = e.target.value;
-														const numericValue = Number(inputValue);
+                    const inputValue = e.target.value;
+                    const numericValue = Number(inputValue);
 
-														if (numericValue > 0 || inputValue === "") {
-															formik.handleChange(e);
-														}
-													}}
+                    if (numericValue > 0 || inputValue === "") {
+                      formik.handleChange(e);
+                    }
+                  }}
                   error={formik.touched.packagingLength && Boolean(formik.errors.packagingLength)}
                   helperText={formik.touched.packagingLength && formik.errors.packagingLength}
                   size="small"
@@ -364,18 +364,18 @@ const PackagingForm = () => {
                   fullWidth
                   id="packagingWidth"
                   name="packagingWidth"
-                  onBlur = {formik.handleBlur}
+                  onBlur={formik.handleBlur}
                   label="Package width" type='number'
                   value={formik.values.packagingWidth}
                   // onChange={formik.handleChange}
                   onChange={(e) => {
-														const inputValue = e.target.value;
-														const numericValue = Number(inputValue);
+                    const inputValue = e.target.value;
+                    const numericValue = Number(inputValue);
 
-														if (numericValue > 0 || inputValue === "") {
-															formik.handleChange(e);
-														}
-													}}
+                    if (numericValue > 0 || inputValue === "") {
+                      formik.handleChange(e);
+                    }
+                  }}
                   error={formik.touched.packagingWidth && Boolean(formik.errors.packagingWidth)}
                   helperText={formik.touched.packagingWidth && formik.errors.packagingWidth}
                   size="small"
@@ -390,21 +390,21 @@ const PackagingForm = () => {
                   value={formik.values.packagingHeight}
                   // onChange={formik.handleChange}
                   onChange={(e) => {
-														const inputValue = e.target.value;
-														const numericValue = Number(inputValue);
+                    const inputValue = e.target.value;
+                    const numericValue = Number(inputValue);
 
-														if (numericValue > 0 || inputValue === "") {
-															formik.handleChange(e);
-														}
-													}}
-                  onBlur = {formik.handleBlur}
+                    if (numericValue > 0 || inputValue === "") {
+                      formik.handleChange(e);
+                    }
+                  }}
+                  onBlur={formik.handleBlur}
                   error={formik.touched.packagingHeight && Boolean(formik.errors.packagingHeight)}
                   helperText={formik.touched.packagingHeight && formik.errors.packagingHeight}
                   size="small"
                 />
               </Grid>
-                <Grid item xs={12} md={2.4}>
-                <TextField 
+              <Grid item xs={12} md={2.4}>
+                <TextField
                   fullWidth size='small' disabled
                   label="Volume"
                   value={
@@ -431,24 +431,24 @@ const PackagingForm = () => {
                   size="small"
                 /> */}
                 <TextField
-              select
-              fullWidth
-              id="handlingUnitType"
-              name="handlingUnitType"
-              label="Handling unit type"
-              value={formik.values.handlingUnitType}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.touched.handlingUnitType && Boolean(formik.errors.handlingUnitType)}
-              helperText={formik.touched.handlingUnitType && formik.errors.handlingUnitType}
-              size="small"
-            >
-              {handlingUnitTypes.map((type) => (
-                <MenuItem key={type} value={type}>
-                  {type}
-                </MenuItem>
-              ))}
-            </TextField>
+                  select
+                  fullWidth
+                  id="handlingUnitType"
+                  name="handlingUnitType"
+                  label="Handling unit type"
+                  value={formik.values.handlingUnitType}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.handlingUnitType && Boolean(formik.errors.handlingUnitType)}
+                  helperText={formik.touched.handlingUnitType && formik.errors.handlingUnitType}
+                  size="small"
+                >
+                  {handlingUnitTypes.map((type) => (
+                    <MenuItem key={type} value={type}>
+                      {type}
+                    </MenuItem>
+                  ))}
+                </TextField>
               </Grid>
             </Grid>
 
@@ -458,11 +458,11 @@ const PackagingForm = () => {
                 type="submit"
                 variant="contained"
                 sx={{
-                  backgroundColor: "#83214F",
+                  backgroundColor: "#F08C24",
                   color: "#fff",
                   "&:hover": {
                     backgroundColor: "#fff",
-                    color: "#83214F"
+                    color: "#F08C24"
                   }
                 }}
               >

@@ -23,7 +23,7 @@ const RatingsAndReviews = () => {
 
   return (
     <Box>
-      <Typography variant="h6" sx={{ mt: 4, mb: 1, color: '#83214F', fontWeight: 'bold' }}>
+      <Typography variant="h6" sx={{ mt: 4, mb: 1, color: '#F08C24', fontWeight: 'bold' }}>
         Reviews & analytics
       </Typography>
       <Box
@@ -54,7 +54,7 @@ const RatingsAndReviews = () => {
               '&:hover': {
                 transform: 'translateY(-5px)',
                 boxShadow: 6,
-                backgroundColor: '#FAF1F8',
+                backgroundColor: '#FCF0DE',
               },
             }}
           >

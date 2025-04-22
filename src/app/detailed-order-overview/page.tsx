@@ -20,7 +20,7 @@
 
 //             {orderData && (
 //                 <Paper sx={{ p: 3, mb: 3, }}>
-//                     <Typography variant="h6" gutterBottom sx={{ color: "#83214F", fontWeight: 'bold' }}>
+//                     <Typography variant="h6" gutterBottom sx={{ color: "#F08C24", fontWeight: 'bold' }}>
 //                         Order Details
 //                     </Typography>
 //                     <Grid container spacing={2} sx={{ mt: 2 }}>
