@@ -366,7 +366,7 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
                     </Box>
                 </Box>
             )}
-            <h1 style={{ color: '#83214F', fontSize: '24px', fontWeight: 'bold', textDecorationLine: 'underline' }}>LoadArrangement</h1>
+            <h1 style={{ color: '#F08C24', fontSize: '24px', fontWeight: 'bold', textDecorationLine: 'underline' }}>LoadArrangement</h1>
             {[...(selectedVehicleData?.loadArrangement || [])].reverse().map((stop, index) => (
                 <Box
                     key={index}
@@ -374,7 +374,7 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
                         padding: 1,
                         border: '1px solid #ccc',
                         marginBottom: 1,
-                        backgroundColor: selectedStop === stop.location ? '#83214F' : 'transparent',
+                        backgroundColor: selectedStop === stop.location ? '#F08C24' : 'transparent',
                         color: selectedStop === stop.location ? '#fff' : '#000',
                         cursor: 'pointer'
                     }}

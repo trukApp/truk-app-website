@@ -167,7 +167,7 @@ const PackagesTable = () => {
             renderCell: (params) => (
                 <Typography
                     sx={{
-                        color: params.value === 'ordered' ? 'green' : '#83214F', fontSize: '14px', marginTop: 2, fontWeight: 600
+                        color: params.value === 'ordered' ? 'green' : '#F08C24', fontSize: '14px', marginTop: 2, fontWeight: 600
 
                     }}
                 >

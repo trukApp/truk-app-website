@@ -51,9 +51,9 @@ const CreatePackage = () => {
                     justifyContent: "center",
                     borderRadius: "50%",
                     backgroundColor: completed
-                        ? "#83214F"
+                        ? "#F08C24"
                         : active
-                            ? "#83214F"
+                            ? "#F08C24"
                             : "#ccc",
                     color: 'white',
                     fontWeight: "bold",
@@ -230,7 +230,7 @@ const CreatePackage = () => {
                     {steps.map((label, index) => (
                         <Step key={index} completed={!!completedSteps[index]}>
                             <StepLabel StepIconComponent={CustomStepIcon} onClick={() => handleStepClick(index)} sx={{ cursor: "pointer" }}>
-                                <Typography sx={{ fontSize: "14px", color: activeStep === index ? "#83214F" : "#333", fontWeight: activeStep === index ? "bold" : "400", whiteSpace: "nowrap" }}>
+                                <Typography sx={{ fontSize: "14px", color: activeStep === index ? "#F08C24" : "#333", fontWeight: activeStep === index ? "bold" : "400", whiteSpace: "nowrap" }}>
                                     {label}
                                 </Typography>
                             </StepLabel>

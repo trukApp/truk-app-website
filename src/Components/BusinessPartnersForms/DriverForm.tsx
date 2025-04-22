@@ -379,7 +379,7 @@ const DriverForm: React.FC = () => {
         onClose={() => setSnackbarOpen(false)}
       />
       <Box display="flex" justifyContent="flex-end" gap={2}>
-        <Button 
+        <Button
           onClick={() => setShowForm((prev) => !prev)}
           className={styles.createButton}
         >
@@ -703,11 +703,11 @@ const DriverForm: React.FC = () => {
                     type="submit"
                     variant="contained"
                     sx={{
-                      backgroundColor: "#83214F",
+                      backgroundColor: "#F08C24",
                       color: "#fff",
                       "&:hover": {
                         backgroundColor: "#fff",
-                        color: "#83214F"
+                        color: "#F08C24"
                       }
                     }}
                   >

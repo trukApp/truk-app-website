@@ -251,7 +251,7 @@ const VehicleForm: React.FC = () => {
 		setPaginationModel(newPaginationModel);
 	};
 	const [showForm, setShowForm] = useState(false);
-	
+
 	const initialFormValues = {
 		id: "",
 		vehicleId: "",
@@ -293,7 +293,7 @@ const VehicleForm: React.FC = () => {
 		doorWidth: "",
 		doorWidthUnits: 'm',
 		doorHeight: "",
-		doorHeightUnits:'m',
+		doorHeightUnits: 'm',
 		doorLength: "",
 		doorLengthUnits: 'm',
 		avgCost: "",
@@ -681,7 +681,7 @@ const VehicleForm: React.FC = () => {
 				</Typography>
 				<Box display="flex" justifyContent="flex-end">
 					<Box>
-						<Button 
+						<Button
 							onClick={() => setShowForm((prev) => !prev)}
 							className={styles.createButton}
 						>
@@ -906,23 +906,23 @@ const VehicleForm: React.FC = () => {
 											</Grid>
 											<Grid item xs={12} sm={6} md={2.4}>
 												<TextField
-																	  fullWidth
-																	  label="Vehicle Type "
-																	  name="vehicleType"
-																	  value={values.vehicleType}
-																	  onChange={handleChange}
-																	  onBlur={handleBlur}
-																	  error={touched.vehicleType && Boolean(errors.vehicleType)}
-																	  helperText={touched.vehicleType && errors.vehicleType}
-																	  size="small"
-																	  select  
-																  >
-																	<MenuItem value="Truck">Truck</MenuItem>
-																	  <MenuItem value="Truck">Van</MenuItem>
-																	  <MenuItem value="Trailer">Trailer</MenuItem>
-																	  <MenuItem value="Container">Container</MenuItem>
-																
-																	</TextField>
+													fullWidth
+													label="Vehicle Type "
+													name="vehicleType"
+													value={values.vehicleType}
+													onChange={handleChange}
+													onBlur={handleBlur}
+													error={touched.vehicleType && Boolean(errors.vehicleType)}
+													helperText={touched.vehicleType && errors.vehicleType}
+													size="small"
+													select
+												>
+													<MenuItem value="Truck">Truck</MenuItem>
+													<MenuItem value="Truck">Van</MenuItem>
+													<MenuItem value="Trailer">Trailer</MenuItem>
+													<MenuItem value="Container">Container</MenuItem>
+
+												</TextField>
 											</Grid>
 											<Grid item xs={12} sm={6} md={2.4}>
 												<TextField
@@ -951,8 +951,8 @@ const VehicleForm: React.FC = () => {
 													onBlur={handleBlur}
 													error={touched.ownership && Boolean(errors.ownership)}
 													helperText={touched.ownership && errors.ownership}
-													size="small" 
-													
+													size="small"
+
 												>
 													<MenuItem value="Truck">Self</MenuItem>
 													<MenuItem value="Truck">Carrier</MenuItem>
@@ -1608,11 +1608,11 @@ const VehicleForm: React.FC = () => {
 												type="submit"
 												variant="contained"
 												sx={{
-													backgroundColor: "#83214F",
+													backgroundColor: "#F08C24",
 													color: "#fff",
 													"&:hover": {
 														backgroundColor: "#fff",
-														color: "#83214F"
+														color: "#F08C24"
 													}
 												}}
 											>

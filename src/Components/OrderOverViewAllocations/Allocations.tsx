@@ -16,18 +16,18 @@ import * as Yup from "yup";
 import { VehicleDetails } from "../MasterDataComponents/Vehicles";
 import { TruckFormDetails } from "@/app/vehicle/page";
 import { useSelector } from "react-redux";
-import { RootState } from "@/store"; 
+import { RootState } from "@/store";
 
 const style = {
     position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        transform: "translate(-50%, -50%)",
-                        bgcolor: "white",
-                        boxShadow: 24,
-                        p: 3,
-                        borderRadius: 2,
-                        width: { xs: "100%", md: "60%" },
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    bgcolor: "white",
+    boxShadow: 24,
+    p: 3,
+    borderRadius: 2,
+    width: { xs: "100%", md: "60%" },
 };
 interface RoutePoint {
     start: {
@@ -60,12 +60,12 @@ interface AllocationsProps {
     allocations: Allocation[];
     orderId: string;
     allocatedPackageDetails: [];
-    from:string
+    from: string
 }
 interface FormErrors {
-  truckId?: string;
-  driverId?: string;
-  deviceId?: string;
+    truckId?: string;
+    driverId?: string;
+    deviceId?: string;
 }
 interface Product {
     prod_ID: string;
@@ -115,7 +115,7 @@ interface carrierForOrder {
     rate: string
 }
 
-const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocatedPackageDetails , from }) => {
+const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocatedPackageDetails, from }) => {
     const validationSchema = Yup.object({
         vehicleId: Yup.string().required("Vehicle id is required"),
         vehicleNumber: Yup.string().required("Vehicle number is required"),
@@ -124,13 +124,13 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
         insurance: Yup.string().required("Insurance is required"),
         registration: Yup.string().required("Registration number is required"),
         permit: Yup.string().required("Permit is required"),
-    
+
     });
     const [carrierId, setCarrierId] = useState('')
     console.log("carrier id :", carrierId)
     console.log("fromm :", from)
     const [openReject, setOpenReject] = useState(false);
-    const [carrierOptions , setCarrierOptions] = useState([])
+    const [carrierOptions, setCarrierOptions] = useState([])
     const [postVehicle, { isLoading: postVehicleLoading }] = usePostSingleVehicleMasterMutation();
     const { refetch: refetchOrderById } = useGetOrderByIdQuery({ orderId }, { skip: true });
     const wrapperRef = useRef<HTMLDivElement>(null);
@@ -167,11 +167,11 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
     // console.log("display vehicles :", displayVehicles)
     const [assignModal, setAssignModal] = useState(false);
     const [selectedAllocation, setSelectedAllocation] = useState<Allocation | null>(null);
-     const [postRejectOrderByCarrier, { isLoading: isRejecting }] = usePostCarrierRejectigOrderMutation()
+    const [postRejectOrderByCarrier, { isLoading: isRejecting }] = usePostCarrierRejectigOrderMutation()
     const [postAssignOrder, { isLoading: isAssigning }] = usePostAssignOrderMutation()
     const [editAssignOrder, { isLoading: editAssignLoading }] = useEditAssignOrderOrderMutation()
     const [postAssignCarrier, { isLoading: carrierAssinLoading }] = usePostAssignCarrierMutation()
-     const [postAssignCarrierToOrder, { isLoading: carrierToOrderLoading }] = usePostAssignCarrierToOrderMutation()
+    const [postAssignCarrierToOrder, { isLoading: carrierToOrderLoading }] = usePostAssignCarrierToOrderMutation()
     const { data: assignedOrder } = useGetAssignedOrderByIdQuery({ order_ID: orderId })
     const { data: allDevices, isLoading: deviceLoading } = useGetDeviceMasterQuery({})
     const { data: productsData } = useGetAllProductsQuery({})
@@ -192,9 +192,9 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
 
         return details.length > 0 ? details.join(", ") : "Location details not available";
     };
-  const [open, setOpen] = useState(false);
-    const handleClose = () => setOpen(false); 
-  const handleAssignSubmit = async (values: TruckFormDetails, { resetForm }: { resetForm: () => void }) => {
+    const [open, setOpen] = useState(false);
+    const handleClose = () => setOpen(false);
+    const handleAssignSubmit = async (values: TruckFormDetails, { resetForm }: { resetForm: () => void }) => {
         console.log('Form Values:', values);
         try {
             const body = {
@@ -204,8 +204,8 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                         self_vehicle_num: values.vehicleNumber,
                         available: values.isAvailable,
                         costing: {
-                            cost:values.costing,
-                            cost_criteria_per: values.cost_criteria_per,         
+                            cost: values.costing,
+                            cost_criteria_per: values.cost_criteria_per,
                         },
                         self_vehicle_docs: {
                             insurance: values.insurance,
@@ -217,18 +217,18 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
             };
             const response = await postVehicle(body).unwrap();
             console.log("post response :", response)
-                if (response?.created_records) {
-                    setSnackbarMessage(`Vehicle ID ${response?.created_records[0]} created successfully!`);
-                    setSnackbarSeverity("success");
-                } 
+            if (response?.created_records) {
+                setSnackbarMessage(`Vehicle ID ${response?.created_records[0]} created successfully!`);
+                setSnackbarSeverity("success");
+            }
         } catch (error) {
             console.error("API Error:", error);
             setSnackbarMessage("Something went wrong! please try again");
             setSnackbarSeverity("error");
-      }
-            setSnackbarOpen(true);
-            handleClose();
-            resetForm();
+        }
+        setSnackbarOpen(true);
+        handleClose();
+        resetForm();
     };
     const unitsofMeasurement = useSelector((state: RootState) => state.auth.unitsofMeasurement);
     const initialFormValues = {
@@ -238,7 +238,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
         vehicleNumber: "",
         isAvailable: true,
         costing: "",
-        cost_criteria_per:  unitsofMeasurement[0],
+        cost_criteria_per: unitsofMeasurement[0],
         insurance: "",
         registration: "",
         permit: "",
@@ -258,7 +258,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
     const getProductDetails = (productID: string) => {
         const productInfo = allProductsData.find((product: ProductDetails) => product.product_ID === productID);
         if (!productInfo) return "Package details not available";
-        const details = [productInfo.product_name,productInfo.product_ID].filter(Boolean);
+        const details = [productInfo.product_name, productInfo.product_ID].filter(Boolean);
         return details.length > 0 ? details.join("-") : "Product details not available";
     };
     const devicesData = allDevices?.devices.length > 0 ? allDevices?.devices : []
@@ -271,13 +271,13 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
         driverId: "",
         deviceId: "",
     });
-const [errors, setErrors] = useState<FormErrors>({});
+    const [errors, setErrors] = useState<FormErrors>({});
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const { name, value } = e.target;
+        const { name, value } = e.target;
 
-  setFormData(prev => ({ ...prev, [name]: value }));
-  setErrors(prev => ({ ...prev, [name]: "" }));
-};
+        setFormData(prev => ({ ...prev, [name]: value }));
+        setErrors(prev => ({ ...prev, [name]: "" }));
+    };
 
 
     const handleToggle = (vehicleId: string) => {
@@ -304,41 +304,41 @@ const [errors, setErrors] = useState<FormErrors>({});
         setSelectedAllocation(allocation);
         setAssignModal(true)
     };
-const handleCarrierAssign = async () => {
-  try {
-    
-    const body = {
-      // order_ID: orderId,
-      order_ID: 'ORD000023',
-      assigned_time: new Date().toISOString().slice(0, 16)
+    const handleCarrierAssign = async () => {
+        try {
+
+            const body = {
+                // order_ID: orderId,
+                order_ID: 'ORD000023',
+                assigned_time: new Date().toISOString().slice(0, 16)
+            };
+
+            const response = await postAssignCarrier(body).unwrap();
+            console.log("assign response:", response?.carrier_options);
+            if (response.message === "Multiple valid contracted carriers found. Choose one for assignment.") {
+                setAssignModal(true);
+                setCarrierOptions(response?.carrier_options);
+            }
+            if (response?.message === "Carrier assignment initialized successfully.") {
+                const assignedCarrier = response?.req_sent_to[0]
+                setAssignModal(false)
+                setSnackbarMessage(`Carrier assignment sent to carrier ${assignedCarrier} successfully!`);
+                setSnackbarSeverity("success");
+                setSnackbarOpen(true);
+                setAssignModal(false)
+
+            }
+
+        } catch (error) {
+            console.error("Error assigning carrier:", error);
+        }
     };
 
-    const response = await postAssignCarrier(body).unwrap();
-      console.log("assign response:", response?.carrier_options);
-      if (response.message === "Multiple valid contracted carriers found. Choose one for assignment.") {
-            setAssignModal(true);
-            setCarrierOptions(response?.carrier_options);
-      } 
-      if (response?.message === "Carrier assignment initialized successfully.") {
-            const assignedCarrier = response?.req_sent_to[0]
-            setAssignModal(false)
-            setSnackbarMessage(`Carrier assignment sent to carrier ${assignedCarrier} successfully!`);
-            setSnackbarSeverity("success");
-            setSnackbarOpen(true);
-            setAssignModal(false)
-
-      }
-    
-  } catch (error) {
-    console.error("Error assigning carrier:", error);
-  }
-};
-
-    const handleCarrierSubmit = async() => {
+    const handleCarrierSubmit = async () => {
         const body = {
             order_ID: orderId,
             carrier_ID: carrierId,
-            assigned_time:new Date().toISOString().slice(0, 16)
+            assigned_time: new Date().toISOString().slice(0, 16)
         }
         console.log("body carr: ", body)
         const response = await postAssignCarrierToOrder(body).unwrap();
@@ -348,7 +348,7 @@ const handleCarrierAssign = async () => {
             setSnackbarOpen(true);
             setAssignModal(false)
         }
-      
+
     }
     const handleSubmit = async () => {
         let isValid = true;
@@ -371,67 +371,68 @@ const handleCarrierAssign = async () => {
         if (isValid) {
             console.log("Form submitted:", formData);
             try {
-            const vehicleSelfTruck = formData.truckId.split(',')
-            if (assignedOrder?.data?.length === 0) {
-                if (!selectedAllocation) return;
-                const body = {
-                    order_ID: orderId,
-                    assigned_vehicle_data: [
-                        // {
-                        //     strk_ID: formData.truckId,
-                        //     dri_ID: formData.driverId,
-                        //     dev_ID: formData.deviceId,
-                        //     vehicle_ID: selectedAllocation?.vehicle_ID
-                        // },
-                        {
+                const vehicleSelfTruck = formData.truckId.split(',')
+                if (assignedOrder?.data?.length === 0) {
+                    if (!selectedAllocation) return;
+                    const body = {
+                        order_ID: orderId,
+                        assigned_vehicle_data: [
+                            // {
+                            //     strk_ID: formData.truckId,
+                            //     dri_ID: formData.driverId,
+                            //     dev_ID: formData.deviceId,
+                            //     vehicle_ID: selectedAllocation?.vehicle_ID
+                            // },
+                            {
                                 strk_ID: vehicleSelfTruck[1],
-                                self_vehicle_num:vehicleSelfTruck[0],
+                                self_vehicle_num: vehicleSelfTruck[0],
                                 dri_ID: formData.driverId,
                                 dev_ID: formData.deviceId
-                        }
-                    ],
-                    self_transport: 1,
-                    pod: {},
-                    pod_doc: ""
-                };
-                console.log('assign body : ', body)
-                const response = await postAssignOrder(body).unwrap();
-                console.log("assign response :", response)
-                setAssignModal(false);
-                setSnackbarMessage(`Vehicle assined successfully!`);
-                setSnackbarSeverity("success");
-                setSnackbarOpen(true);
-                console.log('response:', response)
-                setAssignModal(false);
-                setFormData({
-                    truckId: "",
-                    driverId: "",
-                    deviceId: "",
-                })
-                await refetchOrderById();
-            } else {
-                const newVehicle = {
-                    strk_ID: vehicleSelfTruck[1],
-                    dri_ID: formData.driverId,
-                    dev_ID: formData.deviceId,
-                    vehicle_ID: selectedAllocation?.vehicle_ID
+                            }
+                        ],
+                        self_transport: 1,
+                        pod: {},
+                        pod_doc: ""
+                    };
+                    console.log('assign body : ', body)
+                    const response = await postAssignOrder(body).unwrap();
+                    console.log("assign response :", response)
+                    setAssignModal(false);
+                    setSnackbarMessage(`Vehicle assined successfully!`);
+                    setSnackbarSeverity("success");
+                    setSnackbarOpen(true);
+                    console.log('response:', response)
+                    setAssignModal(false);
+                    setFormData({
+                        truckId: "",
+                        driverId: "",
+                        deviceId: "",
+                    })
+                    await refetchOrderById();
+                } else {
+                    const newVehicle = {
+                        strk_ID: vehicleSelfTruck[1],
+                        dri_ID: formData.driverId,
+                        dev_ID: formData.deviceId,
+                        vehicle_ID: selectedAllocation?.vehicle_ID
+                    }
+                    const editBody = {
+                        assigned_vehicle_data: [...assignedOrder?.data[0]?.assigned_vehicle_data, newVehicle]
+                    }
+                    console.log("edit API body:", editBody);
+                    const response = await editAssignOrder(editBody).unwrap();
+                    console.log("Edit Response: ", response)
+                    setFormData({
+                        truckId: "",
+                        driverId: "",
+                        deviceId: "",
+                    })
                 }
-                const editBody = {
-                    assigned_vehicle_data: [...assignedOrder?.data[0]?.assigned_vehicle_data, newVehicle]
-                }
-                console.log("edit API body:", editBody);
-                const response = await editAssignOrder(editBody).unwrap();
-                console.log("Edit Response: ", response)
-                setFormData({
-                    truckId: "",
-                    driverId: "",
-                    deviceId: "",
-                })
-            }
 
-        } catch (error) {
-            console.log("Getting error while assiging the vechile: ", error)
-        }}
+            } catch (error) {
+                console.log("Getting error while assiging the vechile: ", error)
+            }
+        }
 
     }
     useEffect(() => {
@@ -444,7 +445,7 @@ const handleCarrierAssign = async () => {
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
-    }, []); 
+    }, []);
 
     useEffect(() => {
         if (orderId) {
@@ -459,41 +460,41 @@ const handleCarrierAssign = async () => {
     const handleCreateVehicle = () => {
         setOpen(true)
     }
-  const handleOpenDialog = () => {
-    setOpenReject(true);
-  };
+    const handleOpenDialog = () => {
+        setOpenReject(true);
+    };
 
-  const handleCloseReject = () => {
-    setOpenReject(false);
-  };
+    const handleCloseReject = () => {
+        setOpenReject(false);
+    };
 
-  const handleYes = () => {
-    handleRejectByCarrier();
-    handleClose();
-  };
+    const handleYes = () => {
+        handleRejectByCarrier();
+        handleClose();
+    };
     const handleRejectByCarrier = async () => {
-    const carrierIdForOrder = from   // from is the carrier id which we are getting via params when comig from order req for carrier page
-        try { 
+        const carrierIdForOrder = from   // from is the carrier id which we are getting via params when comig from order req for carrier page
+        try {
             const body = {
-                carrier_ID:carrierIdForOrder,   
-                order_ID:orderId
+                carrier_ID: carrierIdForOrder,
+                order_ID: orderId
             }
             console.log('bodyy:', body)
-    const response = await postRejectOrderByCarrier(body).unwrap();
+            const response = await postRejectOrderByCarrier(body).unwrap();
             console.log('Rejection response:', response);
             if (response) {
                 setSnackbarMessage(`Order ${orderId} rejected !`);
                 setSnackbarSeverity("info");
                 setSnackbarOpen(true);
             }
-  } catch (error) {
-        console.error('Error rejecting:', error); 
-        setSnackbarMessage(`Unable to reject this order now , try after sometime.`);
-        setSnackbarSeverity("info");
-        setSnackbarOpen(true);
-  }
+        } catch (error) {
+            console.error('Error rejecting:', error);
+            setSnackbarMessage(`Unable to reject this order now , try after sometime.`);
+            setSnackbarSeverity("info");
+            setSnackbarOpen(true);
+        }
     };
-     
+
     const handleAcceptByCarrier = () => {
         console.log("accept clicked")
     }
@@ -516,203 +517,203 @@ const handleCarrierAssign = async () => {
             />
             <Modal open={open} onClose={handleClose}>
                 <Box sx={style} >
-                    
+
                     <Formik
                         initialValues={initialFormValues}
                         validationSchema={validationSchema}
                         onSubmit={handleAssignSubmit}
                     >
-                        {({ values,errors,touched,handleChange,handleBlur,setFieldValue,resetForm }) => (
-                        <Form>
-                                    <Grid>
-                                        <Grid container spacing={2}>
-                                            <Grid item xs={12} sm={6} md={2.4}>
-                                                <FormControl
-                                                    fullWidth
-                                                    size="small"
-                                                    error={touched.vehicleId && Boolean(errors.vehicleId)}
-                                                >
-                                                    <InputLabel>Vehicle ID*</InputLabel>
-                                                    <Select
-                                                        label="Vehicle ID*"
-                                                        name="vehicleId"
-                                                        value={values.vehicleId}
-                                                        onChange={handleChange}
-                                                        onBlur={handleBlur}
-                                                    >
-                                                        {isVehiclesLoading ? (
-                                                            <MenuItem disabled>
-                                                                <CircularProgress size={20} color="inherit" />
-                                                                <span style={{ marginLeft: "10px" }}>Loading...</span>
-                                                            </MenuItem>
-                                                        ) : (
-                                                            getAllVehicles?.map((vehicle: VehicleDetails) => (
-                                                                <MenuItem key={vehicle?.vehicle_ID} value={String(vehicle.vehicle_ID)}>
-                                                                    <span style={{ flex: 1 }}>{vehicle?.vehicle_ID}</span>
-                                                                </MenuItem>
-                                                            ))
-                                                        )}
-                                                    </Select>
-                                                    {touched.vehicleId && errors.vehicleId && (
-                                                        <FormHelperText>{errors.vehicleId}</FormHelperText>
-                                                    )}
-                                                </FormControl>
-                                            </Grid>
-                                            <Grid item xs={12} sm={6} md={2.4}>
-                                                <TextField
-                                                    fullWidth
-                                                    label="Vehicle Number*"
-                                                    name="vehicleNumber"
-                                                    value={values.vehicleNumber}
+                        {({ values, errors, touched, handleChange, handleBlur, setFieldValue, resetForm }) => (
+                            <Form>
+                                <Grid>
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={12} sm={6} md={2.4}>
+                                            <FormControl
+                                                fullWidth
+                                                size="small"
+                                                error={touched.vehicleId && Boolean(errors.vehicleId)}
+                                            >
+                                                <InputLabel>Vehicle ID*</InputLabel>
+                                                <Select
+                                                    label="Vehicle ID*"
+                                                    name="vehicleId"
+                                                    value={values.vehicleId}
                                                     onChange={handleChange}
                                                     onBlur={handleBlur}
-                                                    error={touched.vehicleNumber && Boolean(errors.vehicleNumber)}
-                                                    helperText={touched.vehicleNumber && errors.vehicleNumber}
-                                                    size="small"
-                                                />
-                                            </Grid>
-                                            <Grid item xs={12} sm={6} md={2.4}>
-                                                <TextField
-                                                    fullWidth
-                                                    size="small"
-                                                    label="Cost (Rs.)*"
-                                                    name="costing" type='number'
-                                                    value={values.costing}
-                                                // onChange={handleChange}
-                                                onChange={(e) => {
-														const inputValue = e.target.value;
-														const numericValue = Number(inputValue);
-
-														if (numericValue > 0 || inputValue === "") {
-															handleChange(e);
-														}
-													}}
-                                                    onBlur={handleBlur}
-                                                    error={touched.costing && Boolean(errors.costing)}
-                                                    helperText={touched.costing && errors.costing}
-                                                />
+                                                >
+                                                    {isVehiclesLoading ? (
+                                                        <MenuItem disabled>
+                                                            <CircularProgress size={20} color="inherit" />
+                                                            <span style={{ marginLeft: "10px" }}>Loading...</span>
+                                                        </MenuItem>
+                                                    ) : (
+                                                        getAllVehicles?.map((vehicle: VehicleDetails) => (
+                                                            <MenuItem key={vehicle?.vehicle_ID} value={String(vehicle.vehicle_ID)}>
+                                                                <span style={{ flex: 1 }}>{vehicle?.vehicle_ID}</span>
+                                                            </MenuItem>
+                                                        ))
+                                                    )}
+                                                </Select>
+                                                {touched.vehicleId && errors.vehicleId && (
+                                                    <FormHelperText>{errors.vehicleId}</FormHelperText>
+                                                )}
+                                            </FormControl>
                                         </Grid>
                                         <Grid item xs={12} sm={6} md={2.4}>
-                                                                                        <TextField
-                                                                                                          fullWidth
-                                                                                                          select
-                                                                                                          onBlur={handleBlur}
-                                                                                                          name="cost_criteria_per"
-                                                                                                          value={values.cost_criteria_per || ""}
-                                                                                                          onChange={handleChange}
-                                                                                                          size="small"
-                                                                                                        >
-                                                                                                          {unitsofMeasurement.map((unit) => (
-                                                                                                            <MenuItem key={unit} value={unit}>
-                                                                                                              {unit}
-                                                                                                            </MenuItem>
-                                                                                                          ))}
-                                                                                                        </TextField>
-                                                                                    </Grid>
-                                            <Grid item xs={12} sm={6} md={2.4}>
-                                                <FormControlLabel
-                                                    control={
-                                                        <Checkbox
-                                                            checked={values.isAvailable}
-                                                            onChange={(e) => {
-                                                                const checked = e.target.checked;
-                                                                setFieldValue("isAvailable", checked);
-                                                            }}
-                                                        />
-                                                    }
-                                                    label="Is vehicle available"
-                                                />
-                                            </Grid>
+                                            <TextField
+                                                fullWidth
+                                                label="Vehicle Number*"
+                                                name="vehicleNumber"
+                                                value={values.vehicleNumber}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                error={touched.vehicleNumber && Boolean(errors.vehicleNumber)}
+                                                helperText={touched.vehicleNumber && errors.vehicleNumber}
+                                                size="small"
+                                            />
                                         </Grid>
-                                        <Typography variant="h6" mt={3} mb={1}>
-                                            Vehicle documents
-                                        </Typography>
-                                        <Grid container spacing={2}>
-                                            <Grid item xs={12} sm={6} md={2.4}>
-                                                <TextField
-                                                    fullWidth
-                                                    label="Insurance*"
-                                                    name="insurance"
-                                                    value={values.insurance}
-                                                    onChange={handleChange}
-                                                    onBlur={handleBlur}
-                                                    error={
-                                                        touched.insurance &&
-                                                        Boolean(errors.insurance)
-                                                    }
-                                                    helperText={
-                                                        touched.insurance && errors.insurance
-                                                    }
-                                                    size="small"
-                                                />
-                                            </Grid>
-                                            <Grid item xs={12} sm={6} md={2.4}>
-                                                <TextField
-                                                    fullWidth
-                                                    label="Registration number*"
-                                                    name="registration"
-                                                    value={values.registration}
-                                                    onChange={handleChange}
-                                                    onBlur={handleBlur}
-                                                    error={
-                                                        touched.registration &&
-                                                        Boolean(errors.registration)
-                                                    }
-                                                    helperText={
-                                                        touched.registration && errors.registration
-                                                    }
-                                                    size="small"
-                                                />
-                                            </Grid>
-                                            <Grid item xs={12} sm={6} md={2.4}>
-                                                <TextField
-                                                    fullWidth
-                                                    label="Permit*"
-                                                    name="permit"
-                                                    value={values.permit}
-                                                    onChange={handleChange}
-                                                    onBlur={handleBlur}
-                                                    error={
-                                                        touched.permit &&
-                                                        Boolean(errors.permit)
-                                                    }
-                                                    helperText={
-                                                        touched.permit && errors.permit
-                                                    }
-                                                    size="small"
-                                                />
-                                            </Grid>
-                                        </Grid>
+                                        <Grid item xs={12} sm={6} md={2.4}>
+                                            <TextField
+                                                fullWidth
+                                                size="small"
+                                                label="Cost (Rs.)*"
+                                                name="costing" type='number'
+                                                value={values.costing}
+                                                // onChange={handleChange}
+                                                onChange={(e) => {
+                                                    const inputValue = e.target.value;
+                                                    const numericValue = Number(inputValue);
 
-                                        <Box mt={3} textAlign="center">
-                                            <Button
-                                                type="submit"
-                                                variant="contained"
-                                                sx={{
-                                                    backgroundColor: "#83214F",
-                                                    color: "#fff",
-                                                    "&:hover": {
-                                                        backgroundColor: "#fff",
-                                                        color: "#83214F"
+                                                    if (numericValue > 0 || inputValue === "") {
+                                                        handleChange(e);
                                                     }
                                                 }}
-                                            > Submit
-                                            </Button>
-
-                                            <Button
-                                                variant="outlined"
-                                                color="secondary"
-                                                onClick={() => { 
-                                                    resetForm();
-                                                }}
-                                                style={{ marginLeft: "10px" }}
+                                                onBlur={handleBlur}
+                                                error={touched.costing && Boolean(errors.costing)}
+                                                helperText={touched.costing && errors.costing}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} sm={6} md={2.4}>
+                                            <TextField
+                                                fullWidth
+                                                select
+                                                onBlur={handleBlur}
+                                                name="cost_criteria_per"
+                                                value={values.cost_criteria_per || ""}
+                                                onChange={handleChange}
+                                                size="small"
                                             >
-                                                Reset
-                                            </Button>
-                                        </Box>
+                                                {unitsofMeasurement.map((unit) => (
+                                                    <MenuItem key={unit} value={unit}>
+                                                        {unit}
+                                                    </MenuItem>
+                                                ))}
+                                            </TextField>
+                                        </Grid>
+                                        <Grid item xs={12} sm={6} md={2.4}>
+                                            <FormControlLabel
+                                                control={
+                                                    <Checkbox
+                                                        checked={values.isAvailable}
+                                                        onChange={(e) => {
+                                                            const checked = e.target.checked;
+                                                            setFieldValue("isAvailable", checked);
+                                                        }}
+                                                    />
+                                                }
+                                                label="Is vehicle available"
+                                            />
+                                        </Grid>
                                     </Grid>
-                                </Form>
-            )}
+                                    <Typography variant="h6" mt={3} mb={1}>
+                                        Vehicle documents
+                                    </Typography>
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={12} sm={6} md={2.4}>
+                                            <TextField
+                                                fullWidth
+                                                label="Insurance*"
+                                                name="insurance"
+                                                value={values.insurance}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                error={
+                                                    touched.insurance &&
+                                                    Boolean(errors.insurance)
+                                                }
+                                                helperText={
+                                                    touched.insurance && errors.insurance
+                                                }
+                                                size="small"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} sm={6} md={2.4}>
+                                            <TextField
+                                                fullWidth
+                                                label="Registration number*"
+                                                name="registration"
+                                                value={values.registration}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                error={
+                                                    touched.registration &&
+                                                    Boolean(errors.registration)
+                                                }
+                                                helperText={
+                                                    touched.registration && errors.registration
+                                                }
+                                                size="small"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} sm={6} md={2.4}>
+                                            <TextField
+                                                fullWidth
+                                                label="Permit*"
+                                                name="permit"
+                                                value={values.permit}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                error={
+                                                    touched.permit &&
+                                                    Boolean(errors.permit)
+                                                }
+                                                helperText={
+                                                    touched.permit && errors.permit
+                                                }
+                                                size="small"
+                                            />
+                                        </Grid>
+                                    </Grid>
+
+                                    <Box mt={3} textAlign="center">
+                                        <Button
+                                            type="submit"
+                                            variant="contained"
+                                            sx={{
+                                                backgroundColor: "#F08C24",
+                                                color: "#fff",
+                                                "&:hover": {
+                                                    backgroundColor: "#fff",
+                                                    color: "#F08C24"
+                                                }
+                                            }}
+                                        > Submit
+                                        </Button>
+
+                                        <Button
+                                            variant="outlined"
+                                            color="secondary"
+                                            onClick={() => {
+                                                resetForm();
+                                            }}
+                                            style={{ marginLeft: "10px" }}
+                                        >
+                                            Reset
+                                        </Button>
+                                    </Box>
+                                </Grid>
+                            </Form>
+                        )}
                     </Formik>
                 </Box>
             </Modal>
@@ -723,21 +724,21 @@ const handleCarrierAssign = async () => {
             >
                 <DialogTitle>Confirm Rejection</DialogTitle>
                 <DialogContent>
-                <DialogContentText>
-                    Are you sure you want to reject this order?
-                </DialogContentText>
+                    <DialogContentText>
+                        Are you sure you want to reject this order?
+                    </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                <Button onClick={handleCloseReject} color="primary">
-                    Cancel
-                </Button>
-                <Button onClick={handleYes} color="error" autoFocus>
-                    Yes, Reject
-                </Button>
+                    <Button onClick={handleCloseReject} color="primary">
+                        Cancel
+                    </Button>
+                    <Button onClick={handleYes} color="error" autoFocus>
+                        Yes, Reject
+                    </Button>
                 </DialogActions>
             </Dialog>
 
-            <Typography variant="h6" gutterBottom color="#83214F" style={{ fontWeight: 'bold' }}>
+            <Typography variant="h6" gutterBottom color="#F08C24" style={{ fontWeight: 'bold' }}>
                 Allocations
             </Typography>
             <Modal open={assignModal} onClose={() => {
@@ -747,212 +748,212 @@ const handleCarrierAssign = async () => {
             }}>
                 {from === 'order-overview' ? (
                     <Box
-                    sx={{
-                        position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        transform: "translate(-50%, -50%)",
-                        bgcolor: "white",
-                        boxShadow: 24,
-                        p: 3,
-                        borderRadius: 2,
-                        width: { xs: "100%", md: "30%" },
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <Typography variant="h6" gutterBottom>
-                        Assign Order ({orderId}) to self transport
-                    </Typography>
+                        sx={{
+                            position: "absolute",
+                            top: "50%",
+                            left: "50%",
+                            transform: "translate(-50%, -50%)",
+                            bgcolor: "white",
+                            boxShadow: 24,
+                            p: 3,
+                            borderRadius: 2,
+                            width: { xs: "100%", md: "30%" },
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <Typography variant="h6" gutterBottom>
+                            Assign Order ({orderId}) to self transport
+                        </Typography>
 
-                    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                        <Grid item xs={12} sm={6} md={2.4}  style={{ display: 'flex', flexDirection: 'row',gap:4 }}>
-                            <Grid>
-                            <TextField
-                                fullWidth
-                                name="truckId"
-                                size="small"
-                                label="Search truck... "
-                                onFocus={() => {
-                                    if (!searchKey) {
-                                        setSearchKey(formData.truckId || "");
-                                        setShowSuggestionsVehicle(true);
-                                    }
-                                }}
-                                onChange={(e) => {
-                                    setSearchKeyVehicle(e.target.value);
-                                    setShowSuggestionsVehicle(true);
-                                    }}
-                                error={Boolean(errors.truckId)}
-                                helperText={errors.truckId}
-                                value={searchKeyVehicle}
-                                InputProps={{
-                                    // endAdornment: filteredVehicleLoading ? <CircularProgress size={20} /> : null,
-                                }}
-                            />
-                            <div style={{ position: "relative" }}>
-                                {showSuggestionsVehicle && (
-                                    <Paper
-                                        style={{
-                                            maxHeight: 200,
-                                            overflowY: "auto",
-                                            position: "absolute",
-                                            zIndex: 10,
-                                            width: "100%",
+                        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                            <Grid item xs={12} sm={6} md={2.4} style={{ display: 'flex', flexDirection: 'row', gap: 4 }}>
+                                <Grid>
+                                    <TextField
+                                        fullWidth
+                                        name="truckId"
+                                        size="small"
+                                        label="Search truck... "
+                                        onFocus={() => {
+                                            if (!searchKey) {
+                                                setSearchKey(formData.truckId || "");
+                                                setShowSuggestionsVehicle(true);
+                                            }
                                         }}
+                                        onChange={(e) => {
+                                            setSearchKeyVehicle(e.target.value);
+                                            setShowSuggestionsVehicle(true);
+                                        }}
+                                        error={Boolean(errors.truckId)}
+                                        helperText={errors.truckId}
+                                        value={searchKeyVehicle}
+                                        InputProps={{
+                                            // endAdornment: filteredVehicleLoading ? <CircularProgress size={20} /> : null,
+                                        }}
+                                    />
+                                    <div style={{ position: "relative" }}>
+                                        {showSuggestionsVehicle && (
+                                            <Paper
+                                                style={{
+                                                    maxHeight: 200,
+                                                    overflowY: "auto",
+                                                    position: "absolute",
+                                                    zIndex: 10,
+                                                    width: "100%",
+                                                }}
+                                            >
+                                                <List>
+                                                    {filteredVehicleLoading ? (
+                                                        <ListItem>
+                                                            <CircularProgress size={20} />
+                                                        </ListItem>
+                                                    ) : displayVehicles.length === 0 ? (
+                                                        <ListItem component="li">
+                                                            <Typography variant="body2" sx={{ color: "gray", textAlign: "center", width: "100%" }}>
+                                                                No results found
+                                                            </Typography>
+                                                        </ListItem>
+                                                    ) : (
+                                                        displayVehicles.map((truck: { strk_ID: string, self_vehicle_num: string }) => (
+                                                            <ListItem
+                                                                key={truck?.strk_ID}
+                                                                component="li"
+                                                                onClick={() => {
+                                                                    setShowSuggestionsVehicle(false);
+                                                                    setSearchKeyVehicle(`${truck?.self_vehicle_num}, ${truck?.strk_ID}`);
+                                                                    setFormData({ ...formData, truckId: `${truck?.self_vehicle_num}, ${truck?.strk_ID}`, });
+                                                                }}
+                                                                sx={{ cursor: "pointer" }}
+                                                            >
+                                                                <span style={{ fontSize: "13px" }}>
+                                                                    {truck?.self_vehicle_num}, {truck?.strk_ID}
+                                                                </span>
+                                                            </ListItem>
+                                                        ))
+                                                    )}
+                                                </List>
+                                            </Paper>
+                                        )}
+                                    </div>
+                                </Grid>
+                                <Typography> OR </Typography>
+                                <Grid>
+                                    <Typography
+                                        onClick={handleCreateVehicle}
+                                        sx={{ textDecoration: 'underline', cursor: 'pointer', marginLeft: 2 }}
                                     >
-                                        <List>
-                                            {filteredVehicleLoading ? (
-                                                <ListItem>
-                                                    <CircularProgress size={20} />
-                                                </ListItem>
-                                            ) : displayVehicles.length === 0 ? (
-                                                <ListItem component="li">
-                                                    <Typography variant="body2" sx={{ color: "gray", textAlign: "center", width: "100%" }}>
-                                                        No results found
-                                                    </Typography>
-                                                </ListItem>
-                                            ) : (
-                                                displayVehicles.map((truck: { strk_ID: string, self_vehicle_num: string }) => (
-                                                    <ListItem
-                                                        key={truck?.strk_ID}
-                                                        component="li"
-                                                        onClick={() => {
-                                                            setShowSuggestionsVehicle(false);
-                                                            setSearchKeyVehicle(`${truck?.self_vehicle_num}, ${truck?.strk_ID}`);
-                                                            setFormData({ ...formData, truckId: `${truck?.self_vehicle_num}, ${truck?.strk_ID}`, });
-                                                        }}
-                                                        sx={{ cursor: "pointer" }}
-                                                    >
-                                                        <span style={{ fontSize: "13px" }}>
-                                                            {truck?.self_vehicle_num}, {truck?.strk_ID}
-                                                        </span>
+                                        Create new Truck
+                                    </Typography>
+                                </Grid>
+                            </Grid>
+
+                            <Grid item xs={12} sm={6} md={2.4}>
+                                <TextField
+                                    fullWidth
+                                    name="driverId"
+                                    size="small"
+                                    label="Search drivers... "
+                                    onFocus={() => {
+                                        if (!searchKey) {
+                                            setSearchKey(formData.driverId || "");
+                                            setShowSuggestions(true);
+                                        }
+                                    }}
+                                    onChange={(e) => {
+                                        setSearchKey(e.target.value);
+                                        setShowSuggestions(true);
+                                    }}
+                                    error={Boolean(errors.driverId)}
+                                    helperText={errors.driverId}
+                                    value={searchKey}
+                                />
+                                <div ref={wrapperRef} style={{ position: "relative" }}>
+                                    {showSuggestions && (
+                                        <Paper
+                                            style={{
+                                                maxHeight: 200,
+                                                overflowY: "auto",
+                                                position: "absolute",
+                                                zIndex: 10,
+                                                width: "100%",
+                                            }}
+                                        >
+                                            <List>
+                                                {filteredDriversLoading ? (
+                                                    <ListItem>
+                                                        <CircularProgress size={20} />
                                                     </ListItem>
-                                                ))
-                                            )}
-                                        </List>
-                                    </Paper>
-                                )}
+                                                ) : displayDrivers.length === 0 ? (
+                                                    <ListItem component="li">
+                                                        <Typography variant="body2" sx={{ color: "gray", textAlign: "center", width: "100%" }}>
+                                                            No results found
+                                                        </Typography>
+                                                    </ListItem>
+                                                ) : (
+                                                    displayDrivers.map((driver: Driver) => (
+                                                        <ListItem
+                                                            key={driver?.dri_ID}
+                                                            component="li"
+                                                            onClick={() => {
+                                                                const selected = `${driver?.dri_ID}, ${driver?.driver_name}, ${driver?.driver_correspondence?.phone}`
+                                                                setShowSuggestions(false);
+                                                                setSearchKey(selected);
+                                                                setFormData({ ...formData, driverId: driver?.dri_ID });
+                                                            }}
+                                                            sx={{ cursor: "pointer" }}
+                                                        >
+                                                            <span style={{ fontSize: "13px" }}>
+                                                                {driver?.dri_ID}, {driver?.driver_name}, {driver?.driver_correspondence?.phone}
+                                                            </span>
+                                                        </ListItem>
+                                                    ))
+                                                )}
+                                            </List>
+                                        </Paper>
+                                    )}
                                 </div>
                             </Grid>
-                            <Typography> OR </Typography>
-                            <Grid>
-                               <Typography 
-                                onClick={handleCreateVehicle} 
-                                sx={{ textDecoration: 'underline', cursor: 'pointer', marginLeft: 2 }}
-                                >
-                                Create new Truck
-                                </Typography>
-                            </Grid>
-                        </Grid>
-
-                        <Grid item xs={12} sm={6} md={2.4}>
                             <TextField
-                                fullWidth
-                                name="driverId"
+                                label="Device ID"
+                                name="deviceId"
+                                select
+                                value={formData.deviceId}
+                                onChange={handleChange}
+                                variant="outlined"
                                 size="small"
-                                label="Search drivers... "
-                                onFocus={() => {
-                                    if (!searchKey) {
-                                        setSearchKey(formData.driverId || "");
-                                        setShowSuggestions(true);
-                                    }
-                                }}
-                                onChange={(e) => {
-                                    setSearchKey(e.target.value);
-                                    setShowSuggestions(true);
-                                }}
-                                error={Boolean(errors.driverId)}
-                                helperText={errors.driverId}
-                                value={searchKey}
-                            />
-                            <div ref={wrapperRef} style={{ position: "relative" }}>
-                                {showSuggestions && (
-                                    <Paper
-                                        style={{
-                                            maxHeight: 200,
-                                            overflowY: "auto",
-                                            position: "absolute",
-                                            zIndex: 10,
-                                            width: "100%",
-                                        }}
-                                    >
-                                        <List>
-                                            {filteredDriversLoading ? (
-                                                <ListItem>
-                                                    <CircularProgress size={20} />
-                                                </ListItem>
-                                            ) : displayDrivers.length === 0 ? (
-                                                <ListItem component="li">
-                                                    <Typography variant="body2" sx={{ color: "gray", textAlign: "center", width: "100%" }}>
-                                                        No results found
-                                                    </Typography>
-                                                </ListItem>
-                                            ) : (
-                                                displayDrivers.map((driver: Driver) => (
-                                                    <ListItem
-                                                        key={driver?.dri_ID}
-                                                        component="li"
-                                                        onClick={() => {
-                                                            const selected = `${driver?.dri_ID}, ${driver?.driver_name}, ${driver?.driver_correspondence?.phone}`
-                                                            setShowSuggestions(false);
-                                                            setSearchKey(selected);
-                                                            setFormData({ ...formData, driverId: driver?.dri_ID });
-                                                        }}
-                                                        sx={{ cursor: "pointer" }}
-                                                    >
-                                                        <span style={{ fontSize: "13px" }}>
-                                                            {driver?.dri_ID}, {driver?.driver_name}, {driver?.driver_correspondence?.phone}
-                                                        </span>
-                                                    </ListItem>
-                                                ))
-                                            )}
-                                        </List>
-                                    </Paper>
-                                )}
-                            </div>
-                        </Grid>
-                        <TextField
-                            label="Device ID"
-                            name="deviceId"
-                            select
-                            value={formData.deviceId}
-                            onChange={handleChange}
-                            variant="outlined"
-                            size="small"
-                            fullWidth 
-                            error={Boolean(errors.deviceId)}
-                            helperText={errors.deviceId}
-                        >
-                            {devicesData?.map((device: DeviceInfoBE) => (
-                                <MenuItem key={device?.device_id} value={device.dev_ID}>
-                                    {device.dev_ID}
-                                </MenuItem>
-                            ))}
-                        </TextField>
-                        <Button variant="contained" color="primary" onClick={handleSubmit}>
-                            Submit
-                        </Button>
-                    </Box>
-                </Box>) :
+                                fullWidth
+                                error={Boolean(errors.deviceId)}
+                                helperText={errors.deviceId}
+                            >
+                                {devicesData?.map((device: DeviceInfoBE) => (
+                                    <MenuItem key={device?.device_id} value={device.dev_ID}>
+                                        {device.dev_ID}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                            <Button variant="contained" color="primary" onClick={handleSubmit}>
+                                Submit
+                            </Button>
+                        </Box>
+                    </Box>) :
                     (
-                <Box
-                    sx={{
-                        position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        transform: "translate(-50%, -50%)",
-                        bgcolor: "white",
-                        boxShadow: 24,
-                        p: 3,
-                        borderRadius: 2,
-                        width: { xs: "100%", md: "30%" },
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                >
+                        <Box
+                            sx={{
+                                position: "absolute",
+                                top: "50%",
+                                left: "50%",
+                                transform: "translate(-50%, -50%)",
+                                bgcolor: "white",
+                                boxShadow: 24,
+                                p: 3,
+                                borderRadius: 2,
+                                width: { xs: "100%", md: "30%" },
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
                             <Typography variant="h6" gutterBottom>
                                 Assign Order ({orderId}) to Carrier
                             </Typography>
-                            <Typography variant="h6" sx={{fontSize:'14px'}} gutterBottom>
+                            <Typography variant="h6" sx={{ fontSize: '14px' }} gutterBottom>
                                 The following are the multiple valid contracted carriers found. Choose one for assignment.
                             </Typography>
                             <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -961,27 +962,27 @@ const handleCarrierAssign = async () => {
                                     name="carrierId"
                                     select
                                     value={carrierId}
-                                    onChange={(e)=>setCarrierId(e.target.value)}
+                                    onChange={(e) => setCarrierId(e.target.value)}
                                     variant="outlined"
                                     size="small"
-                                    fullWidth 
+                                    fullWidth
                                 >
-                                {carrierOptions?.map((carrier: carrierForOrder) => (
-                                    <MenuItem key={carrier?.carrier_ID} value={carrier.carrier_ID}>
-                                        {carrier.carrier_ID}, {carrier.rate}
-                                    </MenuItem>
-                                ))}
+                                    {carrierOptions?.map((carrier: carrierForOrder) => (
+                                        <MenuItem key={carrier?.carrier_ID} value={carrier.carrier_ID}>
+                                            {carrier.carrier_ID}, {carrier.rate}
+                                        </MenuItem>
+                                    ))}
                                 </TextField>
-                                     <Button variant="contained"  color="primary" onClick={handleCarrierSubmit}>
+                                <Button variant="contained" color="primary" onClick={handleCarrierSubmit}>
                                     Submit
-                                    </Button>
-                               
+                                </Button>
+
 
                             </Box>
-                            
+
                         </Box>
-                )}
-               
+                    )}
+
             </Modal>
 
             {allocations.map((allocation) => {
@@ -990,24 +991,24 @@ const handleCarrierAssign = async () => {
                     <Paper key={uniqueKey} sx={{ p: 2, mb: 2 }}>
                         <Grid container alignItems="center" justifyContent="space-between">
                             <Grid item sx={{ width: '97.5%' }}>
-                                <Grid item sx={{display:'flex' , flexDirection:'row' , justifyContent:'space-between', marginBottom:2}}>
-                                    <Typography variant="subtitle1" color="#83214F" style={{ fontWeight: 'bold' }}>
+                                <Grid item sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 }}>
+                                    <Typography variant="subtitle1" color="#F08C24" style={{ fontWeight: 'bold' }}>
                                         Vehicle: {allocation.vehicle_ID} | Cost: ₹{allocation.cost.toFixed(2)}
                                     </Typography>
-                                    <Typography variant="body2" color="#83214F" sx={{fontSize: 11 ,backgroundColor: 'lightpink', paddingLeft: 2,paddingRight:2, paddingTop:0.7,paddingBottom:0.3, borderRadius: 1.5 }}>
-                                            {order?.order?.order_status}
+                                    <Typography variant="body2" color="#F08C24" sx={{ fontSize: 11, backgroundColor: 'lightpink', paddingLeft: 2, paddingRight: 2, paddingTop: 0.7, paddingBottom: 0.3, borderRadius: 1.5 }}>
+                                        {order?.order?.order_status}
                                     </Typography>
-                                    
+
                                 </Grid>
-                                   
-                                    <Typography variant="body2">
-                                        Route: <strong>{allocation.route[0].start.address}</strong> → <strong>{allocation.route[0].end.address}</strong>
-                                    </Typography>
-                                    <Typography variant="body2">
-                                        Distance: <strong>{allocation.route[0].distance}</strong> | Duration: <strong>{allocation.route[0].duration}</strong>
-                                    </Typography>
+
+                                <Typography variant="body2">
+                                    Route: <strong>{allocation.route[0].start.address}</strong> → <strong>{allocation.route[0].end.address}</strong>
+                                </Typography>
+                                <Typography variant="body2">
+                                    Distance: <strong>{allocation.route[0].distance}</strong> | Duration: <strong>{allocation.route[0].duration}</strong>
+                                </Typography>
                             </Grid>
-                            <Grid item sx={{width:'2.5%'}}>
+                            <Grid item sx={{ width: '2.5%' }}>
                                 <IconButton onClick={() => handleToggle(uniqueKey)}>
                                     {expanded[uniqueKey] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                                 </IconButton>
@@ -1024,7 +1025,7 @@ const handleCarrierAssign = async () => {
                                     boxShadow: 2
                                 }}
                             >
-                                <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }} color="#83214F">
+                                <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }} color="#F08C24">
                                     Vehicle ID: {allocation.vehicle_ID}
                                 </Typography>
 
@@ -1077,7 +1078,7 @@ const handleCarrierAssign = async () => {
                                                 <Grid sx={{ overflowX: "auto", whiteSpace: "nowrap" }}>
                                                     <Grid container spacing={2} sx={{ minWidth: '1000px', display: 'flex', justifyContent: 'space-between' }} item >
                                                         <Grid item >
-                                                            <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '15px', marginTop: '15px', marginBottom: '5px' }}>Billing Details</Typography>
+                                                            <Typography color="#F08C24" style={{ fontWeight: 'bold', fontSize: '15px', marginTop: '15px', marginBottom: '5px' }}>Billing Details</Typography>
                                                             <Grid  >
                                                                 <Typography variant="body2">
                                                                     Ship From: <strong> {getLocationDetails(pkg.ship_from)}</strong>
@@ -1091,7 +1092,7 @@ const handleCarrierAssign = async () => {
                                                             </Grid>
                                                         </Grid>
                                                         <Grid item >
-                                                            <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '15px', marginTop: '15px', marginBottom: '5px' }}>Date & Timings</Typography>
+                                                            <Typography color="#F08C24" style={{ fontWeight: 'bold', fontSize: '15px', marginTop: '15px', marginBottom: '5px' }}>Date & Timings</Typography>
                                                             <Grid >
                                                                 <Typography variant="body2">
                                                                     Pickup Date:<strong>  {moment(pkg.pickup_date_time).format("DD MMM YYYY, hh:mm A")}</strong>
@@ -1102,7 +1103,7 @@ const handleCarrierAssign = async () => {
                                                             </Grid>
                                                         </Grid>
                                                         <Grid item >
-                                                            <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '15px', marginTop: '15px', marginBottom: '5px' }}>Additional Info</Typography>
+                                                            <Typography color="#F08C24" style={{ fontWeight: 'bold', fontSize: '15px', marginTop: '15px', marginBottom: '5px' }}>Additional Info</Typography>
                                                             <Grid >
                                                                 {pkg.additional_info?.reference_id && (
                                                                     <Typography variant="body2">
@@ -1155,7 +1156,7 @@ const handleCarrierAssign = async () => {
                                                             </Grid>
                                                         </Grid>
                                                         <Grid item >
-                                                            <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '15px', marginTop: '15px', marginBottom: '5px' }}>Tax Info</Typography>
+                                                            <Typography color="#F08C24" style={{ fontWeight: 'bold', fontSize: '15px', marginTop: '15px', marginBottom: '5px' }}>Tax Info</Typography>
                                                             <Grid >
                                                                 {pkg.tax_info?.sender_gst && (
                                                                     <Typography variant="body2">
@@ -1194,7 +1195,7 @@ const handleCarrierAssign = async () => {
                                                             </Grid>
                                                         </Grid>
                                                         <Grid item >
-                                                            <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '15px', marginTop: '15px', marginBottom: '5px' }}>Product Details</Typography>
+                                                            <Typography color="#F08C24" style={{ fontWeight: 'bold', fontSize: '15px', marginTop: '15px', marginBottom: '5px' }}>Product Details</Typography>
                                                             <Box sx={{ mt: 1 }}>
                                                                 <Typography variant="body2" sx={{ fontWeight: "bold" }}>
                                                                     Products:
@@ -1213,56 +1214,56 @@ const handleCarrierAssign = async () => {
                                 <Box sx={{ display: "flex", justifyContent: isMobile ? "center" : "flex-end", mt: 3, gap: 3 }}>
                                     {!assignedOrder?.data[0]?.allocated_vehicles?.some(
                                         (vehicle: string) => vehicle === allocation.vehicle_ID
-                                    ) && ( 
-                                        <>
-                                            {from === 'order-overview' && (order?.order?.order_status ==='self assigned' || order?.order?.order_status ==='assignment pending')  && (
-                                                <Button
-                                                variant="contained"
-                                                color="primary"
-                                                onClick={() => handleAssign(allocation)}
-                                            >
-                                                Assign
-                                            </Button>
-                                            )
-                                            } 
-                                            {from === 'order-bidding' && order?.order?.order_status ==='assignment pending' && (
-                                                <Button
-                                                variant="contained"
-                                                color="primary"
-                                                onClick={handleCarrierAssign}
-                                            >
-                                                Assign Carrier
-                                            </Button>
-                                            )
-                                            } 
-                                            
-                                        </>
-                                          
+                                    ) && (
+                                            <>
+                                                {from === 'order-overview' && (order?.order?.order_status === 'self assigned' || order?.order?.order_status === 'assignment pending') && (
+                                                    <Button
+                                                        variant="contained"
+                                                        color="primary"
+                                                        onClick={() => handleAssign(allocation)}
+                                                    >
+                                                        Assign
+                                                    </Button>
+                                                )
+                                                }
+                                                {from === 'order-bidding' && order?.order?.order_status === 'assignment pending' && (
+                                                    <Button
+                                                        variant="contained"
+                                                        color="primary"
+                                                        onClick={handleCarrierAssign}
+                                                    >
+                                                        Assign Carrier
+                                                    </Button>
+                                                )
+                                                }
+
+                                            </>
+
                                         )}
 
                                     {assignedOrder?.data[0]?.allocated_vehicles?.some(
                                         (vehicle: string) => vehicle === allocation.vehicle_ID
                                     ) && (
-                                        <>
-                                            {order?.order?.order_status === "carrier assignment" && (
-                                                <>
-                                                <Button
-                                                        variant="contained"
-                                                        color="primary"
-                                                        onClick={handleAcceptByCarrier}
-                                                    >
-                                                        Accept
-                                                </Button>
-                                                <Button
-                                                        variant="contained"
-                                                        color="primary"
-                                                        onClick={handleOpenDialog}
-                                                    >
-                                                        Reject
-                                                    </Button>
-                                                </>
-                                                
-                                            )}
+                                            <>
+                                                {order?.order?.order_status === "carrier assignment" && (
+                                                    <>
+                                                        <Button
+                                                            variant="contained"
+                                                            color="primary"
+                                                            onClick={handleAcceptByCarrier}
+                                                        >
+                                                            Accept
+                                                        </Button>
+                                                        <Button
+                                                            variant="contained"
+                                                            color="primary"
+                                                            onClick={handleOpenDialog}
+                                                        >
+                                                            Reject
+                                                        </Button>
+                                                    </>
+
+                                                )}
                                                 {order?.order?.order_status === "finished" ? (
                                                     <Button
                                                         variant="contained"
@@ -1271,7 +1272,7 @@ const handleCarrierAssign = async () => {
                                                     >
                                                         Route Reply
                                                     </Button>
-                                                ) : (order?.order?.order_status !== "carrier assignment" ) ? (
+                                                ) : (order?.order?.order_status !== "carrier assignment") ? (
                                                     <Button
                                                         variant="contained"
                                                         color="primary"

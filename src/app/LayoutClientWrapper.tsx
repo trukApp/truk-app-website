@@ -21,15 +21,14 @@ const LayoutClientWrapper = ({ children, session }: { children: React.ReactNode;
                 <CssBaseline />
                 <ReduxProvider>
                     <Header />
-                     <Toolbar />
+                    <Toolbar />
                     <Grid
                         sx={{
                             // marginTop: { xs: "40px", md: "60px", },
-                            // padding: "15px",
-                            backgroundColor: "#FAF1F8",
-                            // minHeight: "70vh",
-                            marginLeft: { xs: 0, md: isLandingPage ? '0px' : '30px' },
-                            marginTop: isLandingPage ? '0px' : '30px',
+                            padding: isLandingPage ? '0px' : "15px",
+                            backgroundColor: "#ffffff",
+                            minHeight: "70vh",
+                            marginLeft :isLandingPage ? '0px' : '30px'
                         }}
                     >
                         {children}

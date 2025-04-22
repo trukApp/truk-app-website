@@ -1,15 +1,28 @@
 'use client'
 // import { Truck, PackageCheck, Route, Users, Globe } from "lucide-react";
 import { motion } from "framer-motion";
-import {   Button, Grid } from "@mui/material";
+import {   Backdrop, Box, Button, CircularProgress, Grid } from "@mui/material";
 // import ImageListItem from "@mui/material/ImageListItem";
 import Carousel from "react-material-ui-carousel";
 import Image from "next/image";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function LandingPage() {
+    const router = useRouter();
+    const [loading, setLoading] = useState(false);
+    const handleNavigation = (path: string) => {
+    setLoading(true);
+    router.push(path);
+  };
   return (
     <div >
- 
+       <Backdrop
+        open={loading}
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
       <section className="bg-white">
         {/* <h2 className="text-3xl font-bold text-center text-purple-900">Customer Testimonials</h2> */}
         <Carousel autoPlay interval={3000} animation="fade">
@@ -35,7 +48,7 @@ export default function LandingPage() {
         </Carousel>
       </section>
       {/* Hero Section */}
-    <Grid sx={{ marginLeft: { xs: 0, md: '30px' } }}>
+    <Grid sx={{ marginLeft: { xs: 0, md: '50px' } }}>
       <section className="relative bg-gradient-to-r from-purple-100 via-white to-pink-100 overflow-hidden p-4 md:p-20">
         {/* Background decoration */}
         <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-pink-300 rounded-full opacity-20 blur-3xl z-0"></div>
@@ -65,10 +78,26 @@ export default function LandingPage() {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1 }}
-            >
-              <Button >
-                Explore More
-              </Button>
+              >
+                <Box sx={{display:'flex', flexDirection:'row', justifyContent:'center'}}>
+                  <Button 
+                  variant="contained" 
+                  onClick={() => handleNavigation('/explore')}
+                    sx={{
+                      width: '300px',
+                      height:'50px',
+                          backgroundColor: "#F08C24",
+                          color: "#fff",
+                          "&:hover": {
+                            backgroundColor: '#fff',
+                            color: "#F08C24"
+                          }
+                        }}
+                      >
+                        Explore More
+                      </Button>
+                </Box>
+  
             </motion.div>
           </div>
 
@@ -78,20 +107,23 @@ export default function LandingPage() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1.2 }}
             className="flex justify-center"
-          >
-              <Image
+            >
+              <Box sx={{marginTop:'20px'}}>
+                          <Image
                                           src="https://res.cloudinary.com/impargo-gmbh/image/upload/v1666107021/trucker_apps_IMPARGO_2022_01_6e28388ce8.jpg"
                                           alt="Start"
                                           width={360}
-                                          height={360} 
+                                          height={300} 
                                           unoptimized
                                       />
+              </Box>
+    
           </motion.div>
         </div>
       </section>
     </Grid>
     
-      <Grid sx={{ marginLeft: { xs: 0, md: '30px' }, marginTop: '30px' }}>
+      <Grid sx={{ marginLeft: { xs: 0, md: '50px' }, marginTop: '30px' }}>
         <section className="py-24 px-6 bg-gradient-to-b from-pink-100 to-purple-200">
         <div className="text-center max-w-4xl mx-auto">
           <motion.h2
@@ -114,7 +146,7 @@ export default function LandingPage() {
           </motion.p>
         </div>
         <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto items-center">
-          <motion.img
+          {/* <motion.img
             src="https://images.unsplash.com/photo-1601333761826-58e2a4a74074"
             alt="Truck on road"
             className="rounded-2xl shadow-lg"
@@ -122,7 +154,7 @@ export default function LandingPage() {
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
-          />
+          /> */}
           <motion.div
             className="space-y-6"
             initial={{ opacity: 0, x: 50 }}

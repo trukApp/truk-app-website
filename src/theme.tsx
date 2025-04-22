@@ -4,7 +4,7 @@ import { createTheme } from '@mui/material/styles';
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#83214F",
+      main: "#F08C24",
     },
     secondary: {
       main: '#dc004e',
@@ -36,12 +36,12 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           "&:hover .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#83214F",
+            borderColor: "#F08C24",
           },
           "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#83214F",
+            borderColor: "#F08C24",
           },
-           "&.Mui-disabled .MuiOutlinedInput-notchedOutline": {
+          "&.Mui-disabled .MuiOutlinedInput-notchedOutline": {
             borderColor: "lightGrey",
           },
         },
@@ -52,15 +52,15 @@ const theme = createTheme({
         root: {
           color: "grey",
           "&.Mui-focused": {
-            color: "#83214F",
+            color: "#F08C24",
           },
         },
       },
     },
-  
-    
+
+
   },
-  
+
 });
 
 export default theme;

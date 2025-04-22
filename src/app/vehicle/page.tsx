@@ -47,7 +47,7 @@ export interface TruckDetails {
     };
     str_id: string;
     self_vehicle_docs
-: {
+    : {
         insurance: string;
         permit: string;
         registration: string
@@ -90,8 +90,8 @@ const VehicleOnly: React.FC = () => {
     //     setPaginationModel(newPaginationModel);
     // };
     const unitsofMeasurement = useSelector(
-            (state: RootState) => state.auth.unitsofMeasurement
-        );
+        (state: RootState) => state.auth.unitsofMeasurement
+    );
     const [showForm, setShowForm] = useState(false);
     const initialFormValues = {
         id: "",
@@ -117,7 +117,7 @@ const VehicleOnly: React.FC = () => {
                 vehicleNumber: editRow?.vehicleNumber || "",
                 isAvailable: editRow?.isAvailable ?? false,
                 costing: editRow?.costing || "",
-                cost_criteria_per: editRow?.cost_criteria_per || '' ,
+                cost_criteria_per: editRow?.cost_criteria_per || '',
                 insurance: editRow?.insurance || "",
                 registration: editRow?.registration || "",
                 permit: editRow?.permit || "",
@@ -130,7 +130,7 @@ const VehicleOnly: React.FC = () => {
                 vehicleNumber: "",
                 isAvailable: true,
                 costing: "",
-                cost_criteria_per:unitsofMeasurement[0],
+                cost_criteria_per: unitsofMeasurement[0],
                 insurance: "",
                 registration: "",
                 permit: "",
@@ -142,19 +142,19 @@ const VehicleOnly: React.FC = () => {
     const rows = vehiclesMaster?.map((vehicle: TruckDetails) => {
         return (
             {
-            id: vehicle?.str_id,
-            truckId: vehicle?.strk_ID,
-            vehicleId: vehicle?.vehicle_ID,
-            vehicleNumber: vehicle?.self_vehicle_num,
-            isAvailable: vehicle?.available,
-            costing: vehicle?.costing.cost,
-            cost_criteria_per: vehicle?.costing?.cost_criteria_per,
-            insurance: vehicle?.self_vehicle_docs?.insurance,
-            registration: vehicle?.self_vehicle_docs?.registration,
-            permit: vehicle?.self_vehicle_docs?.permit,
-        })
+                id: vehicle?.str_id,
+                truckId: vehicle?.strk_ID,
+                vehicleId: vehicle?.vehicle_ID,
+                vehicleNumber: vehicle?.self_vehicle_num,
+                isAvailable: vehicle?.available,
+                costing: vehicle?.costing.cost,
+                cost_criteria_per: vehicle?.costing?.cost_criteria_per,
+                insurance: vehicle?.self_vehicle_docs?.insurance,
+                registration: vehicle?.self_vehicle_docs?.registration,
+                permit: vehicle?.self_vehicle_docs?.permit,
+            })
     }
- );
+    );
 
     const columns: GridColDef[] = [
         { field: "truckId", headerName: "Truck ID", width: 150 },
@@ -195,8 +195,8 @@ const VehicleOnly: React.FC = () => {
                         self_vehicle_num: values.vehicleNumber,
                         available: values.isAvailable,
                         costing: {
-                            cost:values.costing,
-                            cost_criteria_per: values.cost_criteria_per, 
+                            cost: values.costing,
+                            cost_criteria_per: values.cost_criteria_per,
                         },
                         self_vehicle_docs: {
                             insurance: values.insurance,
@@ -211,8 +211,8 @@ const VehicleOnly: React.FC = () => {
                 self_vehicle_num: values.vehicleNumber,
                 available: values.isAvailable,
                 costing: {
-                    cost:values.costing,
-                    cost_criteria_per: values.cost_criteria_per,         
+                    cost: values.costing,
+                    cost_criteria_per: values.cost_criteria_per,
                 },
                 self_vehicle_docs: {
                     insurance: values.insurance,
@@ -251,13 +251,13 @@ const VehicleOnly: React.FC = () => {
                 }
 
             }
-            
+
         } catch (error) {
             console.error("API Error:", error);
             setSnackbarMessage("Something went wrong! please try again");
             setSnackbarSeverity("error");
             setSnackbarOpen(true);
-            
+
         }
         resetForm();
         setShowForm(false)
@@ -329,8 +329,8 @@ const VehicleOnly: React.FC = () => {
                 </Typography>
                 <Box display="flex" justifyContent="flex-end">
                     <Box>
-                        <Button 
-                            onClick={() => setShowForm((prev) => !prev)} 
+                        <Button
+                            onClick={() => setShowForm((prev) => !prev)}
                             style={{
                                 textTransform: "capitalize",
                                 textDecoration: "underline",
@@ -447,36 +447,36 @@ const VehicleOnly: React.FC = () => {
                                                     name="costing" type='number'
                                                     value={values.costing}
                                                     onChange={(e) => {
-														const inputValue = e.target.value;
-														const numericValue = Number(inputValue);
+                                                        const inputValue = e.target.value;
+                                                        const numericValue = Number(inputValue);
 
-														if (numericValue > 0 || inputValue === "") {
-															handleChange(e);
-														}
-													}}
+                                                        if (numericValue > 0 || inputValue === "") {
+                                                            handleChange(e);
+                                                        }
+                                                    }}
                                                     onBlur={handleBlur}
                                                     error={touched.costing && Boolean(errors.costing)}
                                                     helperText={touched.costing && errors.costing}
                                                 />
                                             </Grid>
-                                            <Grid item xs={isEditing ? 6 : 12} sm={isEditing ? 3: 6} md={isEditing ? 1.2 :2.4}>
+                                            <Grid item xs={isEditing ? 6 : 12} sm={isEditing ? 3 : 6} md={isEditing ? 1.2 : 2.4}>
                                                 <TextField
-                                                                  fullWidth
-                                                                  select label = "Cost criteria per"
-                                                                  onBlur={handleBlur}
-                                                                  name="cost_criteria_per"
-                                                                  value={values.cost_criteria_per || ""}
-                                                                  onChange={handleChange}
-                                                                  size="small"
-                                                                >
-                                                                  {unitsofMeasurement.map((unit) => (
-                                                                    <MenuItem key={unit} value={unit}>
-                                                                      {unit}
-                                                                    </MenuItem>
-                                                                  ))}
-                                                                </TextField>
+                                                    fullWidth
+                                                    select label="Cost criteria per"
+                                                    onBlur={handleBlur}
+                                                    name="cost_criteria_per"
+                                                    value={values.cost_criteria_per || ""}
+                                                    onChange={handleChange}
+                                                    size="small"
+                                                >
+                                                    {unitsofMeasurement.map((unit) => (
+                                                        <MenuItem key={unit} value={unit}>
+                                                            {unit}
+                                                        </MenuItem>
+                                                    ))}
+                                                </TextField>
                                             </Grid>
-                                            <Grid item xs={isEditing ? 6 : 12} sm={isEditing ? 3: 6} md={isEditing ? 1.2 :2.4}>
+                                            <Grid item xs={isEditing ? 6 : 12} sm={isEditing ? 3 : 6} md={isEditing ? 1.2 : 2.4}>
                                                 <FormControlLabel
                                                     control={
                                                         <Checkbox
@@ -556,11 +556,11 @@ const VehicleOnly: React.FC = () => {
                                                 type="submit"
                                                 variant="contained"
                                                 sx={{
-                                                    backgroundColor: "#83214F",
+                                                    backgroundColor: "#F08C24",
                                                     color: "#fff",
                                                     "&:hover": {
                                                         backgroundColor: "#fff",
-                                                        color: "#83214F"
+                                                        color: "#F08C24"
                                                     }
                                                 }}
                                             >

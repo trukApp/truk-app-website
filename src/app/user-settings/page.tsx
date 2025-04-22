@@ -6,7 +6,7 @@ import theme from '@/theme';
 const SystemConections = () => {
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-return (
+    return (
         <Grid
             container
             direction="column"
@@ -16,9 +16,9 @@ return (
             <Typography
                 variant="h6"
                 gutterBottom
-                sx={{ color: "#83214F", fontWeight: "bold", textAlign: "center" }}
+                sx={{ color: "#F08C24", fontWeight: "bold", textAlign: "center" }}
             >
-               User Settings
+                User Settings
             </Typography>
 
         </Grid>

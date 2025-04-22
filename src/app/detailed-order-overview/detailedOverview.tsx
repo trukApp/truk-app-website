@@ -21,7 +21,7 @@ const OrderDetailedOverview: React.FC = () => {
             </Backdrop>
             {orderData && (
                 <Paper sx={{ p: 3, mb: 3, }}>
-                    <Typography variant="h6" gutterBottom sx={{ color: "#83214F", fontWeight: 'bold' }}>
+                    <Typography variant="h6" gutterBottom sx={{ color: "#F08C24", fontWeight: 'bold' }}>
                         Order Details
                     </Typography>
                     <Grid container spacing={1} sx={{ mt: { xs: 0.2, md: 2 } }}>

@@ -16,7 +16,7 @@ const TransportPlanning = () => {
   };
 
   const tiles = [
-      {
+    {
       title: 'Transport Package Overview',
       icon: <Inventory2 sx={{ fontSize: { xs: 40, sm: 50, md: 60 } }} />,
       // onClick: () => {
@@ -53,7 +53,7 @@ const TransportPlanning = () => {
       </Backdrop>
 
       <Box>
-        <Typography variant="h6" sx={{ mt: 4, mb: 1, color: '#83214F', fontWeight: 'bold' }}>
+        <Typography variant="h6" sx={{ mt: 4, mb: 1, color: '#F08C24', fontWeight: 'bold' }}>
           Transport Planning
         </Typography>
         <Box
@@ -85,7 +85,7 @@ const TransportPlanning = () => {
                 '&:hover': {
                   transform: 'translateY(-5px)',
                   boxShadow: 6,
-                  backgroundColor: '#FAF1F8',
+                  backgroundColor: '#FCF0DE',
                 },
                 cursor: 'pointer'
               }}

@@ -26,7 +26,7 @@ const Footer: React.FC = () => {
         }}
       >
       </Box>
-      <Typography variant="body2" sx={{ color: "#000000" }}>
+      <Typography variant="body2" sx={{ color: "#010101" }}>
         © {new Date().getFullYear()} Trukapp. All rights reserved.
       </Typography>
     </Box>

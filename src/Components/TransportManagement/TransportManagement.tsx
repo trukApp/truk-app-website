@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { Box, Typography, Card, Backdrop, CircularProgress } from '@mui/material';
-import { useRouter } from 'next/navigation'; 
+import { useRouter } from 'next/navigation';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import BusinessIcon from '@mui/icons-material/Business';
 import StorageIcon from '@mui/icons-material/Storage';
@@ -43,10 +43,10 @@ const TransportManagement = () => {
       // onClick: () => router.push('/masterdata'),
       onClick: () => handleNavigation('/masterdata'),
     },
-        {
+    {
       title: 'Vehicle',
       icon: <LocalShippingIcon sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
-          // onClick: () => router.push('/vehicle'),
+      // onClick: () => router.push('/vehicle'),
       onClick: () => handleNavigation('/vehicle'),
     },
   ];
@@ -61,7 +61,7 @@ const TransportManagement = () => {
       </Backdrop>
 
       <Box>
-        <Typography variant="h6" sx={{ mt: 4, mb: 1, color: '#83214F', fontWeight: 'bold' }}>
+        <Typography variant="h6" sx={{ mt: 4, mb: 1, color: '#F08C24', fontWeight: 'bold' }}>
           Transport Management
         </Typography>
         <Box
@@ -93,7 +93,7 @@ const TransportManagement = () => {
                 '&:hover': {
                   transform: 'translateY(-5px)',
                   boxShadow: 6,
-                  backgroundColor: '#FAF1F8',
+                  backgroundColor: '#FCF0DE',
                 },
                 cursor: 'pointer'
               }}

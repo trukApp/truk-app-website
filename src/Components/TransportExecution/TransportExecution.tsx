@@ -34,7 +34,7 @@ const TransportExecution = () => {
       icon: <LocalShipping sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
       onClick: () => handleNavigation('/order-bidding'),
     },
-       {
+    {
       title: 'Order requests',
       icon: <LocalShipping sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
       onClick: () => handleNavigation('/order-requests'),
@@ -51,7 +51,7 @@ const TransportExecution = () => {
       </Backdrop>
 
       <Box>
-        <Typography variant="h6" sx={{ mt: 4, mb: 1, color: '#83214F', fontWeight: 'bold' }}>
+        <Typography variant="h6" sx={{ mt: 4, mb: 1, color: '#F08C24', fontWeight: 'bold' }}>
           Transport Execution
         </Typography>
         <Box
@@ -83,7 +83,7 @@ const TransportExecution = () => {
                 '&:hover': {
                   transform: 'translateY(-5px)',
                   boxShadow: 6,
-                  backgroundColor: '#FAF1F8',
+                  backgroundColor: '#FCF0DE',
                 },
                 cursor: 'pointer'
               }}

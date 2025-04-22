@@ -198,7 +198,7 @@ const CarrierForm: React.FC = () => {
         }
     };
 
-    const initialCarrierValues:CarrierFormFE = {
+    const initialCarrierValues: CarrierFormFE = {
         id: '',
         carrierId: '',
         name: '',
@@ -226,12 +226,12 @@ const CarrierForm: React.FC = () => {
     useEffect(() => {
         if (editRow) {
             const rawVehicleTypes = editRow?.vehicleTypes;
-                const normalizedVehicleTypes =
+            const normalizedVehicleTypes =
                 typeof rawVehicleTypes === 'string'
-                    ? rawVehicleTypes.split(',').map((v:string) => v.trim())
+                    ? rawVehicleTypes.split(',').map((v: string) => v.trim())
                     : Array.isArray(rawVehicleTypes)
-                    ? rawVehicleTypes
-                    : [];
+                        ? rawVehicleTypes
+                        : [];
 
             console.log("editing :", editRow)
             setInitialValues(() => ({
@@ -251,11 +251,11 @@ const CarrierForm: React.FC = () => {
                 contractValidUpto: editRow?.contractValidUpto || "",
                 pricing: editRow?.pricingCost || "",
                 pricingUnit: editRow?.pricingCriteria || "",
-                isContract: !!editRow?.contractSigned, 
-                     carrier_network_portal: editRow?.carrier_network_portal || 0,
-            pricingCost: editRow?.pricingCost || '',
-            pricingCriteria: editRow?.pricingCriteria || '',
-            contractSigned: editRow?.contractSigned || ''
+                isContract: !!editRow?.contractSigned,
+                carrier_network_portal: editRow?.carrier_network_portal || 0,
+                pricingCost: editRow?.pricingCost || '',
+                pricingCriteria: editRow?.pricingCriteria || '',
+                contractSigned: editRow?.contractSigned || ''
             }));
         }
     }, [editRow]);
@@ -579,7 +579,7 @@ const CarrierForm: React.FC = () => {
                                 <h3 className={styles.mainHeading}>Transport Data</h3>
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} sm={6} md={4}>
-                                       <TextField
+                                        <TextField
                                             fullWidth
                                             label="Vehicle Types"
                                             name="vehicleTypes"
@@ -594,7 +594,7 @@ const CarrierForm: React.FC = () => {
                                                 multiple: true,
                                                 renderValue: (selected) => (selected as string[]).join(','),
                                             }}
-                                            >
+                                        >
                                             <MenuItem value="Truck">Truck</MenuItem>
                                             <MenuItem value="Bike">Bike</MenuItem>
                                             <MenuItem value="Van">Van</MenuItem>
@@ -864,11 +864,11 @@ const CarrierForm: React.FC = () => {
                                         type="submit"
                                         variant="contained"
                                         sx={{
-                                            backgroundColor: "#83214F",
+                                            backgroundColor: "#F08C24",
                                             color: "#fff",
                                             "&:hover": {
                                                 backgroundColor: "#fff",
-                                                color: "#83214F"
+                                                color: "#F08C24"
                                             }
                                         }}
                                     >

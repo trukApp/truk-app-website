@@ -9,19 +9,19 @@ interface CustomButtonProps extends ButtonProps {
 export const CustomButtonFilled: FC<CustomButtonProps> = ({ children, ...props }) => {
   return (
     <Button
-        type="submit"
+      type="submit"
       variant="contained"
-          sx={{
-          margin:'10px',
-          backgroundColor: "#83214F",
+      sx={{
+        margin: '10px',
+        backgroundColor: "#F08C24",
         color: "#fff",
         "&:hover": {
           backgroundColor: "#fff",
-          color: "#83214F",
+          color: "#F08C24",
         },
       }}
-          {...props}
-          disableRipple={false}
+      {...props}
+      disableRipple={false}
     >
       {children}
     </Button>
@@ -32,14 +32,14 @@ export const CustomButtonFilled: FC<CustomButtonProps> = ({ children, ...props }
 // outlined button
 export const CustomButtonOutlined: FC<CustomButtonProps> = ({ children, ...props }) => {
   return (
-      <Button 
+    <Button
       variant="outlined"
-          sx={{
-          margin:'10px',
-        borderColor: "#83214F",
-        color: "#83214F",
+      sx={{
+        margin: '10px',
+        borderColor: "#F08C24",
+        color: "#F08C24",
         // "&:hover": {
-        //   backgroundColor: "#83214F",
+        //   backgroundColor: "#F08C24",
         //   color: "#fff",
         // },
       }}

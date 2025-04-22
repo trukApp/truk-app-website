@@ -97,7 +97,7 @@ const SupplierForm: React.FC = () => {
 
     const [searchKeyDestination, setSearchKeyDestination] = useState('');
     const [showDestinations, setShowDestinations] = useState(false);
-    const { data: destinationFilteredLocations,isLoading: filteredDestinationLoading } = useGetFilteredLocationsQuery(searchKeyDestination.length >= 3 ? searchKeyDestination : null, { skip: searchKeyDestination.length < 3 });
+    const { data: destinationFilteredLocations, isLoading: filteredDestinationLoading } = useGetFilteredLocationsQuery(searchKeyDestination.length >= 3 ? searchKeyDestination : null, { skip: searchKeyDestination.length < 3 });
     const displayLocationsDest = searchKeyDestination ? destinationFilteredLocations?.results || [] : getAllLocations;
     const getLocationDetails = (loc_ID: string) => {
         const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
@@ -270,7 +270,7 @@ const SupplierForm: React.FC = () => {
         city: Yup.string().required('City is required'),
         country: Yup.string().required('Country is required'),
         contactPerson: Yup.string().required('Contact Person is required'),
-       contactNumber: Yup.string()
+        contactNumber: Yup.string()
             .matches(/^\d{10}$/, 'Contact number must be exactly 10 digits')
             .max(10, 'Contact number cannot exceed 10 digits')
             .required('Contact number is required'),
@@ -379,7 +379,7 @@ const SupplierForm: React.FC = () => {
                 onClose={() => setSnackbarOpen(false)}
             />
             <Box display="flex" justifyContent="flex-end" gap={2}>
-                <Button 
+                <Button
                     onClick={() => setShowForm((prev) => !prev)}
                     className={styles.createButton}
                 >
@@ -706,11 +706,11 @@ const SupplierForm: React.FC = () => {
                                         type="submit"
                                         variant="contained"
                                         sx={{
-                                            backgroundColor: "#83214F",
+                                            backgroundColor: "#F08C24",
                                             color: "#fff",
                                             "&:hover": {
                                                 backgroundColor: "#fff",
-                                                color: "#83214F"
+                                                color: "#F08C24"
                                             }
                                         }}
                                     >
