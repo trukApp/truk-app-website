@@ -72,7 +72,7 @@ const Header = () => {
   };
 
   const handleNavigationToHomePage = () => {
-    router.push("/");
+    router.push("/explore");
   };
 
   return (
