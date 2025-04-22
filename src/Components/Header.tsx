@@ -102,7 +102,7 @@ const Header = () => {
                   <div className="hidden md:flex space-x-4">
                     <IconButton
                       sx={{
-                        color: currentPath === "/" ? "#ffffff" : "inherit",
+                        color: currentPath === "/explore" ? "#ffffff" : "inherit",
                         fontWeight: "bold",
                       }}
                       href="/"
