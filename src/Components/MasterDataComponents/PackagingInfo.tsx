@@ -121,12 +121,21 @@ const PackagingForm = () => {
     }
 
   }
+  const handlingUnitTypes = [
+    "Pallet",
+    "Container",
+    "Crate",
+    "Box",
+    "Drum",
+    "Bag",
+    "Sack"
+  ]
   const formik = useFormik({
     initialValues: {
       id: '',
       packagingTypeId: '',
       packagingTypeName: '',
-      packagingDimensionsUoM: unitsofMeasurement[0],
+      packagingDimensionsUoM: 'm',
       packagingLength: '', 
       packagingWidth: '',
       packagingHeight:'',
@@ -409,7 +418,7 @@ const PackagingForm = () => {
               </Grid>
               {/* Handling Unit Type Dropdown */}
               <Grid item xs={12} md={2.4}>
-                <TextField
+                {/* <TextField
                   fullWidth
                   id="handlingUnitType"
                   name="handlingUnitType"
@@ -420,7 +429,26 @@ const PackagingForm = () => {
                   error={formik.touched.handlingUnitType && Boolean(formik.errors.handlingUnitType)}
                   helperText={formik.touched.handlingUnitType && formik.errors.handlingUnitType}
                   size="small"
-                />
+                /> */}
+                <TextField
+              select
+              fullWidth
+              id="handlingUnitType"
+              name="handlingUnitType"
+              label="Handling unit type"
+              value={formik.values.handlingUnitType}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.handlingUnitType && Boolean(formik.errors.handlingUnitType)}
+              helperText={formik.touched.handlingUnitType && formik.errors.handlingUnitType}
+              size="small"
+            >
+              {handlingUnitTypes.map((type) => (
+                <MenuItem key={type} value={type}>
+                  {type}
+                </MenuItem>
+              ))}
+            </TextField>
               </Grid>
             </Grid>
 

@@ -28,7 +28,7 @@ const Footer: React.FC = () => {
           mb: 2,
         }}
       >
-        <Typography variant="body2" sx={{ color: "#000000", fontWeight: 'bold', fontSize: '16px' }}>
+        {/* <Typography variant="body2" sx={{ color: "#000000", fontWeight: 'bold', fontSize: '16px' }}>
           <Link href="/terms" passHref>
             Terms and Conditions
           </Link>{" "}
@@ -36,8 +36,8 @@ const Footer: React.FC = () => {
           <Link href="/privacy" passHref>
             Privacy Policy
           </Link>
-        </Typography>
-        <Box sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
+        </Typography> */}
+        {/* <Box sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
           <IconButton
             href="https://wa.me/6380681455"
             target="_blank"
@@ -62,7 +62,7 @@ const Footer: React.FC = () => {
           >
             <InstagramIcon />
           </IconButton>
-        </Box>
+        </Box> */}
       </Box>
       <Typography variant="body2" sx={{ color: "#000000" }}>
         © {new Date().getFullYear()} Trukapp. All rights reserved.

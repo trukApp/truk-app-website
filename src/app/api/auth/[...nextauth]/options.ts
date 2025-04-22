@@ -142,16 +142,18 @@ export const options: NextAuthOptions = {
           token.refreshToken as string
         );
             console.log("refreshedToken", refreshedToken);
-
-            token = {
-              id: token.id,
+            if ('error' in refreshedToken) {
+              return {
+                ...token,
+                error: "RefreshAccessTokenError",
+              };
+            }
+            return {
+              ...token,
               accessToken: refreshedToken.accessToken,
               accessTokenExpires: refreshedToken.accessTokenExpires,
-              refreshToken: token.refreshToken,
-              }
-        return {
-          ...token, 
-        };
+              refreshToken: refreshedToken.refreshToken ?? token.refreshToken,
+            };
       } catch (error) {
         console.error("Failed to refresh token:", error);
         return { ...token, error: "RefreshAccessTokenError" };
@@ -163,11 +165,12 @@ export const options: NextAuthOptions = {
         id: token.id as string,
         accessToken: token.accessToken as string,
         refreshToken: token.refreshToken as string,
-      };
+      }
+
       if (token.error === "RefreshAccessTokenError") {
         session.error = "RefreshAccessTokenError";
       }
-      return session;
+      return session ;
     },
   },
   pages: {

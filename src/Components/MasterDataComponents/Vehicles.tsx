@@ -251,6 +251,7 @@ const VehicleForm: React.FC = () => {
 		setPaginationModel(newPaginationModel);
 	};
 	const [showForm, setShowForm] = useState(false);
+	
 	const initialFormValues = {
 		id: "",
 		vehicleId: "",
@@ -266,35 +267,35 @@ const VehicleForm: React.FC = () => {
 		payloadWeight: "",
 		payloadWeightUnits: unitsofMeasurement[0],
 		cubicCapacity: "",
-		cubicCapacityUnits: unitsofMeasurement[0],
+		cubicCapacityUnits: 'm^3',
 		interiorLength: "",
-		interiorLengthUnits: unitsofMeasurement[0],
+		interiorLengthUnits: 'm',
 		interiorWidth: "",
-		interiorWidthUnits: unitsofMeasurement[0],
+		interiorWidthUnits: 'm',
 		interiorHeight: "",
-		interiorHeightUnits: unitsofMeasurement[0],
+		interiorHeightUnits: 'm',
 		tareWeight: "",
 		tareWeightUnits: unitsofMeasurement[0],
 		maxGrossWeight: "",
 		maxGrossWeightUnits: unitsofMeasurement[0],
 		tareVolume: "",
-		tareVolumeUnits: unitsofMeasurement[0],
+		tareVolumeUnits: 'm^3',
 		maxLength: "",
-		maxLengthUnits: unitsofMeasurement[0],
+		maxLengthUnits: 'm',
 		maxWidth: "",
-		maxWidthUnits: unitsofMeasurement[0],
+		maxWidthUnits: 'm',
 		maxHeight: "",
-		maxHeightUnits: unitsofMeasurement[0],
+		maxHeightUnits: 'm',
 		platformHeight: "",
-		platformHeightUnits: unitsofMeasurement[0],
+		platformHeightUnits: 'm',
 		topDeckHeight: "",
-		topDeckHeightUnits: unitsofMeasurement[0],
+		topDeckHeightUnits: 'm',
 		doorWidth: "",
-		doorWidthUnits: unitsofMeasurement[0],
+		doorWidthUnits: 'm',
 		doorHeight: "",
-		doorHeightUnits: unitsofMeasurement[0],
+		doorHeightUnits:'m',
 		doorLength: "",
-		doorLengthUnits: unitsofMeasurement[0],
+		doorLengthUnits: 'm',
 		avgCost: "",
 		downtimeStart: "",
 		downtimeEnd: "",
@@ -905,20 +906,23 @@ const VehicleForm: React.FC = () => {
 											</Grid>
 											<Grid item xs={12} sm={6} md={2.4}>
 												<TextField
-													// select
-													fullWidth
-													label="Vehicle Type (Van , Truck ...)*"
-													name="vehicleType"
-													value={values.vehicleType}
-													onChange={handleChange}
-													onBlur={handleBlur}
-													error={
-														touched.vehicleType && Boolean(errors.vehicleType)
-													}
-													helperText={touched.vehicleType && errors.vehicleType}
-													size="small"
-												>
-												</TextField>
+																	  fullWidth
+																	  label="Vehicle Type "
+																	  name="vehicleType"
+																	  value={values.vehicleType}
+																	  onChange={handleChange}
+																	  onBlur={handleBlur}
+																	  error={touched.vehicleType && Boolean(errors.vehicleType)}
+																	  helperText={touched.vehicleType && errors.vehicleType}
+																	  size="small"
+																	  select  
+																  >
+																	<MenuItem value="Truck">Truck</MenuItem>
+																	  <MenuItem value="Truck">Van</MenuItem>
+																	  <MenuItem value="Trailer">Trailer</MenuItem>
+																	  <MenuItem value="Container">Container</MenuItem>
+																
+																	</TextField>
 											</Grid>
 											<Grid item xs={12} sm={6} md={2.4}>
 												<TextField
@@ -939,16 +943,19 @@ const VehicleForm: React.FC = () => {
 											</Grid>
 											<Grid item xs={12} sm={6} md={2.4}>
 												<TextField
-													fullWidth
-													label="Ownership(Self, Carrier)*"
+													fullWidth select
+													label="Ownership*"
 													name="ownership"
 													value={values.ownership}
 													onChange={handleChange}
 													onBlur={handleBlur}
 													error={touched.ownership && Boolean(errors.ownership)}
 													helperText={touched.ownership && errors.ownership}
-													size="small"
+													size="small" 
+													
 												>
+													<MenuItem value="Truck">Self</MenuItem>
+													<MenuItem value="Truck">Carrier</MenuItem>
 												</TextField>
 											</Grid>
 										</Grid>
@@ -1527,7 +1534,7 @@ const VehicleForm: React.FC = () => {
 											<Grid item xs={12} sm={6} md={2.4}>
 												<TextField
 													fullWidth
-													label="Avg. Cost of (Price Per Ton in Rs.)*"
+													label="Avg. Cost*"
 													name="avgCost"
 													type="number"
 													value={values.avgCost}

@@ -271,15 +271,15 @@ const TransportationLanes = () => {
       transportStartDate: '',
       transportEndDate: '',
       transportDistance: '',
-      transportDistanceUnits: unitsofMeasurement[0],
+      transportDistanceUnits: 'km',
       transportDuration: '',
-      transportDurationUnits: unitsofMeasurement[0],
+      transportDurationUnits: 'h',
       transportCost: '',
       transportCostUnits: unitsofMeasurement[0],
 
       // Carrier Data
       carrierId: '',
-      carrierName: '', // Auto-populated
+      carrierName: '',
       carrierVehicleType: '',
       carrierStartDate: '',
       carrierEndDate: '',
@@ -589,19 +589,26 @@ const TransportationLanes = () => {
               <h3>2. Transport Data</h3>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6} md={2.4}>
-                  <TextField
-                    fullWidth
-                    label="Vehicle Type (Truck , Trailer...)"
-                    name="vehicleType"
-                    value={formik.values.vehicleType}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    error={formik.touched.vehicleType && Boolean(formik.errors.vehicleType)}
-                    helperText={formik.touched.vehicleType && formik.errors.vehicleType}
-                    size="small"
+                    <TextField
+                      fullWidth
+                      label="Vehicle Type "
+                      name="vehicleType"
+                      value={formik.values.vehicleType}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      error={formik.touched.vehicleType && Boolean(formik.errors.vehicleType)}
+                      helperText={formik.touched.vehicleType && formik.errors.vehicleType}
+                      size="small"
+                      select  
                   >
+                    <MenuItem value="Truck">Truck</MenuItem>
+                      <MenuItem value="Truck">Van</MenuItem>
+                      <MenuItem value="Trailer">Trailer</MenuItem>
+                      <MenuItem value="Container">Container</MenuItem>
+                
+                    </TextField>
 
-                  </TextField>
+
                 </Grid>
                 <Grid item xs={12} sm={6} md={2.4}>
                   <TextField
@@ -718,7 +725,7 @@ const TransportationLanes = () => {
                     fullWidth
                     id="transportCost"
                     name="transportCost"
-                    label="Transport Cost (Rs.)* "
+                    label="Transport Cost*"
                     type="number"
                     value={formik.values.transportCost}
                     // onChange={formik.handleChange}

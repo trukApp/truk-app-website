@@ -100,7 +100,7 @@ const VehicleOnly: React.FC = () => {
         vehicleNumber: "",
         isAvailable: false,
         costing: "",
-        cost_criteria_per: unitsofMeasurement[0],
+        cost_criteria_per: 'km',
         insurance: "",
         registration: "",
         permit: "",
@@ -443,7 +443,7 @@ const VehicleOnly: React.FC = () => {
                                                 <TextField
                                                     fullWidth
                                                     size="small"
-                                                    label="Cost (Rs.)*"
+                                                    label="Cost*"
                                                     name="costing" type='number'
                                                     value={values.costing}
                                                     onChange={(e) => {
@@ -462,7 +462,7 @@ const VehicleOnly: React.FC = () => {
                                             <Grid item xs={isEditing ? 6 : 12} sm={isEditing ? 3: 6} md={isEditing ? 1.2 :2.4}>
                                                 <TextField
                                                                   fullWidth
-                                                                  select
+                                                                  select label = "Cost criteria per"
                                                                   onBlur={handleBlur}
                                                                   name="cost_criteria_per"
                                                                   value={values.cost_criteria_per || ""}

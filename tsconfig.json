@@ -34,7 +34,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "src/app/api/auth/[...nextauth]"
-  ],
+, "src/app/order-requests"  ],
   "exclude": [
     "node_modules"
   ]

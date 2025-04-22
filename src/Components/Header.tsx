@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -55,7 +55,12 @@ const Header = () => {
   const handleHamburgerMenuClose = () => {
     setAnchorElHamburger(null);
   };
-
+  useEffect(() => {
+    if (session?.error === "RefreshAccessTokenError") {
+      console.warn("Session expired. Redirecting to login.");
+      signOut({ callbackUrl: "/login" });
+    }
+  }, [session]);
   const handleLogout = async () => {
     const isConfirmed = window.confirm("Are you sure you want to log out?");
     if (isConfirmed) {

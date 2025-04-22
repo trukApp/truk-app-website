@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Box, Collapse, IconButton, Paper, Typography, Grid, Button, useTheme, useMediaQuery, TextField, Modal, MenuItem, Backdrop, CircularProgress, List, ListItem, FormControl, InputLabel, Select, FormHelperText, FormControlLabel, Checkbox } from "@mui/material";
+import { Box, Collapse, IconButton, Paper, Typography, Grid, Button, useTheme, useMediaQuery, TextField, Modal, MenuItem, Backdrop, CircularProgress, List, ListItem, FormControl, InputLabel, Select, FormHelperText, FormControlLabel, Checkbox, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { useRouter } from 'next/navigation';
-import { useEditAssignOrderOrderMutation, useGetAllDriversDataQuery, useGetAllProductsQuery, useGetAssignedOrderByIdQuery, useGetDeviceMasterQuery, useGetFilteredDriversQuery, useGetFilteredVehiclesQuery, useGetLocationMasterQuery, useGetOrderByIdQuery, useGetSingleVehicleMasterQuery, useGetVehicleMasterQuery, usePostAssignOrderMutation, usePostSingleVehicleMasterMutation } from "@/api/apiSlice";
+import { useEditAssignOrderOrderMutation, useGetAllDriversDataQuery, useGetAllProductsQuery, useGetAssignedOrderByIdQuery, useGetDeviceMasterQuery, useGetFilteredDriversQuery, useGetFilteredVehiclesQuery, useGetLocationMasterQuery, useGetOrderByIdQuery, useGetSingleVehicleMasterQuery, useGetVehicleMasterQuery, usePostAssignCarrierMutation, usePostAssignCarrierToOrderMutation, usePostAssignOrderMutation, usePostCarrierRejectigOrderMutation, usePostSingleVehicleMasterMutation } from "@/api/apiSlice";
 import SnackbarAlert from "../ReusableComponents/SnackbarAlerts";
 import { Driver } from "../BusinessPartnersForms/DriverForm";
 import moment from 'moment';
@@ -16,7 +16,7 @@ import * as Yup from "yup";
 import { VehicleDetails } from "../MasterDataComponents/Vehicles";
 import { TruckFormDetails } from "@/app/vehicle/page";
 import { useSelector } from "react-redux";
-import { RootState } from "@/store";
+import { RootState } from "@/store"; 
 
 const style = {
     position: "absolute",
@@ -59,7 +59,8 @@ interface Allocation {
 interface AllocationsProps {
     allocations: Allocation[];
     orderId: string;
-    allocatedPackageDetails: []
+    allocatedPackageDetails: [];
+    from:string
 }
 interface FormErrors {
   truckId?: string;
@@ -107,8 +108,14 @@ export interface ProductDetails {
     product_name: string;
     weight: string;
 }
+interface carrierForOrder {
+    carrier_ID: string,
+    cost: string,
+    cost_criteria_considered: string,
+    rate: string
+}
 
-const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocatedPackageDetails }) => {
+const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocatedPackageDetails , from }) => {
     const validationSchema = Yup.object({
         vehicleId: Yup.string().required("Vehicle id is required"),
         vehicleNumber: Yup.string().required("Vehicle number is required"),
@@ -119,6 +126,11 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
         permit: Yup.string().required("Permit is required"),
     
     });
+    const [carrierId, setCarrierId] = useState('')
+    console.log("carrier id :", carrierId)
+    console.log("fromm :", from)
+    const [openReject, setOpenReject] = useState(false);
+    const [carrierOptions , setCarrierOptions] = useState([])
     const [postVehicle, { isLoading: postVehicleLoading }] = usePostSingleVehicleMasterMutation();
     const { refetch: refetchOrderById } = useGetOrderByIdQuery({ orderId }, { skip: true });
     const wrapperRef = useRef<HTMLDivElement>(null);
@@ -155,8 +167,11 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
     // console.log("display vehicles :", displayVehicles)
     const [assignModal, setAssignModal] = useState(false);
     const [selectedAllocation, setSelectedAllocation] = useState<Allocation | null>(null);
+     const [postRejectOrderByCarrier, { isLoading: isRejecting }] = usePostCarrierRejectigOrderMutation()
     const [postAssignOrder, { isLoading: isAssigning }] = usePostAssignOrderMutation()
     const [editAssignOrder, { isLoading: editAssignLoading }] = useEditAssignOrderOrderMutation()
+    const [postAssignCarrier, { isLoading: carrierAssinLoading }] = usePostAssignCarrierMutation()
+     const [postAssignCarrierToOrder, { isLoading: carrierToOrderLoading }] = usePostAssignCarrierToOrderMutation()
     const { data: assignedOrder } = useGetAssignedOrderByIdQuery({ order_ID: orderId })
     const { data: allDevices, isLoading: deviceLoading } = useGetDeviceMasterQuery({})
     const { data: productsData } = useGetAllProductsQuery({})
@@ -289,16 +304,59 @@ const [errors, setErrors] = useState<FormErrors>({});
         setSelectedAllocation(allocation);
         setAssignModal(true)
     };
+const handleCarrierAssign = async () => {
+  try {
+    
+    const body = {
+      // order_ID: orderId,
+      order_ID: 'ORD000023',
+      assigned_time: new Date().toISOString().slice(0, 16)
+    };
 
+    const response = await postAssignCarrier(body).unwrap();
+      console.log("assign response:", response?.carrier_options);
+      if (response.message === "Multiple valid contracted carriers found. Choose one for assignment.") {
+            setAssignModal(true);
+            setCarrierOptions(response?.carrier_options);
+      } 
+      if (response?.message === "Carrier assignment initialized successfully.") {
+            const assignedCarrier = response?.req_sent_to[0]
+            setAssignModal(false)
+            setSnackbarMessage(`Carrier assignment sent to carrier ${assignedCarrier} successfully!`);
+            setSnackbarSeverity("success");
+            setSnackbarOpen(true);
+            setAssignModal(false)
+
+      }
+    
+  } catch (error) {
+    console.error("Error assigning carrier:", error);
+  }
+};
+
+    const handleCarrierSubmit = async() => {
+        const body = {
+            order_ID: orderId,
+            carrier_ID: carrierId,
+            assigned_time:new Date().toISOString().slice(0, 16)
+        }
+        console.log("body carr: ", body)
+        const response = await postAssignCarrierToOrder(body).unwrap();
+        if (response.message === 'Carrier assignment sent to selected carrier successfully.') {
+            setSnackbarMessage(`Carrier assignment sent to carrier ${carrierId} successfully!`);
+            setSnackbarSeverity("success");
+            setSnackbarOpen(true);
+            setAssignModal(false)
+        }
+      
+    }
     const handleSubmit = async () => {
         let isValid = true;
         const newErrors: FormErrors = {};
-
         if (!formData.truckId) {
             newErrors.truckId = "Truck ID is required";
             isValid = false;
         }
-
         if (!formData.driverId) {
             newErrors.driverId = "Driver ID is required";
             isValid = false;
@@ -386,9 +444,7 @@ const [errors, setErrors] = useState<FormErrors>({});
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
-    }, []);
-
-    // console.log('allo', allocations)
+    }, []); 
 
     useEffect(() => {
         if (orderId) {
@@ -403,6 +459,44 @@ const [errors, setErrors] = useState<FormErrors>({});
     const handleCreateVehicle = () => {
         setOpen(true)
     }
+  const handleOpenDialog = () => {
+    setOpenReject(true);
+  };
+
+  const handleCloseReject = () => {
+    setOpenReject(false);
+  };
+
+  const handleYes = () => {
+    handleRejectByCarrier();
+    handleClose();
+  };
+    const handleRejectByCarrier = async () => {
+    const carrierIdForOrder = from   // from is the carrier id which we are getting via params when comig from order req for carrier page
+        try { 
+            const body = {
+                carrier_ID:carrierIdForOrder,   
+                order_ID:orderId
+            }
+            console.log('bodyy:', body)
+    const response = await postRejectOrderByCarrier(body).unwrap();
+            console.log('Rejection response:', response);
+            if (response) {
+                setSnackbarMessage(`Order ${orderId} rejected !`);
+                setSnackbarSeverity("info");
+                setSnackbarOpen(true);
+            }
+  } catch (error) {
+        console.error('Error rejecting:', error); 
+        setSnackbarMessage(`Unable to reject this order now , try after sometime.`);
+        setSnackbarSeverity("info");
+        setSnackbarOpen(true);
+  }
+    };
+     
+    const handleAcceptByCarrier = () => {
+        console.log("accept clicked")
+    }
     return (
         <Box>
             <Backdrop
@@ -410,7 +504,7 @@ const [errors, setErrors] = useState<FormErrors>({});
                     color: "#ffffff",
                     zIndex: (theme) => theme.zIndex.drawer + 1,
                 }}
-                open={postVehicleLoading || isAssigning || editAssignLoading || deviceLoading}
+                open={postVehicleLoading || isAssigning || isRejecting || editAssignLoading || deviceLoading || carrierAssinLoading || carrierToOrderLoading}
             >
                 <CircularProgress color="inherit" />
             </Backdrop>
@@ -421,16 +515,15 @@ const [errors, setErrors] = useState<FormErrors>({});
                 onClose={() => setSnackbarOpen(false)}
             />
             <Modal open={open} onClose={handleClose}>
-        <Box sx={style} >
-
-
-          <Formik
-            initialValues={initialFormValues}
-            validationSchema={validationSchema}
-            onSubmit={handleAssignSubmit}
-          >
-            {({ values,errors,touched,handleChange,handleBlur,setFieldValue,resetForm }) => (
-              <Form>
+                <Box sx={style} >
+                    
+                    <Formik
+                        initialValues={initialFormValues}
+                        validationSchema={validationSchema}
+                        onSubmit={handleAssignSubmit}
+                    >
+                        {({ values,errors,touched,handleChange,handleBlur,setFieldValue,resetForm }) => (
+                        <Form>
                                     <Grid>
                                         <Grid container spacing={2}>
                                             <Grid item xs={12} sm={6} md={2.4}>
@@ -620,9 +713,29 @@ const [errors, setErrors] = useState<FormErrors>({});
                                     </Grid>
                                 </Form>
             )}
-          </Formik>
-        </Box>
-      </Modal>
+                    </Formik>
+                </Box>
+            </Modal>
+
+            <Dialog
+                open={openReject}
+                onClose={handleCloseReject}
+            >
+                <DialogTitle>Confirm Rejection</DialogTitle>
+                <DialogContent>
+                <DialogContentText>
+                    Are you sure you want to reject this order?
+                </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                <Button onClick={handleCloseReject} color="primary">
+                    Cancel
+                </Button>
+                <Button onClick={handleYes} color="error" autoFocus>
+                    Yes, Reject
+                </Button>
+                </DialogActions>
+            </Dialog>
 
             <Typography variant="h6" gutterBottom color="#83214F" style={{ fontWeight: 'bold' }}>
                 Allocations
@@ -632,7 +745,8 @@ const [errors, setErrors] = useState<FormErrors>({});
                 setFormData({ truckId: "", driverId: "", deviceId: "" });
                 setSelectedAllocation(null);
             }}>
-                <Box
+                {from === 'order-overview' ? (
+                    <Box
                     sx={{
                         position: "absolute",
                         top: "50%",
@@ -819,276 +933,81 @@ const [errors, setErrors] = useState<FormErrors>({});
                             Submit
                         </Button>
                     </Box>
-                </Box>
-            </Modal>
-
-            {/* {allocations.map((allocation) => (
-                <Paper key={allocation.vehicle_ID} sx={{ p: 1, mb: 2 }}>
-                    <Grid container alignItems="center" justifyContent="space-between">
-                        <Grid item>
-                            <Typography variant="subtitle1" color="#83214F" style={{ fontWeight: 'bold' }}>
-                                Vehicle: {allocation.vehicle_ID} | Cost: ₹{allocation.cost.toFixed(2)}
+                </Box>) :
+                    (
+                <Box
+                    sx={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        bgcolor: "white",
+                        boxShadow: 24,
+                        p: 3,
+                        borderRadius: 2,
+                        width: { xs: "100%", md: "30%" },
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                >
+                            <Typography variant="h6" gutterBottom>
+                                Assign Order ({orderId}) to Carrier
                             </Typography>
-                        </Grid>
-                        <Grid item>
-                            <IconButton onClick={() => handleToggle(allocation.vehicle_ID)}>
-                                {expanded[allocation.vehicle_ID] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                            </IconButton>
-                        </Grid>
-                    </Grid>
-
-                    <Collapse in={expanded[allocation.vehicle_ID]} timeout="auto" unmountOnExit>
-                        <Box
-                            sx={{
-                                mt: 2,
-                                p: 2,
-                                borderRadius: 2,
-                                bgcolor: "background.paper",
-                                boxShadow: 2
-                            }}
-                        >
-                            <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }} color="#83214F">
-                                Vehicle ID: {allocation.vehicle_ID}
+                            <Typography variant="h6" sx={{fontSize:'14px'}} gutterBottom>
+                                The following are the multiple valid contracted carriers found. Choose one for assignment.
                             </Typography>
-
-                            <Grid container spacing={2}>
-                                <Grid item xs={12} md={4}>
-                                    <Typography variant="body2" >
-                                        Total Weight Capacity: <strong> {allocation.totalWeightCapacity.toFixed(2)}</strong>
-                                    </Typography>
-                                    <Typography variant="body2">
-                                        Total Volume Capacity: <strong>  {allocation.totalVolumeCapacity.toFixed(2)}</strong>
-                                    </Typography>
-                                </Grid>
-                                <Grid item xs={12} md={4}>
-                                    <Typography variant="body2">
-                                        Occupied Weight:<strong>{allocation.occupiedWeight.toFixed(2)}</strong>
-                                    </Typography>
-                                    <Typography variant="body2">
-                                        Occupied Volume: <strong>{allocation.occupiedVolume ? (allocation?.occupiedVolume).toFixed(2) : "0.00"}</strong>
-                                    </Typography>
-                                </Grid>
-
-                                <Grid item xs={12} md={4}>
-                                    <Typography variant="body2">
-                                        Leftover Weight: <strong> {allocation.leftoverWeight.toFixed(2)}</strong>
-                                    </Typography>
-                                    <Typography variant="body2">
-                                        Leftover Volume: <strong> {allocation.leftoverVolume.toFixed(2)}</strong>
-                                    </Typography>
-                                </Grid>
-                            </Grid>
-
-                            <Box sx={{ mt: 2 }}>
-                                <Typography variant="body2">
-                                    <strong>Packages:</strong> {allocation.packages.join(", ")}
-                                </Typography>
-                            </Box>
-                            {allocatedPackageDetails
-                                .filter((pkg: PackageDetail) => allocation.packages.includes(pkg.pack_ID))
-                                .map((pkg: PackageDetail) => (
-                                    <Box key={pkg.pac_id} >
-                                        <Grid key={pkg.pac_id} sx={{ mt: { xs: 1, md: 2 }, p: 2, backgroundColor: '#e9e7e7', borderRadius: 1, }}>
-                                            <Typography variant="subtitle2" gutterBottom>
-                                                <strong>Package ID: {pkg.pack_ID}</strong>
-                                            </Typography>
-
-                                            <Typography variant="body2">
-                                                <strong>Status:</strong> {pkg.package_status}
-                                            </Typography>
-                                            <Grid sx={{ overflowX: "auto", whiteSpace: "nowrap" }}>
-                                                <Grid container spacing={2} sx={{ minWidth: '1000px', display: 'flex', justifyContent: 'space-between' }} item >
-                                                    <Grid item >
-                                                        <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '15px', marginTop: '15px', marginBottom: '5px' }}>Billing Details</Typography>
-                                                        <Grid  >
-                                                            <Typography variant="body2">
-                                                                Ship From: <strong> {getLocationDetails(pkg.ship_from)}</strong>
-                                                            </Typography>
-                                                            <Typography variant="body2">
-                                                                Ship To: <strong>  {getLocationDetails(pkg.ship_to)}</strong>
-                                                            </Typography>
-                                                            <Typography variant="body2">
-                                                                Bill To: <strong> {getLocationDetails(pkg.bill_to)}</strong>
-                                                            </Typography>
-                                                        </Grid>
-                                                    </Grid>
-                                                    <Grid item >
-                                                        <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '15px', marginTop: '15px', marginBottom: '5px' }}>Date & Timings</Typography>
-                                                        <Grid >
-                                                            <Typography variant="body2">
-                                                                Pickup Date:<strong>  {moment(pkg.pickup_date_time).format("DD MMM YYYY, hh:mm A")}</strong>
-                                                            </Typography>
-                                                            <Typography variant="body2">
-                                                                Dropoff Date:<strong>  {moment(pkg.dropoff_date_time).format("DD MMM YYYY, hh:mm A")}</strong>
-                                                            </Typography>
-                                                        </Grid>
-                                                    </Grid>
-                                                    <Grid item >
-                                                        <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '15px', marginTop: '15px', marginBottom: '5px' }}>Additional Info</Typography>
-                                                        <Grid >
-                                                            {pkg.additional_info?.reference_id && (
-                                                                <Typography variant="body2">
-                                                                    Refernce ID: <strong>  {pkg.additional_info?.reference_id}</strong>
-                                                                </Typography>
-                                                            )}
-
-                                                            {pkg.additional_info?.invoice && (
-                                                                <Typography variant="body2">
-                                                                    Invoice:<strong>  {pkg.additional_info?.invoice}</strong>
-                                                                </Typography>
-                                                            )}
-
-                                                            {pkg.additional_info?.department && (
-                                                                <Typography variant="body2">
-                                                                    Department:<strong>  {pkg.additional_info?.department}</strong>
-                                                                </Typography>
-                                                            )}
-
-                                                            {pkg.additional_info?.sales_order_number && (
-                                                                <Typography variant="body2">
-                                                                    Sales order number: <strong>  {pkg.additional_info?.sales_order_number}</strong>
-                                                                </Typography>
-                                                            )}
-
-                                                            {pkg.additional_info?.po_number && (
-                                                                <Typography variant="body2">
-                                                                    Po number: <strong>  {pkg.additional_info?.po_number}</strong>
-                                                                </Typography>
-                                                            )
-                                                            }
-                                                            {pkg?.additional_info?.attachment && (
-                                                                <div style={{ display: "flex" }}>
-                                                                    <Typography variant="body2" style={{ fontWeight: 'bold' }}>
-                                                                        Attachment:
-                                                                    </Typography>
-                                                                    <div style={{ position: 'relative', width: '50px', height: '45px', marginTop: '5px' }}>
-                                                                        <Image
-                                                                            src={pkg?.additional_info?.attachment}
-                                                                            alt="Attachment"
-                                                                            fill
-                                                                            sizes="(max-width: 768px) 100vw, 300px"
-                                                                            style={{ objectFit: 'contain' }}
-                                                                        />
-
-                                                                    </div>
-                                                                </div>
-                                                            )}
-
-                                                        </Grid>
-                                                    </Grid>
-
-                                                    <Grid item >
-                                                        <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '15px', marginTop: '15px', marginBottom: '5px' }}>Tax Info</Typography>
-                                                        <Grid >
-                                                            {pkg.tax_info?.sender_gst && (
-                                                                <Typography variant="body2">
-                                                                    GSTN of sender:<strong>  {pkg.tax_info?.sender_gst}</strong>
-                                                                </Typography>
-                                                            )}
-
-                                                            {pkg.tax_info?.receiver_gst && (
-                                                                <Typography variant="body2">
-                                                                    GSTN of receiver: <strong>  {pkg.tax_info?.receiver_gst}</strong>
-                                                                </Typography>
-                                                            )}
-
-                                                            {pkg.tax_info?.carrier_gst && (
-                                                                <Typography variant="body2">
-                                                                    GSTN of carrier: <strong>  {pkg.tax_info?.carrier_gst}</strong>
-                                                                </Typography>
-                                                            )}
-                                                            {pkg.tax_info?.self_transport && (
-                                                                <Typography variant="body2">
-                                                                    Is self transport: <strong>  {pkg.tax_info?.self_transport}</strong>
-                                                                </Typography>
-                                                            )}
-                                                            {pkg.tax_info?.tax_rate && (
-                                                                <Typography variant="body2">
-                                                                    Tax rate: <strong>  {pkg.tax_info?.tax_rate}</strong>
-                                                                </Typography>
-                                                            )}
-
-                                                            {pkg.return_label && (
-                                                                <Typography variant="body2">
-                                                                    Return Label:<strong>  {pkg.return_label ? "Yes" : "No"}</strong>
-                                                                </Typography>
-                                                            )}
-
-                                                        </Grid>
-                                                    </Grid>
-                                                    <Grid item >
-                                                        <Typography color="#83214F" style={{ fontWeight: 'bold', fontSize: '15px', marginTop: '15px', marginBottom: '5px' }}>Product Details</Typography>
-                                                        <Box sx={{ mt: 1 }}>
-                                                            <Typography variant="body2" sx={{ fontWeight: "bold" }}>
-                                                                Products:
-                                                            </Typography>
-                                                            {pkg.product_ID.map((prod: Product, index: number) => (
-                                                                <Typography key={index} variant="body2" sx={{ ml: 2 }}>
-                                                                    - {getProductDetails(prod.prod_ID)} (Qty: {prod.quantity})
-                                                                </Typography>
-                                                            ))}
-                                                        </Box>
-                                                    </Grid>
-                                                </Grid></Grid>
-                                        </Grid>
-                                    </Box>
+                            <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                                <TextField
+                                    label="Carrier ID"
+                                    name="carrierId"
+                                    select
+                                    value={carrierId}
+                                    onChange={(e)=>setCarrierId(e.target.value)}
+                                    variant="outlined"
+                                    size="small"
+                                    fullWidth 
+                                >
+                                {carrierOptions?.map((carrier: carrierForOrder) => (
+                                    <MenuItem key={carrier?.carrier_ID} value={carrier.carrier_ID}>
+                                        {carrier.carrier_ID}, {carrier.rate}
+                                    </MenuItem>
                                 ))}
-                            <Box sx={{ display: "flex", justifyContent: isMobile ? "center" : "flex-end", mt: 3, gap: 3 }}>
-                                {!assignedOrder?.data[0]?.allocated_vehicles?.some(
-                                    (vehicle: string) => vehicle === allocation.vehicle_ID
-                                ) && (
-                                        <Button
-                                            variant="contained"
-                                            color="primary"
-                                            onClick={() => handleAssign(allocation)}
-                                        >
-                                            Assign
-                                        </Button>)
-                                }
-
-                                {assignedOrder?.data[0]?.allocated_vehicles?.some(
-                                    (vehicle: string) => vehicle === allocation.vehicle_ID
-                                ) && (
-                                        <>
-                                            <Button
-                                                variant="contained"
-                                                color="primary"
-                                                onClick={() => handleTrack(allocation.vehicle_ID)}
-                                            >
-                                                View Track
-                                            </Button><Button
-                                                variant="contained"
-                                                color="primary"
-                                                onClick={() => handleRouteReply(allocation.vehicle_ID)}
-                                            >
-                                                Rotereply
-                                            </Button>
-                                        </>
-                                    )}
+                                </TextField>
+                                     <Button variant="contained"  color="primary" onClick={handleCarrierSubmit}>
+                                    Submit
+                                    </Button>
+                               
 
                             </Box>
+                            
                         </Box>
-                    </Collapse>
-                </Paper>
-            ))} */}
+                )}
+               
+            </Modal>
 
             {allocations.map((allocation) => {
                 const uniqueKey = `${allocation.vehicle_ID}_${allocation.route[0].end.address}`;
                 return (
-                    <Paper key={uniqueKey} sx={{ p: 1, mb: 2 }}>
+                    <Paper key={uniqueKey} sx={{ p: 2, mb: 2 }}>
                         <Grid container alignItems="center" justifyContent="space-between">
-                            <Grid item>
-                                <Typography variant="subtitle1" color="#83214F" style={{ fontWeight: 'bold' }}>
-                                    Vehicle: {allocation.vehicle_ID} | Cost: ₹{allocation.cost.toFixed(2)}
-                                </Typography>
-                                <Typography variant="body2">
-                                    Route: <strong>{allocation.route[0].start.address}</strong> → <strong>{allocation.route[0].end.address}</strong>
-                                </Typography>
-                                <Typography variant="body2">
-                                    Distance: <strong>{allocation.route[0].distance}</strong> | Duration: <strong>{allocation.route[0].duration}</strong>
-                                </Typography>
+                            <Grid item sx={{ width: '97.5%' }}>
+                                <Grid item sx={{display:'flex' , flexDirection:'row' , justifyContent:'space-between', marginBottom:2}}>
+                                    <Typography variant="subtitle1" color="#83214F" style={{ fontWeight: 'bold' }}>
+                                        Vehicle: {allocation.vehicle_ID} | Cost: ₹{allocation.cost.toFixed(2)}
+                                    </Typography>
+                                    <Typography variant="body2" color="#83214F" sx={{fontSize: 11 ,backgroundColor: 'lightpink', paddingLeft: 2,paddingRight:2, paddingTop:0.7,paddingBottom:0.3, borderRadius: 1.5 }}>
+                                            {order?.order?.order_status}
+                                    </Typography>
+                                    
+                                </Grid>
+                                   
+                                    <Typography variant="body2">
+                                        Route: <strong>{allocation.route[0].start.address}</strong> → <strong>{allocation.route[0].end.address}</strong>
+                                    </Typography>
+                                    <Typography variant="body2">
+                                        Distance: <strong>{allocation.route[0].distance}</strong> | Duration: <strong>{allocation.route[0].duration}</strong>
+                                    </Typography>
                             </Grid>
-                            <Grid item>
+                            <Grid item sx={{width:'2.5%'}}>
                                 <IconButton onClick={() => handleToggle(uniqueKey)}>
                                     {expanded[uniqueKey] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                                 </IconButton>
@@ -1294,20 +1213,56 @@ const [errors, setErrors] = useState<FormErrors>({});
                                 <Box sx={{ display: "flex", justifyContent: isMobile ? "center" : "flex-end", mt: 3, gap: 3 }}>
                                     {!assignedOrder?.data[0]?.allocated_vehicles?.some(
                                         (vehicle: string) => vehicle === allocation.vehicle_ID
-                                    ) && (
-                                            <Button
+                                    ) && ( 
+                                        <>
+                                            {from === 'order-overview' && (order?.order?.order_status ==='self assigned' || order?.order?.order_status ==='assignment pending')  && (
+                                                <Button
                                                 variant="contained"
                                                 color="primary"
                                                 onClick={() => handleAssign(allocation)}
                                             >
                                                 Assign
                                             </Button>
+                                            )
+                                            } 
+                                            {from === 'order-bidding' && order?.order?.order_status ==='assignment pending' && (
+                                                <Button
+                                                variant="contained"
+                                                color="primary"
+                                                onClick={handleCarrierAssign}
+                                            >
+                                                Assign Carrier
+                                            </Button>
+                                            )
+                                            } 
+                                            
+                                        </>
+                                          
                                         )}
 
                                     {assignedOrder?.data[0]?.allocated_vehicles?.some(
                                         (vehicle: string) => vehicle === allocation.vehicle_ID
                                     ) && (
-                                            <>
+                                        <>
+                                            {order?.order?.order_status === "carrier assignment" && (
+                                                <>
+                                                <Button
+                                                        variant="contained"
+                                                        color="primary"
+                                                        onClick={handleAcceptByCarrier}
+                                                    >
+                                                        Accept
+                                                </Button>
+                                                <Button
+                                                        variant="contained"
+                                                        color="primary"
+                                                        onClick={handleOpenDialog}
+                                                    >
+                                                        Reject
+                                                    </Button>
+                                                </>
+                                                
+                                            )}
                                                 {order?.order?.order_status === "finished" ? (
                                                     <Button
                                                         variant="contained"
@@ -1316,7 +1271,7 @@ const [errors, setErrors] = useState<FormErrors>({});
                                                     >
                                                         Route Reply
                                                     </Button>
-                                                ) : (
+                                                ) : (order?.order?.order_status !== "carrier assignment" ) ? (
                                                     <Button
                                                         variant="contained"
                                                         color="primary"
@@ -1324,7 +1279,7 @@ const [errors, setErrors] = useState<FormErrors>({});
                                                     >
                                                         View Track
                                                     </Button>
-                                                )}
+                                                ) : null}
                                             </>
                                         )}
                                 </Box>

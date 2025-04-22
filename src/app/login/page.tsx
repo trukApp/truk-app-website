@@ -151,9 +151,9 @@ return (
             )}
           </Formik>
 
-          <Typography variant="body2" align="center" marginTop="10px">
+          {/* <Typography variant="body2" align="center" marginTop="10px">
             Don&apos;t have an account ? <a href="/signup" style={{ color: "#83214F" }}>Sign up</a>
-          </Typography>
+          </Typography> */}
         </Box>
       </Box>
     </Grid>

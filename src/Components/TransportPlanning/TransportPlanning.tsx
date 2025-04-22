@@ -16,6 +16,14 @@ const TransportPlanning = () => {
   };
 
   const tiles = [
+      {
+      title: 'Transport Package Overview',
+      icon: <Inventory2 sx={{ fontSize: { xs: 40, sm: 50, md: 60 } }} />,
+      // onClick: () => {
+      //   router.push('/units-overview');
+      // },
+      onClick: () => handleNavigation('/units-overview'),
+    },
     {
       title: 'Transport Order Planning',
       icon: <LocalShippingIcon sx={{ fontSize: { xs: 40, sm: 50, md: 60 } }} />,
@@ -24,14 +32,7 @@ const TransportPlanning = () => {
       // },
       onClick: () => handleNavigation('/createorder'),
     },
-    {
-      title: 'Transport Unit Overview',
-      icon: <Inventory2 sx={{ fontSize: { xs: 40, sm: 50, md: 60 } }} />,
-      // onClick: () => {
-      //   router.push('/units-overview');
-      // },
-      onClick: () => handleNavigation('/units-overview'),
-    },
+
     {
       title: 'Spot Auction',
       icon: <GavelIcon sx={{ fontSize: { xs: 40, sm: 50, md: 60 } }} />,

@@ -14,15 +14,22 @@ const SettingsComponent = () => {
     router.push(path);
   };
   const tiles = [
-    { title: 'User Settings', icon: <Settings sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} /> },
+    {
+      title: 'User Settings', icon: <Settings sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
+  onClick: () => handleNavigation('/user-settings'),  },
     {
       title: 'Config Settings',
       icon: <Build sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
       // onClick: () => router.push('/configsettings'),
       onClick: () => handleNavigation('/configsettings'),
     },
-    { title: 'Notification Settings', icon: <Notifications sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} /> },
-    { title: 'System Connections', icon: <Link sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} /> },
+    {
+      title: 'Notification Settings', icon: <Notifications sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
+      onClick: () => handleNavigation('/notification-settings'),
+    },
+    {
+      title: 'System Connections', icon: <Link sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
+   onClick: () => handleNavigation('/system-connections'),  },
   ];
 
   return (

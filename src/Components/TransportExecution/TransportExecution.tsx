@@ -2,6 +2,10 @@
 import React, { useState } from 'react';
 import { Box, Typography, Card, Backdrop, CircularProgress } from '@mui/material';
 import { LocalShipping, Warehouse, Settings, Route } from '@mui/icons-material';
+// import BuildIcon from '@mui/icons-material/Build';
+import EngineeringIcon from '@mui/icons-material/Engineering';
+
+
 import { useRouter } from 'next/navigation';
 
 
@@ -23,12 +27,17 @@ const TransportExecution = () => {
       onClick: () => handleNavigation('/order-overview'),
     },
     { title: 'Dock management', icon: <Warehouse sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} /> },
-    { title: 'Operations', icon: <Settings sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} /> },
+    { title: 'Operations', icon: <EngineeringIcon sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} /> },
     { title: 'Tracking', icon: <Route sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} /> },
     {
       title: 'Order bidding',
       icon: <LocalShipping sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
       onClick: () => handleNavigation('/order-bidding'),
+    },
+       {
+      title: 'Order requests',
+      icon: <LocalShipping sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
+      onClick: () => handleNavigation('/order-requests'),
     },
   ];
 

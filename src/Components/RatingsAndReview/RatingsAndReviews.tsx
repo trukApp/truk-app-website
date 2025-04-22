@@ -24,7 +24,7 @@ const RatingsAndReviews = () => {
   return (
     <Box>
       <Typography variant="h6" sx={{ mt: 4, mb: 1, color: '#83214F', fontWeight: 'bold' }}>
-        Reviews & Ratings
+        Reviews & analytics
       </Typography>
       <Box
         sx={{

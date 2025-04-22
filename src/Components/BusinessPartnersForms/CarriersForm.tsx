@@ -31,7 +31,7 @@ import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 import { Location } from '../MasterDataComponents/Locations';
 import { Lane } from '../MasterDataComponents/Lanes';
-interface CarrierFormFE {
+export interface CarrierFormFE {
     id: string;
     carrierId: string,
     name: string,
@@ -39,7 +39,7 @@ interface CarrierFormFE {
     contactPerson: string,
     contactNumber: string,
     emailId: string,
-    vehicleTypes: string[],
+    vehicleTypes: string[] | string,
     locationIds: string[],
     laneIds: string[],
     deviceDetails: string,
@@ -198,8 +198,7 @@ const CarrierForm: React.FC = () => {
         }
     };
 
-    console.log("editRow: ", editRow)
-    const initialCarrierValues = {
+    const initialCarrierValues:CarrierFormFE = {
         id: '',
         carrierId: '',
         name: '',
@@ -207,7 +206,7 @@ const CarrierForm: React.FC = () => {
         contactPerson: '',
         contactNumber: '',
         emailId: '',
-        vehicleTypes: [] as string[],
+        vehicleTypes: [] as string[] | string,
         locationIds: [] as string[],
         laneIds: [] as string[],
         deviceDetails: '',
@@ -215,13 +214,26 @@ const CarrierForm: React.FC = () => {
         preferredCarrier: false,
         contractValidUpto: "",
         pricing: "",
-        pricingUnit: "",
+        pricingUnit: "km",
         isContract: false,
+        carrier_network_portal: 0,
+        pricingCost: '',
+        pricingCriteria: 'km',
+        contractSigned: ''
     };
     const [initialValues, setInitialValues] = useState(initialCarrierValues)
 
     useEffect(() => {
         if (editRow) {
+            const rawVehicleTypes = editRow?.vehicleTypes;
+                const normalizedVehicleTypes =
+                typeof rawVehicleTypes === 'string'
+                    ? rawVehicleTypes.split(',').map((v:string) => v.trim())
+                    : Array.isArray(rawVehicleTypes)
+                    ? rawVehicleTypes
+                    : [];
+
+            console.log("editing :", editRow)
             setInitialValues(() => ({
                 id: editRow?.id || '',
                 carrierId: editRow?.carrierId || '',
@@ -230,7 +242,7 @@ const CarrierForm: React.FC = () => {
                 contactPerson: editRow?.contactPerson || '',
                 contactNumber: editRow?.contactNumber || '',
                 emailId: editRow?.emailId || '',
-                vehicleTypes: editRow?.vehicleTypes || [],
+                vehicleTypes: normalizedVehicleTypes,
                 locationIds: editRow?.locationIds || [],
                 laneIds: editRow?.laneIds || [],
                 deviceDetails: editRow?.deviceDetails || '',
@@ -239,7 +251,11 @@ const CarrierForm: React.FC = () => {
                 contractValidUpto: editRow?.contractValidUpto || "",
                 pricing: editRow?.pricingCost || "",
                 pricingUnit: editRow?.pricingCriteria || "",
-                isContract: !!editRow?.contractSigned, // convert to boolean
+                isContract: !!editRow?.contractSigned, 
+                     carrier_network_portal: editRow?.carrier_network_portal || 0,
+            pricingCost: editRow?.pricingCost || '',
+            pricingCriteria: editRow?.pricingCriteria || '',
+            contractSigned: editRow?.contractSigned || ''
             }));
         }
     }, [editRow]);
@@ -273,7 +289,7 @@ const CarrierForm: React.FC = () => {
             .matches(/^[0-9]{10}$/, "Contact number must be exactly 10 digits")
             .required("Contact number is required"),
         emailId: Yup.string().email('Invalid email format').required('Email ID is required'),
-        vehicleTypes: Yup.string().required('Vehicle type is required'),
+        vehicleTypes: Yup.array().of(Yup.string().required()).min(1, 'At least one vehicle type is required').required('Vehicle type is required'),
         locationIds: Yup.array().of(Yup.string()).min(1, 'Select at least one location').required('Location is required'),
         laneIds: Yup.array().of(Yup.string()).min(1, 'Select at least one lane').required('Lane IDs are required'),
         contractValidUpto: Yup.string().required("Contract date is required"),
@@ -335,8 +351,6 @@ const CarrierForm: React.FC = () => {
                 if (response?.updated_record) {
                     setSnackbarMessage(`Carrier ID ${response.updated_record} updated successfully!`);
                     setInitialValues(initialCarrierValues)
-                    setShowForm(false)
-                    setIsEditing(false)
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
                 }
@@ -347,8 +361,6 @@ const CarrierForm: React.FC = () => {
                 if (response?.created_records) {
                     setSnackbarMessage(`Carrier ID ${response.created_records[0]} created successfully!`);
                     setInitialValues(initialCarrierValues)
-                    setShowForm(false)
-                    setIsEditing(false)
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
                 }
@@ -359,6 +371,8 @@ const CarrierForm: React.FC = () => {
             setSnackbarSeverity("error");
             setSnackbarOpen(true);
         }
+        setShowForm(false)
+        setIsEditing(false)
     };
 
     const rows = data?.carriers.map((carrier: CarrierFormBE) => {
@@ -565,35 +579,29 @@ const CarrierForm: React.FC = () => {
                                 <h3 className={styles.mainHeading}>Transport Data</h3>
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} sm={6} md={4}>
-                                        <TextField
-                                            fullWidth size="small"
-                                            label="Vehicle Types Handling (Van, Truck...)*"
+                                       <TextField
+                                            fullWidth
+                                            label="Vehicle Types"
                                             name="vehicleTypes"
                                             value={values.vehicleTypes}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
                                             error={touched.vehicleTypes && Boolean(errors.vehicleTypes)}
                                             helperText={touched.vehicleTypes && errors.vehicleTypes}
-                                        />
-                                    </Grid>
-                                    {/* <Grid item xs={12} sm={6} md={4}>
-                                        <FormControl fullWidth size="small" error={touched.vehicleTypes && Boolean(errors.vehicleTypes)}>
-                                            <InputLabel>Vehicle Types Handling</InputLabel>
-                                            <Select
-                                                multiple
-                                                label="Vehicle Types Handling (Van,Truck"
-                                                name="vehicleTypes"
-                                                value={values.vehicleTypes}
-                                                onChange={handleChange}
-                                                onBlur={handleBlur}
-                                                // renderValue={(selected) => (selected as string[]).join(', ')}
+                                            size="small"
+                                            select
+                                            SelectProps={{
+                                                multiple: true,
+                                                renderValue: (selected) => (selected as string[]).join(','),
+                                            }}
                                             >
-                                            </Select>
-                                            {touched.vehicleTypes && errors.vehicleTypes && (
-                                                <FormHelperText>{errors.vehicleTypes}</FormHelperText>
-                                            )}
-                                        </FormControl>
-                                    </Grid> */}
+                                            <MenuItem value="Truck">Truck</MenuItem>
+                                            <MenuItem value="Bike">Bike</MenuItem>
+                                            <MenuItem value="Van">Van</MenuItem>
+                                            <MenuItem value="Trailer">Trailer</MenuItem>
+                                            <MenuItem value="Container">Container</MenuItem>
+                                        </TextField>
+                                    </Grid>
                                     <Grid item xs={12} sm={6} md={4}>
                                         <TextField
                                             fullWidth
@@ -806,16 +814,16 @@ const CarrierForm: React.FC = () => {
                                     {/* Dropdown for pricing unit */}
                                     <Grid item xs={6} sm={3} md={2}>
                                         <FormControl fullWidth size="small" error={touched.pricingUnit && Boolean(errors.pricingUnit)}>
-                                            <InputLabel>Unit</InputLabel>
+                                            <InputLabel>Cost criteria per</InputLabel>
                                             <Select
                                                 name="pricingUnit"
                                                 value={values.pricingUnit}
                                                 onChange={handleChange}
                                                 onBlur={handleBlur}
-                                                label="Unit"
+                                                label="Cost criteria per"
                                             >
-                                                <MenuItem value="per_km">Per KM</MenuItem>
-                                                <MenuItem value="per_ton">Per Ton</MenuItem>
+                                                <MenuItem value="km">km</MenuItem>
+                                                <MenuItem value="ton">ton</MenuItem>
                                             </Select>
                                             {touched.pricingUnit && errors.pricingUnit && (
                                                 <FormHelperText>{errors.pricingUnit}</FormHelperText>

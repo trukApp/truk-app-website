@@ -131,7 +131,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
         skuNumber: '',
         hsncode: '',
         weightUnit: unitsofMeasurement[0],
-        volumeUnit: unitsofMeasurement[0],
+        volumeUnit: 'm^3',
         temperatureControl: false,
     };
     const [updateRecord, setUpdateRecord] = useState(false);

@@ -9,6 +9,7 @@ import {
   Collapse,
   Grid,
   IconButton,
+  MenuItem,
   // FormControl,
   // Chip,
   // InputLabel,
@@ -89,7 +90,6 @@ const validationSchema = Yup.object({
   locationType: Yup.string().required('Location type is required'),
   latitude: Yup.string().required('Latitude  is required'),
   longitude: Yup.string().required('Longitude  is required'),
-  timeZone: Yup.string().required('Time zone is required'),
   addressLine1: Yup.string().required('Address line 1 is required'),
   city: Yup.string().required('City  is required'),
   state: Yup.string().required('State  is required'),
@@ -360,6 +360,25 @@ const Locations: React.FC = () => {
       ),
     },
   ];
+  const locationTypeOptions = [
+  'Production plant',
+  'Distribution center',
+  'Shipping point',
+  'Customer',
+  'Vendor',
+  'Terminal',
+  'Port',
+  'Airport',
+  'Railway station',
+  'Container freight station',
+  'Hub',
+  'Gateway',
+  'Container yard',
+  'Warehouse',
+  'Carrier warehouse',
+  'Rail junction',
+  'Border crossing point',
+];
 
   return (
     <>
@@ -442,12 +461,21 @@ const Locations: React.FC = () => {
                   <TextField
                     fullWidth
                     size="small"
+                    select
                     label="Location type"
                     name="locationType"
                     value={values.locationType}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                  />
+                    error={touched.locationType && Boolean(errors.locationType)}
+                    helperText={touched.locationType && errors.locationType}
+                  >
+                    {locationTypeOptions.map((option) => (
+                      <MenuItem key={option} value={option}>
+                        {option}
+                      </MenuItem>
+                    ))}
+                  </TextField>
                 </Grid>
 
                 <Grid item xs={12} sm={6} md={2.4}>
@@ -516,8 +544,6 @@ const Locations: React.FC = () => {
                       value={values.timeZone}
                       onChange={handleChange}
                       onBlur={handleBlur}
-                      error={touched.timeZone && Boolean(errors.timeZone)}
-                      helperText={touched.timeZone && errors.timeZone}
                     />
                   </Grid>
                 </Grid>

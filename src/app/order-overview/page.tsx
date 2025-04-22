@@ -25,7 +25,7 @@ interface Allocation {
   totalWeightCapacity: number;
 }
 
-interface Order {
+export interface Order {
   updated_at: string;
   created_at: string;
   unallocated_packages: string[];
@@ -34,6 +34,7 @@ interface Order {
   scenario_label: string;
   total_cost: string;
   allocations: Allocation[];
+  order_status: string
 }
 
 
@@ -54,7 +55,6 @@ const OrdersGrid: React.FC = () => {
   const ordersData = allOrders?.orders || [];
   const handleViewOrder = (orderId: string) => {
     setLoading(true)
-    // router.push(`/detailed-order-overview?order_ID=${orderId}`);
     router.push(`/detailed-order-overview?order_ID=${orderId}&from=order-overview`);
   };
 
@@ -64,6 +64,7 @@ const OrdersGrid: React.FC = () => {
     { field: 'total_cost', headerName: 'Total Cost', width: 150 },
     { field: 'unallocated_packages', headerName: 'Unallocated Packages', width: 250 },
     { field: 'created_at', headerName: 'Created At', width: 200 },
+     { field: 'order_status', headerName: 'Order status', width: 200 },
     {
       field: 'view',
       headerName: 'View',
@@ -95,6 +96,7 @@ const OrdersGrid: React.FC = () => {
           scenario_label: order?.scenario_label,
           total_cost: order?.total_cost,
           unallocated_packages: order?.unallocated_packages?.join(', ') || 'None',
+          order_status: order?.order_status,
           created_at: moment(new Date(order?.created_at).toLocaleString()).format("DD MMM YYYY, hh:mm A"),
 
        

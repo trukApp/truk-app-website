@@ -66,6 +66,7 @@ export const apiSlice = createApi({
     "CreateOrder",
     "PackagesForOrder",
     "Orders",
+    "Orderss",
     "AssignedOrders",
     "SingleVehicleMaster",
     "DataCount",
@@ -605,7 +606,7 @@ export const apiSlice = createApi({
         method: "GET",
         params: { order_ID: orderId },
       }),
-      providesTags: [{ type: "Orders", id: "LIST" }],
+      providesTags: [{ type: "Orders", id: "LIST" },{type: "Orderss", id: "LIST"}],
     }),
 
     getAllAssignedOrders: builder.query({
@@ -700,7 +701,42 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: [{ type: "ValidateRoute" }],
     }),
+
+    postAssignCarrier: builder.mutation({
+      query: (body) => ({
+        url: "carrier-assignment/assign-carrier",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags :[{type: "Orderss", id: "LIST"}]
+    }),
+
+    postAssignCarrierToOrder: builder.mutation({
+      query: (body) => ({
+        url: "carrier-assignment/finalize-carrier-assignment",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags :[{type: "Orderss", id: "LIST"}]
+    }),
+    getCarrierAssignmentReq: builder.query({
+      query: (params) => ({
+        url: `carrier-assignment/carrier-assignments`,
+        method: "GET",
+        params,
+      }),
+      providesTags :[{type: "Orderss", id: "LIST"}]
+    }),
+    postCarrierRejectigOrder: builder.mutation({
+      query: (body) => ({
+        url: "carrier-assignment/carrier-assignment/reject",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags :[{type: "Orderss", id: "LIST"}]
+    }),
   }),
+  
 });
 
 export const {
@@ -773,4 +809,8 @@ export const {
   useGetAssignedOrderByIdQuery,
   useGetFilteredProductsQuery,
   usePostValidateRouteMutation,
+  usePostAssignCarrierMutation,
+  usePostAssignCarrierToOrderMutation,
+  useGetCarrierAssignmentReqQuery,
+  usePostCarrierRejectigOrderMutation,
 } = apiSlice;
