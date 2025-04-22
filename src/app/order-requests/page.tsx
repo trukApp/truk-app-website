@@ -14,6 +14,28 @@ import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { useRouter } from 'next/navigation';
 
 
+interface CarrierAssignment {
+  cas_ID: string;
+  order_ID: string;
+  assignment_status: string;
+  scenario_label: string;
+  assigned_time: string;
+  confirmed_time?: string;
+  allocated_vehicles?: string[]; // or a more specific type if available
+  allocated_packages?: string[]; // or a more specific type if available
+  start_loc_ID: string;
+  end_loc_ID: string;
+  assignment_cost?: {
+    total_distance?: string;
+    cost_criteria_considered?: string;
+    // total_weight?: string;
+  };
+  confirmed_to?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+
 const OrderRequests: React.FC = () => {
     const router = useRouter();
      const [loading, setLoading] = useState(false)
@@ -85,7 +107,7 @@ const OrderRequests: React.FC = () => {
         },
   ];
 
-  const rows = assignments.map((a: any, idx: number) => ({
+  const rows = assignments.map((a: CarrierAssignment, idx: number) => ({
     id: idx + 1,
     cas_ID: a.cas_ID,
     order_ID: a.order_ID,

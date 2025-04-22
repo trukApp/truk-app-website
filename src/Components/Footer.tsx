@@ -2,11 +2,8 @@
 
 // components/Footer.tsx
 import React from "react";
-import Link from "next/link";
-import { Box, Typography, IconButton } from "@mui/material";
-import WhatsAppIcon from "@mui/icons-material/WhatsApp";
-import FacebookIcon from "@mui/icons-material/Facebook";
-import InstagramIcon from "@mui/icons-material/Instagram";
+import { Box, Typography } from "@mui/material";
+
 
 const Footer: React.FC = () => {
   return (
@@ -28,41 +25,6 @@ const Footer: React.FC = () => {
           mb: 2,
         }}
       >
-        {/* <Typography variant="body2" sx={{ color: "#000000", fontWeight: 'bold', fontSize: '16px' }}>
-          <Link href="/terms" passHref>
-            Terms and Conditions
-          </Link>{" "}
-          |{" "}
-          <Link href="/privacy" passHref>
-            Privacy Policy
-          </Link>
-        </Typography> */}
-        {/* <Box sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
-          <IconButton
-            href="https://wa.me/6380681455"
-            target="_blank"
-            rel="noopener noreferrer"
-            sx={{ color: "#25D366" }}
-          >
-            <WhatsAppIcon />
-          </IconButton>
-          <IconButton
-            href="https://www.facebook.com/truckapp"
-            target="_blank"
-            rel="noopener noreferrer"
-            sx={{ color: "#1877F2" }}
-          >
-            <FacebookIcon />
-          </IconButton>
-          <IconButton
-            href="https://www.instagram.com/komarajubablu"
-            target="_blank"
-            rel="noopener noreferrer"
-            sx={{ color: "#E4405F" }}
-          >
-            <InstagramIcon />
-          </IconButton>
-        </Box> */}
       </Box>
       <Typography variant="body2" sx={{ color: "#000000" }}>
         © {new Date().getFullYear()} Trukapp. All rights reserved.
