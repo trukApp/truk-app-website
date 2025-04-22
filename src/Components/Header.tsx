@@ -105,7 +105,7 @@ const Header = () => {
                         color: currentPath === "/explore" ? "#ffffff" : "inherit",
                         fontWeight: "bold",
                       }}
-                      href="/"
+                      href="/explore"
                     >
                       <HomeIcon style={{ marginRight: "5px" }} />
                       <p style={{ fontSize: "14px" }}>Home</p>
