@@ -103,7 +103,7 @@ const AutoReply = () => {
 
     useEffect(() => {
         fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     if (!isLoaded) {
@@ -124,8 +124,9 @@ const AutoReply = () => {
             </Box>
         );
     }
+    console.log("vehicleLocations: ", vehicleLocations)
 
-    if (error || vehicleLocations.length === 0) {
+    if (error || vehicleLocations?.length === 0) {
         return (
             <Box display="flex" justifyContent="center" alignItems="center" height="500px">
                 <Typography variant="h6" color="error">
