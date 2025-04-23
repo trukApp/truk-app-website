@@ -29,11 +29,11 @@ const Home = () => {
 
   return (
     <Grid sx={{ marginLeft: { xs: 0, md: '30px' }, marginTop: '30px' }}>
-      <SettingsComponent />
       <TransportManagement />
       <TransportPlanning />
       <TransportExecution />
       <RatingsAndReviews />
+      <SettingsComponent />
     </Grid>
   );
 }

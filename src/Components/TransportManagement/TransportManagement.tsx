@@ -61,7 +61,7 @@ const TransportManagement = () => {
       </Backdrop>
 
       <Box>
-        <Typography variant="h6" sx={{ mt: 4, mb: 1, color: '#F08C24', fontWeight: 'bold' }}>
+        <Typography variant="h6" sx={{ marginBottom: '1px', color: '#F08C24', fontWeight: 'bold' }}>
           Transport Management
         </Typography>
         <Box
