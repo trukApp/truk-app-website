@@ -56,7 +56,9 @@ const refreshAccessToken = async (refreshToken: string) => {
 export const options: NextAuthOptions = {
   providers: [
     CredentialsProvider({
-      name: "Credentials",
+      // name: "Credentials",
+          id: "user-login",
+      name: "User Login",
       credentials: {
         phone: {
           label: "Phone Number",
@@ -79,7 +81,6 @@ export const options: NextAuthOptions = {
         try {
           const response = await fetch(
             `https://dev-api.trukapp.com/truk/log/login`,
-            // `http://z:8088/truk/log/login`,    // teja ofc
             {
               method: "POST",
               headers: {
@@ -112,6 +113,50 @@ export const options: NextAuthOptions = {
           console.error("Login error:", error);
           throw error;
         }
+      },
+    }),
+
+    CredentialsProvider({
+      id: "carrier-login",
+      name: "Carrier Login",
+      credentials: {
+        carrierId: { label: "Carrier ID", type: "text" },
+        carrierPassword: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.carrierId) {
+          throw new Error("Carrier ID is required");
+        } else if (!credentials?.carrierPassword) {
+          throw new Error("Password is required");
+        }
+        try {
+        const res = await fetch(`https://dev-api.trukapp.com/truk/carrier/carrier-login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            carrier_ID: credentials?.carrierId,
+            carrier_password: credentials?.carrierPassword,
+          }),
+        });
+
+        if (!res.ok) throw new Error("Invalid carrier credentials");
+        const user = await res.json();
+          console.log('carrier user :', user)
+          if (user & user.accessToken) {
+            return {
+              id: user.carrier_ID,
+              accessToken: user.accessToken,
+              refreshToken: user.refreshToken,
+            };
+          }
+          throw new Error("Check the password you have entered");
+
+        } 
+        catch (error) {
+          console.log(error)
+          throw error;
+        }
+
       },
     }),
   ],

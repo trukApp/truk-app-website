@@ -1,28 +1,138 @@
-'use client';
+'use client'
 import React from 'react';
-import { Grid, Typography, useMediaQuery } from '@mui/material';
-import theme from '@/theme';
+import {
+  Box,
+  Card,
+  CardContent,
+  CardHeader,
+  Grid,
+  Typography,
+  Chip,
+  Button,
+  Stack,
+  Divider,
+} from '@mui/material';
+import {
+    CheckCircle, AddCircle
+    // Cancel,
+} from '@mui/icons-material';
 
-const SystemConections = () => {
-    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+interface ERPConnection {
+  name: string;
+  status: 'connected' | 'disconnected';
+  lastSynced: string | null;
+}
 
-    return (
-        <Grid
-            container
-            direction="column"
-            alignItems="center"
-            sx={{ p: isMobile ? 2 : 3 }}
-        >
-            <Typography
-                variant="h6"
-                gutterBottom
-                sx={{ color: "#F08C24", fontWeight: "bold", textAlign: "center" }}
-            >
-                External ERP Systems connected for package creation
-            </Typography>
+const demoERPConnections: ERPConnection[] = [
+  {
+    name: 'SAP',
+    status: 'connected',
+    lastSynced: '2025-04-20 14:22',
+  },
+  {
+    name: 'Oracle NetSuite',
+    status: 'disconnected',
+    lastSynced: null,
+  },
+  {
+    name: 'Zoho Inventory',
+    status: 'connected',
+    lastSynced: '2025-04-21 09:15',
+  },
+  {
+    name: 'Microsoft Dynamics',
+    status: 'disconnected',
+    lastSynced: null,
+  },
+  {
+    name: 'Tally ERP',
+    status: 'disconnected',
+    lastSynced: null,
+  },
+];
 
-        </Grid>
-    );
+const SystemConections: React.FC = () => {
+  const connected = demoERPConnections.filter((e) => e.status === 'connected');
+  const disconnected = demoERPConnections.filter((e) => e.status === 'disconnected');
+
+  return (
+    <Box p={4}>
+      <Typography variant="h5" fontWeight="bold" gutterBottom>
+        ERP Connections
+      </Typography>
+
+      {/* Connected Systems */}
+      <Typography variant="h6" gutterBottom>
+        ✅ Connected Systems
+      </Typography>
+      <Grid container spacing={3}>
+        {connected.map((erp, idx) => (
+          <Grid item xs={12} sm={6} md={3} key={idx}>
+            <Card elevation={3}>
+              <CardHeader
+                title={erp.name}
+                titleTypographyProps={{ sx: { fontSize: '16px', fontWeight: 500 } }}
+                action={
+                  <Chip
+                    label="Connected"
+                    color="success"
+                    icon={<CheckCircle fontSize="small" />}
+                    size="small"
+                  />
+                }
+              />
+              <CardContent>
+                <Typography variant="body2" color="textSecondary">
+                  Last Synced: {erp.lastSynced}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+
+      <Divider sx={{ my: 4 }} />
+
+      {/* Available to Connect */}
+      <Typography variant="h6" gutterBottom>
+        🔌 Available to Connect
+      </Typography>
+      <Grid container spacing={3}>
+        {disconnected.map((erp, idx) => (
+          <Grid item xs={12} sm={6} md={3} key={idx}>
+            <Card elevation={3}>
+              <CardHeader
+                title={erp.name}
+                titleTypographyProps={{ sx: { fontSize: '16px', fontWeight: 500 } }}
+                // action={
+                //   <Chip
+                //     label="Disconnected"
+                //     color="error"
+                //     icon={<Cancel fontSize="small" />}
+                //     size="small"
+                //   />
+                // }
+              />
+              <CardContent>
+                <Typography variant="body2" color="textSecondary">
+                  Not synced yet
+                </Typography>
+                <Stack mt={2}>
+                  <Button
+                    variant="outlined"
+                    startIcon={<AddCircle />}
+                    fullWidth
+                  >
+                    Connect Now
+                  </Button>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+    </Box>
+  );
 };
 
 export default SystemConections;

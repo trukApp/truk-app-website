@@ -3,7 +3,7 @@ import { Box, Collapse, IconButton, Paper, Typography, Grid, Button, useTheme, u
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { useRouter } from 'next/navigation';
-import { useEditAssignOrderOrderMutation, useGetAllDriversDataQuery, useGetAllProductsQuery, useGetAssignedOrderByIdQuery, useGetDeviceMasterQuery, useGetFilteredDriversQuery, useGetFilteredVehiclesQuery, useGetLocationMasterQuery, useGetOrderByIdQuery, useGetSingleVehicleMasterQuery, useGetVehicleMasterQuery, usePostAssignCarrierMutation, usePostAssignCarrierToOrderMutation, usePostAssignOrderMutation, usePostCarrierRejectigOrderMutation, usePostSingleVehicleMasterMutation } from "@/api/apiSlice";
+import { useEditAssignOrderOrderMutation, useGetAllDriversDataQuery, useGetAllProductsQuery, useGetAssignedOrderByIdQuery, useGetDeviceMasterQuery, useGetFilteredDriversQuery, useGetFilteredVehiclesQuery, useGetLocationMasterQuery, useGetOrderByIdQuery, useGetSingleVehicleMasterQuery, useGetVehicleMasterQuery, usePostAssignCarrierMutation, usePostAssignCarrierToOrderMutation, usePostAssignOrderMutation, usePostCarrierAssigningOrderConfirmMutation, usePostCarrierRejectigOrderMutation, usePostSingleVehicleMasterMutation } from "@/api/apiSlice";
 import SnackbarAlert from "../ReusableComponents/SnackbarAlerts";
 import { Driver } from "../BusinessPartnersForms/DriverForm";
 import moment from 'moment';
@@ -136,6 +136,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
     const wrapperRef = useRef<HTMLDivElement>(null);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [openAccept, setOpenAccept] = useState(false);
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -168,6 +169,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
     const [assignModal, setAssignModal] = useState(false);
     const [selectedAllocation, setSelectedAllocation] = useState<Allocation | null>(null);
     const [postRejectOrderByCarrier, { isLoading: isRejecting }] = usePostCarrierRejectigOrderMutation()
+       const [postAssignOrderByCarrier, { isLoading: isAssignConfirm }] = usePostCarrierAssigningOrderConfirmMutation()
     const [postAssignOrder, { isLoading: isAssigning }] = usePostAssignOrderMutation()
     const [editAssignOrder, { isLoading: editAssignLoading }] = useEditAssignOrderOrderMutation()
     const [postAssignCarrier, { isLoading: carrierAssinLoading }] = usePostAssignCarrierMutation()
@@ -231,6 +233,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
         resetForm();
     };
     const unitsofMeasurement = useSelector((state: RootState) => state.auth.unitsofMeasurement);
+
     const initialFormValues = {
         id: "",
         truckId: "",
@@ -495,9 +498,59 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
         }
     };
 
-    const handleAcceptByCarrier = () => {
-        console.log("accept clicked")
-    }
+const initialValuesAccept = {
+  vehicleNumAccept: '',
+  driverNameAccept: '',
+  driverNumberAccept: '',
+  driverLicenseAccept: '',
+  deviceIdAccept: '',
+
+};
+const validationSchemaAccept = Yup.object().shape({
+  vehicleNumAccept: Yup.string().required('Vehicle Number is required'),
+  driverNameAccept: Yup.string().required('Driver Name is required'),
+  driverNumberAccept: Yup.string()
+    .required('Driver Number is required')
+    .matches(/^[0-9]{10}$/, 'Driver Number must be 10 digits'),
+  driverLicenseAccept: Yup.string().required('Driver License is required'),
+  deviceIdAccept: Yup.string().required('Device ID is required'),
+
+});
+
+
+  const handleSubmitAccept =async (values: typeof initialValuesAccept) => {
+    console.log('Submitted Accept Data:', values);
+    const carrierIdForOrder = from
+            try {
+            const body = {
+                carrier_ID: carrierIdForOrder,
+                order_ID: orderId,
+                vehicle_num: values.vehicleNumAccept,
+                driver_data: {
+                    c_driver_name: values.driverNameAccept,
+                    c_driver_number: values.driverNumberAccept,
+                    c_driver_license: values.driverLicenseAccept
+                },
+                device_ID: values.deviceIdAccept,
+                confirmed_time:  Date.now()
+            }
+            console.log('bodyy:', body)
+            const response = await postAssignOrderByCarrier(body).unwrap();
+            console.log('assign response:', response);
+            if (response) {
+                setSnackbarMessage(`Carrier ${carrierIdForOrder} assigned to Order ${orderId}  successfully!`);
+                setSnackbarSeverity("success");
+                setSnackbarOpen(true);
+            }
+        } catch (error) {
+            console.error('Error assigning:', error);
+            setSnackbarMessage(`Unable to assign this order now , try after sometime.`);
+            setSnackbarSeverity("error");
+            setSnackbarOpen(true);
+        }
+    
+    setOpenAccept(false);
+  };
     return (
         <Box>
             <Backdrop
@@ -505,7 +558,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                     color: "#ffffff",
                     zIndex: (theme) => theme.zIndex.drawer + 1,
                 }}
-                open={postVehicleLoading || isAssigning || isRejecting || editAssignLoading || deviceLoading || carrierAssinLoading || carrierToOrderLoading}
+                open={postVehicleLoading || isAssigning || isRejecting || isAssignConfirm || editAssignLoading || deviceLoading || carrierAssinLoading || carrierToOrderLoading}
             >
                 <CircularProgress color="inherit" />
             </Backdrop>
@@ -736,6 +789,99 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                         Yes, Reject
                     </Button>
                 </DialogActions>
+            </Dialog>
+
+            <Dialog  open={openAccept} onClose={() => setOpenAccept(false)} maxWidth="xs" fullWidth
+                PaperProps={{
+                    sx: {  backgroundColor: '#f5f5f5' , padding:'10px', borderRadius:'20px', },
+                }}
+            >
+            <DialogTitle>Confirm Carrier Assignment</DialogTitle>
+        <Formik
+          initialValues={initialValuesAccept}
+          validationSchema={validationSchemaAccept}
+          onSubmit={handleSubmitAccept}
+        >
+          {({
+            values: valuesAccept,
+            handleChange: handleChangeAccept,
+            errors: errorsAccept,
+            touched: touchedAccept,
+          }) => (
+            <Form>
+              <DialogContent>
+                <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth size='small'
+                      label="Vehicle Number"
+                      name="vehicleNumAccept"
+                      value={valuesAccept.vehicleNumAccept}
+                      onChange={handleChangeAccept}
+                      error={touchedAccept.vehicleNumAccept && Boolean(errorsAccept.vehicleNumAccept)}
+                      helperText={touchedAccept.vehicleNumAccept && errorsAccept.vehicleNumAccept}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12}  >
+                    <TextField
+                      fullWidth
+                      label="Driver Name" size='small'
+                      name="driverNameAccept"
+                      value={valuesAccept.driverNameAccept}
+                      onChange={handleChangeAccept}
+                      error={touchedAccept.driverNameAccept && Boolean(errorsAccept.driverNameAccept)}
+                      helperText={touchedAccept.driverNameAccept && errorsAccept.driverNameAccept}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} >
+                    <TextField
+                      fullWidth
+                      label="Driver Number" size='small'
+                      name="driverNumberAccept"
+                      value={valuesAccept.driverNumberAccept}
+                      onChange={handleChangeAccept}
+                      error={touchedAccept.driverNumberAccept && Boolean(errorsAccept.driverNumberAccept)}
+                      helperText={touchedAccept.driverNumberAccept && errorsAccept.driverNumberAccept}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12}  >
+                    <TextField
+                      fullWidth
+                      label="Driver License" size='small'
+                      name="driverLicenseAccept"
+                      value={valuesAccept.driverLicenseAccept}
+                      onChange={handleChangeAccept}
+                      error={touchedAccept.driverLicenseAccept && Boolean(errorsAccept.driverLicenseAccept)}
+                      helperText={touchedAccept.driverLicenseAccept && errorsAccept.driverLicenseAccept}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12}  >
+                    <TextField
+                      fullWidth
+                      label="Device ID" size='small'
+                      name="deviceIdAccept"
+                      value={valuesAccept.deviceIdAccept}
+                      onChange={handleChangeAccept}
+                      error={touchedAccept.deviceIdAccept && Boolean(errorsAccept.deviceIdAccept)}
+                      helperText={touchedAccept.deviceIdAccept && errorsAccept.deviceIdAccept}
+                    />
+                  </Grid>
+                </Grid>
+              </DialogContent>
+
+              <DialogActions>
+                <Button onClick={() => setOpenAccept(false)}>Cancel</Button>
+                <Button variant="contained" type="submit">
+                  Submit
+                </Button>
+              </DialogActions>
+            </Form>
+          )}
+        </Formik>
             </Dialog>
 
             <Typography variant="h6" gutterBottom color="#F08C24" style={{ fontWeight: 'bold' }}>
@@ -993,9 +1139,13 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                             <Grid item sx={{ width: '97.5%' }}>
                                 <Grid item sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 }}>
                                     <Typography variant="subtitle1" color="#F08C24" style={{ fontWeight: 'bold' }}>
-                                        Vehicle: {allocation.vehicle_ID} | Cost: ₹{allocation.cost.toFixed(2)}
+                                        Vehicle: {allocation.vehicle_ID}
+                                        {(from === 'order-overview' || from === 'order-bidding') && (
+                                            <> | Cost: ₹{allocation?.cost?.toFixed(2)}</>
+                                        ) }
+                                        
                                     </Typography>
-                                    <Typography variant="body2" color="#F08C24" sx={{ fontSize: 11, backgroundColor: 'lightpink', paddingLeft: 2, paddingRight: 2, paddingTop: 0.7, paddingBottom: 0.3, borderRadius: 1.5 }}>
+                                    <Typography variant="body2" color="#F08C24" sx={{ fontSize: 11, backgroundColor: '#FCF0DE', paddingLeft: 2, paddingRight: 2, paddingTop: 0.7, paddingBottom: 0.3, borderRadius: 1.5 }}>
                                         {order?.order?.order_status}
                                     </Typography>
 
@@ -1250,7 +1400,8 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                                                         <Button
                                                             variant="contained"
                                                             color="primary"
-                                                            onClick={handleAcceptByCarrier}
+                                                        // onClick={handleAcceptByCarrier}
+                                                        onClick={() => setOpenAccept(true)}
                                                         >
                                                             Accept
                                                         </Button>
