@@ -12,7 +12,8 @@ import { Session } from "next-auth";
 import { usePathname } from "next/navigation";
 
 const LayoutClientWrapper = ({ children, session }: { children: React.ReactNode; session: Session | null; }) => {
-      const pathname = usePathname();
+    const pathname = usePathname();
+    console.log("session is :", session)
 
   const isLandingPage = pathname === "/" 
     return (
@@ -27,7 +28,7 @@ const LayoutClientWrapper = ({ children, session }: { children: React.ReactNode;
                             // marginTop: { xs: "40px", md: "60px", },
                             padding: isLandingPage ? '0px' : "15px",
                             backgroundColor: "#ffffff",
-                            minHeight: "70vh",
+                            minHeight: "90vh",
                             marginLeft :isLandingPage ? '0px' : '30px'
                         }}
                     >

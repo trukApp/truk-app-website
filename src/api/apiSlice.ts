@@ -735,6 +735,16 @@ export const apiSlice = createApi({
       }),
       invalidatesTags :[{type: "Orderss", id: "LIST"}]
     }),
+
+    postCarrierAssigningOrderConfirm: builder.mutation({
+      query: (body) => ({
+        url: "carrier-assignment/carrier-assignment/confirm",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags :[{type: "Orderss", id: "LIST"}]
+    }),
+
   }),
   
 });
@@ -813,4 +823,5 @@ export const {
   usePostAssignCarrierToOrderMutation,
   useGetCarrierAssignmentReqQuery,
   usePostCarrierRejectigOrderMutation,
+  usePostCarrierAssigningOrderConfirmMutation,
 } = apiSlice;

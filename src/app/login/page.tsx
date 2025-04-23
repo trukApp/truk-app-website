@@ -12,6 +12,10 @@ interface LoginValues {
   phone: string;
   password: string;
 }
+interface CarrierLoginValues {
+  carrierId: string;
+  carrierPassword: string;
+}
 
 const LoginPage: React.FC = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -19,6 +23,8 @@ const LoginPage: React.FC = () => {
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
   const [callbackUrl, setCallbackUrl] = useState<string>('/');
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showCarrierLogin, setShowCarrierLogin] = useState(false);
+
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -45,7 +51,7 @@ const LoginPage: React.FC = () => {
 
   const handleLogin = async (values: { phone: string; password: string }, { setSubmitting, setFieldError }: FormikHelpers<LoginValues>) => {
     try {
-      const result = await signIn("credentials", {
+      const result = await signIn("user-login", {
         redirect: false,
         phone: values.phone,
         password: values.password,
@@ -69,7 +75,29 @@ const LoginPage: React.FC = () => {
       setSubmitting(false);
     }
   };
+    const handleCarrierLogin = async (values: CarrierLoginValues) => {
+    try {
+      const result = await signIn("carrier-login", {
+        redirect: false,
+        carrierId: values.carrierId,
+        carrierPassword: values.carrierPassword,
+      });
 
+      if (result?.error) {
+        setSnackbarMessage(result?.error);
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
+
+      } else {
+        window.location.href = callbackUrl;
+        setSnackbarMessage("Carrier Login successful");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
+      }
+    } catch (err) {
+      console.log(err)
+    } 
+  };
   return (
     <Grid sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
       <SnackbarAlert
@@ -91,15 +119,17 @@ const LoginPage: React.FC = () => {
           }}
         >
           <Typography variant="h5" sx={{ fontWeight: 600 }} align="center" marginBottom="10px" color="#F08C24">
-            Login
+            Login 
           </Typography>
 
-          <Formik
+          {!showCarrierLogin ? (
+              <Formik
             initialValues={{ phone: "", password: "" }}
             validationSchema={validationSchema}
             onSubmit={handleLogin}
           >
             {({ errors, touched, isSubmitting, handleChange, handleBlur, values }) => (
+
               <Form>
                 <Field
                   as={TextField}
@@ -146,10 +176,92 @@ const LoginPage: React.FC = () => {
                   <CustomButtonFilled type="submit" disabled={isSubmitting}>
                     {isSubmitting ? <CircularProgress size={24} color="inherit" /> : "Login"}
                   </CustomButtonFilled>
-                </Grid>
+                  </Grid>
+                      <Typography
+      variant="body2"
+      align="center"
+      sx={{ mt: 1}}
+      onClick={() => setShowCarrierLogin(true)}
+    >
+                    {/* Login as Carrier */}
+        Are you a carrier ? <span style={{cursor: 'pointer', color: '#F08C24', textDecoration:'underline'}}>Login as Carrier</span> 
+    </Typography>
               </Form>
             )}
           </Formik>
+          ) : (
+              <>
+              <Formik
+      initialValues={{ carrierId: "", carrierPassword: "" }}
+      validationSchema={Yup.object({
+        carrierId: Yup.string().required("Carrier ID is required"),
+        carrierPassword: Yup.string().required("Password is required"),
+      })}
+      onSubmit={handleCarrierLogin}
+    >
+      {({ errors, touched, isSubmitting, handleChange, handleBlur, values }) => (
+        <Form>
+          <Field
+            as={TextField}
+            label="Carrier ID"
+            placeholder="Enter Carrier ID"
+            variant="outlined"
+            fullWidth
+            size="small"
+            margin="normal"
+            name="carrierId"
+            value={values.carrierId}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            error={touched.carrierId && Boolean(errors.carrierId)}
+            helperText={touched.carrierId && errors.carrierId}
+          />
+
+          <Field
+            as={TextField}
+            label="Password"
+            variant="outlined"
+            fullWidth
+            size="small"
+            margin="normal"
+            name="carrierPassword"
+            type={showPassword ? "text" : "password"}
+            value={values.carrierPassword}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            error={touched.carrierPassword && Boolean(errors.carrierPassword)}
+            helperText={touched.carrierPassword && errors.carrierPassword}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setShowPassword((prev) => !prev)} edge="end">
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          <Grid sx={{ textAlign: "center", marginTop: "10px" }}>
+            <CustomButtonFilled type="submit" disabled={isSubmitting}>
+              {isSubmitting ? <CircularProgress size={24} color="inherit" /> : "Login"}
+            </CustomButtonFilled>
+          </Grid>
+
+          <Typography
+            variant="body2"
+            align="center"
+            sx={{ mt: 1,  }}
+            onClick={() => setShowCarrierLogin(false)}
+          >
+          Go to <span style={{cursor: 'pointer', color: '#F08C24', textDecoration:'underline'}}>User Login</span> 
+          </Typography>
+        </Form>
+      )}
+                </Formik>
+              </>
+          )}
+        
 
           {/* <Typography variant="body2" align="center" marginTop="10px">
             Don&apos;t have an account ? <a href="/signup" style={{ color: "#F08C24" }}>Sign up</a>
