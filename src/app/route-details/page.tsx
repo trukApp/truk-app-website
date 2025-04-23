@@ -3,8 +3,15 @@
 import React from 'react';
 import { RootState } from '@/store';
 import { useSelector } from 'react-redux';
-import { DriverPointDeviation } from '@/store/authSlice';
-import { Box, Typography, Grid, Paper } from "@mui/material";
+// import { Typography, Paper, TablePagination } from "@mui/material";
+// import {
+//   Table,
+//   TableBody,
+//   TableCell,
+//   TableContainer,
+//   TableHead,
+//   TableRow
+// } from "@mui/material";
 
 // const routeData = {
 //   message: "Route deviation detected",
@@ -41,13 +48,34 @@ import { Box, Typography, Grid, Paper } from "@mui/material";
 
 const RouteDetails = () => {
   const deviationData = useSelector((state: RootState) => state.auth.deviationData);
-  console.log('deviationData:;', deviationData);
+  // console.log('deviationData:;', deviationData);
+  // const [page, setPage] = useState(0);
+  // const [rowsPerPage, setRowsPerPage] = useState(10);
   if (!deviationData) {
     return <p className="text-center text-gray-600">No route deviation data available.</p>;
   }
+
+
+  // const handleChangePage = (_: unknown, newPage: number) => {
+  //   setPage(newPage);
+  // };
+
+  // const handleChangeRowsPerPage = (
+  //   event: React.ChangeEvent<HTMLInputElement>
+  // ) => {
+  //   setRowsPerPage(parseInt(event.target.value, 10));
+  //   setPage(0);
+  // };
+
+  // const paginatedData = deviationData.driverPointDeviations?.slice(
+  //   page * rowsPerPage,
+  //   page * rowsPerPage + rowsPerPage
+  // );
   return (
     <div className="max-w-4xl mx-auto p-6 bg-gray-100 rounded-lg shadow-lg">
-      <h1 className="text-2xl font-bold text-center text-gray-800 mb-4">Route Details</h1>
+      <h1 className="text-2xl font-bold text-center mb-4" style={{ color: '#83214F', textDecorationLine: 'underline' }}>
+        Route Details
+      </h1>
 
       <div className="bg-white p-4 rounded-lg shadow mb-4">
         <p><strong>Order ID:</strong> {deviationData.order_ID}</p>
@@ -58,7 +86,7 @@ const RouteDetails = () => {
 
       {deviationData.deviation_detected && (
         <div className="bg-red-100 p-4 rounded-lg shadow mb-4">
-          <p className="text-red-700 font-semibold">{deviationData.message}</p>
+          <h2 className="text-red-700 font-semibold" style={{ color: '#83214F', textDecorationLine: 'underline' }}>{deviationData.message}</h2>
           <p><strong>Start Deviation:</strong> {deviationData.start_deviation_km} km</p>
           <p><strong>End Deviation:</strong> {deviationData.end_deviation_km} km</p>
         </div>
@@ -66,7 +94,7 @@ const RouteDetails = () => {
 
       {deviationData.deviation_reasons?.length > 0 && (
         <div className="bg-white p-4 rounded-lg shadow mb-4">
-          <h2 className="text-lg font-bold mb-2">Deviation Reasons</h2>
+          <h2 className="text-lg font-bold mb-2" style={{ color: '#83214F', textDecorationLine: 'underline' }}>Deviation Reasons</h2>
           <ul className="list-disc pl-6">
             {deviationData.deviation_reasons.map((reason: string, index: number) => (
               <li key={index} className="text-gray-700">{reason}</li>
@@ -75,30 +103,45 @@ const RouteDetails = () => {
         </div>
       )}
 
-      <Box sx={{ bgcolor: "white", p: 4, borderRadius: 2, boxShadow: 3 }}>
-        <Typography variant="h6" fontWeight="bold" mb={2}>
+      {/* <TableContainer component={Paper} elevation={3} sx={{ borderRadius: 2 }}>
+        <Typography variant="h6" fontWeight="bold" p={2}>
           Off-Route Points
         </Typography>
 
-        <Grid container spacing={2}>
-          {deviationData.driverPointDeviations?.map((point: DriverPointDeviation, index: number) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
-              <Paper elevation={3} sx={{ p: 2, bgcolor: "white", borderRadius: 2 }}>
-                <Typography>
-                  <strong>Location:</strong> ({point.lat}, {point.lng})
-                </Typography>
-                <Typography>
-                  <strong>Deviation:</strong> {point.deviationDistanceKM} km
-                </Typography>
-                <Typography color="error" fontWeight="bold">
-                  {point.reason}
-                </Typography>
-              </Paper>
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell><strong>Location</strong></TableCell>
+              <TableCell><strong>Deviation (km)</strong></TableCell>
+              <TableCell><strong>Reason</strong></TableCell>
+            </TableRow>
+          </TableHead>
 
+          <TableBody>
+            {paginatedData?.map((point, index) => (
+              <TableRow key={index}>
+                <TableCell>(Lat: {point.lat}, Lang: {point.lng})</TableCell>
+                <TableCell>{point.deviationDistanceKM}</TableCell>
+                <TableCell>
+                  <Typography color="error" fontWeight="bold">
+                    {point.reason}
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+
+        <TablePagination
+          component="div"
+          count={deviationData.driverPointDeviations?.length || 0}
+          page={page}
+          onPageChange={handleChangePage}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          rowsPerPageOptions={[5, 10, 25]}
+        />
+      </TableContainer> */}
 
     </div>
   );
