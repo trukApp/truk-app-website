@@ -463,9 +463,9 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
     const handleCreateVehicle = () => {
         setOpen(true)
     }
-    const handleOpenDialog = () => {
-        setOpenReject(true);
-    };
+    // const handleOpenDialog = () => {
+    //     setOpenReject(true);
+    // };
 
     const handleCloseReject = () => {
         setOpenReject(false);
