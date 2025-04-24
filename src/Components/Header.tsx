@@ -2,8 +2,7 @@
 import React, { useEffect, useState } from "react";
 import {
   AppBar,
-  Toolbar,
-  Typography,
+  Toolbar, 
   IconButton,
   Menu,
   MenuItem,
@@ -13,6 +12,7 @@ import {
   useTheme,
   useMediaQuery,
 } from "@mui/material";
+import Image from "next/image";
 import {
   Menu as MenuIcon,
   Home as HomeIcon,
@@ -72,21 +72,22 @@ const Header = () => {
   };
 
   const handleNavigationToHomePage = () => {
-    router.push("/explore");
+    router.push("/");
   };
 
   return (
     <>
-      <AppBar position="fixed">
+      <AppBar position="fixed" sx={{backgroundColor:'whitesmoke'}}>
         <Toolbar>
-          <Typography
-            variant="h6"
-            component="div"
-            sx={{ flexGrow: 1, cursor: "pointer" }}
-            onClick={handleNavigationToHomePage}
-          >
-            Truk App 🚚
-          </Typography>
+          <Grid sx={{ flexGrow: 1, cursor: "pointer" }} onClick={handleNavigationToHomePage}>
+          <Image
+                src="/TrukAppLogo.png"
+                alt="Logo"
+                width={125}
+                height={43}
+                unoptimized
+            />
+          </Grid>
 
           {isAuthPage || !session ? (
             <>
@@ -102,7 +103,7 @@ const Header = () => {
                   <div className="hidden md:flex space-x-4">
                     <IconButton
                       sx={{
-                        color: currentPath === "/explore" ? "#ffffff" : "inherit",
+                        color: currentPath === "/explore" ? "#F08C24" : "inherit",
                         fontWeight: "bold",
                       }}
                       href="/explore"
@@ -113,7 +114,7 @@ const Header = () => {
 
                     <IconButton
                       sx={{
-                        color: currentPath === "/createorder" ? "#ffffff" : "inherit",
+                        color: currentPath === "/createorder" ? "#F08C24" : "inherit",
                         fontWeight: "bold",
                       }}
                       href="/createorder"
@@ -124,7 +125,7 @@ const Header = () => {
 
                     <IconButton
                       sx={{
-                        color: currentPath === "/createpackage" ? "#ffffff" : "inherit",
+                        color: currentPath === "/createpackage" ? "#F08C24" : "inherit",
                         fontWeight: "bold",
                       }}
                       href="/createpackage"
