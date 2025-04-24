@@ -138,7 +138,6 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
         pincode: Yup.string().matches(/^\d{6}$/, 'Invalid pincode').required('Pincode is required'),
         latitude: Yup.string().required('Latitude is required'),
         longitude: Yup.string().required('Longitude is required'),
-        // timeZone: Yup.string().required('Time zone is required'),
         locationType: Yup.string().required('Location type is required'),
     });
 
@@ -446,10 +445,8 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                                             name="timeZone"
                                             as={TextField}
                                             disabled={!values.saveAsNewLocationId}
-                                            label="Time zone*"
+                                            label="Time zone"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                        // error={touched?.timeZone && Boolean(errors?.timeZone)}
-                                        // helperText={touched?.timeZone && errors?.timeZone}
                                         />
                                     </Grid>
                                     <Grid item xs={12} md={2.4}>
@@ -568,7 +565,6 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                                             as={TextField}
                                             label="Pincode*"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                            required
                                             error={touched?.pincode && Boolean(errors?.pincode)}
                                             helperText={touched?.pincode && errors?.pincode}
                                         />

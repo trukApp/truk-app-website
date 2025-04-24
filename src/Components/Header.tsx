@@ -35,7 +35,7 @@ const Header = () => {
 
   const user = {
     name: session?.user?.name || "Teja Bandaru",
-    profileImage: session?.user?.image || "https://www.shutterstock.com/image-photo/white-truck-isolated-on-background-260nw-510103681.jpg",
+    profileImage: session?.user?.image || "/TLogo.png",
   };
 
   const isAuthPage = currentPath === "/login" || currentPath === "/signup";
@@ -72,7 +72,6 @@ const Header = () => {
   };
 
   const handleNavigationToHomePage = () => {
-    router.push("/");
     router.push("/");
   };
 
@@ -137,7 +136,7 @@ const Header = () => {
 
                     <IconButton onClick={handleProfileMenuOpen}>
                       {user.profileImage ? (
-                        <Avatar src={user.profileImage} />
+                        <Avatar src={user.profileImage}  sx={{ p: '6px', backgroundColor:'#FCF0DE' }} />
                       ) : (
                         <Avatar>{user.name[0]}</Avatar>
                       )}

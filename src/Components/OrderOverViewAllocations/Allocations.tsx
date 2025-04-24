@@ -17,6 +17,7 @@ import { VehicleDetails } from "../MasterDataComponents/Vehicles";
 import { TruckFormDetails } from "@/app/vehicle/page";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
+import CloseIcon from '@mui/icons-material/Close';
 
 const style = {
     position: "absolute",
@@ -136,7 +137,8 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
     const wrapperRef = useRef<HTMLDivElement>(null);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
-    const [openAccept, setOpenAccept] = useState(false);
+    const [openAcceptCarrier, setOpenAcceptCarrier] = useState(false);
+    const [openAssignModal, setOpenAssignModal] = useState(false); 
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -233,6 +235,15 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
         resetForm();
     };
     const unitsofMeasurement = useSelector((state: RootState) => state.auth.unitsofMeasurement);
+ 
+const handleOpenAssignModal = (allocation: Allocation) => {
+  setSelectedAllocation(allocation);
+  setOpenAssignModal(true);
+};
+
+const handleCloseAssignModal = () => {
+  setOpenAssignModal(false);
+};
 
     const initialFormValues = {
         id: "",
@@ -309,27 +320,23 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
     };
     const handleCarrierAssign = async () => {
         try {
-
             const body = {
-                // order_ID: orderId,
-                order_ID: 'ORD000023',
+                order_ID: orderId,
                 assigned_time: new Date().toISOString().slice(0, 16)
             };
 
             const response = await postAssignCarrier(body).unwrap();
             console.log("assign response:", response?.carrier_options);
             if (response.message === "Multiple valid contracted carriers found. Choose one for assignment.") {
-                setAssignModal(true);
+                setOpenAcceptCarrier(true);
                 setCarrierOptions(response?.carrier_options);
             }
             if (response?.message === "Carrier assignment initialized successfully.") {
                 const assignedCarrier = response?.req_sent_to[0]
-                setAssignModal(false)
+                setOpenAcceptCarrier(false)
                 setSnackbarMessage(`Carrier assignment sent to carrier ${assignedCarrier} successfully!`);
                 setSnackbarSeverity("success");
                 setSnackbarOpen(true);
-                setAssignModal(false)
-
             }
 
         } catch (error) {
@@ -353,7 +360,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
         }
 
     }
-    const handleSubmit = async () => {
+    const handleSubmit = async () => { 
         let isValid = true;
         const newErrors: FormErrors = {};
         if (!formData.truckId) {
@@ -549,7 +556,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
             setSnackbarOpen(true);
         }
 
-        setOpenAccept(false);
+        setOpenAcceptCarrier(false);
     };
     return (
         <Box>
@@ -568,572 +575,662 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                 severity={snackbarSeverity}
                 onClose={() => setSnackbarOpen(false)}
             />
-            <Modal open={open} onClose={handleClose}>
-                <Box sx={style} >
-
-                    <Formik
-                        initialValues={initialFormValues}
-                        validationSchema={validationSchema}
-                        onSubmit={handleAssignSubmit}
-                    >
-                        {({ values, errors, touched, handleChange, handleBlur, setFieldValue, resetForm }) => (
-                            <Form>
-                                <Grid>
-                                    <Grid container spacing={2}>
-                                        <Grid item xs={12} sm={6} md={2.4}>
-                                            <FormControl
-                                                fullWidth
-                                                size="small"
-                                                error={touched.vehicleId && Boolean(errors.vehicleId)}
-                                            >
-                                                <InputLabel>Vehicle ID*</InputLabel>
-                                                <Select
-                                                    label="Vehicle ID*"
-                                                    name="vehicleId"
-                                                    value={values.vehicleId}
-                                                    onChange={handleChange}
-                                                    onBlur={handleBlur}
-                                                >
-                                                    {isVehiclesLoading ? (
-                                                        <MenuItem disabled>
-                                                            <CircularProgress size={20} color="inherit" />
-                                                            <span style={{ marginLeft: "10px" }}>Loading...</span>
-                                                        </MenuItem>
-                                                    ) : (
-                                                        getAllVehicles?.map((vehicle: VehicleDetails) => (
-                                                            <MenuItem key={vehicle?.vehicle_ID} value={String(vehicle.vehicle_ID)}>
-                                                                <span style={{ flex: 1 }}>{vehicle?.vehicle_ID}</span>
-                                                            </MenuItem>
-                                                        ))
-                                                    )}
-                                                </Select>
-                                                {touched.vehicleId && errors.vehicleId && (
-                                                    <FormHelperText>{errors.vehicleId}</FormHelperText>
-                                                )}
-                                            </FormControl>
-                                        </Grid>
-                                        <Grid item xs={12} sm={6} md={2.4}>
-                                            <TextField
-                                                fullWidth
-                                                label="Vehicle Number*"
-                                                name="vehicleNumber"
-                                                value={values.vehicleNumber}
-                                                onChange={handleChange}
-                                                onBlur={handleBlur}
-                                                error={touched.vehicleNumber && Boolean(errors.vehicleNumber)}
-                                                helperText={touched.vehicleNumber && errors.vehicleNumber}
-                                                size="small"
-                                            />
-                                        </Grid>
-                                        <Grid item xs={12} sm={6} md={2.4}>
-                                            <TextField
-                                                fullWidth
-                                                size="small"
-                                                label="Cost (Rs.)*"
-                                                name="costing" type='number'
-                                                value={values.costing}
-                                                // onChange={handleChange}
-                                                onChange={(e) => {
-                                                    const inputValue = e.target.value;
-                                                    const numericValue = Number(inputValue);
-
-                                                    if (numericValue > 0 || inputValue === "") {
-                                                        handleChange(e);
-                                                    }
-                                                }}
-                                                onBlur={handleBlur}
-                                                error={touched.costing && Boolean(errors.costing)}
-                                                helperText={touched.costing && errors.costing}
-                                            />
-                                        </Grid>
-                                        <Grid item xs={12} sm={6} md={2.4}>
-                                            <TextField
-                                                fullWidth
-                                                select
-                                                onBlur={handleBlur}
-                                                name="cost_criteria_per"
-                                                value={values.cost_criteria_per || ""}
-                                                onChange={handleChange}
-                                                size="small"
-                                            >
-                                                {unitsofMeasurement.map((unit) => (
-                                                    <MenuItem key={unit} value={unit}>
-                                                        {unit}
-                                                    </MenuItem>
-                                                ))}
-                                            </TextField>
-                                        </Grid>
-                                        <Grid item xs={12} sm={6} md={2.4}>
-                                            <FormControlLabel
-                                                control={
-                                                    <Checkbox
-                                                        checked={values.isAvailable}
-                                                        onChange={(e) => {
-                                                            const checked = e.target.checked;
-                                                            setFieldValue("isAvailable", checked);
-                                                        }}
-                                                    />
-                                                }
-                                                label="Is vehicle available"
-                                            />
-                                        </Grid>
-                                    </Grid>
-                                    <Typography variant="h6" mt={3} mb={1}>
-                                        Vehicle documents
-                                    </Typography>
-                                    <Grid container spacing={2}>
-                                        <Grid item xs={12} sm={6} md={2.4}>
-                                            <TextField
-                                                fullWidth
-                                                label="Insurance*"
-                                                name="insurance"
-                                                value={values.insurance}
-                                                onChange={handleChange}
-                                                onBlur={handleBlur}
-                                                error={
-                                                    touched.insurance &&
-                                                    Boolean(errors.insurance)
-                                                }
-                                                helperText={
-                                                    touched.insurance && errors.insurance
-                                                }
-                                                size="small"
-                                            />
-                                        </Grid>
-                                        <Grid item xs={12} sm={6} md={2.4}>
-                                            <TextField
-                                                fullWidth
-                                                label="Registration number*"
-                                                name="registration"
-                                                value={values.registration}
-                                                onChange={handleChange}
-                                                onBlur={handleBlur}
-                                                error={
-                                                    touched.registration &&
-                                                    Boolean(errors.registration)
-                                                }
-                                                helperText={
-                                                    touched.registration && errors.registration
-                                                }
-                                                size="small"
-                                            />
-                                        </Grid>
-                                        <Grid item xs={12} sm={6} md={2.4}>
-                                            <TextField
-                                                fullWidth
-                                                label="Permit*"
-                                                name="permit"
-                                                value={values.permit}
-                                                onChange={handleChange}
-                                                onBlur={handleBlur}
-                                                error={
-                                                    touched.permit &&
-                                                    Boolean(errors.permit)
-                                                }
-                                                helperText={
-                                                    touched.permit && errors.permit
-                                                }
-                                                size="small"
-                                            />
-                                        </Grid>
-                                    </Grid>
-
-                                    <Box mt={3} textAlign="center">
-                                        <Button
-                                            type="submit"
-                                            variant="contained"
-                                            sx={{
-                                                backgroundColor: "#F08C24",
-                                                color: "#fff",
-                                                "&:hover": {
-                                                    backgroundColor: "#fff",
-                                                    color: "#F08C24"
-                                                }
-                                            }}
-                                        > Submit
-                                        </Button>
-
-                                        <Button
-                                            variant="outlined"
-                                            color="secondary"
-                                            onClick={() => {
-                                                resetForm();
-                                            }}
-                                            style={{ marginLeft: "10px" }}
-                                        >
-                                            Reset
-                                        </Button>
-                                    </Box>
-                                </Grid>
-                            </Form>
-                        )}
-                    </Formik>
-                </Box>
-            </Modal>
-
-            <Dialog
-                open={openReject}
-                onClose={handleCloseReject}
-            >
-                <DialogTitle>Confirm Rejection</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>
-                        Are you sure you want to reject this order?
-                    </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleCloseReject} color="primary">
-                        Cancel
-                    </Button>
-                    <Button onClick={handleYes} color="error" autoFocus>
-                        Yes, Reject
-                    </Button>
-                </DialogActions>
-            </Dialog>
-
-            <Dialog open={openAccept} onClose={() => setOpenAccept(false)} maxWidth="xs" fullWidth
-                PaperProps={{
-                    sx: { backgroundColor: '#f5f5f5', padding: '10px', borderRadius: '20px', },
-                }}
-            >
-                <DialogTitle>Confirm Carrier Assignment</DialogTitle>
-                <Formik
-                    initialValues={initialValuesAccept}
-                    validationSchema={validationSchemaAccept}
-                    onSubmit={handleSubmitAccept}
-                >
-                    {({
-                        values: valuesAccept,
-                        handleChange: handleChangeAccept,
-                        errors: errorsAccept,
-                        touched: touchedAccept,
-                    }) => (
-                        <Form>
-                            <DialogContent>
-                                <Grid container spacing={2}>
-                                    <Grid item xs={12}>
-                                        <TextField
-                                            fullWidth size='small'
-                                            label="Vehicle Number"
-                                            name="vehicleNumAccept"
-                                            value={valuesAccept.vehicleNumAccept}
-                                            onChange={handleChangeAccept}
-                                            error={touchedAccept.vehicleNumAccept && Boolean(errorsAccept.vehicleNumAccept)}
-                                            helperText={touchedAccept.vehicleNumAccept && errorsAccept.vehicleNumAccept}
-                                        />
-                                    </Grid>
-
-                                    <Grid item xs={12}  >
-                                        <TextField
-                                            fullWidth
-                                            label="Driver Name" size='small'
-                                            name="driverNameAccept"
-                                            value={valuesAccept.driverNameAccept}
-                                            onChange={handleChangeAccept}
-                                            error={touchedAccept.driverNameAccept && Boolean(errorsAccept.driverNameAccept)}
-                                            helperText={touchedAccept.driverNameAccept && errorsAccept.driverNameAccept}
-                                        />
-                                    </Grid>
-
-                                    <Grid item xs={12} >
-                                        <TextField
-                                            fullWidth
-                                            label="Driver Number" size='small'
-                                            name="driverNumberAccept"
-                                            value={valuesAccept.driverNumberAccept}
-                                            onChange={handleChangeAccept}
-                                            error={touchedAccept.driverNumberAccept && Boolean(errorsAccept.driverNumberAccept)}
-                                            helperText={touchedAccept.driverNumberAccept && errorsAccept.driverNumberAccept}
-                                        />
-                                    </Grid>
-
-                                    <Grid item xs={12}  >
-                                        <TextField
-                                            fullWidth
-                                            label="Driver License" size='small'
-                                            name="driverLicenseAccept"
-                                            value={valuesAccept.driverLicenseAccept}
-                                            onChange={handleChangeAccept}
-                                            error={touchedAccept.driverLicenseAccept && Boolean(errorsAccept.driverLicenseAccept)}
-                                            helperText={touchedAccept.driverLicenseAccept && errorsAccept.driverLicenseAccept}
-                                        />
-                                    </Grid>
-
-                                    <Grid item xs={12}  >
-                                        <TextField
-                                            fullWidth
-                                            label="Device ID" size='small'
-                                            name="deviceIdAccept"
-                                            value={valuesAccept.deviceIdAccept}
-                                            onChange={handleChangeAccept}
-                                            error={touchedAccept.deviceIdAccept && Boolean(errorsAccept.deviceIdAccept)}
-                                            helperText={touchedAccept.deviceIdAccept && errorsAccept.deviceIdAccept}
-                                        />
-                                    </Grid>
-                                </Grid>
-                            </DialogContent>
-
-                            <DialogActions>
-                                <Button onClick={() => setOpenAccept(false)}>Cancel</Button>
-                                <Button variant="contained" type="submit">
-                                    Submit
-                                </Button>
-                            </DialogActions>
-                        </Form>
-                    )}
-                </Formik>
-            </Dialog>
 
             <Typography variant="h6" gutterBottom color="#F08C24" style={{ fontWeight: 'bold' }}>
                 Allocations
             </Typography>
-            <Modal open={assignModal} onClose={() => {
-                setAssignModal(false)
-                setFormData({ truckId: "", driverId: "", deviceId: "" });
-                setSelectedAllocation(null);
-            }}>
-                {from === 'order-overview' ? (
-                    <Box
-                        sx={{
-                            position: "absolute",
-                            top: "50%",
-                            left: "50%",
-                            transform: "translate(-50%, -50%)",
-                            bgcolor: "white",
-                            boxShadow: 24,
-                            p: 3,
-                            borderRadius: 2,
-                            width: { xs: "100%", md: "30%" },
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <Typography variant="h6" gutterBottom>
-                            Assign Order ({orderId}) to self transport
-                        </Typography>
-
-                        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                            <Grid item xs={12} sm={6} md={2.4} style={{ display: 'flex', flexDirection: 'row', gap: 4 }}>
-                                <Grid>
-                                    <TextField
-                                        fullWidth
-                                        name="truckId"
-                                        size="small"
-                                        label="Search truck... "
-                                        onFocus={() => {
-                                            if (!searchKey) {
-                                                setSearchKey(formData.truckId || "");
-                                                setShowSuggestionsVehicle(true);
-                                            }
-                                        }}
-                                        onChange={(e) => {
-                                            setSearchKeyVehicle(e.target.value);
-                                            setShowSuggestionsVehicle(true);
-                                        }}
-                                        error={Boolean(errors.truckId)}
-                                        helperText={errors.truckId}
-                                        value={searchKeyVehicle}
-                                        InputProps={{
-                                            // endAdornment: filteredVehicleLoading ? <CircularProgress size={20} /> : null,
-                                        }}
-                                    />
-                                    <div style={{ position: "relative" }}>
-                                        {showSuggestionsVehicle && (
-                                            <Paper
-                                                style={{
-                                                    maxHeight: 200,
-                                                    overflowY: "auto",
-                                                    position: "absolute",
-                                                    zIndex: 10,
-                                                    width: "100%",
-                                                }}
-                                            >
-                                                <List>
-                                                    {filteredVehicleLoading ? (
-                                                        <ListItem>
-                                                            <CircularProgress size={20} />
-                                                        </ListItem>
-                                                    ) : displayVehicles.length === 0 ? (
-                                                        <ListItem component="li">
-                                                            <Typography variant="body2" sx={{ color: "gray", textAlign: "center", width: "100%" }}>
-                                                                No results found
-                                                            </Typography>
-                                                        </ListItem>
-                                                    ) : (
-                                                        displayVehicles.map((truck: { strk_ID: string, self_vehicle_num: string }) => (
-                                                            <ListItem
-                                                                key={truck?.strk_ID}
-                                                                component="li"
-                                                                onClick={() => {
-                                                                    setShowSuggestionsVehicle(false);
-                                                                    setSearchKeyVehicle(`${truck?.self_vehicle_num}, ${truck?.strk_ID}`);
-                                                                    setFormData({ ...formData, truckId: `${truck?.self_vehicle_num}, ${truck?.strk_ID}`, });
-                                                                }}
-                                                                sx={{ cursor: "pointer" }}
-                                                            >
-                                                                <span style={{ fontSize: "13px" }}>
-                                                                    {truck?.self_vehicle_num}, {truck?.strk_ID}
-                                                                </span>
-                                                            </ListItem>
-                                                        ))
-                                                    )}
-                                                </List>
-                                            </Paper>
-                                        )}
-                                    </div>
-                                </Grid>
-                                <Typography> OR </Typography>
-                                <Grid>
-                                    <Typography
-                                        onClick={handleCreateVehicle}
-                                        sx={{ textDecoration: 'underline', cursor: 'pointer', marginLeft: 2 }}
-                                    >
-                                        Create new Truck
-                                    </Typography>
-                                </Grid>
-                            </Grid>
-
-                            <Grid item xs={12} sm={6} md={2.4}>
-                                <TextField
-                                    fullWidth
-                                    name="driverId"
-                                    size="small"
-                                    label="Search drivers... "
-                                    onFocus={() => {
-                                        if (!searchKey) {
-                                            setSearchKey(formData.driverId || "");
-                                            setShowSuggestions(true);
-                                        }
-                                    }}
-                                    onChange={(e) => {
-                                        setSearchKey(e.target.value);
-                                        setShowSuggestions(true);
-                                    }}
-                                    error={Boolean(errors.driverId)}
-                                    helperText={errors.driverId}
-                                    value={searchKey}
-                                />
-                                <div ref={wrapperRef} style={{ position: "relative" }}>
-                                    {showSuggestions && (
-                                        <Paper
-                                            style={{
-                                                maxHeight: 200,
-                                                overflowY: "auto",
-                                                position: "absolute",
-                                                zIndex: 10,
-                                                width: "100%",
-                                            }}
-                                        >
-                                            <List>
-                                                {filteredDriversLoading ? (
-                                                    <ListItem>
-                                                        <CircularProgress size={20} />
-                                                    </ListItem>
-                                                ) : displayDrivers.length === 0 ? (
-                                                    <ListItem component="li">
-                                                        <Typography variant="body2" sx={{ color: "gray", textAlign: "center", width: "100%" }}>
-                                                            No results found
-                                                        </Typography>
-                                                    </ListItem>
-                                                ) : (
-                                                    displayDrivers.map((driver: Driver) => (
-                                                        <ListItem
-                                                            key={driver?.dri_ID}
-                                                            component="li"
-                                                            onClick={() => {
-                                                                const selected = `${driver?.dri_ID}, ${driver?.driver_name}, ${driver?.driver_correspondence?.phone}`
-                                                                setShowSuggestions(false);
-                                                                setSearchKey(selected);
-                                                                setFormData({ ...formData, driverId: driver?.dri_ID });
-                                                            }}
-                                                            sx={{ cursor: "pointer" }}
-                                                        >
-                                                            <span style={{ fontSize: "13px" }}>
-                                                                {driver?.dri_ID}, {driver?.driver_name}, {driver?.driver_correspondence?.phone}
-                                                            </span>
-                                                        </ListItem>
-                                                    ))
-                                                )}
-                                            </List>
-                                        </Paper>
-                                    )}
-                                </div>
-                            </Grid>
-                            <TextField
-                                label="Device ID"
-                                name="deviceId"
-                                select
-                                value={formData.deviceId}
-                                onChange={handleChange}
-                                variant="outlined"
-                                size="small"
-                                fullWidth
-                                error={Boolean(errors.deviceId)}
-                                helperText={errors.deviceId}
-                            >
-                                {devicesData?.map((device: DeviceInfoBE) => (
-                                    <MenuItem key={device?.device_id} value={device.dev_ID}>
-                                        {device.dev_ID}
-                                    </MenuItem>
-                                ))}
-                            </TextField>
-                            <Button variant="contained" color="primary" onClick={handleSubmit}>
-                                Submit
-                            </Button>
-                        </Box>
-                    </Box>) :
-                    (
-                        <Box
-                            sx={{
-                                position: "absolute",
-                                top: "50%",
-                                left: "50%",
-                                transform: "translate(-50%, -50%)",
-                                bgcolor: "white",
-                                boxShadow: 24,
-                                p: 3,
-                                borderRadius: 2,
-                                width: { xs: "100%", md: "30%" },
-                            }}
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <Typography variant="h6" gutterBottom>
-                                Assign Order ({orderId}) to Carrier
-                            </Typography>
-                            <Typography variant="h6" sx={{ fontSize: '14px' }} gutterBottom>
-                                The following are the multiple valid contracted carriers found. Choose one for assignment.
-                            </Typography>
-                            <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                                <TextField
-                                    label="Carrier ID"
-                                    name="carrierId"
-                                    select
-                                    value={carrierId}
-                                    onChange={(e) => setCarrierId(e.target.value)}
-                                    variant="outlined"
-                                    size="small"
-                                    fullWidth
-                                >
-                                    {carrierOptions?.map((carrier: carrierForOrder) => (
-                                        <MenuItem key={carrier?.carrier_ID} value={carrier.carrier_ID}>
-                                            {carrier.carrier_ID}, {carrier.rate}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
-                                <Button variant="contained" color="primary" onClick={handleCarrierSubmit}>
-                                    Submit
-                                </Button>
-
-
-                            </Box>
-
-                        </Box>
-                    )}
-
-            </Modal>
 
             {allocations.map((allocation) => {
                 const uniqueKey = `${allocation.vehicle_ID}_${allocation.route[0].end.address}`;
-                return (
+                return ( 
+                    <>
+                    <Dialog open={openAssignModal} onClose={handleCloseAssignModal}>
+                            <DialogTitle sx={{ m: 0, p: 2, position: 'relative' }}
+                            >Choose Assignment Type 
+                            <IconButton
+                                aria-label="close"
+                                onClick={handleCloseAssignModal}
+                                sx={{
+                                    position: 'absolute',
+                                    right: 8,
+                                    top: 8,
+                                    color: (theme) => theme.palette.grey[500],
+                                }}
+                                >
+                                <CloseIcon />
+                                </IconButton>
+                            </DialogTitle>
+                        <DialogContent>
+                            <Typography>Select how you want to assign this order:</Typography>
+                            <Box display="flex" flexDirection="column" gap={2} mt={2}>
+                            <Button
+                                variant="outlined"
+                                color="secondary"
+                                onClick={() => {
+                                if (selectedAllocation) {
+                                    handleAssign(selectedAllocation);
+                                    handleCloseAssignModal();
+                                    }
+                                }}
+                            >
+                                Self Transport
+                            </Button>
+                            <Button
+                                variant="outlined"
+                                color="secondary"
+                                onClick={handleCarrierAssign }
+                            >
+                                Carrier Assignment
+                            </Button>
+                            </Box>
+                        </DialogContent>
+                    </Dialog>
+
+                    <Modal open={open} onClose={handleClose}>
+                            <Box sx={{ ...style, position: 'relative', p: 3 }} >
+                                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                                <Typography variant="h6">Assign Vehicle</Typography>
+                                <IconButton
+                                    aria-label="close"
+                                    onClick={handleClose}
+                                    sx={{ color: (theme) => theme.palette.grey[500] }}
+                                >
+                                    <CloseIcon />
+                                </IconButton>
+                                </Box>
+                                <Formik
+                                    initialValues={initialFormValues}
+                                    validationSchema={validationSchema}
+                                    onSubmit={handleAssignSubmit}
+                                >
+                                    {({ values, errors, touched, handleChange, handleBlur, setFieldValue, resetForm }) => (
+                                        <Form>
+                                            <Grid>
+                                                <Grid container spacing={2}>
+                                                    <Grid item xs={12} sm={6} md={2.4}>
+                                                        <FormControl
+                                                            fullWidth
+                                                            size="small"
+                                                            error={touched.vehicleId && Boolean(errors.vehicleId)}
+                                                        >
+                                                            <InputLabel>Vehicle ID*</InputLabel>
+                                                            <Select
+                                                                label="Vehicle ID*"
+                                                                name="vehicleId"
+                                                                value={values.vehicleId}
+                                                                onChange={handleChange}
+                                                                onBlur={handleBlur}
+                                                            >
+                                                                {isVehiclesLoading ? (
+                                                                    <MenuItem disabled>
+                                                                        <CircularProgress size={20} color="inherit" />
+                                                                        <span style={{ marginLeft: "10px" }}>Loading...</span>
+                                                                    </MenuItem>
+                                                                ) : (
+                                                                    getAllVehicles?.map((vehicle: VehicleDetails) => (
+                                                                        <MenuItem key={vehicle?.vehicle_ID} value={String(vehicle.vehicle_ID)}>
+                                                                            <span style={{ flex: 1 }}>{vehicle?.vehicle_ID}</span>
+                                                                        </MenuItem>
+                                                                    ))
+                                                                )}
+                                                            </Select>
+                                                            {touched.vehicleId && errors.vehicleId && (
+                                                                <FormHelperText>{errors.vehicleId}</FormHelperText>
+                                                            )}
+                                                        </FormControl>
+                                                    </Grid>
+                                                    <Grid item xs={12} sm={6} md={2.4}>
+                                                        <TextField
+                                                            fullWidth
+                                                            label="Vehicle Number*"
+                                                            name="vehicleNumber"
+                                                            value={values.vehicleNumber}
+                                                            onChange={handleChange}
+                                                            onBlur={handleBlur}
+                                                            error={touched.vehicleNumber && Boolean(errors.vehicleNumber)}
+                                                            helperText={touched.vehicleNumber && errors.vehicleNumber}
+                                                            size="small"
+                                                        />
+                                                    </Grid>
+                                                    <Grid item xs={12} sm={6} md={2.4}>
+                                                        <TextField
+                                                            fullWidth
+                                                            size="small"
+                                                            label="Cost (Rs.)*"
+                                                            name="costing" type='number'
+                                                            value={values.costing}
+                                                            // onChange={handleChange}
+                                                            onChange={(e) => {
+                                                                const inputValue = e.target.value;
+                                                                const numericValue = Number(inputValue);
+
+                                                                if (numericValue > 0 || inputValue === "") {
+                                                                    handleChange(e);
+                                                                }
+                                                            }}
+                                                            onBlur={handleBlur}
+                                                            error={touched.costing && Boolean(errors.costing)}
+                                                            helperText={touched.costing && errors.costing}
+                                                        />
+                                                    </Grid>
+                                                    <Grid item xs={12} sm={6} md={2.4}>
+                                                        <TextField
+                                                            fullWidth
+                                                            select
+                                                            onBlur={handleBlur}
+                                                            name="cost_criteria_per"
+                                                            value={values.cost_criteria_per || ""}
+                                                            onChange={handleChange}
+                                                            size="small"
+                                                        >
+                                                            {unitsofMeasurement.map((unit) => (
+                                                                <MenuItem key={unit} value={unit}>
+                                                                    {unit}
+                                                                </MenuItem>
+                                                            ))}
+                                                        </TextField>
+                                                    </Grid>
+                                                    <Grid item xs={12} sm={6} md={2.4}>
+                                                        <FormControlLabel
+                                                            control={
+                                                                <Checkbox
+                                                                    checked={values.isAvailable}
+                                                                    onChange={(e) => {
+                                                                        const checked = e.target.checked;
+                                                                        setFieldValue("isAvailable", checked);
+                                                                    }}
+                                                                />
+                                                            }
+                                                            label="Is vehicle available"
+                                                        />
+                                                    </Grid>
+                                                </Grid>
+                                                <Typography variant="h6" mt={3} mb={1}>
+                                                    Vehicle documents
+                                                </Typography>
+                                                <Grid container spacing={2}>
+                                                    <Grid item xs={12} sm={6} md={2.4}>
+                                                        <TextField
+                                                            fullWidth
+                                                            label="Insurance*"
+                                                            name="insurance"
+                                                            value={values.insurance}
+                                                            onChange={handleChange}
+                                                            onBlur={handleBlur}
+                                                            error={
+                                                                touched.insurance &&
+                                                                Boolean(errors.insurance)
+                                                            }
+                                                            helperText={
+                                                                touched.insurance && errors.insurance
+                                                            }
+                                                            size="small"
+                                                        />
+                                                    </Grid>
+                                                    <Grid item xs={12} sm={6} md={2.4}>
+                                                        <TextField
+                                                            fullWidth
+                                                            label="Registration number*"
+                                                            name="registration"
+                                                            value={values.registration}
+                                                            onChange={handleChange}
+                                                            onBlur={handleBlur}
+                                                            error={
+                                                                touched.registration &&
+                                                                Boolean(errors.registration)
+                                                            }
+                                                            helperText={
+                                                                touched.registration && errors.registration
+                                                            }
+                                                            size="small"
+                                                        />
+                                                    </Grid>
+                                                    <Grid item xs={12} sm={6} md={2.4}>
+                                                        <TextField
+                                                            fullWidth
+                                                            label="Permit*"
+                                                            name="permit"
+                                                            value={values.permit}
+                                                            onChange={handleChange}
+                                                            onBlur={handleBlur}
+                                                            error={
+                                                                touched.permit &&
+                                                                Boolean(errors.permit)
+                                                            }
+                                                            helperText={
+                                                                touched.permit && errors.permit
+                                                            }
+                                                            size="small"
+                                                        />
+                                                    </Grid>
+                                                </Grid>
+
+                                                <Box mt={3} textAlign="center">
+                                                    <Button
+                                                        type="submit"
+                                                        variant="contained"
+                                                        sx={{
+                                                            backgroundColor: "#F08C24",
+                                                            color: "#fff",
+                                                            "&:hover": {
+                                                                backgroundColor: "#fff",
+                                                                color: "#F08C24"
+                                                            }
+                                                        }}
+                                                    > Submit
+                                                    </Button>
+
+                                                    <Button
+                                                        variant="outlined"
+                                                        color="secondary"
+                                                        onClick={() => {
+                                                            resetForm();
+                                                        }}
+                                                        style={{ marginLeft: "10px" }}
+                                                    >
+                                                        Reset
+                                                    </Button>
+                                                </Box>
+                                            </Grid>
+                                        </Form>
+                                    )}
+                                </Formik>
+                            </Box>
+                    </Modal>
+
+                    <Dialog open={openReject}
+                        onClose={handleCloseReject}
+                    >
+                            <DialogTitle sx={{ m: 0, p: 2, position: 'relative' }}
+                            >Confirm Rejection
+                            <IconButton
+                                aria-label="close"
+                                onClick={handleCloseReject}
+                                sx={{
+                                    position: 'absolute',
+                                    right: 8,
+                                    top: 8,
+                                    color: (theme) => theme.palette.grey[500],
+                                }}
+                                >
+                                <CloseIcon />
+                                </IconButton>
+                        </DialogTitle>
+                        <DialogContent>
+                            <DialogContentText>
+                                Are you sure you want to reject this order?
+                            </DialogContentText>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={handleCloseReject} color="primary">
+                                Cancel
+                            </Button>
+                            <Button onClick={handleYes} color="error" autoFocus>
+                                Yes, Reject
+                            </Button>
+                        </DialogActions>
+                    </Dialog>
+
+                    <Dialog open={openAcceptCarrier} onClose={() => setOpenAcceptCarrier(false)} maxWidth="xs" fullWidth
+                        PaperProps={{
+                            sx: { backgroundColor: '#f5f5f5', padding: '10px', borderRadius: '20px', },
+                        }}
+                    >
+                            <DialogTitle sx={{ m: 0, p: 2, position: 'relative' }}>Confirm Carrier Assignment
+                                <IconButton
+                                aria-label="close"
+                                onClick={() => setOpenAcceptCarrier(false)}
+                                sx={{
+                                    position: 'absolute',
+                                    right: 8,
+                                    top: 8,
+                                    color: (theme) => theme.palette.grey[500],
+                                }}
+                                >
+                                <CloseIcon />
+                                </IconButton>
+                        </DialogTitle>
+                        <Formik
+                            initialValues={initialValuesAccept}
+                            validationSchema={validationSchemaAccept}
+                            onSubmit={handleSubmitAccept}
+                        >
+                            {({
+                                values: valuesAccept,
+                                handleChange: handleChangeAccept,
+                                errors: errorsAccept,
+                                touched: touchedAccept,
+                            }) => (
+                                <Form>
+                                    <DialogContent>
+                                        <Grid container spacing={2}>
+                                            <Grid item xs={12}>
+                                                <TextField
+                                                    fullWidth size='small'
+                                                    label="Vehicle Number"
+                                                    name="vehicleNumAccept"
+                                                    value={valuesAccept.vehicleNumAccept}
+                                                    onChange={handleChangeAccept}
+                                                    error={touchedAccept.vehicleNumAccept && Boolean(errorsAccept.vehicleNumAccept)}
+                                                    helperText={touchedAccept.vehicleNumAccept && errorsAccept.vehicleNumAccept}
+                                                />
+                                            </Grid>
+
+                                            <Grid item xs={12}  >
+                                                <TextField
+                                                    fullWidth
+                                                    label="Driver Name" size='small'
+                                                    name="driverNameAccept"
+                                                    value={valuesAccept.driverNameAccept}
+                                                    onChange={handleChangeAccept}
+                                                    error={touchedAccept.driverNameAccept && Boolean(errorsAccept.driverNameAccept)}
+                                                    helperText={touchedAccept.driverNameAccept && errorsAccept.driverNameAccept}
+                                                />
+                                            </Grid>
+
+                                            <Grid item xs={12} >
+                                                <TextField
+                                                    fullWidth
+                                                    label="Driver Number" size='small'
+                                                    name="driverNumberAccept"
+                                                    value={valuesAccept.driverNumberAccept}
+                                                    onChange={handleChangeAccept}
+                                                    error={touchedAccept.driverNumberAccept && Boolean(errorsAccept.driverNumberAccept)}
+                                                    helperText={touchedAccept.driverNumberAccept && errorsAccept.driverNumberAccept}
+                                                />
+                                            </Grid>
+
+                                            <Grid item xs={12}  >
+                                                <TextField
+                                                    fullWidth
+                                                    label="Driver License" size='small'
+                                                    name="driverLicenseAccept"
+                                                    value={valuesAccept.driverLicenseAccept}
+                                                    onChange={handleChangeAccept}
+                                                    error={touchedAccept.driverLicenseAccept && Boolean(errorsAccept.driverLicenseAccept)}
+                                                    helperText={touchedAccept.driverLicenseAccept && errorsAccept.driverLicenseAccept}
+                                                />
+                                            </Grid>
+
+                                            <Grid item xs={12}  >
+                                                <TextField
+                                                    fullWidth
+                                                    label="Device ID" size='small'
+                                                    name="deviceIdAccept"
+                                                    value={valuesAccept.deviceIdAccept}
+                                                    onChange={handleChangeAccept}
+                                                    error={touchedAccept.deviceIdAccept && Boolean(errorsAccept.deviceIdAccept)}
+                                                    helperText={touchedAccept.deviceIdAccept && errorsAccept.deviceIdAccept}
+                                                />
+                                            </Grid>
+                                        </Grid>
+                                    </DialogContent>
+
+                                    <DialogActions>
+                                        <Button onClick={() => setOpenAcceptCarrier(false)}>Cancel</Button>
+                                        <Button variant="contained" type="submit">
+                                            Submit
+                                        </Button>
+                                    </DialogActions>
+                                </Form>
+                            )}
+                        </Formik>
+                    </Dialog>
+                        
+                    <Modal open={assignModal} onClose={() => {
+                        setAssignModal(false)
+                        setFormData({ truckId: "", driverId: "", deviceId: "" });
+                        setSelectedAllocation(null);
+                        }}>
+                        {from === 'order-overview' ? (
+                            <Box
+                                sx={{
+                                    position: "absolute",
+                                    top: "50%",
+                                    left: "50%",
+                                    transform: "translate(-50%, -50%)",
+                                    bgcolor: "white",
+                                    boxShadow: 24,
+                                    p: 3,
+                                    borderRadius: 2,
+                                    width: { xs: "100%", md: "30%" },
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                                >
+                                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                                    <Typography sx={{fontSize:'16px'}} gutterBottom>
+                                    Assign Order ({orderId}) to self transport
+                                </Typography>
+                                <IconButton
+                                        onClick={() => {
+                                            setAssignModal(false);
+                                            setFormData({ truckId: "", driverId: "", deviceId: "" });
+                                            setSelectedAllocation(null);
+                                        }}
+                                        sx={{ color: 'grey.600' }}
+                                    >
+                                        <CloseIcon />
+                                    </IconButton>
+                                    </Box>
+                                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                                    <Grid item xs={12} sm={6} md={2.4} style={{ display: 'flex', flexDirection: 'row', gap: 4 }}>
+                                        <Grid>
+                                            <TextField
+                                                fullWidth
+                                                name="truckId"
+                                                size="small"
+                                                label="Search truck... "
+                                                onFocus={() => {
+                                                    if (!searchKey) {
+                                                        setSearchKey(formData.truckId || "");
+                                                        setShowSuggestionsVehicle(true);
+                                                    }
+                                                }}
+                                                onChange={(e) => {
+                                                    setSearchKeyVehicle(e.target.value);
+                                                    setShowSuggestionsVehicle(true);
+                                                }}
+                                                error={Boolean(errors.truckId)}
+                                                helperText={errors.truckId}
+                                                value={searchKeyVehicle}
+                                                InputProps={{
+                                                    // endAdornment: filteredVehicleLoading ? <CircularProgress size={20} /> : null,
+                                                }}
+                                            />
+                                            <div style={{ position: "relative" }}>
+                                                {showSuggestionsVehicle && (
+                                                    <Paper
+                                                        style={{
+                                                            maxHeight: 200,
+                                                            overflowY: "auto",
+                                                            position: "absolute",
+                                                            zIndex: 10,
+                                                            width: "100%",
+                                                        }}
+                                                    >
+                                                        <List>
+                                                            {filteredVehicleLoading ? (
+                                                                <ListItem>
+                                                                    <CircularProgress size={20} />
+                                                                </ListItem>
+                                                            ) : displayVehicles.length === 0 ? (
+                                                                <ListItem component="li">
+                                                                    <Typography variant="body2" sx={{ color: "gray", textAlign: "center", width: "100%" }}>
+                                                                        No results found
+                                                                    </Typography>
+                                                                </ListItem>
+                                                            ) : (
+                                                                displayVehicles.map((truck: { strk_ID: string, self_vehicle_num: string }) => (
+                                                                    <ListItem
+                                                                        key={truck?.strk_ID}
+                                                                        component="li"
+                                                                        onClick={() => {
+                                                                            setShowSuggestionsVehicle(false);
+                                                                            setSearchKeyVehicle(`${truck?.self_vehicle_num}, ${truck?.strk_ID}`);
+                                                                            setFormData({ ...formData, truckId: `${truck?.self_vehicle_num}, ${truck?.strk_ID}`, });
+                                                                        }}
+                                                                        sx={{ cursor: "pointer" }}
+                                                                    >
+                                                                        <span style={{ fontSize: "13px" }}>
+                                                                            {truck?.self_vehicle_num}, {truck?.strk_ID}
+                                                                        </span>
+                                                                    </ListItem>
+                                                                ))
+                                                            )}
+                                                        </List>
+                                                    </Paper>
+                                                )}
+                                            </div>
+                                        </Grid>
+                                        <Typography> OR </Typography>
+                                        <Grid>
+                                            <Typography
+                                                onClick={handleCreateVehicle}
+                                                sx={{ textDecoration: 'underline', cursor: 'pointer', marginLeft: 2 }}
+                                            >
+                                                Create new Truck
+                                            </Typography>
+                                        </Grid>
+                                    </Grid>
+
+                                    <Grid item xs={12} sm={6} md={2.4}>
+                                        <TextField
+                                            fullWidth
+                                            name="driverId"
+                                            size="small"
+                                            label="Search drivers... "
+                                            onFocus={() => {
+                                                if (!searchKey) {
+                                                    setSearchKey(formData.driverId || "");
+                                                    setShowSuggestions(true);
+                                                }
+                                            }}
+                                            onChange={(e) => {
+                                                setSearchKey(e.target.value);
+                                                setShowSuggestions(true);
+                                            }}
+                                            error={Boolean(errors.driverId)}
+                                            helperText={errors.driverId}
+                                            value={searchKey}
+                                        />
+                                        <div ref={wrapperRef} style={{ position: "relative" }}>
+                                            {showSuggestions && (
+                                                <Paper
+                                                    style={{
+                                                        maxHeight: 200,
+                                                        overflowY: "auto",
+                                                        position: "absolute",
+                                                        zIndex: 10,
+                                                        width: "100%",
+                                                    }}
+                                                >
+                                                    <List>
+                                                        {filteredDriversLoading ? (
+                                                            <ListItem>
+                                                                <CircularProgress size={20} />
+                                                            </ListItem>
+                                                        ) : displayDrivers.length === 0 ? (
+                                                            <ListItem component="li">
+                                                                <Typography variant="body2" sx={{ color: "gray", textAlign: "center", width: "100%" }}>
+                                                                    No results found
+                                                                </Typography>
+                                                            </ListItem>
+                                                        ) : (
+                                                            displayDrivers.map((driver: Driver) => (
+                                                                <ListItem
+                                                                    key={driver?.dri_ID}
+                                                                    component="li"
+                                                                    onClick={() => {
+                                                                        const selected = `${driver?.dri_ID}, ${driver?.driver_name}, ${driver?.driver_correspondence?.phone}`
+                                                                        setShowSuggestions(false);
+                                                                        setSearchKey(selected);
+                                                                        setFormData({ ...formData, driverId: driver?.dri_ID });
+                                                                    }}
+                                                                    sx={{ cursor: "pointer" }}
+                                                                >
+                                                                    <span style={{ fontSize: "13px" }}>
+                                                                        {driver?.dri_ID}, {driver?.driver_name}, {driver?.driver_correspondence?.phone}
+                                                                    </span>
+                                                                </ListItem>
+                                                            ))
+                                                        )}
+                                                    </List>
+                                                </Paper>
+                                            )}
+                                        </div>
+                                    </Grid>
+                                    <TextField
+                                        label="Device ID"
+                                        name="deviceId"
+                                        select
+                                        value={formData.deviceId}
+                                        onChange={handleChange}
+                                        variant="outlined"
+                                        size="small"
+                                        fullWidth
+                                        error={Boolean(errors.deviceId)}
+                                        helperText={errors.deviceId}
+                                    >
+                                        {devicesData?.map((device: DeviceInfoBE) => (
+                                            <MenuItem key={device?.device_id} value={device.dev_ID}>
+                                                {device.dev_ID}
+                                            </MenuItem>
+                                        ))}
+                                    </TextField>
+                                    <Button variant="contained" color="primary" onClick={handleSubmit}>
+                                        Submit
+                                    </Button>
+                                </Box>
+                            </Box>) :
+                            (
+                                <Box
+                                    sx={{
+                                        position: "absolute",
+                                        top: "50%",
+                                        left: "50%",
+                                        transform: "translate(-50%, -50%)",
+                                        bgcolor: "white",
+                                        boxShadow: 24,
+                                        p: 3,
+                                        borderRadius: 2,
+                                        width: { xs: "100%", md: "30%" },
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <Typography variant="h6" gutterBottom>
+                                        Assign Order ({orderId}) to Carrier
+                                    </Typography>
+                                    <Typography variant="h6" sx={{ fontSize: '14px' }} gutterBottom>
+                                        The following are the multiple valid contracted carriers found. Choose one for assignment.
+                                    </Typography>
+                                    <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                                        <TextField
+                                            label="Carrier ID"
+                                            name="carrierId"
+                                            select
+                                            value={carrierId}
+                                            onChange={(e) => setCarrierId(e.target.value)}
+                                            variant="outlined"
+                                            size="small"
+                                            fullWidth
+                                        >
+                                            {carrierOptions?.map((carrier: carrierForOrder) => (
+                                                <MenuItem key={carrier?.carrier_ID} value={carrier.carrier_ID}>
+                                                    {carrier.carrier_ID}, {carrier.rate}
+                                                </MenuItem>
+                                            ))}
+                                        </TextField>
+                                        <Button variant="contained" color="primary" onClick={handleCarrierSubmit}>
+                                            Submit
+                                        </Button>
+
+
+                                    </Box>
+
+                                </Box>
+                            )}
+
+                    </Modal>
                     <Paper key={uniqueKey} sx={{ p: 2, mb: 2 }}>
                         <Grid container alignItems="center" justifyContent="space-between">
                             <Grid item sx={{ width: '97.5%' }}>
@@ -1370,7 +1467,8 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                                                     <Button
                                                         variant="contained"
                                                         color="primary"
-                                                        onClick={() => handleAssign(allocation)}
+                                                        // onClick={() => handleAssign(allocation)}
+                                                        onClick={() => handleOpenAssignModal(allocation)}
                                                     >
                                                         Assign
                                                     </Button>
@@ -1400,7 +1498,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                                                         <Button
                                                             variant="contained"
                                                             color="primary" 
-                                                        onClick={() => setOpenAccept(true)}
+                                                        onClick={() => setOpenAcceptCarrier(true)}
                                                         >
                                                             Accept
                                                         </Button>
@@ -1436,7 +1534,8 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
                                 </Box>
                             </Box>
                         </Collapse>
-                    </Paper>
+                    </Paper></>
+
                 );
             })}
 

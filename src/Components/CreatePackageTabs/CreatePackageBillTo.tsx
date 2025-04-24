@@ -422,10 +422,8 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                                         name="timeZone"
                                         disabled={!values.saveAsNewLocationId}
                                         as={TextField}
-                                        label="Time zone*"
+                                        label="Time zone"
                                         InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                        error={touched?.timeZone && Boolean(errors?.timeZone)}
-                                        helperText={touched?.timeZone && errors?.timeZone}
                                     />
                                 </Grid>
                                 <Grid item xs={12} md={2.4}>
@@ -543,7 +541,6 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                                         as={TextField}
                                         label="Pincode*"
                                         InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                        required
                                         error={touched?.pincode && Boolean(errors?.pincode)}
                                         helperText={touched?.pincode && errors?.pincode}
                                     />
