@@ -1,3 +1,4 @@
+
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
@@ -56,9 +57,7 @@ const refreshAccessToken = async (refreshToken: string) => {
 export const options: NextAuthOptions = {
   providers: [
     CredentialsProvider({
-      // name: "Credentials",
-          id: "user-login",
-      name: "User Login",
+      name: "Credentials",
       credentials: {
         phone: {
           label: "Phone Number",
@@ -81,6 +80,7 @@ export const options: NextAuthOptions = {
         try {
           const response = await fetch(
             `https://dev-api.trukapp.com/truk/log/login`,
+            // `http://z:8088/truk/log/login`,    // teja ofc
             {
               method: "POST",
               headers: {
@@ -115,50 +115,6 @@ export const options: NextAuthOptions = {
         }
       },
     }),
-
-    CredentialsProvider({
-      id: "carrier-login",
-      name: "Carrier Login",
-      credentials: {
-        carrierId: { label: "Carrier ID", type: "text" },
-        carrierPassword: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.carrierId) {
-          throw new Error("Carrier ID is required");
-        } else if (!credentials?.carrierPassword) {
-          throw new Error("Password is required");
-        }
-        try {
-        const res = await fetch(`https://dev-api.trukapp.com/truk/carrier/carrier-login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            carrier_ID: credentials?.carrierId,
-            carrier_password: credentials?.carrierPassword,
-          }),
-        });
-
-        if (!res.ok) throw new Error("Invalid carrier credentials");
-        const user = await res.json();
-          console.log('carrier user :', user)
-          if (user & user.accessToken) {
-            return {
-              id: user.carrier_ID,
-              accessToken: user.accessToken,
-              refreshToken: user.refreshToken,
-            };
-          }
-          throw new Error("Check the password you have entered");
-
-        } 
-        catch (error) {
-          console.log(error)
-          throw error;
-        }
-
-      },
-    }),
   ],
 
   callbacks: {
@@ -187,18 +143,16 @@ export const options: NextAuthOptions = {
           token.refreshToken as string
         );
             console.log("refreshedToken", refreshedToken);
-            if ('error' in refreshedToken) {
-              return {
-                ...token,
-                error: "RefreshAccessTokenError",
-              };
-            }
-            return {
-              ...token,
+
+            token = {
+              id: token.id,
               accessToken: refreshedToken.accessToken,
               accessTokenExpires: refreshedToken.accessTokenExpires,
-              refreshToken: refreshedToken.refreshToken ?? token.refreshToken,
-            };
+              refreshToken: token.refreshToken,
+              }
+        return {
+          ...token, 
+        };
       } catch (error) {
         console.error("Failed to refresh token:", error);
         return { ...token, error: "RefreshAccessTokenError" };
@@ -210,12 +164,11 @@ export const options: NextAuthOptions = {
         id: token.id as string,
         accessToken: token.accessToken as string,
         refreshToken: token.refreshToken as string,
-      }
-
+      };
       if (token.error === "RefreshAccessTokenError") {
         session.error = "RefreshAccessTokenError";
       }
-      return session ;
+      return session;
     },
   },
   pages: {
@@ -227,7 +180,7 @@ export const options: NextAuthOptions = {
 
   session: {
     strategy: "jwt",
-    maxAge: 7 * 24 * 60 * 60, // session max gives the session active time (given refreshtoken expiry time)
+    maxAge: 7 * 24 * 60 * 60,
     updateAge : 23 * 60 * 60
     // maxAge: 5 * 60,
     // updateAge : 1 * 60
