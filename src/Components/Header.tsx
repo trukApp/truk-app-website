@@ -74,7 +74,6 @@ const Header = () => {
   const handleNavigationToHomePage = () => {
     router.push("/");
   };
-
   return (
     <>
       <AppBar position="fixed" sx={{ backgroundColor: 'whitesmoke' }}>
