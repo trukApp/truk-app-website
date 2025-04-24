@@ -72,7 +72,7 @@ const Header = () => {
   };
 
   const handleNavigationToHomePage = () => {
-    router.push("/explore");
+    router.push("/");
   };
 
   return (
@@ -102,10 +102,10 @@ const Header = () => {
                   <div className="hidden md:flex space-x-4">
                     <IconButton
                       sx={{
-                        color: currentPath === "/explore" ? "#ffffff" : "inherit",
+                        color: currentPath === "/" ? "#ffffff" : "inherit",
                         fontWeight: "bold",
                       }}
-                      href="/explore"
+                      href="/"
                     >
                       <HomeIcon style={{ marginRight: "5px" }} />
                       <p style={{ fontSize: "14px" }}>Home</p>

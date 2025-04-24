@@ -169,7 +169,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
     const [assignModal, setAssignModal] = useState(false);
     const [selectedAllocation, setSelectedAllocation] = useState<Allocation | null>(null);
     const [postRejectOrderByCarrier, { isLoading: isRejecting }] = usePostCarrierRejectigOrderMutation()
-       const [postAssignOrderByCarrier, { isLoading: isAssignConfirm }] = usePostCarrierAssigningOrderConfirmMutation()
+    const [postAssignOrderByCarrier, { isLoading: isAssignConfirm }] = usePostCarrierAssigningOrderConfirmMutation()
     const [postAssignOrder, { isLoading: isAssigning }] = usePostAssignOrderMutation()
     const [editAssignOrder, { isLoading: editAssignLoading }] = useEditAssignOrderOrderMutation()
     const [postAssignCarrier, { isLoading: carrierAssinLoading }] = usePostAssignCarrierMutation()
@@ -498,30 +498,30 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
         }
     };
 
-const initialValuesAccept = {
-  vehicleNumAccept: '',
-  driverNameAccept: '',
-  driverNumberAccept: '',
-  driverLicenseAccept: '',
-  deviceIdAccept: '',
+    const initialValuesAccept = {
+        vehicleNumAccept: '',
+        driverNameAccept: '',
+        driverNumberAccept: '',
+        driverLicenseAccept: '',
+        deviceIdAccept: '',
 
-};
-const validationSchemaAccept = Yup.object().shape({
-  vehicleNumAccept: Yup.string().required('Vehicle Number is required'),
-  driverNameAccept: Yup.string().required('Driver Name is required'),
-  driverNumberAccept: Yup.string()
-    .required('Driver Number is required')
-    .matches(/^[0-9]{10}$/, 'Driver Number must be 10 digits'),
-  driverLicenseAccept: Yup.string().required('Driver License is required'),
-  deviceIdAccept: Yup.string().required('Device ID is required'),
+    };
+    const validationSchemaAccept = Yup.object().shape({
+        vehicleNumAccept: Yup.string().required('Vehicle Number is required'),
+        driverNameAccept: Yup.string().required('Driver Name is required'),
+        driverNumberAccept: Yup.string()
+            .required('Driver Number is required')
+            .matches(/^[0-9]{10}$/, 'Driver Number must be 10 digits'),
+        driverLicenseAccept: Yup.string().required('Driver License is required'),
+        deviceIdAccept: Yup.string().required('Device ID is required'),
 
-});
+    });
 
 
-  const handleSubmitAccept =async (values: typeof initialValuesAccept) => {
-    console.log('Submitted Accept Data:', values);
-    const carrierIdForOrder = from
-            try {
+    const handleSubmitAccept = async (values: typeof initialValuesAccept) => {
+        console.log('Submitted Accept Data:', values);
+        const carrierIdForOrder = from
+        try {
             const body = {
                 carrier_ID: carrierIdForOrder,
                 order_ID: orderId,
@@ -532,7 +532,7 @@ const validationSchemaAccept = Yup.object().shape({
                     c_driver_license: values.driverLicenseAccept
                 },
                 device_ID: values.deviceIdAccept,
-                confirmed_time:  Date.now()
+                confirmed_time: Date.now()
             }
             console.log('bodyy:', body)
             const response = await postAssignOrderByCarrier(body).unwrap();
@@ -548,9 +548,9 @@ const validationSchemaAccept = Yup.object().shape({
             setSnackbarSeverity("error");
             setSnackbarOpen(true);
         }
-    
-    setOpenAccept(false);
-  };
+
+        setOpenAccept(false);
+    };
     return (
         <Box>
             <Backdrop
@@ -791,97 +791,97 @@ const validationSchemaAccept = Yup.object().shape({
                 </DialogActions>
             </Dialog>
 
-            <Dialog  open={openAccept} onClose={() => setOpenAccept(false)} maxWidth="xs" fullWidth
+            <Dialog open={openAccept} onClose={() => setOpenAccept(false)} maxWidth="xs" fullWidth
                 PaperProps={{
-                    sx: {  backgroundColor: '#f5f5f5' , padding:'10px', borderRadius:'20px', },
+                    sx: { backgroundColor: '#f5f5f5', padding: '10px', borderRadius: '20px', },
                 }}
             >
-            <DialogTitle>Confirm Carrier Assignment</DialogTitle>
-        <Formik
-          initialValues={initialValuesAccept}
-          validationSchema={validationSchemaAccept}
-          onSubmit={handleSubmitAccept}
-        >
-          {({
-            values: valuesAccept,
-            handleChange: handleChangeAccept,
-            errors: errorsAccept,
-            touched: touchedAccept,
-          }) => (
-            <Form>
-              <DialogContent>
-                <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth size='small'
-                      label="Vehicle Number"
-                      name="vehicleNumAccept"
-                      value={valuesAccept.vehicleNumAccept}
-                      onChange={handleChangeAccept}
-                      error={touchedAccept.vehicleNumAccept && Boolean(errorsAccept.vehicleNumAccept)}
-                      helperText={touchedAccept.vehicleNumAccept && errorsAccept.vehicleNumAccept}
-                    />
-                  </Grid>
+                <DialogTitle>Confirm Carrier Assignment</DialogTitle>
+                <Formik
+                    initialValues={initialValuesAccept}
+                    validationSchema={validationSchemaAccept}
+                    onSubmit={handleSubmitAccept}
+                >
+                    {({
+                        values: valuesAccept,
+                        handleChange: handleChangeAccept,
+                        errors: errorsAccept,
+                        touched: touchedAccept,
+                    }) => (
+                        <Form>
+                            <DialogContent>
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12}>
+                                        <TextField
+                                            fullWidth size='small'
+                                            label="Vehicle Number"
+                                            name="vehicleNumAccept"
+                                            value={valuesAccept.vehicleNumAccept}
+                                            onChange={handleChangeAccept}
+                                            error={touchedAccept.vehicleNumAccept && Boolean(errorsAccept.vehicleNumAccept)}
+                                            helperText={touchedAccept.vehicleNumAccept && errorsAccept.vehicleNumAccept}
+                                        />
+                                    </Grid>
 
-                  <Grid item xs={12}  >
-                    <TextField
-                      fullWidth
-                      label="Driver Name" size='small'
-                      name="driverNameAccept"
-                      value={valuesAccept.driverNameAccept}
-                      onChange={handleChangeAccept}
-                      error={touchedAccept.driverNameAccept && Boolean(errorsAccept.driverNameAccept)}
-                      helperText={touchedAccept.driverNameAccept && errorsAccept.driverNameAccept}
-                    />
-                  </Grid>
+                                    <Grid item xs={12}  >
+                                        <TextField
+                                            fullWidth
+                                            label="Driver Name" size='small'
+                                            name="driverNameAccept"
+                                            value={valuesAccept.driverNameAccept}
+                                            onChange={handleChangeAccept}
+                                            error={touchedAccept.driverNameAccept && Boolean(errorsAccept.driverNameAccept)}
+                                            helperText={touchedAccept.driverNameAccept && errorsAccept.driverNameAccept}
+                                        />
+                                    </Grid>
 
-                  <Grid item xs={12} >
-                    <TextField
-                      fullWidth
-                      label="Driver Number" size='small'
-                      name="driverNumberAccept"
-                      value={valuesAccept.driverNumberAccept}
-                      onChange={handleChangeAccept}
-                      error={touchedAccept.driverNumberAccept && Boolean(errorsAccept.driverNumberAccept)}
-                      helperText={touchedAccept.driverNumberAccept && errorsAccept.driverNumberAccept}
-                    />
-                  </Grid>
+                                    <Grid item xs={12} >
+                                        <TextField
+                                            fullWidth
+                                            label="Driver Number" size='small'
+                                            name="driverNumberAccept"
+                                            value={valuesAccept.driverNumberAccept}
+                                            onChange={handleChangeAccept}
+                                            error={touchedAccept.driverNumberAccept && Boolean(errorsAccept.driverNumberAccept)}
+                                            helperText={touchedAccept.driverNumberAccept && errorsAccept.driverNumberAccept}
+                                        />
+                                    </Grid>
 
-                  <Grid item xs={12}  >
-                    <TextField
-                      fullWidth
-                      label="Driver License" size='small'
-                      name="driverLicenseAccept"
-                      value={valuesAccept.driverLicenseAccept}
-                      onChange={handleChangeAccept}
-                      error={touchedAccept.driverLicenseAccept && Boolean(errorsAccept.driverLicenseAccept)}
-                      helperText={touchedAccept.driverLicenseAccept && errorsAccept.driverLicenseAccept}
-                    />
-                  </Grid>
+                                    <Grid item xs={12}  >
+                                        <TextField
+                                            fullWidth
+                                            label="Driver License" size='small'
+                                            name="driverLicenseAccept"
+                                            value={valuesAccept.driverLicenseAccept}
+                                            onChange={handleChangeAccept}
+                                            error={touchedAccept.driverLicenseAccept && Boolean(errorsAccept.driverLicenseAccept)}
+                                            helperText={touchedAccept.driverLicenseAccept && errorsAccept.driverLicenseAccept}
+                                        />
+                                    </Grid>
 
-                  <Grid item xs={12}  >
-                    <TextField
-                      fullWidth
-                      label="Device ID" size='small'
-                      name="deviceIdAccept"
-                      value={valuesAccept.deviceIdAccept}
-                      onChange={handleChangeAccept}
-                      error={touchedAccept.deviceIdAccept && Boolean(errorsAccept.deviceIdAccept)}
-                      helperText={touchedAccept.deviceIdAccept && errorsAccept.deviceIdAccept}
-                    />
-                  </Grid>
-                </Grid>
-              </DialogContent>
+                                    <Grid item xs={12}  >
+                                        <TextField
+                                            fullWidth
+                                            label="Device ID" size='small'
+                                            name="deviceIdAccept"
+                                            value={valuesAccept.deviceIdAccept}
+                                            onChange={handleChangeAccept}
+                                            error={touchedAccept.deviceIdAccept && Boolean(errorsAccept.deviceIdAccept)}
+                                            helperText={touchedAccept.deviceIdAccept && errorsAccept.deviceIdAccept}
+                                        />
+                                    </Grid>
+                                </Grid>
+                            </DialogContent>
 
-              <DialogActions>
-                <Button onClick={() => setOpenAccept(false)}>Cancel</Button>
-                <Button variant="contained" type="submit">
-                  Submit
-                </Button>
-              </DialogActions>
-            </Form>
-          )}
-        </Formik>
+                            <DialogActions>
+                                <Button onClick={() => setOpenAccept(false)}>Cancel</Button>
+                                <Button variant="contained" type="submit">
+                                    Submit
+                                </Button>
+                            </DialogActions>
+                        </Form>
+                    )}
+                </Formik>
             </Dialog>
 
             <Typography variant="h6" gutterBottom color="#F08C24" style={{ fontWeight: 'bold' }}>
@@ -1142,8 +1142,8 @@ const validationSchemaAccept = Yup.object().shape({
                                         Vehicle: {allocation.vehicle_ID}
                                         {(from === 'order-overview' || from === 'order-bidding') && (
                                             <> | Cost: ₹{allocation?.cost?.toFixed(2)}</>
-                                        ) }
-                                        
+                                        )}
+
                                     </Typography>
                                     <Typography variant="body2" color="#F08C24" sx={{ fontSize: 11, backgroundColor: '#FCF0DE', paddingLeft: 2, paddingRight: 2, paddingTop: 0.7, paddingBottom: 0.3, borderRadius: 1.5 }}>
                                         {order?.order?.order_status}
@@ -1395,12 +1395,11 @@ const validationSchemaAccept = Yup.object().shape({
                                         (vehicle: string) => vehicle === allocation.vehicle_ID
                                     ) && (
                                             <>
-                                                {order?.order?.order_status === "carrier assignment" && (
+                                                {/* {order?.order?.order_status === "carrier assignment" && (
                                                     <>
                                                         <Button
                                                             variant="contained"
-                                                            color="primary"
-                                                        // onClick={handleAcceptByCarrier}
+                                                            color="primary" 
                                                         onClick={() => setOpenAccept(true)}
                                                         >
                                                             Accept
@@ -1414,7 +1413,7 @@ const validationSchemaAccept = Yup.object().shape({
                                                         </Button>
                                                     </>
 
-                                                )}
+                                                )} */}
                                                 {order?.order?.order_status === "finished" ? (
                                                     <Button
                                                         variant="contained"

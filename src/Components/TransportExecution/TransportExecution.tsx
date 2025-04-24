@@ -32,16 +32,16 @@ const TransportExecution = () => {
       title: 'Tracking', icon: <Route sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
       onClick: () => handleNavigation('/tracking'),
     },
-    {
-      title: 'Order bidding',
-      icon: <LocalShipping sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
-      onClick: () => handleNavigation('/order-bidding'),
-    },
-    {
-      title: 'Order requests',
-      icon: <LocalShipping sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
-      onClick: () => handleNavigation('/order-requests'),
-    },
+    // {
+    //   title: 'Order bidding',
+    //   icon: <LocalShipping sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
+    //   onClick: () => handleNavigation('/order-bidding'),
+    // },
+    // {
+    //   title: 'Order requests',
+    //   icon: <LocalShipping sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
+    //   onClick: () => handleNavigation('/order-requests'),
+    // },
   ];
 
   return (
