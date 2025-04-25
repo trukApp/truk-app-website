@@ -232,6 +232,16 @@ const CreateOrder: React.FC = () => {
                     </Step>
                 ))}
             </Stepper> */}
+            <Box sx={{ px: 2, mt: 2 }}>
+                <Typography variant="h5" color='primary' sx={{ fontWeight: 'bold', textAlign: 'center', mb: 1 }}>
+                    Create New Order
+                </Typography>
+                <Typography variant="body1" sx={{ color: 'gray',  mb: 2 }}>
+                    This flow helps you create a shipment order by selecting packages, optimizing vehicle and route allocation,
+                    and reviewing the final details. Start by selecting packages with the same pickup location and date.
+                </Typography>
+                </Box>
+
             <Box sx={{ width: "100%", overflowX: isMobile ? "auto" : "visible", padding: "10px" }}>
                 <Stepper
                     activeStep={activeStep}

@@ -26,6 +26,6 @@
   text-decoration: underline;
   background-color: transparent !important;
   box-shadow: none !important;
-  color: inherit;
+  color: 'primary';
   font-weight: bold;
 }

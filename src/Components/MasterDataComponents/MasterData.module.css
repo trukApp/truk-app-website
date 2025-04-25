@@ -3,7 +3,7 @@
   text-decoration: underline !important;
   background-color: transparent !important;
   box-shadow: none !important;
-  color: inherit;
+  color: 'primary';
   font-weight: bold;
   
 }

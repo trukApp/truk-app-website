@@ -114,7 +114,7 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
         >
             {({ touched, errors, setFieldValue, setFieldTouched }) => (
                 <Form>
-                    <Typography variant="h6" sx={{ fontWeight: 'bold', textAlign: 'center', marginTop: 3 }}>Additional Details</Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', marginLeft: "15px" , marginTop: 3 }}>Additional Details</Typography>
                     <Grid className={styles.formsBgContainer}>
                         <Typography variant='h6' sx={{ fontWeight: 600 }}>Additional information</Typography>
                         <Grid container spacing={2}>

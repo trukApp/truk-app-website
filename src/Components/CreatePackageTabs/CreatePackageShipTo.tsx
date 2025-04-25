@@ -250,7 +250,7 @@ const ShipTo: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                 >
                     {({ values, touched, errors, handleSubmit, setFieldValue, handleBlur, handleChange }) => (
                         <Form  >
-                            <Typography variant="h6" sx={{ fontWeight: 'bold', textAlign: 'center', marginTop: 3 }}>Ship to Details</Typography>
+                            <Typography variant="h6" sx={{ fontWeight: 'bold', marginLeft: "15px" , marginTop: 3 }}>Ship to Details</Typography>
                             <Grid item xs={12} sx={{ display: 'flex', flexDirection: { md: "row", xs: "column" }, gap: { md: '20px', xs: '2px' }, marginLeft: "15px" }}>
                                 {values?.saveAsNewLocationId ? null : (
                                     <FormControlLabel

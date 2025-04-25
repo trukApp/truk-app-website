@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from "react";
-import { Box, Tabs, Tab } from "@mui/material";
+import { Box, Tabs, Tab, Typography } from "@mui/material";
 import Vehicles from "@/Components/MasterDataComponents/Vehicles";
 import UnitsOfMeasurement from "@/Components/MasterDataComponents/UnitsOfMeasurement";
 import Locations from "@/Components/MasterDataComponents/Locations";
@@ -37,6 +37,16 @@ const MasterData: React.FC = () => {
 
   return (
     <Box sx={{ margin: { xs: "0px", md: "0px 30px" } }}>
+
+        <Box sx={{ mb: 3, mt: 2 }}>
+          <Typography variant="h5" color="primary" fontWeight={600} gutterBottom>
+            Master Data Management
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Manage foundational data such as vehicles, devices, lanes, locations, packaging info, and units of measurement. 
+            This information is essential for smooth operations across your logistics and transport workflows.
+          </Typography>
+        </Box>
       {/* Tabs Menu */}
       <Tabs
         value={selectedTab}

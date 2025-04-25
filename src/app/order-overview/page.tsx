@@ -86,9 +86,13 @@ const OrdersGrid: React.FC = () => {
       >
         <CircularProgress color="inherit" />
       </Backdrop>
-      <Typography variant="h5" sx={{ marginBottom: 2, textAlign: 'center', fontWeight: 600 }}>
-        Orders List
-      </Typography>
+                <Typography variant="h5" color="primary" sx={{ fontWeight: 600, mb: 1 }}>
+                Order Overview
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 3 }}>
+                Review and manage all aspects of your order including general data, partner details, delivery information,
+                attachments, statuses, and flows. Navigate through each tab to see or update relevant order details.
+            </Typography>
       <DataGrid
         rows={ordersData.map((order: Order) => ({
           id: order.ord_id,

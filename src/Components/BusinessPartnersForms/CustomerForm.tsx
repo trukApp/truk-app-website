@@ -241,7 +241,7 @@ const CustomerForm: React.FC = () => {
                         <EditIcon />
                     </IconButton>
                     <IconButton
-                        color="secondary"
+                        color="error"
                         onClick={() => handleDelete(params.row)}
                     >
                         <DeleteIcon />

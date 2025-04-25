@@ -217,6 +217,15 @@ const CreatePackage = () => {
                     </DialogActions>
                 </Dialog>
             )}
+            <Box sx={{ px: isMobile ? 2 : 4,  pb:1 }}>
+                    <Typography variant="h5" fontWeight="bold" gutterBottom color="primary">
+                        Create a Package
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary">
+                        Fill out the following steps to successfully create a package with all relevant shipping, billing, and tax details.
+                    </Typography>
+                </Box>
+
             <Box sx={{ overflowX: isMobile ? "auto" : "visible", padding: "10px" }}>
                 <Stepper
                     activeStep={activeStep}
@@ -237,7 +246,6 @@ const CreatePackage = () => {
                         </Step>
                     ))}
                 </Stepper>
-
             </Box>
 
             {/* Form Content */}

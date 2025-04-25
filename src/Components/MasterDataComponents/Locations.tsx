@@ -406,9 +406,9 @@ const Locations: React.FC = () => {
         }}
       >
 
-        <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md: '24px' } }} align="center" gutterBottom>
+        {/* <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md: '24px' } }} color='primary' gutterBottom>
           Location master
-        </Typography>
+        </Typography> */}
         <Box display="flex" justifyContent="flex-end">
           <Box gap={2}>
             <Button 

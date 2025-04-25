@@ -109,7 +109,7 @@ const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
       <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleFormSubmit}>
         {({ values, handleSubmit, setFieldValue }) => (
           <Form onSubmit={handleSubmit} className={styles.formsBgContainer}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', textAlign: 'center' }}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold', marginLeft: "15px"  }}>
               Package Details
             </Typography>
             <FieldArray name="packageDetails">

@@ -59,10 +59,10 @@ export const options: NextAuthOptions = {
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        phone: {
-          label: "Phone Number",
+        email: {
+          label: "Email",
           type: "text",
-          placeholder: "Enter your phone number",
+          placeholder: "Enter your email number",
         },
         password: {
           label: "Password",
@@ -71,8 +71,8 @@ export const options: NextAuthOptions = {
         },
       },
       async authorize(credentials) {
-        if (!credentials?.phone) {
-          throw new Error("Phone number is required");
+        if (!credentials?.email) {
+          throw new Error("Email is required");
         } else if (!credentials?.password) {
           throw new Error("Password is required");
         }
@@ -80,14 +80,13 @@ export const options: NextAuthOptions = {
         try {
           const response = await fetch(
             `https://dev-api.trukapp.com/truk/log/login`,
-            // `http://z:8088/truk/log/login`,    // teja ofc
             {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                mobile: credentials.phone,
+                email: credentials.email,
                 password: credentials.password,
               }),
             }

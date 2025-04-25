@@ -38,7 +38,7 @@ const Header = () => {
     profileImage: session?.user?.image || "/TLogo.png",
   };
 
-  const isAuthPage = currentPath === "/login" || currentPath === "/signup";
+  const isAuthPage = currentPath === "/login"
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElProfile(event.currentTarget);
@@ -88,7 +88,7 @@ const Header = () => {
             />
           </Grid>
 
-          {isAuthPage || !session ? (
+          {!isAuthPage && !session ? (
             <>
               <Button color="inherit" href="/login">
                 Login

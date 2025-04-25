@@ -1,10 +1,9 @@
 'use client'
 import React, { useState } from "react";
-import { TextField, Button, IconButton, InputAdornment } from "@mui/material";
+import { TextField, Button, IconButton, InputAdornment, Avatar } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import Image from "next/image";
 
 const Profile = () => {
   const initialProfileData = {
@@ -13,7 +12,7 @@ const Profile = () => {
     phoneNumber: "1111111111",
     email: "teja@gamil.com",
     password: "PASSWORD",
-    profileImage: "https://via.placeholder.com/150", // Default image
+    profileImage: "/TLogo.png",
   };
 
   const [profileData, setProfileData] = useState(initialProfileData);
@@ -60,7 +59,7 @@ const Profile = () => {
 
   // Handle Save button click
   const handleSaveClick = () => {
-    setProfileData(tempData); // Save the new data
+    setProfileData(tempData); 
     setIsEditing(false);
   };
 
@@ -84,28 +83,9 @@ const Profile = () => {
       {/* <h1>Profile</h1> */}
       <div style={{ textAlign: "center", marginBottom: "20px" }}>
         <div style={{ position: "relative", display: "inline-block" }}>
-          {/* <img
-            src={tempData.profileImage}
-            alt="Profile"
-            style={{
-              borderRadius: "50%",
-              width: "150px",
-              height: "150px",
-              objectFit: "cover",
-              border: "2px solid #ccc",
-            }}
-          /> */}
-          <Image
-            src={tempData.profileImage}
-            alt="Profile"
-            width={150}
-            height={150}
-            style={{
-              borderRadius: "50%",
-              objectFit: "cover",
-              border: "2px solid #ccc",
-            }}
-          />
+          <IconButton >
+            <Avatar sx={{width:'120px',height:'120px',padding:'27px'}} src={tempData.profileImage} />
+          </IconButton>
           {isEditing && (
             <IconButton
               component="label"

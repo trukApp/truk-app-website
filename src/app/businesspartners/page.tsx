@@ -5,6 +5,7 @@ import {
     MenuItem,
     Box,
     Grid,
+    Typography,
 } from '@mui/material';
 import CustomerForm from '@/Components/BusinessPartnersForms/CustomerForm';
 import DriverForm from '@/Components/BusinessPartnersForms/DriverForm';
@@ -21,6 +22,14 @@ const BusinessPartnersPage: React.FC = () => {
         <Box
             sx={{ margin: { xs: "18px 3px", md: "10px 30px" } }}
         >
+            <Box sx={{ mb: 3 }}>
+                <Typography variant="h6" fontWeight="bold" gutterBottom color='primary'>
+                    Business Partners Management
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                    Select and manage different types of business partners such as customers, vendors, carriers, and drivers. Each partner type has its own form for detailed information and setup.
+                </Typography>
+            </Box>
             <Grid container spacing={2} justifyContent="flex-end">
                 <Grid item xs={12} md={3} >
                     <TextField

@@ -261,7 +261,7 @@ const DriverForm: React.FC = () => {
           <IconButton color="primary" onClick={() => handleEdit(params.row)}>
             <EditIcon />
           </IconButton>
-          <IconButton color="secondary" onClick={() => handleDelete(params.row)}>
+          <IconButton color="error" onClick={() => handleDelete(params.row)}>
             <DeleteIcon />
           </IconButton>
         </>

@@ -78,7 +78,7 @@ const TaxInfo: React.FC<TaxInfoProps> = ({ onSubmit, onBack }) => {
             >
                 {({ touched, errors }) => (
                     <Form style={{ width: '100%' }}>
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', textAlign: 'center', marginTop: 3 }}>Tax info</Typography>
+                        <Typography variant="h6" sx={{ fontWeight: 'bold', marginLeft: "15px" , marginTop: 3 }}>Tax info</Typography>
                         <Grid container className={styles.formsBgContainer} spacing={2}>
                             <Grid item xs={12} md={2.4}>
                                 <Field

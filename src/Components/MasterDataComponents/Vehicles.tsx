@@ -672,13 +672,12 @@ const VehicleForm: React.FC = () => {
 			/>
 
 			<Box>
-				<Typography
-					align="center"
+				{/* <Typography color='primary'
 					sx={{ fontWeight: "bold", fontSize: { xs: "20px", md: "24px" } }}
 					gutterBottom
 				>
 					Vehicle group master
-				</Typography>
+				</Typography> */}
 				<Box display="flex" justifyContent="flex-end">
 					<Box>
 						<Button

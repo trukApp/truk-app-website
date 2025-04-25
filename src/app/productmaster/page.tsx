@@ -291,7 +291,7 @@ console.log('filteredLocations',filteredLocations)
                         <EditIcon />
                     </IconButton>
                     <IconButton
-                        color="secondary"
+                        color="error"
                         onClick={() => handleDelete(params.row)}
                     >
                         <DeleteIcon />
@@ -458,8 +458,11 @@ console.log('filteredLocations',filteredLocations)
                     severity={snackbarSeverity}
                     onClose={() => setSnackbarOpen(false)}
                 />
-                <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md: '24px' } }} align="center" gutterBottom>
+                <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md: '24px' } }}  color='primary' gutterBottom>
                     Product master
+                </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Add and manage products used in your packaging and logistics workflows. Fill in the required fields including product name, HSN code, packaging type, and location.
                 </Typography>
                 <Box display="flex" justifyContent="flex-end" gap={2}>
                     <Button 

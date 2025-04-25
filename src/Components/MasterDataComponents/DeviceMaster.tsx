@@ -307,9 +307,9 @@ const DeviceMaster: React.FC = () => {
         severity={snackbarSeverity}
         onClose={() => setSnackbarOpen(false)}
       />
-      <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md: '24px' } }} align="center" gutterBottom>
+      {/* <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md: '24px' } }} color='primary' gutterBottom>
         Device master
-      </Typography>
+      </Typography> */}
       <Box display="flex" justifyContent="flex-end" >
         <Button
           // variant="contained"

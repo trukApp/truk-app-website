@@ -321,7 +321,7 @@ const VehicleOnly: React.FC = () => {
 
             <Box>
                 <Typography
-                    align="center"
+                color='primary' 
                     sx={{ fontWeight: "bold", fontSize: { xs: "20px", md: "24px" } }}
                     gutterBottom
                 >
@@ -336,7 +336,7 @@ const VehicleOnly: React.FC = () => {
                                 textDecoration: "underline",
                                 backgroundColor: "transparent",
                                 boxShadow: "none",
-                                color: "inherit",
+                                color: "primary",
                                 fontWeight: "bold"
                             }}
                         >
