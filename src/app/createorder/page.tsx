@@ -52,8 +52,13 @@ const CreateOrder: React.FC = () => {
                 else if (errorMessage === 'No valid package IDs provided.') {
                     setSnackbarMessage("Please select at least one package to place the order.");
                 }
-                else {
+                else if (errorMessage === 'Google Maps API Error: NOT_FOUND') {
+                    setSnackbarMessage("Location not found. Please check the address and try again.");
+                }
+                else if (errorMessage === 'All packages must have the same ship_from location.') {
                     setSnackbarMessage("Please select the packages of the same SHIP FROM location.");
+                } else {
+                    setSnackbarMessage("Something went wrong please try again after some time.");
                 }
             } else {
                 setSnackbarMessage("An unexpected error occurred.");
@@ -236,11 +241,11 @@ const CreateOrder: React.FC = () => {
                 <Typography variant="h5" color='primary' sx={{ fontWeight: 'bold', textAlign: 'center', mb: 1 }}>
                     Create New Order
                 </Typography>
-                <Typography variant="body1" sx={{ color: 'gray',  mb: 2 }}>
+                <Typography variant="body1" sx={{ color: 'gray', mb: 2 }}>
                     This flow helps you create a shipment order by selecting packages, optimizing vehicle and route allocation,
                     and reviewing the final details. Start by selecting packages with the same pickup location and date.
                 </Typography>
-                </Box>
+            </Box>
 
             <Box sx={{ width: "100%", overflowX: isMobile ? "auto" : "visible", padding: "10px" }}>
                 <Stepper

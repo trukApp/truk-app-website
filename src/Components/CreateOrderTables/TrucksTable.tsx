@@ -73,6 +73,14 @@ const TrucksTable: React.FC<TrucksTableProps> = ({ trucks, unAllocatedPackages }
 
     return (
         <Box sx={{ height: 500, width: "100%" }}>
+            {unAllocatedPackages.length > 0 && (
+                <Box sx={{ marginTop: 2 }}>
+                    <Typography variant="h6" color="error" fontWeight={600}>
+                        Unallocated Packages: {unAllocatedPackages.join(", ")}
+                    </Typography>
+                </Box>
+            )}
+
             <Typography variant="h5" sx={{ textAlign: 'center', fontWeight: 500, marginTop: 3, }}>Suggested Trucks</Typography>
             <DataGrid
                 rows={rows}
