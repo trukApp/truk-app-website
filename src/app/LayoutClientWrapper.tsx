@@ -9,6 +9,7 @@ import ReduxProvider from "@/store/redux-provider";
 import theme from "@/theme";
 import { Grid, Toolbar } from "@mui/material";
 import { Session } from "next-auth";
+import ScrollToTop from "@/Components/ReusableComponents/ScrollToTop";
 // import { usePathname } from "next/navigation";
 
 const LayoutClientWrapper = ({ children, session }: { children: React.ReactNode; session: Session | null; }) => {
@@ -31,6 +32,7 @@ const LayoutClientWrapper = ({ children, session }: { children: React.ReactNode;
                             minHeight: "90vh",
                         }}
                     >
+                        <ScrollToTop />
                         {children}
                     </Grid>
                     <Footer />

@@ -136,9 +136,7 @@ const VehicleOnly: React.FC = () => {
                 permit: "",
             });
         }
-    }, [editRow]);
-
-
+    }, [editRow, unitsofMeasurement]);
     const rows = vehiclesMaster?.map((vehicle: TruckDetails) => {
         return (
             {
@@ -230,9 +228,6 @@ const VehicleOnly: React.FC = () => {
                 console.log("edit response :", response)
                 if (response?.updated_record) {
                     setSnackbarMessage(`Vehicle ID ${response?.updated_record} updated successfully!`);
-                    // resetForm();
-                    // setShowForm(false)
-                    // setIsEditing(false)
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
                 }
@@ -242,9 +237,6 @@ const VehicleOnly: React.FC = () => {
                 console.log("post response :", response)
                 if (response?.created_records) {
                     setSnackbarMessage(`Vehicle ID ${response.created_records[0]} created successfully!`);
-                    // resetForm();
-                    // setShowForm(false)
-                    // setIsEditing(false)
                     setSnackbarSeverity("success");
                     setSnackbarOpen(true);
 
@@ -320,12 +312,11 @@ const VehicleOnly: React.FC = () => {
             />
 
             <Box>
-                <Typography
-                color='primary' 
-                    sx={{ fontWeight: "bold", fontSize: { xs: "20px", md: "24px" } }}
-                    gutterBottom
-                >
-                    Vehicle master
+                <Typography variant="h6" fontWeight="bold" gutterBottom color="primary">
+                    Truck master
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                    View and manage your fleet of vehicles. Add new vehicles, update details like cost, insurance, registration, and permits, and monitor availability status in real-time.
                 </Typography>
                 <Box display="flex" justifyContent="flex-end">
                     <Box>
@@ -348,7 +339,6 @@ const VehicleOnly: React.FC = () => {
                             )}
                         </Button>
                     </Box>
-                    {/* <MassUpload arrayKey="vehicles" /> */}
                 </Box>
                 <Collapse in={showForm}>
                     <Box

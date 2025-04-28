@@ -242,7 +242,7 @@ const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
                   ))}
 
                   <Grid item xs={12} sx={{ mt: 2 }}>
-                    <CustomButtonFilled
+                    <CustomButtonFilled type='button'
                       size="small"
                       onClick={() =>
                         push({

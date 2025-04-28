@@ -192,7 +192,9 @@ const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, o
                                                             sx={{
                                                                 minWidth: "auto",
                                                                 margin: 0,
+                                                                marginRight:'-12px',
                                                                 height: '100%',
+                                                                color:'#fff'
                                                             }}
                                                         >
                                                             Browse

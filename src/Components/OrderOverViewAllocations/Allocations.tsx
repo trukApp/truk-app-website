@@ -180,6 +180,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
     const { data: allDevices, isLoading: deviceLoading } = useGetDeviceMasterQuery({})
     const { data: productsData } = useGetAllProductsQuery({})
     const allProductsData = productsData?.products || [];
+    const [loading,setLoading] = useState(false)
     const { data: locationsData } = useGetLocationMasterQuery({});
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
     const getLocationDetails = (loc_ID: string) => {
@@ -306,12 +307,14 @@ const handleCloseAssignModal = () => {
         if (order) {
             localStorage.setItem("orderData", JSON.stringify(order));
         }
+        setLoading(true)
         router.push(`/liveTracking`);
     };
     const handleRouteReply = (vehicle_ID: string) => {
         if (order) {
             localStorage.setItem("orderData", JSON.stringify(order));
         }
+        setLoading(true)
         router.push(`/liveTracking/autoreply?vehicle_ID=${vehicle_ID}`);
     };
     const handleAssign = (allocation: Allocation) => {
@@ -565,7 +568,7 @@ const handleCloseAssignModal = () => {
                     color: "#ffffff",
                     zIndex: (theme) => theme.zIndex.drawer + 1,
                 }}
-                open={postVehicleLoading || isAssigning || isRejecting || isAssignConfirm || editAssignLoading || deviceLoading || carrierAssinLoading || carrierToOrderLoading}
+                open={loading || postVehicleLoading || isAssigning || isRejecting || isAssignConfirm || editAssignLoading || deviceLoading || carrierAssinLoading || carrierToOrderLoading}
             >
                 <CircularProgress color="inherit" />
             </Backdrop>
