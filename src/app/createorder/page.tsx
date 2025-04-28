@@ -238,7 +238,7 @@ const CreateOrder: React.FC = () => {
                 ))}
             </Stepper> */}
             <Box sx={{ px: 2, mt: 2 }}>
-                <Typography variant="h5" color='primary' sx={{ fontWeight: 'bold', textAlign: 'center', mb: 1 }}>
+                <Typography variant="h5" color='primary' sx={{ fontWeight: 'bold',  mb: 1 }}>
                     Create New Order
                 </Typography>
                 <Typography variant="body1" sx={{ color: 'gray', mb: 2 }}>

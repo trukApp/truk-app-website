@@ -84,7 +84,7 @@ const Profile = () => {
       <div style={{ textAlign: "center", marginBottom: "20px" }}>
         <div style={{ position: "relative", display: "inline-block" }}>
           <IconButton >
-            <Avatar sx={{width:'120px',height:'120px',padding:'27px'}} src={tempData.profileImage} />
+            <Avatar sx={{width:'120px',height:'120px',padding:'25px',backgroundColor:'#FCF0DE'}} src={tempData.profileImage} />
           </IconButton>
           {isEditing && (
             <IconButton

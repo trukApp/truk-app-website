@@ -59,9 +59,21 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
   return (
     <Container maxWidth="md" sx={{ mt: 5 }}>
-      <Typography variant="h4" gutterBottom>
-        User Settings
-      </Typography>
+        <Typography
+          variant="h6"
+          color="primary"
+          sx={{ fontWeight: 'bold', mb: 1 }}
+        >
+          User Settings
+        </Typography>
+
+ 
+        <Typography
+          variant="body1"
+          sx={{  mb: 4, color: 'text.secondary' }}
+        >
+          Manage your personal preferences, update company details, and customize display settings like font size, theme, and time zone.
+        </Typography>
 
       <Grid container spacing={3}>
         <Grid item xs={12}>

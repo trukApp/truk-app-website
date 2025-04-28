@@ -193,17 +193,13 @@ const PackagesTable = () => {
         product_details: pkg.product_ID,
         additional_info: pkg.additional_info,
         package_status: pkg.package_status
-
-
-
     }));
-
 
     return (
         <Grid sx={{ margin: 3 }}>
-            <Typography variant='h5' color='primary' sx={{   fontWeight: 'bold' }} >All Packages(units) for order</Typography>
+            <Typography variant='h5' color='primary' sx={{   fontWeight: 'bold' }} >All Packages for order</Typography>
             <Typography variant="body1" sx={{ mb: 2, color: 'gray', }}>
-                    This page displays all package units associated with a particular order. You can view package details like shipping addresses, product contents, tax rates, pickup/drop-off timings, and more. Hover over values to see additional information from master data records.
+                    This page displays all package units associated. You can view package details like shipping addresses, product contents, tax rates, pickup/drop-off timings, and more. Hover over values to see additional information from master data records.
                 </Typography>
 
             <Grid sx={{ marginTop: '20px', marginBottom: '20px', marginLeft: '20px', marginRight: '20px' }}>

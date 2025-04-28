@@ -104,8 +104,22 @@ const TrackingOrder: React.FC = () => {
             >
                 <CircularProgress color="inherit" />
             </Backdrop>
-            <Typography variant="h5" sx={{ marginBottom: 2, textAlign: 'center', fontWeight: 600 }}>
+            {/* <Typography variant="h5" sx={{ marginBottom: 2, textAlign: 'center', fontWeight: 600 }}>
                 Orders List
+            </Typography> */}
+              <Typography
+                variant="h6"
+                color="primary"
+                sx={{ fontWeight: 'bold',  mb: 1 }}
+            >
+                Tracking Orders
+            </Typography>
+            
+            <Typography
+                variant="body1"
+                sx={{   mb: 3, color: 'text.secondary' }}
+            >
+                View and manage all self-assigned and completed orders. Click the eye icon to see detailed information for each order.
             </Typography>
             <DataGrid
                 rows={getAllTrackingOrders.map((order: Order) => ({

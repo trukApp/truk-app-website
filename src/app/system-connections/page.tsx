@@ -57,12 +57,27 @@ const SystemConections: React.FC = () => {
 
   return (
     <Box p={4}>
-      <Typography variant="h5" fontWeight="bold" gutterBottom>
-        ERP Connections
-      </Typography>
 
       {/* Connected Systems */}
-      <Typography variant="h6" gutterBottom>
+
+        <Typography
+          variant="h5"
+          color="primary"
+          fontWeight="bold" 
+          gutterBottom
+        >
+         ERP Connections
+        </Typography>
+
+        {/* Page Description */}
+        <Typography
+          variant="body1"
+          color="text.secondary"
+          mb={5}
+        >
+          Manage and monitor your ERP integrations. View connected systems and easily connect new ones to streamline your business operations.
+      </Typography>
+            <Typography variant="h6" gutterBottom>
         ✅ Connected Systems
       </Typography>
       <Grid container spacing={3}>

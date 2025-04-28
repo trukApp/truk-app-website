@@ -25,7 +25,7 @@ const LayoutClientWrapper = ({ children, session }: { children: React.ReactNode;
                     <Toolbar />
                     <Grid
                         sx={{
-                            // marginTop: { xs: "40px", md: "60px", },
+                            marginLeft: { xs: "5px", md: "20px", },
                             padding: '10px',
                             backgroundColor: "#ffffff",
                             minHeight: "90vh",
