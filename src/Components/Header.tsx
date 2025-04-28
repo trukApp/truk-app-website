@@ -179,7 +179,6 @@ const Header = () => {
                     Logout
                   </MenuItem>
                 </Menu>
-
                 {/* Hamburger Menu */}
                 <Menu
                   anchorEl={anchorElHamburger}
