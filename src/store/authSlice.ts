@@ -60,6 +60,8 @@ export interface IShipTo {
   locationType: string;
   glnCode: string;
   iataCode: string;
+  destination_radius: string;
+  destination_radius_unit: string
 }
 
 export interface IProductDetail {
