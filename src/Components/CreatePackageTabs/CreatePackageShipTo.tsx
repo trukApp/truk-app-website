@@ -48,6 +48,7 @@ const ShipTo: React.FC<ShipToProps> = ({ onNext, onBack }) => {
     const getAllLocations = displayLocations.filter(
         (location: Location) => location.loc_ID !== shipFromLocationId
     );
+    console.log("shipToReduxValues: ", shipToReduxValues)
     const locationTypeOptions = [
         'Production plant',
         'Distribution center',
@@ -86,7 +87,9 @@ const ShipTo: React.FC<ShipToProps> = ({ onNext, onBack }) => {
         timeZone: shipToReduxValues?.timeZone || defaultLocationData?.time_zone || '',
         glnCode: shipToReduxValues?.glnCode || defaultLocationData?.gln_code || '',
         iataCode: shipToReduxValues?.iataCode || defaultLocationData?.iata_code || '',
-        locationType: shipToReduxValues?.locationType || defaultLocationData?.loc_type || ''
+        locationType: shipToReduxValues?.locationType || defaultLocationData?.loc_type || '',
+        destination_radius: shipToReduxValues?.destination_radius || defaultLocationData?.destination_radius || '0',
+        destination_radius_unit: shipToReduxValues?.destination_radius_unit || defaultLocationData?.destination_radius_unit || 'm',
     }
 
     const validationSchema = Yup.object({
@@ -108,8 +111,15 @@ const ShipTo: React.FC<ShipToProps> = ({ onNext, onBack }) => {
         country: Yup.string().required('Country is required'),
         pincode: Yup.string().matches(/^\d{6}$/, 'Invalid pincode').required('Pincode is required'),
         latitude: Yup.string().required('Latitude is required'),
-        longitude: Yup.string().required('Longitude is required'), 
+        longitude: Yup.string().required('Longitude is required'),
         locationType: Yup.string().required('Location type is required'),
+        destination_radius: Yup.number()
+            .typeError('Destination radius must be a number')
+            .positive('Destination radius must be greater than zero')
+            .required('Destination radius is required'),
+        destination_radius_unit: Yup.string()
+            .oneOf(['m', 'km'], 'Select a valid unit')
+            .required('Unit is required'),
     });
 
     const handleLocationChange = (
@@ -250,7 +260,7 @@ const ShipTo: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                 >
                     {({ values, touched, errors, handleSubmit, setFieldValue, handleBlur, handleChange }) => (
                         <Form  >
-                            <Typography variant="h6" sx={{ fontWeight: 'bold', marginLeft: "15px" , marginTop: 3 }}>Ship to Details</Typography>
+                            <Typography variant="h6" sx={{ fontWeight: 'bold', marginLeft: "15px", marginTop: 3 }}>Ship to Details</Typography>
                             <Grid item xs={12} sx={{ display: 'flex', flexDirection: { md: "row", xs: "column" }, gap: { md: '20px', xs: '2px' }, marginLeft: "15px" }}>
                                 {values?.saveAsNewLocationId ? null : (
                                     <FormControlLabel
@@ -288,7 +298,8 @@ const ShipTo: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                         setFieldValue('contactPerson', '');
                                         setFieldValue('phoneNumber', '');
                                         setFieldValue('email', '');
-
+                                        setFieldValue('destination_radius', '0');
+                                        setFieldValue('destination_radius_unit', 'm');
                                     }}
                                 />
                             </Grid>
@@ -408,8 +419,8 @@ const ShipTo: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                             as={TextField}
                                             label="Longitude*"
                                             disabled={!values.saveAsNewLocationId}
-                                                InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                                error={touched?.longitude && Boolean(errors?.longitude)}
+                                            InputLabelProps={{ shrink: true }} size='small' fullWidth
+                                            error={touched?.longitude && Boolean(errors?.longitude)}
                                             helperText={touched?.longitude && errors?.longitude}
                                         />
                                     </Grid>
@@ -476,8 +487,8 @@ const ShipTo: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                             disabled={!values.saveAsNewLocationId}
                                             as={TextField}
                                             label="Address Line 1*"
-                                                InputLabelProps={{ shrink: true }} size='small' fullWidth 
-                                                error={touched?.addressLine1 && Boolean(errors?.addressLine1)}
+                                            InputLabelProps={{ shrink: true }} size='small' fullWidth
+                                            error={touched?.addressLine1 && Boolean(errors?.addressLine1)}
                                             helperText={touched?.addressLine1 && errors?.addressLine1}
                                         />
                                     </Grid>
@@ -508,8 +519,8 @@ const ShipTo: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                             disabled={!values.saveAsNewLocationId}
                                             as={TextField}
                                             label="State*"
-                                                InputLabelProps={{ shrink: true }} size='small' fullWidth 
-                                                error={touched?.state && Boolean(errors?.state)}
+                                            InputLabelProps={{ shrink: true }} size='small' fullWidth
+                                            error={touched?.state && Boolean(errors?.state)}
                                             helperText={touched?.state && errors?.state}
                                         />
                                     </Grid>
@@ -519,8 +530,8 @@ const ShipTo: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                             as={TextField}
                                             disabled={!values.saveAsNewLocationId}
                                             label="Country*"
-                                                InputLabelProps={{ shrink: true }} size='small' fullWidth 
-                                                error={touched?.country && Boolean(errors?.country)}
+                                            InputLabelProps={{ shrink: true }} size='small' fullWidth
+                                            error={touched?.country && Boolean(errors?.country)}
                                             helperText={touched?.country && errors?.country}
                                         />
                                     </Grid>
@@ -530,8 +541,8 @@ const ShipTo: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                             as={TextField}
                                             label="Pincode*"
                                             disabled={!values.saveAsNewLocationId}
-                                                InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                                error={touched?.pincode && Boolean(errors?.pincode)}
+                                            InputLabelProps={{ shrink: true }} size='small' fullWidth
+                                            error={touched?.pincode && Boolean(errors?.pincode)}
                                             helperText={touched?.pincode && errors?.pincode}
                                         />
                                     </Grid>
@@ -544,8 +555,8 @@ const ShipTo: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                             as={TextField}
                                             disabled={!values.saveAsNewLocationId}
                                             label="Contact Person*"
-                                                InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                                error={touched?.contactPerson && Boolean(errors?.contactPerson)}
+                                            InputLabelProps={{ shrink: true }} size='small' fullWidth
+                                            error={touched?.contactPerson && Boolean(errors?.contactPerson)}
                                             helperText={touched?.contactPerson && errors?.contactPerson}
                                         />
                                     </Grid>
@@ -560,7 +571,7 @@ const ShipTo: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                             }}
                                             label="Phone Number*"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                            type='number' 
+                                            type='number'
                                             error={touched?.phoneNumber && Boolean(errors?.phoneNumber)}
                                             helperText={touched?.phoneNumber && errors?.phoneNumber}
                                         />
@@ -571,18 +582,55 @@ const ShipTo: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                             disabled={!values.saveAsNewLocationId}
                                             as={TextField}
                                             label="Email Address*"
-                                                InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                                error={touched?.email && Boolean(errors?.email)}
+                                            InputLabelProps={{ shrink: true }} size='small' fullWidth
+                                            error={touched?.email && Boolean(errors?.email)}
                                             helperText={touched?.email && errors?.email}
                                         />
                                     </Grid>
-                                </Grid>
-                                <Grid container spacing={2} justifyContent="center" marginTop={2}>
-                                    <Grid item>
-                                        <CustomButtonOutlined onClick={onBack}>Back</CustomButtonOutlined>
-                                    </Grid>
-                                    <Grid item>
-                                        <CustomButtonFilled onSubmit={() => handleSubmit()}>Next</CustomButtonFilled>
+                                    {values.saveAsNewLocationId ? null : (
+                                        <Grid item xs={12} md={2.4}>
+                                            <Grid container spacing={1} alignItems="center">
+                                                <Grid item xs={7}>
+                                                    <Field
+                                                        name="destination_radius"
+                                                        as={TextField}
+                                                        label="Destination Radius*"
+                                                        InputLabelProps={{ shrink: true }}
+                                                        size="small"
+                                                        fullWidth
+                                                        type="number"
+                                                        inputProps={{ min: 0 }}
+                                                        error={touched?.destination_radius && Boolean(errors?.destination_radius)}
+                                                        helperText={touched?.destination_radius && errors?.destination_radius}
+                                                    />
+                                                </Grid>
+                                                <Grid item xs={5}>
+                                                    <Field
+                                                        name="destination_radius_unit"
+                                                        as={TextField}
+                                                        select
+                                                        label="Unit"
+                                                        // InputLabelProps={{ shrink: true }}
+                                                        size="small"
+                                                        fullWidth
+                                                        error={touched?.destination_radius_unit && Boolean(errors?.destination_radius_unit)}
+                                                        helperText={touched?.destination_radius_unit && errors?.destination_radius_unit}
+                                                    >
+                                                        <MenuItem value="m">Meter</MenuItem>
+                                                        <MenuItem value="km">Kilometer</MenuItem>
+                                                    </Field>
+                                                </Grid>
+                                            </Grid>
+                                        </Grid>
+                                    )}
+
+                                    <Grid container spacing={2} justifyContent="center" marginTop={2}>
+                                        <Grid item>
+                                            <CustomButtonOutlined onClick={onBack}>Back</CustomButtonOutlined>
+                                        </Grid>
+                                        <Grid item>
+                                            <CustomButtonFilled onSubmit={() => handleSubmit()}>Next</CustomButtonFilled>
+                                        </Grid>
                                     </Grid>
                                 </Grid>
                             </Grid>

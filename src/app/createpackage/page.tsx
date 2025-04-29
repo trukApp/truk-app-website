@@ -86,7 +86,6 @@ const CreatePackage = () => {
         setActiveStep(0)
     };
     const handleGoToOrder = () => {
-        console.log('moving to create order')
         setModalOpen(false);
         setActiveStep(0)
         router.push("/createorder");
@@ -104,6 +103,7 @@ const CreatePackage = () => {
             }
         }
     }, [completedSteps]);
+    console.log("shipToReduxValues: ", shipToReduxValues)
 
     const handleSubmit = async () => {
         const firstUnfilledIndex = completedSteps.findIndex((step) => !step);
@@ -123,6 +123,7 @@ const CreatePackage = () => {
                         {
                             ship_from: shipFromLocationId,
                             ship_to: shipToLocationId,
+                            destination_radius: `${shipToReduxValues?.destination_radius}${shipToReduxValues?.destination_radius_unit}`,
                             product_ID: productListFromRedux.map((product) => ({
                                 prod_ID: product.productId,
                                 quantity: product.quantity,
@@ -152,8 +153,6 @@ const CreatePackage = () => {
                     ],
 
                 }
-
-                console.log("createPackageBody: ", createPackageBody)
                 const response = await createPackageOrder(createPackageBody).unwrap();
                 if (response) {
                     dispatch(resetCompletedSteps())
@@ -217,14 +216,14 @@ const CreatePackage = () => {
                     </DialogActions>
                 </Dialog>
             )}
-            <Box sx={{ px: isMobile ? 2 : 4,  pb:1 }}>
-                    <Typography variant="h5" fontWeight="bold" gutterBottom color="primary">
-                        Create a Package
-                    </Typography>
-                    <Typography variant="body1" color="text.secondary">
-                        Fill out the following steps to successfully create a package with all relevant shipping, billing, and tax details.
-                    </Typography>
-                </Box>
+            <Box sx={{ px: isMobile ? 2 : 4, pb: 1 }}>
+                <Typography variant="h5" fontWeight="bold" gutterBottom color="primary">
+                    Create a Package
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                    Fill out the following steps to successfully create a package with all relevant shipping, billing, and tax details.
+                </Typography>
+            </Box>
 
             <Box sx={{ overflowX: isMobile ? "auto" : "visible", padding: "10px" }}>
                 <Stepper
