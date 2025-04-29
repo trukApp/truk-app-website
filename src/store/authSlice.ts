@@ -60,6 +60,8 @@ export interface IShipTo {
   locationType: string;
   glnCode: string;
   iataCode: string;
+  destination_radius: string;
+  destination_radius_unit: string;
 }
 
 export interface IProductDetail {
@@ -193,7 +195,7 @@ export const authSlice = createSlice({
     clearPackageShipFrom: (state) => {
       state.packageShipFrom = null;
     },
-    setPackageShipTo: (state, action: PayloadAction<IShipFrom | null>) => {
+    setPackageShipTo: (state, action: PayloadAction<IShipTo | null>) => {
       state.packageShipTo = action.payload;
     },
 
