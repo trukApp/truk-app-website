@@ -5,6 +5,7 @@ import { FormValues } from "@/Components/CreatePackageTabs/PickUpAndDropOffDetai
 import { Truck } from "@/Components/CreateOrderTables/TrucksTable";
 import { Package } from "@/Components/CreateOrderTables/PackagesTable";
 
+//  step 1 : Declaring types, This defines the structure of the auth state.
 export interface Address {
   address: string;
   latitude: number;
@@ -90,7 +91,7 @@ export interface DriverPointDeviation {
   reason: string;
 }
 
-interface DeviationState {
+export interface DeviationState {
   message: string;
   order_ID: string;
   vehicle_ID: string;
@@ -132,6 +133,8 @@ export interface ConfigFilters {
   sortOwnership: boolean;
 }
 
+
+// step 2 : Defining initial states, This sets the default values for your slice of state when the app starts or store is reset.
 const initialState: IAuthState = {
   authState: false,
   bablu: "",
@@ -159,6 +162,8 @@ const initialState: IAuthState = {
   deviationData: null,
 };
 
+
+// Step 3: Creating the Slice, This uses createSlice to generate action creators and reducers in a clean way.
 export const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -236,6 +241,8 @@ export const authSlice = createSlice({
   },
 });
 
+
+// Step 4: Exporting Actions and Reducer, This allows other parts of your app to use the actions and reducer.
 export const {
   setAuthState,
   setBabluName,
