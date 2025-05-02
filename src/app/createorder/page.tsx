@@ -40,6 +40,8 @@ const CreateOrder: React.FC = () => {
     const [modalOpen, setModalOpen] = useState(false);
     const [noVechilePopup, setNoVechilePopup] = useState(false);
     const filters = useAppSelector((state) => state.auth.filters);
+const [additionalDocs, setAdditionalDocs] = useState<{ [key: string]: string }[]>([]);
+
 
     useEffect(() => {
         if (packageSelectErr) {
@@ -86,8 +88,9 @@ const CreateOrder: React.FC = () => {
             allocations: conformOrderPayload?.allocations,
             unallocated_packages: conformOrderPayload?.unallocatedPackages,
             created_at: new Date().toISOString().split("T")[0],
+            order_docs : additionalDocs
         }
-        console.log(createOrderBody)
+        console.log('createOrderBody',createOrderBody)
         setModalOpen(false);
         try {
             const response = await createOrder(createOrderBody).unwrap();
@@ -307,7 +310,7 @@ const CreateOrder: React.FC = () => {
 
                 {activeStep === 4 && (
                     <div>
-                        <ReviewCreateOrder trucks={selectTrucks} />
+                        <ReviewCreateOrder trucks={selectTrucks} additionalDocs={additionalDocs} setAdditionalDocs={setAdditionalDocs} />
                     </div>
                 )}
             </div>

@@ -7,9 +7,12 @@ import { Product } from './PackagesTable';
 import { useGetAllProductsQuery, useGetLocationMasterQuery } from '@/api/apiSlice';
 import { Location } from '../MasterDataComponents/Locations';
 import moment from 'moment';
+import AdditionalDocuments from './AdditionalDocuments';
 
 interface TrucksTableProps {
     trucks: Truck[];
+    additionalDocs: { [key: string]: string }[] ;
+    setAdditionalDocs:  React.Dispatch<React.SetStateAction<{ [key: string]: string }[]>>;
 }
 
 interface PackageDetails {
@@ -18,7 +21,7 @@ interface PackageDetails {
     packages: [];
 }
 
-const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks }) => {
+const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks,additionalDocs, setAdditionalDocs }) => {
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
     const selectedTrucks = trucks
     const { data: locationsData } = useGetLocationMasterQuery({})
@@ -126,12 +129,10 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks }) => {
                     />
                 </div>
             </Paper>
-            <Grid>
-                <Paper sx={{ mb: 3, p: 2, borderRadius: 2, boxShadow: 3 }}>
+            <Paper sx={{ mb: 3, p: 2, borderRadius: 2, boxShadow: 3 }}>
                     <Typography variant="h6" gutterBottom sx={{ color: '#F08C24' }}>
                         Load and Route Optimised vehicles
                     </Typography>
-
                     <Grid container spacing={2}>
                         {selectedTrucks?.map((vehicle: Truck, index: number) => (
                             <Grid item xs={12} md={6} key={index}>
@@ -200,9 +201,9 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks }) => {
                             </Grid>
                         ))}
                     </Grid>
-
-                </Paper>
-
+            </Paper> 
+            <Grid>
+                <AdditionalDocuments documents={additionalDocs} setDocuments={setAdditionalDocs}/>
             </Grid>
 
 

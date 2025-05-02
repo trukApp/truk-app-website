@@ -180,6 +180,15 @@ export const apiSlice = createApi({
       providesTags: [{ type: "DRIVERS", id: "LIST" }],
     }),
 
+    getDriverData: builder.query({
+      query: (params) => ({
+        url: "driver/get-driver",
+        method: "GET",
+        params,
+      }),
+      providesTags: [{ type: "DRIVERS", id: "LIST" }],
+    }),
+
     //  carrier master
     getCarrierMaster: builder.query({
       query: (params) => ({
@@ -577,7 +586,6 @@ export const apiSlice = createApi({
           body,
         };
       },
-      // invalidatesTags: [{ type: "Orders", id: "LIST" }],
     }),
 
     confomOrder: builder.mutation({
@@ -591,6 +599,17 @@ export const apiSlice = createApi({
       invalidatesTags: [{ type: "Orders", id: "LIST" }],
     }),
 
+    editOrder: builder.mutation({
+      query: ({body, params}) => {
+        return {
+          url: "order/edit-order",
+          method: "PUT",
+          body,
+          params
+        };
+      },
+      invalidatesTags: [{ type: "Orders", id: "LIST" }],
+    }),
     getAllOrders: builder.query({
       query: (params) => ({
         url: `order/all-orders`,
@@ -745,8 +764,25 @@ export const apiSlice = createApi({
       invalidatesTags :[{type: "Orderss", id: "LIST"}]
     }),
 
+    postInitiateBidding: builder.mutation({
+      query: (body) => ({
+        url: "assignment-bid/initiate-open-bidding",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "Orders", id: "LIST" }],
+    }),
+
+      getOrderAssignedToCarrier: builder.query({
+      query: (params) => ({
+        url: `carrier-assignment/assigned-order-by-id`,
+        method: "GET",
+        params,
+      }),
+      providesTags :[{type: "Orderss", id: "LIST"}]
+    }),
   }),
-  
+
 });
 
 export const {
@@ -757,6 +793,7 @@ export const {
   useGetAllCustomersDataQuery,
   useGetAllVendorsDataQuery,
   useGetAllDriversDataQuery,
+  useGetDriverDataQuery,
   useGetFilteredDriversQuery,
   useEditBusinessPartnerMutation,
   useDeleteBusinessPartnerMutation,
@@ -802,6 +839,7 @@ export const {
   useDeletePackageForOrderMutation,
   useEditPackageForOrderMutation,
   useConfomOrderMutation,
+  useEditOrderMutation,
   useGetAllOrdersQuery,
   useGetOrderByIdQuery,
   useUpdateShipFromDefaultLocationIdMutation,
@@ -824,4 +862,6 @@ export const {
   useGetCarrierAssignmentReqQuery,
   usePostCarrierRejectigOrderMutation,
   usePostCarrierAssigningOrderConfirmMutation,
+  usePostInitiateBiddingMutation,
+  useGetOrderAssignedToCarrierQuery,
 } = apiSlice;

@@ -3,7 +3,7 @@ import { Box, Collapse, IconButton, Paper, Typography, Grid, Button, useTheme, u
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { useRouter } from 'next/navigation';
-import { useEditAssignOrderOrderMutation, useGetAllDriversDataQuery, useGetAllProductsQuery, useGetAssignedOrderByIdQuery, useGetDeviceMasterQuery, useGetFilteredDriversQuery, useGetFilteredVehiclesQuery, useGetLocationMasterQuery, useGetOrderByIdQuery, useGetSingleVehicleMasterQuery, useGetVehicleMasterQuery, usePostAssignCarrierMutation, usePostAssignCarrierToOrderMutation, usePostAssignOrderMutation, usePostCarrierAssigningOrderConfirmMutation, usePostCarrierRejectigOrderMutation, usePostSingleVehicleMasterMutation } from "@/api/apiSlice";
+import { useEditAssignOrderOrderMutation, useGetAllDriversDataQuery, useGetAllProductsQuery, useGetAssignedOrderByIdQuery, useGetDeviceMasterQuery, useGetFilteredDriversQuery, useGetFilteredVehiclesQuery, useGetLocationMasterQuery, useGetOrderAssignedToCarrierQuery, useGetOrderByIdQuery, useGetSingleVehicleMasterQuery, useGetVehicleMasterQuery, usePostAssignCarrierMutation, usePostAssignCarrierToOrderMutation, usePostAssignOrderMutation, usePostCarrierRejectigOrderMutation, usePostInitiateBiddingMutation, usePostSingleVehicleMasterMutation } from "@/api/apiSlice";
 import SnackbarAlert from "../ReusableComponents/SnackbarAlerts";
 import { Driver } from "../BusinessPartnersForms/DriverForm";
 import moment from 'moment';
@@ -11,7 +11,7 @@ import Image from "next/image";
 import AdditionalInformation from '@/Components/CreatePackageTabs/AddtionalInformation';
 import { DeviceInfoBE } from "../MasterDataComponents/DeviceMaster";
 import { Location } from "../MasterDataComponents/Locations";
-import { Form, Formik } from "formik";
+import { ErrorMessage, Field, Form, Formik } from "formik";
 import * as Yup from "yup";
 import { VehicleDetails } from "../MasterDataComponents/Vehicles";
 import { TruckFormDetails } from "@/app/vehicle/page";
@@ -30,6 +30,11 @@ const style = {
     borderRadius: 2,
     width: { xs: "100%", md: "60%" },
 };
+interface BiddingModalProps {
+    bid_value: string;
+    bid_timing: string;
+    bid_start_time: string;
+}
 interface RoutePoint {
     start: {
         address: string;
@@ -138,8 +143,10 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
     const wrapperRef = useRef<HTMLDivElement>(null);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
-    const [openAcceptCarrier, setOpenAcceptCarrier] = useState(false);
-    const [openAssignModal, setOpenAssignModal] = useState(false); 
+    // const [openAcceptCarrier, setOpenAcceptCarrier] = useState(false);
+    const [openAssignModal, setOpenAssignModal] = useState(false);
+    const [openBidding, setOpenBidding] = useState(false);
+    const [bidModal,setBidModal] = useState(false)
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -162,6 +169,7 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
     const { data: filteredDrivers, isLoading: filteredDriversLoading } = useGetFilteredDriversQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
     const displayDrivers = searchKey ? filteredDrivers?.results || [] : getAvailableDrivers;
     const { data: vehiclesTrucksData, isLoading: isVehiclesLoading } = useGetVehicleMasterQuery({});
+    const { data: carrierAssignedOrder, isLoading: carrierAssignedLoading } = useGetOrderAssignedToCarrierQuery({order_ID : orderId});
     const getAllVehicles = vehiclesTrucksData?.vehicles
     const [searchKeyVehicle, setSearchKeyVehicle] = useState('');
     const [showSuggestionsVehicle, setShowSuggestionsVehicle] = useState(false);
@@ -170,10 +178,12 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
     const displayVehicles = searchKeyVehicle ? filteredVehicles?.results || [] : vehiclesData;
     // console.log("display vehicles :", displayVehicles)
     const [assignModal, setAssignModal] = useState(false);
+      const [multipleCarriers, setMultipleCarriers] = useState(false);
     const [selectedAllocation, setSelectedAllocation] = useState<Allocation | null>(null);
     const [postRejectOrderByCarrier, { isLoading: isRejecting }] = usePostCarrierRejectigOrderMutation()
-    const [postAssignOrderByCarrier, { isLoading: isAssignConfirm }] = usePostCarrierAssigningOrderConfirmMutation()
+    // const [postAssignOrderByCarrier, { isLoading: isAssignConfirm }] = usePostCarrierAssigningOrderConfirmMutation()
     const [postAssignOrder, { isLoading: isAssigning }] = usePostAssignOrderMutation()
+    const [postInitiateBidding, { isLoading: isBidding }] = usePostInitiateBiddingMutation()
     const [editAssignOrder, { isLoading: editAssignLoading }] = useEditAssignOrderOrderMutation()
     const [postAssignCarrier, { isLoading: carrierAssinLoading }] = usePostAssignCarrierMutation()
     const [postAssignCarrierToOrder, { isLoading: carrierToOrderLoading }] = usePostAssignCarrierToOrderMutation()
@@ -199,6 +209,10 @@ const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocat
         return details.length > 0 ? details.join(", ") : "Location details not available";
     };
     const [open, setOpen] = useState(false);
+    const [requestedCarrier, setRequestedCarrier] = useState('')
+    const [carrierConfirmed, setCarrierConfirmed] = useState('')
+
+    console.log('requestedCarrier', requestedCarrier)
     const handleClose = () => setOpen(false);
     const handleAssignSubmit = async (values: TruckFormDetails, { resetForm }: { resetForm: () => void }) => {
         console.log('Form Values:', values);
@@ -242,6 +256,7 @@ const handleOpenAssignModal = (allocation: Allocation) => {
   setSelectedAllocation(allocation);
   setOpenAssignModal(true);
 };
+
 
 const handleCloseAssignModal = () => {
   setOpenAssignModal(false);
@@ -322,6 +337,22 @@ const handleCloseAssignModal = () => {
         setSelectedAllocation(allocation);
         setAssignModal(true)
     };
+    useEffect(()=> {
+        if ((order?.order?.order_status === 'carrier assignment' ||
+            order?.order?.order_status === 'carrier confirmed' || order?.order?.order_status === 'carrier rejected')
+            && carrierAssignedOrder?.data) {
+            const carrierData = carrierAssignedOrder?.data;
+
+            if (carrierData?.length) {
+                const lastCarrier = carrierData[carrierData?.length - 1];
+                const carrierRequested = lastCarrier?.req_sent_to?.[0];
+                const confirmed = lastCarrier.confirmed_to
+                console.log('confirmed:', confirmed)
+                setCarrierConfirmed(confirmed)
+                setRequestedCarrier(carrierRequested)
+    }
+}
+    }, [carrierAssignedOrder?.data, order?.order?.order_status])
     const handleCarrierAssign = async () => {
         try {
             const body = {
@@ -332,13 +363,13 @@ const handleCloseAssignModal = () => {
             const response = await postAssignCarrier(body).unwrap();
             console.log("assign response:", response?.carrier_options);
             if (response.message === "Multiple valid contracted carriers found. Choose one for assignment.") {
-                setOpenAcceptCarrier(true);
+                setMultipleCarriers(true);
                 setCarrierOptions(response?.carrier_options);
             }
             if (response?.message === "Carrier assignment initialized successfully.") {
                 const assignedCarrier = response?.req_sent_to[0]
-                setOpenAcceptCarrier(false)
-                setSnackbarMessage(`Carrier assignment sent to carrier ${assignedCarrier} successfully!`);
+                setMultipleCarriers(false)
+                setSnackbarMessage(`Carrier assignment sent to contracted carrier ${assignedCarrier} successfully!`);
                 setSnackbarSeverity("success");
                 setSnackbarOpen(true);
             }
@@ -361,6 +392,7 @@ const handleCloseAssignModal = () => {
             setSnackbarSeverity("success");
             setSnackbarOpen(true);
             setAssignModal(false)
+            setMultipleCarriers(false)
         }
 
     }
@@ -477,7 +509,11 @@ const handleCloseAssignModal = () => {
     // const handleOpenDialog = () => {
     //     setOpenReject(true);
     // };
-
+  const validationSchemaBidding = Yup.object({
+    bid_value: Yup.string().required("Bid value is required") ,
+    bid_timing: Yup.string().required("Bid timing is required"),
+    bid_start_time: Yup.string().required("Bid start time is required"),
+  });
     const handleCloseReject = () => {
         setOpenReject(false);
     };
@@ -509,59 +545,55 @@ const handleCloseAssignModal = () => {
         }
     };
 
-    const initialValuesAccept = {
-        vehicleNumAccept: '',
-        driverNameAccept: '',
-        driverNumberAccept: '',
-        driverLicenseAccept: '',
-        deviceIdAccept: '',
-
+    const handleDialogOpenBidding = () => {
+        setOpenBidding(true);
     };
-    const validationSchemaAccept = Yup.object().shape({
-        vehicleNumAccept: Yup.string().required('Vehicle Number is required'),
-        driverNameAccept: Yup.string().required('Driver Name is required'),
-        driverNumberAccept: Yup.string()
-            .required('Driver Number is required')
-            .matches(/^[0-9]{10}$/, 'Driver Number must be 10 digits'),
-        driverLicenseAccept: Yup.string().required('Driver License is required'),
-        deviceIdAccept: Yup.string().required('Device ID is required'),
 
-    });
+    const handleDialogCloseBidding = () => {
+        setOpenBidding(false);
+    };
 
+    const handleConfirmBidding = () => {
+        handleBidding();
+        setOpen(false);
+    };
 
-    const handleSubmitAccept = async (values: typeof initialValuesAccept) => {
-        console.log('Submitted Accept Data:', values);
-        const carrierIdForOrder = from
+    const handleBidding = () => {
+        setBidModal(true)
+    };
+    const handleBidSubmit = async(values: BiddingModalProps) => {
+        console.log("bid sent")
+          const formattedDate = new Date(values.bid_start_time).toISOString().slice(0, 19);
+        const body = {
+            order_ID: orderId,
+            bid_value: values.bid_value,
+            bid_timing: values.bid_timing ,
+            bid_start_time:formattedDate
+            }
+            console.log("bidd body:", body)
         try {
-            const body = {
-                carrier_ID: carrierIdForOrder,
-                order_ID: orderId,
-                vehicle_num: values.vehicleNumAccept,
-                driver_data: {
-                    c_driver_name: values.driverNameAccept,
-                    c_driver_number: values.driverNumberAccept,
-                    c_driver_license: values.driverLicenseAccept
-                },
-                device_ID: values.deviceIdAccept,
-                confirmed_time: Date.now()
-            }
-            console.log('bodyy:', body)
-            const response = await postAssignOrderByCarrier(body).unwrap();
-            console.log('assign response:', response);
-            if (response) {
-                setSnackbarMessage(`Carrier ${carrierIdForOrder} assigned to Order ${orderId}  successfully!`);
-                setSnackbarSeverity("success");
+            const response = await postInitiateBidding(body).unwrap()
+            console.log("post bid response :", response)
+            if (response.message ==='Open bidding initiated successfully.') {
+                    setSnackbarMessage(`Open bidding initiated successfully!`);
+                    setSnackbarSeverity("success");
                 setSnackbarOpen(true);
+                setBidModal(false)
             }
-        } catch (error) {
-            console.error('Error assigning:', error);
-            setSnackbarMessage(`Unable to assign this order now , try after sometime.`);
-            setSnackbarSeverity("error");
-            setSnackbarOpen(true);
-        }
 
-        setOpenAcceptCarrier(false);
-    };
+            }catch(err) {
+                console.log("bid err:", err)
+                setSnackbarMessage(`Unable to sent bid request at this time, ${err}`);
+                setSnackbarSeverity("error");
+                setSnackbarOpen(true);
+                setBidModal(false)
+                }
+    }
+ console.log('carrierAssignedOrder:', carrierAssignedOrder) 
+    if (order.order.order_status === 'carrier assignment') {
+     
+ }
+ console.log("carrierConfirmed :", carrierConfirmed)
     return (
         <Box>
             <Backdrop
@@ -569,7 +601,7 @@ const handleCloseAssignModal = () => {
                     color: "#ffffff",
                     zIndex: (theme) => theme.zIndex.drawer + 1,
                 }}
-                open={loading || postVehicleLoading || isAssigning || isRejecting || isAssignConfirm || editAssignLoading || deviceLoading || carrierAssinLoading || carrierToOrderLoading}
+                open={loading || postVehicleLoading || isAssigning || carrierAssignedLoading || isBidding || isRejecting || editAssignLoading || deviceLoading || carrierAssinLoading || carrierToOrderLoading}
             >
                 <CircularProgress color="inherit" />
             </Backdrop>
@@ -875,118 +907,12 @@ const handleCloseAssignModal = () => {
                         </DialogActions>
                     </Dialog>
 
-                    <Dialog open={openAcceptCarrier} onClose={() => setOpenAcceptCarrier(false)} maxWidth="xs" fullWidth
-                        PaperProps={{
-                            sx: { backgroundColor: '#f5f5f5', padding: '10px', borderRadius: '20px', },
-                        }}
-                    >
-                            <DialogTitle sx={{ m: 0, p: 2, position: 'relative' }}>Confirm Carrier Assignment
-                                <IconButton
-                                aria-label="close"
-                                onClick={() => setOpenAcceptCarrier(false)}
-                                sx={{
-                                    position: 'absolute',
-                                    right: 8,
-                                    top: 8,
-                                    color: (theme) => theme.palette.grey[500],
-                                }}
-                                >
-                                <CloseIcon />
-                                </IconButton>
-                        </DialogTitle>
-                        <Formik
-                            initialValues={initialValuesAccept}
-                            validationSchema={validationSchemaAccept}
-                            onSubmit={handleSubmitAccept}
-                        >
-                            {({
-                                values: valuesAccept,
-                                handleChange: handleChangeAccept,
-                                errors: errorsAccept,
-                                touched: touchedAccept,
-                            }) => (
-                                <Form>
-                                    <DialogContent>
-                                        <Grid container spacing={2}>
-                                            <Grid item xs={12}>
-                                                <TextField
-                                                    fullWidth size='small'
-                                                    label="Vehicle Number"
-                                                    name="vehicleNumAccept"
-                                                    value={valuesAccept.vehicleNumAccept}
-                                                    onChange={handleChangeAccept}
-                                                    error={touchedAccept.vehicleNumAccept && Boolean(errorsAccept.vehicleNumAccept)}
-                                                    helperText={touchedAccept.vehicleNumAccept && errorsAccept.vehicleNumAccept}
-                                                />
-                                            </Grid>
-
-                                            <Grid item xs={12}  >
-                                                <TextField
-                                                    fullWidth
-                                                    label="Driver Name" size='small'
-                                                    name="driverNameAccept"
-                                                    value={valuesAccept.driverNameAccept}
-                                                    onChange={handleChangeAccept}
-                                                    error={touchedAccept.driverNameAccept && Boolean(errorsAccept.driverNameAccept)}
-                                                    helperText={touchedAccept.driverNameAccept && errorsAccept.driverNameAccept}
-                                                />
-                                            </Grid>
-
-                                            <Grid item xs={12} >
-                                                <TextField
-                                                    fullWidth
-                                                    label="Driver Number" size='small'
-                                                    name="driverNumberAccept"
-                                                    value={valuesAccept.driverNumberAccept}
-                                                    onChange={handleChangeAccept}
-                                                    error={touchedAccept.driverNumberAccept && Boolean(errorsAccept.driverNumberAccept)}
-                                                    helperText={touchedAccept.driverNumberAccept && errorsAccept.driverNumberAccept}
-                                                />
-                                            </Grid>
-
-                                            <Grid item xs={12}  >
-                                                <TextField
-                                                    fullWidth
-                                                    label="Driver License" size='small'
-                                                    name="driverLicenseAccept"
-                                                    value={valuesAccept.driverLicenseAccept}
-                                                    onChange={handleChangeAccept}
-                                                    error={touchedAccept.driverLicenseAccept && Boolean(errorsAccept.driverLicenseAccept)}
-                                                    helperText={touchedAccept.driverLicenseAccept && errorsAccept.driverLicenseAccept}
-                                                />
-                                            </Grid>
-
-                                            <Grid item xs={12}  >
-                                                <TextField
-                                                    fullWidth
-                                                    label="Device ID" size='small'
-                                                    name="deviceIdAccept"
-                                                    value={valuesAccept.deviceIdAccept}
-                                                    onChange={handleChangeAccept}
-                                                    error={touchedAccept.deviceIdAccept && Boolean(errorsAccept.deviceIdAccept)}
-                                                    helperText={touchedAccept.deviceIdAccept && errorsAccept.deviceIdAccept}
-                                                />
-                                            </Grid>
-                                        </Grid>
-                                    </DialogContent>
-
-                                    <DialogActions>
-                                        <Button onClick={() => setOpenAcceptCarrier(false)}>Cancel</Button>
-                                        <Button variant="contained" type="submit">
-                                            Submit
-                                        </Button>
-                                    </DialogActions>
-                                </Form>
-                            )}
-                        </Formik>
-                    </Dialog>
-
                     <Modal open={assignModal} onClose={() => {
                         setAssignModal(false)
                         setFormData({ truckId: "", driverId: "", deviceId: "" });
                         setSelectedAllocation(null);
                         }}>
-                        {from === 'order-overview' ? (
+                            <>
                             <Box
                                 sx={{
                                     position: "absolute",
@@ -1185,7 +1111,17 @@ const handleCloseAssignModal = () => {
                                         Submit
                                     </Button>
                                 </Box>
-                            </Box>) :
+                            </Box>
+                           </>
+                           
+
+                    </Modal>
+
+                    <Modal open={multipleCarriers} onClose={() => {
+                        setMultipleCarriers(false) 
+                        setSelectedAllocation(null);
+                        }}>
+                            {
                             (
                                 <Box
                                     sx={{
@@ -1227,14 +1163,94 @@ const handleCloseAssignModal = () => {
                                         <Button variant="contained" color="primary" onClick={handleCarrierSubmit}>
                                             Submit
                                         </Button>
-
-
                                     </Box>
 
                                 </Box>
                             )}
 
-                    </Modal>
+                        </Modal>
+                        
+                    <Dialog open={openBidding} onClose={handleDialogCloseBidding}>
+                        <DialogTitle>Confirm Bidding</DialogTitle>
+                        <DialogContent>
+                            <DialogContentText>
+                                Are you sure you want to go for bidding?
+                            </DialogContentText>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={handleDialogCloseBidding} color="secondary">
+                                Cancel
+                            </Button>
+                            <Button onClick={handleConfirmBidding} color="primary" variant="contained">
+                                Yes
+                            </Button>
+                        </DialogActions>
+                        </Dialog>
+                        
+                        <Dialog open={bidModal} onClose={()=>setBidModal(false)}>
+                              <DialogTitle>Go for Bidding</DialogTitle>
+                              <DialogContent>
+                                <Formik
+                                  initialValues={{
+                                    bid_value: "",
+                                    bid_timing: "",
+                                    bid_start_time: "",
+                                  }}
+                                  validationSchema={validationSchemaBidding}
+                                  onSubmit={handleBidSubmit}
+                                >
+                                  {({ values, handleChange, handleBlur }) => (
+                                    <Form>
+                                      <Field
+                                        name="bid_value"
+                                        as={TextField}
+                                        label="Bid Value "
+                                        size='small'
+                                        value={values.bid_value}
+                                        onChange={handleChange}
+                                        onBlur={handleBlur}
+                                        fullWidth
+                                        margin="normal"
+                                        helperText={<ErrorMessage name="bid_value" />}
+                                        error={Boolean(<ErrorMessage name="bid_value" />)}
+                                      />
+                                      <Field
+                                        name="bid_timing"
+                                        as={TextField} size='small'
+                                        label="Bid Timing"
+                                        value={values.bid_timing}
+                                        onChange={handleChange}
+                                        onBlur={handleBlur}
+                                        fullWidth
+                                        margin="normal"
+                                        helperText={<ErrorMessage name="bid_timing" />}
+                                        error={Boolean(<ErrorMessage name="bid_timing" />)}
+                                      />
+                                      <Field
+                                        name="bid_start_time"
+                                        as={TextField} size='small'
+                                        label="Bid Start Time"
+                                        type="datetime-local"
+                                        value={values.bid_start_time}
+                                        onChange={handleChange}
+                                        onBlur={handleBlur}
+                                        InputLabelProps={{ shrink: true }}
+                                        fullWidth
+                                        margin="normal"
+                                        helperText={<ErrorMessage name="bid_start_time" />}
+                                        error={Boolean(<ErrorMessage name="bid_start_time" />)}
+                                      />
+                                      <DialogActions>
+                                        <Button onClick={()=> setBidModal(false)}>Cancel</Button>
+                                        <Button variant="contained" color="primary" type="submit">
+                                          Submit Bid
+                                        </Button>
+                                      </DialogActions>
+                                    </Form>
+                                  )}
+                                </Formik>
+                              </DialogContent>
+                            </Dialog>
 
                     <Paper key={uniqueKey} sx={{ p: 2, mb: 2 , marginLeft: isGeneratingPDF ? '30px': '2px' }}>
                         <Grid container alignItems="center" justifyContent="space-between">
@@ -1247,11 +1263,26 @@ const handleCloseAssignModal = () => {
                                         )}
 
                                         </Typography>
-                                        {!isGeneratingPDF && (
+                                        {!isGeneratingPDF  && (
                                             <Typography variant="body2" color="#F08C24" sx={{ fontSize: 11, backgroundColor: '#FCF0DE', paddingLeft: 2, paddingRight: 2, paddingTop: 0.7, paddingBottom: 0.3, borderRadius: 1.5 }}>
                                             {order?.order?.order_status}
                                         </Typography>
-                                            )}
+                                        )}
+                                        {requestedCarrier && order?.order?.order_status ==='carrier assignment' && (
+                                            <Typography variant="body2" color="#F08C24" sx={{ fontSize: 11, backgroundColor: '#FCF0DE', paddingLeft: 2, paddingRight: 2, paddingTop: 0.7, paddingBottom: 0.3, borderRadius: 1.5 }}>
+                                               Carrier request sent to {requestedCarrier}
+                                        </Typography>
+                                        )}
+                                        {carrierConfirmed && order?.order?.order_status ==='carrier confirmed' && (
+                                            <Typography variant="body2" color="#F08C24" sx={{ fontSize: 11, backgroundColor: '#FCF0DE', paddingLeft: 2, paddingRight: 2, paddingTop: 0.7, paddingBottom: 0.3, borderRadius: 1.5 }}>
+                                               Order confirmed by carrier {carrierConfirmed}
+                                        </Typography>
+                                        )}
+                                        {requestedCarrier && order?.order?.order_status ==='carrier rejected' && (
+                                            <Typography variant="body2" color="#F08C24" sx={{ fontSize: 11, backgroundColor: '#FCF0DE', paddingLeft: 2, paddingRight: 2, paddingTop: 0.7, paddingBottom: 0.3, borderRadius: 1.5 }}>
+                                               Order rejected by carrier {requestedCarrier}
+                                        </Typography>
+                                        )}
 
                                 </Grid>
 
@@ -1470,29 +1501,27 @@ const handleCloseAssignModal = () => {
                                     {!assignedOrder?.data[0]?.allocated_vehicles?.some(
                                         (vehicle: string) => vehicle === allocation.vehicle_ID
                                     ) && (
-                                            <>
-                                                {from === 'order-overview' && (order?.order?.order_status === 'self assigned' || order?.order?.order_status === 'assignment pending') && (
+                                                <>
+                                                    
+                                                    {order?.order?.order_status === 'assignment pending' && (
+                                                        <>
+                                                        <Button
+                                                        variant="contained"
+                                                        color="primary"
+                                                        onClick={handleDialogOpenBidding}
+                                                    >
+                                                        Go for bidding
+                                                            </Button>
                                                     <Button
                                                         variant="contained"
                                                         color="primary"
-                                                        // onClick={() => handleAssign(allocation)}
                                                         onClick={() => handleOpenAssignModal(allocation)}
                                                     >
                                                         Assign
-                                                    </Button>
+                                                            </Button>
+                                                        </>
                                                 )
                                                 }
-                                                {from === 'order-bidding' && order?.order?.order_status === 'assignment pending' && (
-                                                    <Button
-                                                        variant="contained"
-                                                        color="primary"
-                                                        onClick={handleCarrierAssign}
-                                                    >
-                                                        Assign Carrier
-                                                    </Button>
-                                                )
-                                                }
-
                                             </>
 
                                         )}
@@ -1501,25 +1530,6 @@ const handleCloseAssignModal = () => {
                                         (vehicle: string) => vehicle === allocation.vehicle_ID
                                     ) && (
                                             <>
-                                                {/* {order?.order?.order_status === "carrier assignment" && (
-                                                    <>
-                                                        <Button
-                                                            variant="contained"
-                                                            color="primary" 
-                                                        onClick={() => setOpenAcceptCarrier(true)}
-                                                        >
-                                                            Accept
-                                                        </Button>
-                                                        <Button
-                                                            variant="contained"
-                                                            color="primary"
-                                                            onClick={handleOpenDialog}
-                                                        >
-                                                            Reject
-                                                        </Button>
-                                                    </>
-
-                                                )} */}
                                                 {order?.order?.order_status === "finished" ? (
                                                     <Button
                                                         variant="contained"
@@ -1541,7 +1551,6 @@ const handleCloseAssignModal = () => {
                                         )}
                                 </Box>
                                     )}
-                              
                             </Box>
                         </Collapse>
                     </Paper></>
