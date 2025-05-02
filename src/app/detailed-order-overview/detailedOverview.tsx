@@ -11,7 +11,7 @@ import Image from "next/image";
 import AdditionalDocuments from "@/Components/CreateOrderTables/AdditionalDocuments";
 import CloseIcon from '@mui/icons-material/Close';
 import SnackbarAlert from "@/Components/ReusableComponents/SnackbarAlerts";
-import BillOfLading from "@/Components/OrderOverViewAllocations/BillOfLading";
+// import BillOfLading from "@/Components/OrderOverViewAllocations/BillOfLading";
 
 export interface OrderDoc { [key: string]: string };
 
