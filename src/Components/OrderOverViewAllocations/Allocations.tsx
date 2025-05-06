@@ -122,7 +122,7 @@ interface carrierForOrder {
     rate: string
 }
 
-const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocatedPackageDetails, from,isGeneratingPDF }) => {
+const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocatedPackageDetails, from, isGeneratingPDF }) => {
     const validationSchema = Yup.object({
         vehicleId: Yup.string().required("Vehicle id is required"),
         vehicleNumber: Yup.string().required("Vehicle number is required"),
@@ -379,23 +379,35 @@ const handleCloseAssignModal = () => {
         }
     };
 
-    const handleCarrierSubmit = async () => {
-        const body = {
-            order_ID: orderId,
-            carrier_ID: carrierId,
-            assigned_time: new Date().toISOString().slice(0, 16)
-        }
-        console.log("body carr: ", body)
+ const handleCarrierSubmit = async () => {
+    const body = {
+        order_ID: orderId,
+        carrier_ID: carrierId,
+        assigned_time: new Date().toISOString().slice(0, 16),
+    };
+
+    console.log("body carr: ", body);
+
+    try {
         const response = await postAssignCarrierToOrder(body).unwrap();
+
         if (response.message === 'Carrier assignment sent to selected carrier successfully.') {
             setSnackbarMessage(`Carrier assignment sent to carrier ${carrierId} successfully!`);
             setSnackbarSeverity("success");
             setSnackbarOpen(true);
-            setAssignModal(false)
-            setMultipleCarriers(false)
+            setAssignModal(false);
+            setMultipleCarriers(false);
+            handleCloseAssignModal();
         }
-
+    } catch (error) {
+        console.error("Error assigning carrier:", error);
+        setSnackbarMessage("Failed to assign carrier, try after sometime.");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
+        handleCloseAssignModal();
     }
+};
+
     const handleSubmit = async () => { 
         let isValid = true;
         const newErrors: FormErrors = {};

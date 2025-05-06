@@ -96,7 +96,7 @@ const [additionalDocs, setAdditionalDocs] = useState<{ [key: string]: string }[]
             const response = await createOrder(createOrderBody).unwrap();
             if (response) {
                 const orderIds = response.created_orders.map((order: { order_ID: string }) => order.order_ID).join(', ');
-                setSnackbarMessage(`Order ID(s) ${orderIds} created successfully!`);
+                setSnackbarMessage(`Order ID ${orderIds} created successfully!`);
                 // setSnackbarMessage(`Order ID ${response?.order_ID} created successfully!`);
                 setSnackbarSeverity("success");
                 setSnackbarOpen(true);
@@ -143,7 +143,7 @@ const [additionalDocs, setAdditionalDocs] = useState<{ [key: string]: string }[]
                     setNoVechilePopup(true)
                 } else {
                     setConformOrderPayload(response)
-                    console.log('response: ', response)
+                    console.log('allocated response: ', response.allocations)
                     setSelectTrucks(response?.allocations);
                     setUnAllocatedPackages(response?.unallocatedPackages)
                     setActiveStep((prev) => prev + 1);
@@ -292,7 +292,7 @@ const [additionalDocs, setAdditionalDocs] = useState<{ [key: string]: string }[]
 
                 {activeStep === 1 && (
                     <div>
-                        <TrucksTable trucks={selectTrucks} unAllocatedPackages={unAllocatedPackages} />
+                        <TrucksTable selectedPackages={selectedPackages}  trucks={selectTrucks} unAllocatedPackages={unAllocatedPackages} />
                     </div>
                 )}
 

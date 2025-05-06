@@ -23,10 +23,10 @@ interface PackageDetails {
 
 const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks,additionalDocs, setAdditionalDocs }) => {
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
+    console.log("allocated:", selectedPackages)
     const selectedTrucks = trucks
     const { data: locationsData } = useGetLocationMasterQuery({})
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
-    console.log("selectedPackages: ", selectedPackages)
     const getLocationDescription = (loc_ID: string) => {
         const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
         if (!location) return "Location details not available";
@@ -100,8 +100,13 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks,additionalDocs, 
             },
         },
     ];
+const truckPackageIDs = selectedTrucks.flatMap(truck => truck.packages);
 
-    const packageRows = selectedPackages.map((pkg, index) => ({
+const matchedPackages = selectedPackages.filter(pkg =>
+  truckPackageIDs.includes(pkg.pack_ID)
+);
+
+    const packageRows = matchedPackages?.map((pkg, index) => ({
         id: index,
         pack_ID: pkg.pack_ID,
         ship_from: getLocationDescription(pkg.ship_from),

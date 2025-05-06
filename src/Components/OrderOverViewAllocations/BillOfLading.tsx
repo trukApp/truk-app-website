@@ -325,8 +325,6 @@ const BillOfLading: React.FC<AllocationsProps> = ({ allocations,orderId, allocat
                                 Details not available
                             </Typography>
                         )}
-
-
                     </Paper>
                 );
             })}

@@ -777,11 +777,11 @@ export const apiSlice = createApi({
       query: (params) => ({
         url: `carrier-assignment/assigned-order-by-id`,
         method: "GET",
-        params,
+        params
       }),
       providesTags :[{type: "Orderss", id: "LIST"}]
     }),
-  }),
+  }), 
 
 });
 

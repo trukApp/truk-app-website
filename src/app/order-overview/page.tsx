@@ -14,6 +14,9 @@ interface Route {
   duration: string;
 }
 
+interface Pack{
+  pack_ID:string
+}
 interface Allocation {
   vehicle_ID: string;
   route: Route[];
@@ -28,7 +31,7 @@ interface Allocation {
 export interface Order {
   updated_at: string;
   created_at: string;
-  unallocated_packages: string[];
+  unallocated_packages: Pack[];
   ord_id: number;
   order_ID: string;
   scenario_label: string;
@@ -94,12 +97,13 @@ const OrdersGrid: React.FC = () => {
                 attachments, statuses, and flows. Navigate through each tab to see or update relevant order details.
             </Typography>
       <DataGrid
-        rows={ordersData.map((order: Order) => ({
+        rows={ordersData.map((order: Order) => (
+          {
           id: order.ord_id,
           order_ID: order?.order_ID,
           scenario_label: order?.scenario_label,
           total_cost: order?.total_cost,
-          unallocated_packages: order?.unallocated_packages?.join(', ') || 'None',
+          unallocated_packages: order?.unallocated_packages?.map((pkg :Pack) => pkg.pack_ID).join(', ') || 'None',
           order_status: order?.order_status,
           created_at: moment(new Date(order?.created_at).toLocaleString()).format("DD MMM YYYY, hh:mm A"),
 
