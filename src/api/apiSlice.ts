@@ -811,14 +811,23 @@ export const apiSlice = createApi({
     }),
 
       getOrderAssignedToCarrier: builder.query({
-      query: (params) => ({
-        url: `carrier-assignment/assigned-order-by-id`,
-        method: "GET",
-        params
+        query: (params) => ({
+          url: `carrier-assignment/assigned-order-by-id`,
+          method: "GET",
+          params
+        }),
+        providesTags :[{type: "Orderss", id: "LIST"}]
       }),
-      providesTags :[{type: "Orderss", id: "LIST"}]
-    }),
-  }), 
+
+      getDockRequests: builder.query({
+        query: (params) => ({
+          url: `carrier-assignment/get-dock-reqs`,
+          method: "GET",
+          params
+        }),
+        // providesTags :[{type: "Orderss", id: "LIST"}]
+      }),
+    }), 
 
 });
 
@@ -905,4 +914,5 @@ export const {
   usePostCarrierAssigningOrderConfirmMutation,
   usePostInitiateBiddingMutation,
   useGetOrderAssignedToCarrierQuery,
+  useGetDockRequestsQuery,
 } = apiSlice;

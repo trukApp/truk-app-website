@@ -189,4 +189,17 @@ export const options: NextAuthOptions = {
   jwt: {
     secret: process.env.NEXTAUTH_SECRET,
   },
+    cookies: {
+    sessionToken: {
+      name: "trukapp-admin.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+  },
+
+
 };
