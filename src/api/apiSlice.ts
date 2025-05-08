@@ -71,7 +71,8 @@ export const apiSlice = createApi({
     "AssignedOrders",
     "SingleVehicleMaster",
     "DataCount",
-    "ValidateRoute"
+    "ValidateRoute",
+    "DockCarrier"
   ],
   endpoints: (builder) => ({
     userLogin: builder.mutation<User, { phone: string; password: string }>({
@@ -825,7 +826,23 @@ export const apiSlice = createApi({
           method: "GET",
           params
         }),
+        providesTags :[{type: "DockCarrier", id: "LIST"}]
+      }),
+        getDocksByLocationId: builder.query({
+        query: (params) => ({
+          url: `masterDock/dock`,
+          method: "GET",
+          params
+        }),
         // providesTags :[{type: "Orderss", id: "LIST"}]
+      }),
+      editAllocateDockToCarrier: builder.mutation({
+        query: ( body ) => ({
+          url: `masterDock/allocate-dock-to-carrier`,
+          method: "PUT",
+          body,
+        }),
+        invalidatesTags: [{ type: "DockCarrier", id: "LIST" }],
       }),
     }), 
 
@@ -915,4 +932,6 @@ export const {
   usePostInitiateBiddingMutation,
   useGetOrderAssignedToCarrierQuery,
   useGetDockRequestsQuery,
+  useGetDocksByLocationIdQuery,
+  useEditAllocateDockToCarrierMutation,
 } = apiSlice;
