@@ -11,7 +11,7 @@ import Image from "next/image";
 import AdditionalDocuments from "@/Components/CreateOrderTables/AdditionalDocuments";
 import CloseIcon from '@mui/icons-material/Close';
 import SnackbarAlert from "@/Components/ReusableComponents/SnackbarAlerts";
-// import BillOfLading from "@/Components/OrderOverViewAllocations/BillOfLading";
+import BillOfLading from "@/Components/OrderOverViewAllocations/BillOfLading";
 
 export interface OrderDoc { [key: string]: string };
 
@@ -283,7 +283,7 @@ setIsGeneratingPDF(false);
             )}
 
                 {orderData?.allocations && <Allocations isGeneratingPDF={isGeneratingPDF} allocations={orderData.allocations} orderId={orderData.order_ID} allocatedPackageDetails={allocatedPackageDetails} from={from} />}
-                {/* {orderData?.allocations && <BillOfLading  allocations={orderData.allocations} orderId={orderData.order_ID} allocatedPackageDetails={allocatedPackageDetails} from={from} />} */}
+                {orderData?.allocations && <BillOfLading  allocations={orderData.allocations} orderId={orderData.order_ID} allocatedPackageDetails={allocatedPackageDetails} from={from} />}
 
             </Paper>
         </Box>

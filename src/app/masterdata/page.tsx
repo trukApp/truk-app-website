@@ -7,10 +7,11 @@ import Locations from "@/Components/MasterDataComponents/Locations";
 import PackagingInfo from "@/Components/MasterDataComponents/PackagingInfo";
 import Lanes from "@/Components/MasterDataComponents/Lanes";
 import DeviceMaster from "@/Components/MasterDataComponents/DeviceMaster";
-import { withAuthComponent } from "@/Components/WithAuthComponent";
+import { withAuthComponent } from "@/Components/WithAuthComponent"; 
+import DockForm from "@/Components/MasterDataComponents/Dock";
 
 const MasterData: React.FC = () => {
-  const [selectedTab, setSelectedTab] = useState<string>("Vehicles");
+  const [selectedTab, setSelectedTab] = useState<string>("Dock");
 
   const handleChange = (event: React.SyntheticEvent, newValue: string) => {
     setSelectedTab(newValue);
@@ -30,6 +31,8 @@ const MasterData: React.FC = () => {
         return <PackagingInfo />;
       case "Uom":
         return <UnitsOfMeasurement />;
+        case "Dock":
+        return <DockForm />;
       default:
         return null;
     }
@@ -67,6 +70,7 @@ const MasterData: React.FC = () => {
         <Tab value="Locations" sx={{ textTransform: 'capitalize', fontSize: '16px' }} label="Locations" />
         <Tab value="Packaging Info" sx={{ textTransform: 'capitalize', fontSize: '16px' }} label="Packaging Info" />
         <Tab value="Uom" sx={{ textTransform: 'capitalize', fontSize: '16px' }} label="Units of Measurement" />
+        <Tab value="Dock" sx={{ textTransform: 'capitalize', fontSize: '16px' }} label="Dock" />
       </Tabs>
 
       {/* Render Selected Component */}

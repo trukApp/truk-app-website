@@ -63,6 +63,7 @@ export const apiSlice = createApi({
     "DeviceMaster",
     "ProductMaster",
     "UomMaster",
+    "DockMaster",
     "CreateOrder",
     "PackagesForOrder",
     "Orders",
@@ -485,6 +486,42 @@ export const apiSlice = createApi({
       invalidatesTags: [{ type: "UomMaster", id: "LIST" }],
     }),
 
+    // Dock master 
+        getDockMaster: builder.query({
+      query: (params) => ({
+        url: `masterDock/all-docks`,
+        method: "GET",
+        params,
+      }),
+      providesTags: [{ type: "DockMaster", id: "LIST" }],
+    }),
+
+    postDockMaster: builder.mutation({
+      query: (body) => ({
+        url: "masterDock/create-dock",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "DockMaster", id: "LIST" }],
+    }),
+
+    editDockMaster: builder.mutation({
+      query: ({ body, dock_ID }) => ({
+        url: `masterDock/edit-dock?dock_ID=${dock_ID}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: [{ type: "DockMaster", id: "LIST" }],
+    }),
+
+    deleteDockMaster: builder.mutation({
+      query: (dock_ID) => ({
+        url: `masterDock/delete-dock?id=${dock_ID}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [{ type: "DockMaster", id: "LIST" }],
+    }),
+
     //Product Master
     getAllProducts: builder.query({
       query: (params) => ({
@@ -828,6 +865,10 @@ export const {
   usePostUomMasterMutation,
   useEditUomMasterMutation,
   useDeleteUomMasterMutation,
+  useGetDockMasterQuery,
+  usePostDockMasterMutation,
+  useEditDockMasterMutation,
+  useDeleteDockMasterMutation,
   useGetAllProductsQuery,
   useCreateProductMutation,
   useDeleteProductMutation,

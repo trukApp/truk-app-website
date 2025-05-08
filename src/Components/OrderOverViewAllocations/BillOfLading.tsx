@@ -1,4 +1,4 @@
-import {  useGetAllAssignedOrdersQuery, useGetLocationMasterQuery } from "@/api/apiSlice";
+import {  useGetAssignedOrderByIdQuery, useGetLocationMasterQuery } from "@/api/apiSlice";
 import {  Typography,  Paper, Backdrop, CircularProgress } from "@mui/material";
 import { Location } from "../MasterDataComponents/Locations"; 
 
@@ -76,114 +76,12 @@ export interface ProductDetails {
     product_name: string;
     weight: string;
 }
- 
-// const BillOfLading: React.FC<AllocationsProps> = ({ allocations, allocatedPackageDetails }) => {
-//         const { data: locationsData } = useGetLocationMasterQuery({});
-//         const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
-//         const getLocationDetails = (loc_ID: string) => {
-//             const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
-//             if (!location) return "Location details not available";
-//             const details = [
-//                 location.address_1,
-//                 location.city,
-//                 location.state,
-//                 location.country,
-//                 location.pincode,
-//             ].filter(Boolean);
-    
-//             return details.length > 0 ? details.join(", ") : "Location details not available";
-//     };
-//  const getCustomerDetails = (loc_ID: string) => {
-//     const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
-//     if (!location) return null;
-
-//     return {
-//         name: location.contact_name || "Name not available",
-//         email: location.contact_email || "Email not available",
-//         phone: location.contact_phone_number || "Phone number not available"
-//     };
-// };
-
-//   return (
-//       <>
-//       {allocations.map((allocation:Allocation, index:number) => {
-//     const packages = allocatedPackageDetails.filter((pkg: PackageDetail) =>
-//         allocation.packages.includes(pkg.pack_ID)
-//           );
-//           console.log("all packages :", packages)
-//           const personDetails = packages[0]
-//           const customerDetails = getCustomerDetails(personDetails?.ship_from ?? "");
-//           const shipToCount: Record<string, number> = {};
-//                 packages.forEach((pkg :PackageDetail) => {
-//                 const shipTo = pkg.ship_to;
-//                 if (shipTo) {
-//                     shipToCount[shipTo] = (shipToCount[shipTo] || 0) + 1;
-//                 }
-//                 });
-
-//                 Object.entries(shipToCount).forEach(([id, count]) => {
-//                     console.log(`ship_to ID: ${id} — Count: ${count}`);
-//                     const ShippingTo = getCustomerDetails(id);
-                
-//                 });
-//     return (
-//         <Paper key={index} sx={{ p: 2, mt: 3, backgroundColor: "#f8f8f8" }}>
-//             <Typography variant="h6" color="primary" gutterBottom>
-//                 Bill of Lading
-//             </Typography>
-
-//             <Typography variant="body2">
-//                 <strong>Occupied Weight:</strong> {allocation.occupiedWeight.toFixed(2)} kg
-//             </Typography>
-//             <Typography variant="body2">
-//                 <strong>Occupied Volume:</strong> {allocation.occupiedVolume.toFixed(2)} m³
-//             </Typography>
-//             {/* <Typography variant="body2">
-//                 <strong>No of Packages:</strong> {allocation.packages.length}
-//             </Typography> */}
-     
-//             <Typography variant="h6" color="primary" gutterBottom>
-//                 Shipper (Consignor) Details
-//             </Typography>
-//             {customerDetails ? (
-//                 <>
-//                     <Typography variant="body2">
-//                         Name: <strong>{customerDetails.name}</strong>
-//                     </Typography>
-//                     <Typography variant="body2">
-//                         Email: <strong>{customerDetails.email}</strong>
-//                     </Typography>
-//                     <Typography variant="body2">
-//                         Phone: <strong>{customerDetails.phone}</strong>
-//                                 </Typography>
-//                                 <Typography variant="body2">
-//                 Address: <strong>{getLocationDetails(packages[0]?.ship_from)}</strong>
-//             </Typography>
-
-//                 </>
-//             ) : (
-//                 <Typography variant="body2">
-//                     Details not available
-//                 </Typography>
-//             )}
-
-//             <Typography variant="h6" sx={{marginTop:'20px'}} color="primary" gutterBottom>
-//                 Consignee Details
-//             </Typography>
-            
-//         </Paper>
-//     );
-// })}
-// </>
-//   );
-// };
 
 const BillOfLading: React.FC<AllocationsProps> = ({ allocations,orderId, allocatedPackageDetails }) => {
     const { data: locationsData } = useGetLocationMasterQuery({});
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData.locations : [];
-    const { data: assignedOrder, isLoading : ordersLoading } = useGetAllAssignedOrdersQuery({ order_ID: orderId })
-    const { data: driverData, isLoading: driverLoading } = useGetAllAssignedOrdersQuery({ order_ID: orderId })
-    console.log("driversdata :", driverData)
+ const { data: assignedOrder , isLoading:ordersLoading } = useGetAssignedOrderByIdQuery({ order_ID: orderId })
+    
     console.log('assigned :', assignedOrder)
     const getLocationDetails = (loc_ID: string) => {
         const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
@@ -238,7 +136,7 @@ const BillOfLading: React.FC<AllocationsProps> = ({ allocations,orderId, allocat
                                 color: "#ffffff",
                                 zIndex: (theme) => theme.zIndex.drawer + 1,
                             }}
-                            open={ordersLoading || driverLoading}
+                            open={ordersLoading}
                         >
                             <CircularProgress color="inherit" />
                         </Backdrop>
