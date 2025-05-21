@@ -63,6 +63,7 @@ export const apiSlice = createApi({
     "DeviceMaster",
     "ProductMaster",
     "UomMaster",
+    "DockMaster",
     "CreateOrder",
     "PackagesForOrder",
     "Orders",
@@ -70,7 +71,8 @@ export const apiSlice = createApi({
     "AssignedOrders",
     "SingleVehicleMaster",
     "DataCount",
-    "ValidateRoute"
+    "ValidateRoute",
+    "DockCarrier"
   ],
   endpoints: (builder) => ({
     userLogin: builder.mutation<User, { phone: string; password: string }>({
@@ -174,6 +176,15 @@ export const apiSlice = createApi({
     getAllDriversData: builder.query({
       query: (params) => ({
         url: "driver/get-drivers",
+        method: "GET",
+        params,
+      }),
+      providesTags: [{ type: "DRIVERS", id: "LIST" }],
+    }),
+
+    getDriverData: builder.query({
+      query: (params) => ({
+        url: "driver/get-driver",
         method: "GET",
         params,
       }),
@@ -476,6 +487,42 @@ export const apiSlice = createApi({
       invalidatesTags: [{ type: "UomMaster", id: "LIST" }],
     }),
 
+    // Dock master 
+        getDockMaster: builder.query({
+      query: (params) => ({
+        url: `masterDock/all-docks`,
+        method: "GET",
+        params,
+      }),
+      providesTags: [{ type: "DockMaster", id: "LIST" }],
+    }),
+
+    postDockMaster: builder.mutation({
+      query: (body) => ({
+        url: "masterDock/create-dock",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "DockMaster", id: "LIST" }],
+    }),
+
+    editDockMaster: builder.mutation({
+      query: ({ body, dock_ID }) => ({
+        url: `masterDock/edit-dock?dock_ID=${dock_ID}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: [{ type: "DockMaster", id: "LIST" }],
+    }),
+
+    deleteDockMaster: builder.mutation({
+      query: (dock_ID) => ({
+        url: `masterDock/delete-dock?id=${dock_ID}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [{ type: "DockMaster", id: "LIST" }],
+    }),
+
     //Product Master
     getAllProducts: builder.query({
       query: (params) => ({
@@ -577,7 +624,6 @@ export const apiSlice = createApi({
           body,
         };
       },
-      // invalidatesTags: [{ type: "Orders", id: "LIST" }],
     }),
 
     confomOrder: builder.mutation({
@@ -591,6 +637,17 @@ export const apiSlice = createApi({
       invalidatesTags: [{ type: "Orders", id: "LIST" }],
     }),
 
+    editOrder: builder.mutation({
+      query: ({body, params}) => {
+        return {
+          url: "order/edit-order",
+          method: "PUT",
+          body,
+          params
+        };
+      },
+      invalidatesTags: [{ type: "Orders", id: "LIST" }],
+    }),
     getAllOrders: builder.query({
       query: (params) => ({
         url: `order/all-orders`,
@@ -745,8 +802,50 @@ export const apiSlice = createApi({
       invalidatesTags :[{type: "Orderss", id: "LIST"}]
     }),
 
-  }),
-  
+    postInitiateBidding: builder.mutation({
+      query: (body) => ({
+        url: "assignment-bid/initiate-open-bidding",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "Orders", id: "LIST" }],
+    }),
+
+      getOrderAssignedToCarrier: builder.query({
+        query: (params) => ({
+          url: `carrier-assignment/assigned-order-by-id`,
+          method: "GET",
+          params
+        }),
+        providesTags :[{type: "Orderss", id: "LIST"}]
+      }),
+
+      getDockRequests: builder.query({
+        query: (params) => ({
+          url: `carrier-assignment/get-dock-reqs`,
+          method: "GET",
+          params
+        }),
+        providesTags :[{type: "DockCarrier", id: "LIST"}]
+      }),
+        getDocksByLocationId: builder.query({
+        query: (params) => ({
+          url: `masterDock/dock`,
+          method: "GET",
+          params
+        }),
+        // providesTags :[{type: "Orderss", id: "LIST"}]
+      }),
+      editAllocateDockToCarrier: builder.mutation({
+        query: ( body ) => ({
+          url: `masterDock/allocate-dock-to-carrier`,
+          method: "PUT",
+          body,
+        }),
+        invalidatesTags: [{ type: "DockCarrier", id: "LIST" }],
+      }),
+    }), 
+
 });
 
 export const {
@@ -757,6 +856,7 @@ export const {
   useGetAllCustomersDataQuery,
   useGetAllVendorsDataQuery,
   useGetAllDriversDataQuery,
+  useGetDriverDataQuery,
   useGetFilteredDriversQuery,
   useEditBusinessPartnerMutation,
   useDeleteBusinessPartnerMutation,
@@ -791,6 +891,10 @@ export const {
   usePostUomMasterMutation,
   useEditUomMasterMutation,
   useDeleteUomMasterMutation,
+  useGetDockMasterQuery,
+  usePostDockMasterMutation,
+  useEditDockMasterMutation,
+  useDeleteDockMasterMutation,
   useGetAllProductsQuery,
   useCreateProductMutation,
   useDeleteProductMutation,
@@ -802,6 +906,7 @@ export const {
   useDeletePackageForOrderMutation,
   useEditPackageForOrderMutation,
   useConfomOrderMutation,
+  useEditOrderMutation,
   useGetAllOrdersQuery,
   useGetOrderByIdQuery,
   useUpdateShipFromDefaultLocationIdMutation,
@@ -824,4 +929,9 @@ export const {
   useGetCarrierAssignmentReqQuery,
   usePostCarrierRejectigOrderMutation,
   usePostCarrierAssigningOrderConfirmMutation,
+  usePostInitiateBiddingMutation,
+  useGetOrderAssignedToCarrierQuery,
+  useGetDockRequestsQuery,
+  useGetDocksByLocationIdQuery,
+  useEditAllocateDockToCarrierMutation,
 } = apiSlice;

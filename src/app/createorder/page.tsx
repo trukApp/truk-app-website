@@ -40,6 +40,8 @@ const CreateOrder: React.FC = () => {
     const [modalOpen, setModalOpen] = useState(false);
     const [noVechilePopup, setNoVechilePopup] = useState(false);
     const filters = useAppSelector((state) => state.auth.filters);
+const [additionalDocs, setAdditionalDocs] = useState<{ [key: string]: string }[]>([]);
+
 
     useEffect(() => {
         if (packageSelectErr) {
@@ -86,14 +88,15 @@ const CreateOrder: React.FC = () => {
             allocations: conformOrderPayload?.allocations,
             unallocated_packages: conformOrderPayload?.unallocatedPackages,
             created_at: new Date().toISOString().split("T")[0],
+            order_docs : additionalDocs
         }
-        console.log(createOrderBody)
+        console.log('createOrderBody',createOrderBody)
         setModalOpen(false);
         try {
             const response = await createOrder(createOrderBody).unwrap();
             if (response) {
                 const orderIds = response.created_orders.map((order: { order_ID: string }) => order.order_ID).join(', ');
-                setSnackbarMessage(`Order ID(s) ${orderIds} created successfully!`);
+                setSnackbarMessage(`Order ID ${orderIds} created successfully!`);
                 // setSnackbarMessage(`Order ID ${response?.order_ID} created successfully!`);
                 setSnackbarSeverity("success");
                 setSnackbarOpen(true);
@@ -140,7 +143,7 @@ const CreateOrder: React.FC = () => {
                     setNoVechilePopup(true)
                 } else {
                     setConformOrderPayload(response)
-                    console.log('response: ', response)
+                    console.log('allocated response: ', response.allocations)
                     setSelectTrucks(response?.allocations);
                     setUnAllocatedPackages(response?.unallocatedPackages)
                     setActiveStep((prev) => prev + 1);
@@ -289,7 +292,7 @@ const CreateOrder: React.FC = () => {
 
                 {activeStep === 1 && (
                     <div>
-                        <TrucksTable trucks={selectTrucks} unAllocatedPackages={unAllocatedPackages} />
+                        <TrucksTable selectedPackages={selectedPackages}  trucks={selectTrucks} unAllocatedPackages={unAllocatedPackages} />
                     </div>
                 )}
 
@@ -307,7 +310,7 @@ const CreateOrder: React.FC = () => {
 
                 {activeStep === 4 && (
                     <div>
-                        <ReviewCreateOrder trucks={selectTrucks} />
+                        <ReviewCreateOrder trucks={selectTrucks} additionalDocs={additionalDocs} setAdditionalDocs={setAdditionalDocs} />
                     </div>
                 )}
             </div>

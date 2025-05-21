@@ -953,8 +953,8 @@ const VehicleForm: React.FC = () => {
 													size="small"
 
 												>
-													<MenuItem value="Truck">Self</MenuItem>
-													<MenuItem value="Truck">Carrier</MenuItem>
+													<MenuItem value="self">Self</MenuItem>
+													<MenuItem value="carrier">Carrier</MenuItem>
 												</TextField>
 											</Grid>
 										</Grid>

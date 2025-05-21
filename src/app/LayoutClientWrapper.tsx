@@ -10,6 +10,7 @@ import theme from "@/theme";
 import { Grid, Toolbar } from "@mui/material";
 import { Session } from "next-auth";
 import ScrollToTop from "@/Components/ReusableComponents/ScrollToTop";
+import NetworkStatusModal from "@/Components/ReusableComponents/NetworkStatus";
 // import { usePathname } from "next/navigation";
 
 const LayoutClientWrapper = ({ children, session }: { children: React.ReactNode; session: Session | null; }) => {
@@ -21,6 +22,7 @@ const LayoutClientWrapper = ({ children, session }: { children: React.ReactNode;
         <SessionProvider session={session}>
             <ThemeProvider theme={theme}>
                 <CssBaseline />
+                <NetworkStatusModal />
                 <ReduxProvider>
                     <Header />
                     <Toolbar />
