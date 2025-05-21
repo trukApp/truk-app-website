@@ -25,7 +25,7 @@ import Image from "next/image";
 import AdditionalDocuments from "@/Components/CreateOrderTables/AdditionalDocuments";
 import CloseIcon from "@mui/icons-material/Close";
 import SnackbarAlert from "@/Components/ReusableComponents/SnackbarAlerts";
-import BillOfLading from "@/Components/OrderOverViewAllocations/BillOfLading";
+// import BillOfLading from "@/Components/OrderOverViewAllocations/BillOfLading";
 
 export interface OrderDoc {
 	[key: string]: string;
@@ -404,14 +404,14 @@ const OrderDetailedOverview: React.FC = () => {
 						from={from}
 					/>
 				)}
-				{orderData?.allocations && (
+				{/* {orderData?.allocations && (
 					<BillOfLading
 						allocations={orderData.allocations}
 						orderId={orderData.order_ID}
 						allocatedPackageDetails={allocatedPackageDetails}
 						from={from}
 					/>
-				)}
+				)} */}
 			</Paper>
 		</Box>
 	);
