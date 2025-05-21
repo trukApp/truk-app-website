@@ -474,7 +474,7 @@ const VehicleForm: React.FC = () => {
 		{ resetForm }: { resetForm: () => void }
 	) => {
 		try {
-			// console.log('qwerty')
+			console.log('qwerty')
 			const body = {
 				vehicles: [
 					{
@@ -574,9 +574,9 @@ const VehicleForm: React.FC = () => {
 				temp_controlled_vehicle: values.temperatureControl,
 			};
 
-			// console.log("Edit body: ", editBody)
+			console.log("Edit body: ", editBody)
 			if (isEditing && editRow) {
-				// console.log('edit api section : ', editBody)
+				console.log('edit api section : ', editBody)
 				const vehicleId = editRow.id;
 				const response = await editVehicle({
 					body: editBody,
@@ -714,7 +714,8 @@ const VehicleForm: React.FC = () => {
 								handleChange,
 								handleBlur,
 								setFieldValue,
-								resetForm
+								resetForm,
+								// handleSubmit
 							}) => (
 								<Form>
 									<Grid>
@@ -1614,6 +1615,7 @@ const VehicleForm: React.FC = () => {
 														color: "#F08C24"
 													}
 												}}
+											// onClick={() => handleSubmit()}
 											>
 												{isEditing ? "Update vehicle" : "Create vehicle"}
 											</Button>

@@ -22,10 +22,11 @@ declare module "next-auth" {
     error?: string;
   }
 }
-const refreshAccessToken = async (refreshToken: string) => { 
+const refreshAccessToken = async (refreshToken: string) => {
   try {
     const response = await fetch(
-      `https://dev-api.trukapp.com/truk/log/refresh-token`, 
+      // `https://dev-api.trukapp.com/truk/log/refresh-token`, 
+      `http://13.127.36.10:8088/truk/log/refresh-token`,
       {
         method: "POST",
         headers: {
@@ -79,7 +80,8 @@ export const options: NextAuthOptions = {
 
         try {
           const response = await fetch(
-            `https://dev-api.trukapp.com/truk/log/login`,
+            // `https://dev-api.trukapp.com/truk/log/login`,
+            `http://13.127.36.10:8088/truk/log/login`,
             {
               method: "POST",
               headers: {
@@ -135,22 +137,22 @@ export const options: NextAuthOptions = {
         return token;
       }
 
-        // Access token has expired, refresh it
+      // Access token has expired, refresh it
       console.log("refreshing please wait ....")
-          try {
+      try {
         const refreshedToken = await refreshAccessToken(
           token.refreshToken as string
         );
-            console.log("refreshedToken", refreshedToken);
+        console.log("refreshedToken", refreshedToken);
 
-            token = {
-              id: token.id,
-              accessToken: refreshedToken.accessToken,
-              accessTokenExpires: refreshedToken.accessTokenExpires,
-              refreshToken: token.refreshToken,
-              }
+        token = {
+          id: token.id,
+          accessToken: refreshedToken.accessToken,
+          accessTokenExpires: refreshedToken.accessTokenExpires,
+          refreshToken: token.refreshToken,
+        }
         return {
-          ...token, 
+          ...token,
         };
       } catch (error) {
         console.error("Failed to refresh token:", error);
@@ -176,12 +178,12 @@ export const options: NextAuthOptions = {
   },
 
   debug: process.env.NODE_ENV === "development",
-  
+
 
   session: {
     strategy: "jwt",
     maxAge: 7 * 24 * 60 * 60,
-    updateAge : 23 * 60 * 60
+    updateAge: 23 * 60 * 60
     // maxAge: 5 * 60,
     // updateAge : 1 * 60
   },
@@ -189,7 +191,7 @@ export const options: NextAuthOptions = {
   jwt: {
     secret: process.env.NEXTAUTH_SECRET,
   },
-    cookies: {
+  cookies: {
     sessionToken: {
       name: "trukapp-admin.session-token",
       options: {
