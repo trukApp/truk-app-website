@@ -16,8 +16,8 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: '/api/count-data', // frontend path
-        destination: 'http://13.127.36.10:8088/truk/data/count-data', // backend API
+        source: '/api/:path*',
+        destination: 'http://13.127.36.10:8088/truk/:path*',
       },
     ];
   },
