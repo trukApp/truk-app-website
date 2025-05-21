@@ -23,6 +23,8 @@
     "axios": "^1.8.4",
     "formik": "^2.4.6",
     "framer-motion": "^12.7.4",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.1",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.503.0",
     "moment": "^2.30.1",

@@ -61,7 +61,8 @@ interface AllocationsProps {
     allocations: Allocation[];
     orderId: string;
     allocatedPackageDetails: [];
-    from: string
+    from: string;
+    isGeneratingPDF : boolean
 }
 interface FormErrors {
     truckId?: string;
@@ -116,7 +117,7 @@ interface carrierForOrder {
     rate: string
 }
 
-const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocatedPackageDetails, from }) => {
+const Allocations: React.FC<AllocationsProps> = ({ allocations, orderId, allocatedPackageDetails, from,isGeneratingPDF }) => {
     const validationSchema = Yup.object({
         vehicleId: Yup.string().required("Vehicle id is required"),
         vehicleNumber: Yup.string().required("Vehicle number is required"),
@@ -579,7 +580,7 @@ const handleCloseAssignModal = () => {
                 onClose={() => setSnackbarOpen(false)}
             />
 
-            <Typography variant="h6" gutterBottom color="#F08C24" style={{ fontWeight: 'bold' }}>
+            <Typography variant="h6" gutterBottom color="#F08C24" style={{ fontWeight: 'bold' , marginLeft: isGeneratingPDF ? "40px" : '4px' }}>
                 Allocations
             </Typography>
 
@@ -979,7 +980,7 @@ const handleCloseAssignModal = () => {
                             )}
                         </Formik>
                     </Dialog>
-                        
+
                     <Modal open={assignModal} onClose={() => {
                         setAssignModal(false)
                         setFormData({ truckId: "", driverId: "", deviceId: "" });
@@ -1234,7 +1235,8 @@ const handleCloseAssignModal = () => {
                             )}
 
                     </Modal>
-                    <Paper key={uniqueKey} sx={{ p: 2, mb: 2 }}>
+
+                    <Paper key={uniqueKey} sx={{ p: 2, mb: 2 , marginLeft: isGeneratingPDF ? '30px': '2px' }}>
                         <Grid container alignItems="center" justifyContent="space-between">
                             <Grid item sx={{ width: '97.5%' }}>
                                 <Grid item sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 }}>
@@ -1244,10 +1246,12 @@ const handleCloseAssignModal = () => {
                                             <> | Cost: ₹{allocation?.cost?.toFixed(2)}</>
                                         )}
 
-                                    </Typography>
-                                    <Typography variant="body2" color="#F08C24" sx={{ fontSize: 11, backgroundColor: '#FCF0DE', paddingLeft: 2, paddingRight: 2, paddingTop: 0.7, paddingBottom: 0.3, borderRadius: 1.5 }}>
-                                        {order?.order?.order_status}
-                                    </Typography>
+                                        </Typography>
+                                        {!isGeneratingPDF && (
+                                            <Typography variant="body2" color="#F08C24" sx={{ fontSize: 11, backgroundColor: '#FCF0DE', paddingLeft: 2, paddingRight: 2, paddingTop: 0.7, paddingBottom: 0.3, borderRadius: 1.5 }}>
+                                            {order?.order?.order_status}
+                                        </Typography>
+                                            )}
 
                                 </Grid>
 
@@ -1265,7 +1269,7 @@ const handleCloseAssignModal = () => {
                             </Grid>
                         </Grid>
 
-                        <Collapse in={expanded[uniqueKey]} timeout="auto" unmountOnExit>
+                        <Collapse in={isGeneratingPDF || expanded[uniqueKey]} timeout="auto" unmountOnExit>
                             <Box
                                 sx={{
                                     mt: 2,
@@ -1461,7 +1465,8 @@ const handleCloseAssignModal = () => {
                                             </Grid>
                                         </Box>
                                     ))}
-                                <Box sx={{ display: "flex", justifyContent: isMobile ? "center" : "flex-end", mt: 3, gap: 3 }}>
+                                    {!isGeneratingPDF && (
+                                          <Box sx={{ display: "flex", justifyContent: isMobile ? "center" : "flex-end", mt: 3, gap: 3 }}>
                                     {!assignedOrder?.data[0]?.allocated_vehicles?.some(
                                         (vehicle: string) => vehicle === allocation.vehicle_ID
                                     ) && (
@@ -1535,6 +1540,8 @@ const handleCloseAssignModal = () => {
                                             </>
                                         )}
                                 </Box>
+                                    )}
+                              
                             </Box>
                         </Collapse>
                     </Paper></>

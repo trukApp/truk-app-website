@@ -7,11 +7,35 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import { setPackageShipTo } from '@/store/authSlice';
 import { useGetFilteredLocationsQuery, useGetLocationMasterQuery, usePostLocationMasterMutation, useUpdateShipToDefaultLocationIdMutation } from '@/api/apiSlice';
 import { Location } from '../MasterDataComponents/Locations';
-import { IShipFrom } from './CreatePackageShipFrom';
+// import { IShipFrom } from './CreatePackageShipFrom';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 import { CustomButtonFilled, CustomButtonOutlined } from '../ReusableComponents/ButtonsComponent';
+
+export interface IShipTo {
+    saveAsNewLocationId: boolean;
+    saveAsDefaultShipFromLocation: boolean;
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  contactPerson: string;
+  country: string;
+  email: string;
+  locationDescription: string;
+  locationId: string;
+  phoneNumber: string;
+  pincode: string;
+  state: string;
+  latitude: string;
+  longitude: string;
+  timeZone: string;
+  locationType: string;
+  glnCode: string;
+  iataCode: string;
+  destination_radius: string;
+  destination_radius_unit: string;
+}
 interface ShipToProps {
-    onNext: (values: IShipFrom) => void;
+    onNext: (values: IShipTo) => void;
     onBack: () => void;
 }
 
@@ -124,7 +148,7 @@ const ShipTo: React.FC<ShipToProps> = ({ onNext, onBack }) => {
 
     const handleLocationChange = (
         selectedLocationId: string,
-        setFieldValue: FormikProps<IShipFrom>['setFieldValue']
+        setFieldValue: FormikProps<IShipTo>['setFieldValue']
     ) => {
         setFieldValue("locationId", selectedLocationId);
 
@@ -206,7 +230,7 @@ const ShipTo: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                     initialValues={shipFromInitialValues}
 
                     validationSchema={validationSchema}
-                    onSubmit={async (values: IShipFrom, { setFieldValue }) => {
+                    onSubmit={async (values: IShipTo, { setFieldValue }) => {
                         const { saveAsNewLocationId, saveAsDefaultShipFromLocation, ...shipFromData } = values;
                         console.log(saveAsNewLocationId, saveAsDefaultShipFromLocation)
                         dispatch(setPackageShipTo(shipFromData))

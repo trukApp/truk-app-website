@@ -13,6 +13,7 @@ const OrderDetailedOverview: React.FC = () => {
     const { data: order, isLoading } = useGetOrderByIdQuery({ orderId });
     const orderData = order?.order;
     const allocatedPackageDetails = order?.allocated_packages_details
+    const isGeneratingPDF = (false);
 
     return (
         <Box sx={{ p: { xs: 0.2, md: 3 } }}>
@@ -38,7 +39,7 @@ const OrderDetailedOverview: React.FC = () => {
                 </Paper>
             )}
 
-            {orderData?.allocations && <Allocations allocations={orderData.allocations} orderId={orderData.order_ID} allocatedPackageDetails={allocatedPackageDetails} from={from} />}
+            {orderData?.allocations && <Allocations isGeneratingPDF={isGeneratingPDF} allocations={orderData.allocations} orderId={orderData.order_ID} allocatedPackageDetails={allocatedPackageDetails} from={from} />}
         </Box>
     );
 };
