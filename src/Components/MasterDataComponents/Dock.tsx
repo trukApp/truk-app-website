@@ -327,7 +327,7 @@ const DockForm = () => {
 			width: 130,
 			renderCell: (params) => (params.value ? "Yes" : "No"),
 		},
-		{ field: "default_carriers", headerName: "Dock Carriers", width: 250 },
+		{ field: "default_carriers", headerName: "Default Carriers", width: 250 },
 		{ field: "loc_ID", headerName: "Location ID", width: 350 },
 		{
 			field: "actions",

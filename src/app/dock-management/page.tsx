@@ -134,6 +134,13 @@ const DockManagement: React.FC = () => {
 			setDocks(dockById?.dock_details);
 		}
 	}, [dockById]);
+	let loc_ID = "",
+		loc_type = "",
+		loc_desc = "";
+
+	if (docks && docks.length > 0) {
+		({ loc_ID, loc_type, loc_desc } = docks[0]);
+	}
 	useEffect(() => {
 		if (dockRequests) {
 			console.log("dockreqs :", dockRequests.data);
@@ -272,8 +279,11 @@ const DockManagement: React.FC = () => {
 				fullWidth
 				maxWidth="sm"
 			>
-				<DialogTitle>Allocate Dock to Carrier</DialogTitle>
+				<DialogTitle color="primary">Allocate Dock to Carrier</DialogTitle>
 				<DialogContent>
+					<Typography>
+						Location : {loc_ID}, {loc_type}, {loc_desc}{" "}
+					</Typography>
 					<TextField
 						select
 						fullWidth
@@ -285,8 +295,7 @@ const DockManagement: React.FC = () => {
 					>
 						{docks.map((dock) => (
 							<MenuItem key={dock.dk_id} value={dock.dock_ID}>
-								{dock.dock_ID}, {dock?.dock_name}, {dock.loc_ID},{" "}
-								{dock.loc_type}
+								{dock.dock_ID}, {dock?.dock_name}, {dock?.dock_timings}
 							</MenuItem>
 						))}
 					</TextField>
