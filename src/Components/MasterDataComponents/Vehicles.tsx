@@ -4,7 +4,21 @@ import React, { useEffect, useRef, useState } from "react";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import {
-	TextField, Grid, Box, Typography, Checkbox, FormControlLabel, MenuItem, Button, Collapse, IconButton, Backdrop, CircularProgress, Paper, List, ListItem
+	TextField,
+	Grid,
+	Box,
+	Typography,
+	Checkbox,
+	FormControlLabel,
+	MenuItem,
+	Button,
+	Collapse,
+	IconButton,
+	Backdrop,
+	CircularProgress,
+	Paper,
+	List,
+	ListItem,
 	// ,Tooltip
 } from "@mui/material";
 import { DataGridComponent } from "../GridComponent";
@@ -12,7 +26,15 @@ import { GridColDef, GridPaginationModel } from "@mui/x-data-grid";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import styles from "./MasterData.module.css";
-import { useDeleteVehicleMasterMutation, useEditVehicleMasterMutation, useGetFilteredLocationsQuery, useGetLocationMasterQuery, useGetUomMasterQuery, useGetVehicleMasterQuery, usePostVehicleMasterMutation, } from "@/api/apiSlice";
+import {
+	useDeleteVehicleMasterMutation,
+	useEditVehicleMasterMutation,
+	useGetFilteredLocationsQuery,
+	useGetLocationMasterQuery,
+	useGetUomMasterQuery,
+	useGetVehicleMasterQuery,
+	usePostVehicleMasterMutation,
+} from "@/api/apiSlice";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MassUpload from "../MassUpload/MassUpload";
@@ -183,31 +205,50 @@ const validationSchema = Yup.object({
 
 const VehicleForm: React.FC = () => {
 	const dispatch = useDispatch();
-	const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10, });
+	const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
+		page: 0,
+		pageSize: 10,
+	});
 	const [snackbarOpen, setSnackbarOpen] = useState(false);
 	const [snackbarMessage, setSnackbarMessage] = useState("");
-	const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
+	const [snackbarSeverity, setSnackbarSeverity] = useState<
+		"success" | "error" | "warning" | "info"
+	>("success");
 	const [isEditing, setIsEditing] = useState(false);
 	const [editRow, setEditRow] = useState<VehicleFormValues | null>(null);
-	const { data, error, isLoading } = useGetVehicleMasterQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize });
-	const [postVehicle, { isLoading: postVehicleLoading }] = usePostVehicleMasterMutation();
-	const [editVehicle, { isLoading: editVehicleLoading }] = useEditVehicleMasterMutation();
-	const [deleteVehicle, { isLoading: deleteVehicleLoading }] = useDeleteVehicleMasterMutation();
+	const { data, error, isLoading } = useGetVehicleMasterQuery({
+		page: paginationModel.page + 1,
+		limit: paginationModel.pageSize,
+	});
+	const [postVehicle, { isLoading: postVehicleLoading }] =
+		usePostVehicleMasterMutation();
+	const [editVehicle, { isLoading: editVehicleLoading }] =
+		useEditVehicleMasterMutation();
+	const [deleteVehicle, { isLoading: deleteVehicleLoading }] =
+		useDeleteVehicleMasterMutation();
 	const wrapperRef = useRef<HTMLDivElement>(null);
 	const { data: locationsData } = useGetLocationMasterQuery({});
-	const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
+	const getAllLocations =
+		locationsData?.locations.length > 0 ? locationsData?.locations : [];
 
-	const [searchKey, setSearchKey] = useState('');
+	const [searchKey, setSearchKey] = useState("");
 	const [showSuggestions, setShowSuggestions] = useState(false);
-	const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
-	const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
-	const { data: uom, error: uomErr } = useGetUomMasterQuery([])
+	const { data: filteredLocations, isLoading: filteredLocationLoading } =
+		useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, {
+			skip: searchKey.length < 3,
+		});
+	const displayLocations = searchKey
+		? filteredLocations?.results || []
+		: getAllLocations;
+	const { data: uom, error: uomErr } = useGetUomMasterQuery([]);
 	if (uomErr) {
-		console.log("uom err:", uomErr)
+		console.log("uom err:", uomErr);
 	}
 	useEffect(() => {
 		if (uom && uom.uomList) {
-			const unitsofMeasure = uom.uomList.map((item: { unit_name: string }) => item.unit_name);
+			const unitsofMeasure = uom.uomList.map(
+				(item: { unit_name: string }) => item.unit_name
+			);
 			dispatch(setUnitsofMeasurement(unitsofMeasure));
 		}
 
@@ -218,7 +259,10 @@ const VehicleForm: React.FC = () => {
 
 	useEffect(() => {
 		function handleClickOutside(event: MouseEvent) {
-			if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+			if (
+				wrapperRef.current &&
+				!wrapperRef.current.contains(event.target as Node)
+			) {
 				setShowSuggestions(false);
 			}
 		}
@@ -231,7 +275,9 @@ const VehicleForm: React.FC = () => {
 		console.log("err in loading vehicles data :", error);
 	}
 	const getLocationDetails = (loc_ID: string) => {
-		const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
+		const location = getAllLocations.find(
+			(loc: Location) => loc.loc_ID === loc_ID
+		);
 		if (!location) return "Location details not available";
 		const details = [
 			location.loc_ID,
@@ -241,13 +287,17 @@ const VehicleForm: React.FC = () => {
 			location.pincode,
 		].filter(Boolean);
 
-		return details.length > 0 ? details.join(", ") : "Location details not available";
+		return details.length > 0
+			? details.join(", ")
+			: "Location details not available";
 	};
 	const vehiclesMaster = data?.vehicles;
 	const unitsofMeasurement = useSelector(
 		(state: RootState) => state.auth.unitsofMeasurement
 	);
-	const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
+	const handlePaginationModelChange = (
+		newPaginationModel: GridPaginationModel
+	) => {
 		setPaginationModel(newPaginationModel);
 	};
 	const [showForm, setShowForm] = useState(false);
@@ -267,35 +317,35 @@ const VehicleForm: React.FC = () => {
 		payloadWeight: "",
 		payloadWeightUnits: unitsofMeasurement[0],
 		cubicCapacity: "",
-		cubicCapacityUnits: 'm^3',
+		cubicCapacityUnits: "m^3",
 		interiorLength: "",
-		interiorLengthUnits: 'm',
+		interiorLengthUnits: "m",
 		interiorWidth: "",
-		interiorWidthUnits: 'm',
+		interiorWidthUnits: "m",
 		interiorHeight: "",
-		interiorHeightUnits: 'm',
+		interiorHeightUnits: "m",
 		tareWeight: "",
 		tareWeightUnits: unitsofMeasurement[0],
 		maxGrossWeight: "",
 		maxGrossWeightUnits: unitsofMeasurement[0],
 		tareVolume: "",
-		tareVolumeUnits: 'm^3',
+		tareVolumeUnits: "m^3",
 		maxLength: "",
-		maxLengthUnits: 'm',
+		maxLengthUnits: "m",
 		maxWidth: "",
-		maxWidthUnits: 'm',
+		maxWidthUnits: "m",
 		maxHeight: "",
-		maxHeightUnits: 'm',
+		maxHeightUnits: "m",
 		platformHeight: "",
-		platformHeightUnits: 'm',
+		platformHeightUnits: "m",
 		topDeckHeight: "",
-		topDeckHeightUnits: 'm',
+		topDeckHeightUnits: "m",
 		doorWidth: "",
-		doorWidthUnits: 'm',
+		doorWidthUnits: "m",
 		doorHeight: "",
-		doorHeightUnits: 'm',
+		doorHeightUnits: "m",
 		doorLength: "",
-		doorLengthUnits: 'm',
+		doorLengthUnits: "m",
 		avgCost: "",
 		downtimeStart: "",
 		downtimeEnd: "",
@@ -305,13 +355,13 @@ const VehicleForm: React.FC = () => {
 		fragileGoods: false,
 		dangerousGoods: false,
 		temperatureControl: false,
-		hazardousStorage: false
+		hazardousStorage: false,
 	};
 
 	const [initialValues, setInitialValues] = useState(initialFormValues);
 	useEffect(() => {
 		if (editRow) {
-			console.log('edit row :', editRow)
+			console.log("edit row :", editRow);
 			const editPayloadWeight = editRow.payloadWeight.split(" ");
 			const editCubicCapacity = editRow?.cubicCapacity.split(" ");
 			const editInteriorLength = editRow.interiorLength.split(" ");
@@ -323,8 +373,10 @@ const VehicleForm: React.FC = () => {
 			const editMaxLength = editRow.maxLength.split(" ");
 			const editMaxWidth = editRow.maxWidth.split(" ");
 			const editMaxHeight = editRow.maxHeight.split(" ");
-			const locId = editRow?.locationId ? editRow.locationId.split(", ")[0] ?? "" : "";
-			setSearchKey(editRow?.locationId)
+			const locId = editRow?.locationId
+				? editRow.locationId.split(", ")[0] ?? ""
+				: "";
+			setSearchKey(editRow?.locationId);
 			setInitialValues(() => ({
 				id: "",
 				vehicleId: editRow?.vehicleId,
@@ -378,7 +430,7 @@ const VehicleForm: React.FC = () => {
 				fragileGoods: editRow.fragileGoods,
 				dangerousGoods: editRow.dangerousGoods,
 				temperatureControl: editRow.temperatureControl,
-				hazardousStorage: editRow.hazardousStorage
+				hazardousStorage: editRow.hazardousStorage,
 			}));
 		}
 	}, [editRow]);
@@ -389,7 +441,8 @@ const VehicleForm: React.FC = () => {
 		locationId: getLocationDetails(vehicle.loc_ID),
 		timeZone: vehicle.time_zone,
 		unlimitedUsage: vehicle?.unlimited_usage,
-		individualResources: vehicle?.individual_resource == null ? '' : vehicle?.individual_resource,
+		individualResources:
+			vehicle?.individual_resource == null ? "" : vehicle?.individual_resource,
 		validityFrom: vehicle.transportation_details.validity_from,
 		validityTo: vehicle.transportation_details.validity_to,
 		vehicleType: vehicle.transportation_details.vehicle_type,
@@ -428,8 +481,17 @@ const VehicleForm: React.FC = () => {
 		{ field: "vehicleId", headerName: "Vehicle ID", width: 150 },
 		{ field: "locationId", headerName: "Location", width: 250 },
 		{ field: "timeZone", headerName: "Time Zone", width: 100 },
-		{ field: "unlimitedUsage", headerName: "Unlimited Usage", width: 80, type: "boolean", },
-		{ field: "individualResources", headerName: "Individual Resources", width: 80 },
+		{
+			field: "unlimitedUsage",
+			headerName: "Unlimited Usage",
+			width: 80,
+			type: "boolean",
+		},
+		{
+			field: "individualResources",
+			headerName: "Individual Resources",
+			width: 80,
+		},
 		{ field: "validityFrom", headerName: "Validity From", width: 100 },
 		{ field: "validityTo", headerName: "Validity To", width: 100 },
 		{ field: "vehicleType", headerName: "Vehicle Type", width: 150 },
@@ -449,7 +511,11 @@ const VehicleForm: React.FC = () => {
 		{ field: "downtimeStart", headerName: "Downtime Start", width: 120 },
 		{ field: "downtimeEnd", headerName: "Downtime End", width: 120 },
 		{ field: "downtimeLocation", headerName: "Downtime Location", width: 200 },
-		{ field: "downtimeDescription", headerName: "Downtime Description", width: 250 },
+		{
+			field: "downtimeDescription",
+			headerName: "Downtime Description",
+			width: 250,
+		},
 		{ field: "downtimeReason", headerName: "Downtime Reason", width: 200 },
 		{ field: "avgCost", headerName: "Average Cost (Rs.)", width: 150 },
 		{
@@ -474,13 +540,15 @@ const VehicleForm: React.FC = () => {
 		{ resetForm }: { resetForm: () => void }
 	) => {
 		try {
-			console.log('qwerty')
+			console.log("qwerty");
 			const body = {
 				vehicles: [
 					{
 						loc_ID: values.locationId,
 						unlimited_usage: `${values.unlimitedUsage ? 1 : 0}`,
-						individual_resource: `${values.unlimitedUsage ? null : values.individualResources}`,
+						individual_resource: `${
+							values.unlimitedUsage ? null : values.individualResources
+						}`,
 						transportation_details: {
 							validity_from: values.validityFrom,
 							validity_to: values.validityTo,
@@ -529,7 +597,9 @@ const VehicleForm: React.FC = () => {
 			const editBody = {
 				loc_ID: values.locationId,
 				unlimited_usage: `${values.unlimitedUsage ? 1 : 0}`,
-				individual_resource: `${values.unlimitedUsage ? null : values.individualResources}`,
+				individual_resource: `${
+					values.unlimitedUsage ? null : values.individualResources
+				}`,
 				transportation_details: {
 					validity_from: values.validityFrom,
 					validity_to: values.validityTo,
@@ -574,35 +644,38 @@ const VehicleForm: React.FC = () => {
 				temp_controlled_vehicle: values.temperatureControl,
 			};
 
-			console.log("Edit body: ", editBody)
+			console.log("Edit body: ", editBody);
 			if (isEditing && editRow) {
-				console.log('edit api section : ', editBody)
+				console.log("edit api section : ", editBody);
 				const vehicleId = editRow.id;
 				const response = await editVehicle({
 					body: editBody,
 					vehicleId,
 				}).unwrap();
 				if (response?.updated_record) {
-					setSnackbarMessage(`Vehicle ID ${response.updated_record} updated successfully!`);
+					setSnackbarMessage(
+						`Vehicle ID ${response.updated_record} updated successfully!`
+					);
 					resetForm();
-					setShowForm(false)
-					setIsEditing(false)
+					setShowForm(false);
+					setIsEditing(false);
 					setSnackbarSeverity("success");
 					setSnackbarOpen(true);
-					setSearchKey('')
+					setSearchKey("");
 				}
-
 			} else {
 				// console.log('post api section : ', body)
 				const response = await postVehicle(body).unwrap();
 				if (response?.created_records) {
-					setSnackbarMessage(`Vehicle ID ${response.created_records[0]} created successfully!`);
+					setSnackbarMessage(
+						`Vehicle ID ${response.created_records[0]} created successfully!`
+					);
 					resetForm();
-					setShowForm(false)
-					setIsEditing(false)
+					setShowForm(false);
+					setIsEditing(false);
 					setSnackbarSeverity("success");
 					setSnackbarOpen(true);
-					setSearchKey('')
+					setSearchKey("");
 				}
 			}
 		} catch (error) {
@@ -612,8 +685,8 @@ const VehicleForm: React.FC = () => {
 			setSnackbarOpen(true);
 			setShowForm(false);
 			resetForm();
-			setIsEditing(false)
-			setSearchKey('')
+			setIsEditing(false);
+			setSearchKey("");
 		}
 	};
 
@@ -632,7 +705,9 @@ const VehicleForm: React.FC = () => {
 			return;
 		}
 
-		const confirmed = window.confirm("Are you sure you want to delete this vehicle?");
+		const confirmed = window.confirm(
+			"Are you sure you want to delete this vehicle?"
+		);
 		if (!confirmed) {
 			return;
 		}
@@ -640,7 +715,9 @@ const VehicleForm: React.FC = () => {
 		try {
 			const response = await deleteVehicle(vehicleId);
 			if (response.data.deleted_record) {
-				setSnackbarMessage(`Vehicle ID ${response.data.deleted_record} deleted successfully!`);
+				setSnackbarMessage(
+					`Vehicle ID ${response.data.deleted_record} deleted successfully!`
+				);
 				setSnackbarSeverity("info");
 				setSnackbarOpen(true);
 			}
@@ -662,7 +739,6 @@ const VehicleForm: React.FC = () => {
 				open={postVehicleLoading || editVehicleLoading || deleteVehicleLoading}
 			>
 				<CircularProgress color="inherit" />
-
 			</Backdrop>
 			<SnackbarAlert
 				open={snackbarOpen}
@@ -724,7 +800,7 @@ const VehicleForm: React.FC = () => {
 											1. General Data
 										</Typography>
 										<Grid container spacing={2}>
-											{isEditing &&
+											{isEditing && (
 												<Grid item xs={12} sm={6} md={2.4}>
 													<TextField
 														fullWidth
@@ -736,7 +812,8 @@ const VehicleForm: React.FC = () => {
 														size="small"
 														disabled
 													/>
-												</Grid>}
+												</Grid>
+											)}
 											<Grid item xs={12} sm={6} md={2.4}>
 												<TextField
 													fullWidth
@@ -754,14 +831,19 @@ const VehicleForm: React.FC = () => {
 														setShowSuggestions(true);
 													}}
 													value={searchKey}
-													error={touched?.locationId && Boolean(errors?.locationId)}
+													error={
+														touched?.locationId && Boolean(errors?.locationId)
+													}
 													helperText={
-														touched?.locationId && typeof errors?.locationId === "string"
+														touched?.locationId &&
+														typeof errors?.locationId === "string"
 															? errors.locationId
 															: ""
 													}
 													InputProps={{
-														endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
+														endAdornment: filteredLocationLoading ? (
+															<CircularProgress size={20} />
+														) : null,
 													}}
 												/>
 												<div ref={wrapperRef} style={{ position: "relative" }}>
@@ -784,13 +866,21 @@ const VehicleForm: React.FC = () => {
 																			setShowSuggestions(false);
 																			const selectedDisplay = `${location.loc_ID},${location?.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
 																			setSearchKey(selectedDisplay);
-																			setFieldValue("locationId", location.loc_ID);
-																			setFieldValue("timeZone", location.time_zone);
+																			setFieldValue(
+																				"locationId",
+																				location.loc_ID
+																			);
+																			setFieldValue(
+																				"timeZone",
+																				location.time_zone
+																			);
 																		}}
 																		sx={{ cursor: "pointer" }}
 																	>
 																		<span style={{ fontSize: "13px" }}>
-																			{location.loc_ID},{location.loc_desc}, {location.city}, {location.state}, {location.pincode}
+																			{location.loc_ID},{location.loc_desc},{" "}
+																			{location.city}, {location.state},{" "}
+																			{location.pincode}
 																		</span>
 																	</ListItem>
 																))}
@@ -823,7 +913,7 @@ const VehicleForm: React.FC = () => {
 																setFieldValue("unlimitedUsage", checked);
 																if (checked) {
 																	setFieldValue("individualResources", null);
-																	setFieldValue("individualResources", '');
+																	setFieldValue("individualResources", "");
 																}
 															}}
 														/>
@@ -839,24 +929,37 @@ const VehicleForm: React.FC = () => {
 														label="Individual Resources*"
 														name="individualResources"
 														type="number"
-														value={!values.unlimitedUsage ? values.individualResources : ""}
+														value={
+															!values.unlimitedUsage
+																? values.individualResources
+																: ""
+														}
 														onChange={(e) => {
 															const inputValue = e.target.value;
 															const numericValue = Number(inputValue);
 
 															if (numericValue > 0 || inputValue === "") {
-																setFieldValue("individualResources", inputValue ? numericValue : "");
+																setFieldValue(
+																	"individualResources",
+																	inputValue ? numericValue : ""
+																);
 															}
 														}}
 														onBlur={handleBlur}
 														size="small"
-														error={touched.individualResources && Boolean(errors.individualResources)}
-														helperText={touched.individualResources && errors.individualResources}
+														error={
+															!values.unlimitedUsage &&
+															touched.individualResources &&
+															Boolean(errors.individualResources)
+														}
+														helperText={
+															!values.unlimitedUsage &&
+															touched.individualResources &&
+															errors.individualResources
+														}
 													/>
 												</Grid>
 											)}
-
-
 										</Grid>
 
 										{/* Transportation Details */}
@@ -874,10 +977,16 @@ const VehicleForm: React.FC = () => {
 													value={values.validityFrom}
 													onChange={handleChange}
 													onBlur={handleBlur}
-													error={touched.validityFrom && Boolean(errors.validityFrom)}
-													helperText={touched.validityFrom && errors.validityFrom}
+													error={
+														touched.validityFrom && Boolean(errors.validityFrom)
+													}
+													helperText={
+														touched.validityFrom && errors.validityFrom
+													}
 													InputLabelProps={{ shrink: true }}
-													inputProps={{ max: new Date().toISOString().split("T")[0] }}
+													inputProps={{
+														max: new Date().toISOString().split("T")[0],
+													}}
 												/>
 											</Grid>
 											<Grid item xs={12} sm={6} md={2.4}>
@@ -887,21 +996,17 @@ const VehicleForm: React.FC = () => {
 													label="Validity To*"
 													name="validityTo"
 													type="date"
-													value={
-														values.validityTo
-
-													}
+													value={values.validityTo}
 													onChange={handleChange}
 													onBlur={handleBlur}
 													error={
-														touched.validityTo &&
-														Boolean(errors.validityTo)
+														touched.validityTo && Boolean(errors.validityTo)
 													}
-													helperText={
-														touched.validityTo && errors.validityTo
-													}
+													helperText={touched.validityTo && errors.validityTo}
 													InputLabelProps={{ shrink: true }}
-													inputProps={{ min: new Date().toISOString().split("T")[0] }}
+													inputProps={{
+														min: new Date().toISOString().split("T")[0],
+													}}
 												/>
 											</Grid>
 											<Grid item xs={12} sm={6} md={2.4}>
@@ -912,7 +1017,9 @@ const VehicleForm: React.FC = () => {
 													value={values.vehicleType}
 													onChange={handleChange}
 													onBlur={handleBlur}
-													error={touched.vehicleType && Boolean(errors.vehicleType)}
+													error={
+														touched.vehicleType && Boolean(errors.vehicleType)
+													}
 													helperText={touched.vehicleType && errors.vehicleType}
 													size="small"
 													select
@@ -921,7 +1028,6 @@ const VehicleForm: React.FC = () => {
 													<MenuItem value="Truck">Van</MenuItem>
 													<MenuItem value="Trailer">Trailer</MenuItem>
 													<MenuItem value="Container">Container</MenuItem>
-
 												</TextField>
 											</Grid>
 											<Grid item xs={12} sm={6} md={2.4}>
@@ -943,7 +1049,8 @@ const VehicleForm: React.FC = () => {
 											</Grid>
 											<Grid item xs={12} sm={6} md={2.4}>
 												<TextField
-													fullWidth select
+													fullWidth
+													select
 													label="Ownership*"
 													name="ownership"
 													value={values.ownership}
@@ -952,7 +1059,6 @@ const VehicleForm: React.FC = () => {
 													error={touched.ownership && Boolean(errors.ownership)}
 													helperText={touched.ownership && errors.ownership}
 													size="small"
-
 												>
 													<MenuItem value="self">Self</MenuItem>
 													<MenuItem value="carrier">Carrier</MenuItem>
@@ -1460,13 +1566,13 @@ const VehicleForm: React.FC = () => {
 													label="Start From"
 													name="downtimeStart"
 													type="date"
-													value={
-														values.downtimeStart
-													}
+													value={values.downtimeStart}
 													onChange={handleChange}
 													onBlur={handleBlur}
 													InputLabelProps={{ shrink: true }}
-													inputProps={{ min: new Date().toISOString().split("T")[0] }}
+													inputProps={{
+														min: new Date().toISOString().split("T")[0],
+													}}
 												/>
 											</Grid>
 
@@ -1477,13 +1583,13 @@ const VehicleForm: React.FC = () => {
 													label="Ends at"
 													name="downtimeEnd"
 													type="date"
-													value={
-														values.downtimeEnd
-													}
+													value={values.downtimeEnd}
 													onChange={handleChange}
 													onBlur={handleBlur}
 													InputLabelProps={{ shrink: true }}
-													inputProps={{ min: new Date().toISOString().split("T")[0] }}
+													inputProps={{
+														min: new Date().toISOString().split("T")[0],
+													}}
 												/>
 											</Grid>
 
@@ -1521,8 +1627,7 @@ const VehicleForm: React.FC = () => {
 													onChange={handleChange}
 													onBlur={handleBlur}
 													size="small"
-												>
-												</TextField>
+												></TextField>
 											</Grid>
 										</Grid>
 
@@ -1559,7 +1664,9 @@ const VehicleForm: React.FC = () => {
 														<Checkbox
 															name="fragileGoods"
 															checked={values.fragileGoods}
-															onChange={(e) => setFieldValue("fragileGoods", e.target.checked)}
+															onChange={(e) =>
+																setFieldValue("fragileGoods", e.target.checked)
+															}
 														/>
 													}
 													label="Fragile Goods"
@@ -1571,7 +1678,12 @@ const VehicleForm: React.FC = () => {
 														<Checkbox
 															name="dangerousGoods"
 															checked={values.dangerousGoods}
-															onChange={(e) => setFieldValue("dangerousGoods", e.target.checked)}
+															onChange={(e) =>
+																setFieldValue(
+																	"dangerousGoods",
+																	e.target.checked
+																)
+															}
 														/>
 													}
 													label="Dangerous Goods"
@@ -1583,7 +1695,12 @@ const VehicleForm: React.FC = () => {
 														<Checkbox
 															name="hazardousStorage"
 															checked={values.hazardousStorage}
-															onChange={(e) => setFieldValue("hazardousStorage", e.target.checked)}
+															onChange={(e) =>
+																setFieldValue(
+																	"hazardousStorage",
+																	e.target.checked
+																)
+															}
 														/>
 													}
 													label="Hazardous Substance Storage"
@@ -1595,7 +1712,12 @@ const VehicleForm: React.FC = () => {
 														<Checkbox
 															name="temperatureControl"
 															checked={values.temperatureControl}
-															onChange={(e) => setFieldValue("temperatureControl", e.target.checked)}
+															onChange={(e) =>
+																setFieldValue(
+																	"temperatureControl",
+																	e.target.checked
+																)
+															}
 														/>
 													}
 													label="Temperature control"
@@ -1612,10 +1734,10 @@ const VehicleForm: React.FC = () => {
 													color: "#fff",
 													"&:hover": {
 														backgroundColor: "#fff",
-														color: "#F08C24"
-													}
+														color: "#F08C24",
+													},
 												}}
-											// onClick={() => handleSubmit()}
+												// onClick={() => handleSubmit()}
 											>
 												{isEditing ? "Update vehicle" : "Create vehicle"}
 											</Button>
@@ -1628,7 +1750,7 @@ const VehicleForm: React.FC = () => {
 													setIsEditing(false);
 													setEditRow(null);
 													resetForm();
-													setSearchKey('')
+													setSearchKey("");
 												}}
 												style={{ marginLeft: "10px" }}
 											>

@@ -287,6 +287,7 @@ const DeviceMaster: React.FC = () => {
 			.matches(/^\d+$/, "SIM IMEI Number must be numeric")
 			.required("SIM IMEI Number is required"),
 		vehicleNumber: Yup.string().required("Vehicle Number is required"),
+		carrierId: Yup.string().required("Carrier ID is required"),
 	});
 
 	const formik = useFormik<DeviceMasterValues>({
