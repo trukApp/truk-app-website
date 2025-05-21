@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import LayoutClientWrapper from "./LayoutClientWrapper";
+// import { options } from "./api/auth/[...nextauth]/options";
 import { options } from "./api/auth/[...nextauth]/options";
 import { getServerSession } from "next-auth";
 
