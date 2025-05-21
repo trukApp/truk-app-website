@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { GoogleMap, Marker, useLoadScript, DirectionsRenderer } from '@react-google-maps/api';
-import { Box, Button, FormControl, InputLabel, Typography, Select, MenuItem, } from '@mui/material';
+import { Box, Button, FormControl, InputLabel, Typography, Select, MenuItem, Card, CardContent, } from '@mui/material';
 import Image from 'next/image';
 
 interface RoutePoint {
@@ -43,7 +43,7 @@ export interface RootOptimizationType {
 
 
 const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
-    // console.log('rootOptimization:', rootOptimization);
+    console.log('rootOptimization:', rootOptimization);
     const { isLoaded, loadError } = useLoadScript({ googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '' });
     // const [selectedVehicle, setSelectedVehicle] = useState<string>(rootOptimization[0]?.vehicle_ID || '');
     const [selectedVehicle, setSelectedVehicle] = useState(() =>
@@ -383,44 +383,70 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
                     <strong>Stop {index + 1}</strong>: {stop.location}
                 </Box>
             ))}
-            <Button
-                variant="contained"
-                onClick={showReturnRoute ? clearReturnRoute : fetchReturnRoute}
-                sx={{ marginBottom: 2 }}
+            <Box
+                display="flex"
+                flexWrap="wrap"
+                alignItems="center"
+                gap={2}
+                mb={2}
             >
-                {showReturnRoute ? 'Show All Routes' : 'Show Return Route to Starting Point'}
-            </Button>
-            {alternateRoutes.length > 0 && (
-                <FormControl
-                    sx={{
-                        minWidth: 300,
-                        width: { xs: '100%', sm: 'auto' },
-                        ml: '10px',
-                        mb: '10px',
-                    }}
-                    size="medium">
-                    <InputLabel>Select a Route</InputLabel>
-                    <Select
-                        value={selectedRouteIndex ?? ''}
-                        onChange={(e) => handleRouteSelection(Number(e.target.value))}
-                        displayEmpty
-                    >
-                        <MenuItem value="" disabled>
-                            Select a Route
-                        </MenuItem>
-                        {alternateRoutes.map((result, index) => {
-                            const route = result.routes[0];
-                            const distance = route?.legs?.[0]?.distance?.text || 'N/A';
-                            const duration = route?.legs?.[0]?.duration?.text || 'N/A';
-                            return (
-                                <MenuItem key={index} value={index}>
-                                    Route {index + 1}: {distance} - {duration}
-                                </MenuItem>
-                            );
-                        })}
-                    </Select>
-                </FormControl>
-            )}
+                <Button
+                    variant="contained"
+                    onClick={showReturnRoute ? clearReturnRoute : fetchReturnRoute}
+                >
+                    {showReturnRoute ? 'Show All Routes' : 'Show Return Route to Starting Point'}
+                </Button>
+
+                {alternateRoutes.length > 0 && (
+                    <FormControl sx={{ minWidth: 300 }} size="medium">
+                        <InputLabel>Select a Route</InputLabel>
+                        <Select
+                            value={selectedRouteIndex ?? ''}
+                            onChange={(e) => handleRouteSelection(Number(e.target.value))}
+                            displayEmpty
+                        >
+                            <MenuItem value="" disabled>
+                                Select a Route
+                            </MenuItem>
+                            {alternateRoutes.map((result, index) => {
+                                const route = result.routes[0];
+                                const distance = route?.legs?.[0]?.distance?.text || 'N/A';
+                                const duration = route?.legs?.[0]?.duration?.text || 'N/A';
+                                return (
+                                    <MenuItem key={index} value={index}>
+                                        Route {index + 1}: {distance} - {duration}
+                                    </MenuItem>
+                                );
+                            })}
+                        </Select>
+                    </FormControl>
+                )}
+
+                {alternateRoutes.length === 0 && (() => {
+                    const totalDistance = selectedVehicleData?.route?.reduce((acc, route) => {
+                        const distanceValue = parseFloat(route?.distance?.replace(/[^\d.]/g, '') || '0');
+                        return acc + distanceValue;
+                    }, 0) ?? 0;
+
+                    const totalDurationMinutes = selectedVehicleData?.route?.reduce((acc, route) => {
+                        const durationText = route?.duration || '0h 0m';
+                        const [hours = 0, minutes = 0] = durationText.match(/\d+/g)?.map(Number) ?? [0, 0];
+                        return acc + (hours * 60 + minutes);
+                    }, 0) ?? 0;
+
+                    const totalHours = Math.floor(totalDurationMinutes / 60);
+                    const remainingMinutes = totalDurationMinutes % 60;
+
+                    return (
+                        <Card variant="outlined" sx={{ minWidth: 200 }}>
+                            <CardContent>
+                                <Typography variant="subtitle1">Duration: {totalHours}h {remainingMinutes}m</Typography>
+                                <Typography variant="subtitle1">Distance: {totalDistance} km</Typography>
+                            </CardContent>
+                        </Card>
+                    );
+                })()}
+            </Box>
             <GoogleMap
                 mapContainerStyle={{ width: '100%', height: '500px' }}
                 zoom={6}
@@ -627,13 +653,16 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
                             <Marker
                                 key={index}
                                 position={{ lat: route?.end?.latitude, lng: route?.end?.longitude }}
-                                // label={{
-                                //     text: `S${index + 1}`,
-                                //     color: 'white',
-                                //     fontSize: '14px',
-                                //     fontWeight: 'bold',
-                                // }}
-                                icon={{ url: '/midpoint.svg' }}
+                                label={{
+                                    text: `P${index + 1}`,
+                                    color: 'white',
+                                    fontSize: '14px',
+                                    fontWeight: 'bold',
+                                }}
+                            // icon={{
+                            //     url: '/midpoint.svg',
+                            //     scaledSize: new window.google.maps.Size(40, 40),
+                            // }}
                             />
                         ))}
                         {directionsResults?.map((result, index) => (
@@ -650,51 +679,6 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
 
                             />
                         ))}
-                        {/* <div
-                            style={{
-                                position: 'absolute',
-                                bottom: '10px',
-                                left: '50%',
-                                transform: 'translateX(-50%)',
-                                backgroundColor: '#fff',
-                                padding: '8px',
-                                borderRadius: '8px',
-                                border: '1px solid #ccc',
-                                display: 'flex',
-                                alignItems: 'center',
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                                fontSize: '12px',
-                                fontWeight: '500',
-                            }}
-                        >
-                            <div>
-                                <div>
-                                    {(() => {
-                                        const totalDistance = selectedVehicleData?.route?.reduce((acc, route) => {
-                                            const distanceValue = parseFloat(route?.distance?.replace(/[^\d.]/g, '') || '0');
-                                            return acc + distanceValue;
-                                        }, 0) ?? 0;
-
-                                        const totalDurationMinutes = selectedVehicleData?.route?.reduce((acc, route) => {
-                                            const durationText = route?.duration || '0h 0m';
-                                            const [hours = 0, minutes = 0] = durationText.match(/\d+/g)?.map(Number) ?? [0, 0];
-                                            return acc + (hours * 60 + minutes);
-                                        }, 0) ?? 0;
-
-                                        const totalHours = Math.floor(totalDurationMinutes / 60);
-                                        const remainingMinutes = totalDurationMinutes % 60;
-
-                                        return (
-                                            <div>
-                                                <div>🕒 {totalHours}h {remainingMinutes}m</div>
-                                                <div>{totalDistance} km</div>
-                                            </div>
-                                        );
-                                    })()}
-                                </div>
-
-                            </div>
-                        </div>  */}
                     </>
                 )}
             </GoogleMap>
