@@ -55,10 +55,10 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
     const [selectionModel, setSelectionModel] = useState<number[]>([]);
     const { data: locationsData } = useGetLocationMasterQuery({})
+     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
     const { data: productsData } = useGetAllProductsQuery({})
     const allProductsData = productsData?.products || [];
     const { data: packagesData } = useGetPackageMasterQuery({})
-    const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
     const getAllPackages = packagesData?.packages.length > 0 ? packagesData?.packages : []
 
     const unorderedPackages = allPackagesData.filter(

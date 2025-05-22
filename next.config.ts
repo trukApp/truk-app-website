@@ -1,7 +1,26 @@
+// /** @type {import('next').NextConfig} */
+// const nextConfig = {
+//   images: {
+//     domains: ["trukapp.s3.ap-south-1.amazonaws.com"],
+//   },
+// };
+
+// module.exports = nextConfig;
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
     domains: ["trukapp.s3.ap-south-1.amazonaws.com"],
+  },
+
+  async rewrites() {
+    return [
+      // Rewrite API calls except for /api/auth/*
+      {
+        source: '/api/:path((?!auth).*)',  // Regex negative lookahead to exclude 'auth'
+        destination: 'http://13.127.36.10:8088/truk/:path*',
+      },
+    ];
   },
 };
 

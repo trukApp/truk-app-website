@@ -1,4 +1,213 @@
 
+// import type { NextAuthOptions } from "next-auth";
+// import CredentialsProvider from "next-auth/providers/credentials";
+
+// declare module "next-auth" {
+//   interface User {
+//     id: string;
+//     accessToken: string;
+//     refreshToken: string;
+//   }
+
+//   interface Session {
+//     user: User;
+//     error: string;
+//   }
+
+//   interface JWT {
+//     id: string;
+//     accessToken: string;
+//     refreshToken: string;
+//     accessTokenExpires: number;
+//     error?: string;
+//   }
+// }
+// const refreshAccessToken = async (refreshToken: string) => {
+//   try {
+//     const response = await fetch(
+//       // `https://dev-api.trukapp.com/truk/log/refresh-token`, 
+//       `http://13.127.36.10:8088/truk/log/refresh-token`,
+//       {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify({ refreshToken }),
+//       }
+//     );
+
+//     if (!response.ok) {
+//       console.log("refresh token err :", response.statusText);
+//       throw new Error(`Failed to refresh access token: ${response.statusText}`);
+//     }
+
+//     const data = await response.json();
+//     return {
+//       accessToken: data.accessToken,
+//       refreshToken: refreshToken,
+//       accessTokenExpires: Date.now() + 24 * 60 * 60 * 1000,
+//     };
+//   } catch (error) {
+//     console.error("Refresh token error:", error);
+//     return {
+//       error: "RefreshAccessTokenError",
+//     };
+//   }
+// };
+
+// export const options: NextAuthOptions = {
+//   providers: [
+//     CredentialsProvider({
+//       name: "Credentials",
+//       credentials: {
+//         email: {
+//           label: "Email",
+//           type: "text",
+//           placeholder: "Enter your email number",
+//         },
+//         password: {
+//           label: "Password",
+//           type: "password",
+//           placeholder: "Enter your password",
+//         },
+//       },
+//       async authorize(credentials) {
+//         if (!credentials?.email) {
+//           throw new Error("Email is required");
+//         } else if (!credentials?.password) {
+//           throw new Error("Password is required");
+//         }
+
+//         try {
+//           const response = await fetch(
+//             // `https://dev-api.trukapp.com/truk/log/login`,
+//             `http://13.127.36.10:8088/truk/log/login`,
+//             {
+//               method: "POST",
+//               headers: {
+//                 "Content-Type": "application/json",
+//               },
+//               body: JSON.stringify({
+//                 email: credentials.email,
+//                 password: credentials.password,
+//               }),
+//             }
+//           );
+//           console.log("login response :", response);
+//           if (response.status === 404) {
+//             throw new Error("You dont have an account to login");
+//           } else if (response.status === 500) {
+//             throw new Error("Internal server occured , try after sometime...");
+//           }
+//           const user = await response.json();
+//           console.log("user is :", user);
+//           if (user && user.accessToken) {
+//             return {
+//               id: user.profile_id,
+//               accessToken: user.accessToken,
+//               refreshToken: user.refreshToken,
+//             };
+//           }
+
+//           throw new Error("Check the password you have entered");
+//         } catch (error) {
+//           console.error("Login error:", error);
+//           throw error;
+//         }
+//       },
+//     }),
+//   ],
+
+//   callbacks: {
+//     async jwt({ token, user }) {
+//       // Initial sign-in
+//       if (user) {
+//         console.log("initial USER :", user)
+//         return {
+//           id: user.id,
+//           accessToken: user.accessToken,
+//           refreshToken: user.refreshToken,
+//           accessTokenExpires: Date.now() + 24 * 60 * 60 * 1000, //1 day
+//         };
+//       }
+
+//       const expiryToken = token.accessTokenExpires as number;
+//       console.log("token expires in milli secs:", expiryToken - Date.now());
+//       if (Date.now() < expiryToken) {
+//         return token;
+//       }
+
+//       // Access token has expired, refresh it
+//       console.log("refreshing please wait ....")
+//       try {
+//         const refreshedToken = await refreshAccessToken(
+//           token.refreshToken as string
+//         );
+//         console.log("refreshedToken", refreshedToken);
+
+//         token = {
+//           id: token.id,
+//           accessToken: refreshedToken.accessToken,
+//           accessTokenExpires: refreshedToken.accessTokenExpires,
+//           refreshToken: token.refreshToken,
+//         }
+//         return {
+//           ...token,
+//         };
+//       } catch (error) {
+//         console.error("Failed to refresh token:", error);
+//         return { ...token, error: "RefreshAccessTokenError" };
+//       }
+//     },
+
+//     async session({ session, token }) {
+//       session.user = {
+//         id: token.id as string,
+//         accessToken: token.accessToken as string,
+//         refreshToken: token.refreshToken as string,
+//       };
+//       if (token.error === "RefreshAccessTokenError") {
+//         session.error = "RefreshAccessTokenError";
+//       }
+//       return session;
+//     },
+//   },
+//   pages: {
+//     signIn: "/login",
+//     error: "/login",
+//   },
+
+//   debug: process.env.NODE_ENV === "development",
+
+
+//   session: {
+//     strategy: "jwt",
+//     maxAge: 7 * 24 * 60 * 60,
+//     updateAge: 23 * 60 * 60
+//     // maxAge: 5 * 60,
+//     // updateAge : 1 * 60
+//   },
+
+//   jwt: {
+//     secret: process.env.NEXTAUTH_SECRET,
+//   },
+//   cookies: {
+//     sessionToken: {
+//       name: "trukapp-admin.session-token",
+//       options: {
+//         httpOnly: true,
+//         sameSite: "lax",
+//         path: "/",
+//         secure: process.env.NODE_ENV === "production",
+//       },
+//     },
+//   },
+
+
+// };
+
+
+
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
@@ -22,10 +231,17 @@ declare module "next-auth" {
     error?: string;
   }
 }
-const refreshAccessToken = async (refreshToken: string) => { 
+
+const refreshAccessToken = async (
+  refreshToken: string
+): Promise<
+  | { accessToken: string; refreshToken: string; accessTokenExpires: number }
+  | { error: string }
+> => {
   try {
     const response = await fetch(
-      `https://dev-api.trukapp.com/truk/log/refresh-token`, 
+      // `https://dev-api.trukapp.com/truk/log/refresh-token`,
+      `http://13.127.36.10:8088/truk/log/refresh-token`,
       {
         method: "POST",
         headers: {
@@ -62,7 +278,7 @@ export const options: NextAuthOptions = {
         email: {
           label: "Email",
           type: "text",
-          placeholder: "Enter your email number",
+          placeholder: "Enter your email",
         },
         password: {
           label: "Password",
@@ -79,6 +295,7 @@ export const options: NextAuthOptions = {
 
         try {
           const response = await fetch(
+            // `https://dev-api.trukapp.com/truk/log/login`,
             `http://13.127.36.10:8088/truk/log/login`,
             {
               method: "POST",
@@ -91,14 +308,18 @@ export const options: NextAuthOptions = {
               }),
             }
           );
+
           console.log("login response :", response);
+
           if (response.status === 404) {
-            throw new Error("You dont have an account to login");
+            throw new Error("You don't have an account to login");
           } else if (response.status === 500) {
-            throw new Error("Internal server occured , try after sometime...");
+            throw new Error("Internal server error. Try again later.");
           }
+
           const user = await response.json();
           console.log("user is :", user);
+
           if (user && user.accessToken) {
             return {
               id: user.profile_id,
@@ -120,42 +341,40 @@ export const options: NextAuthOptions = {
     async jwt({ token, user }) {
       // Initial sign-in
       if (user) {
-        console.log("initial USER :", user)
+        console.log("initial USER :", user);
         return {
           id: user.id,
           accessToken: user.accessToken,
           refreshToken: user.refreshToken,
-          accessTokenExpires: Date.now() + 24 * 60 * 60 * 1000, //1 day
+          accessTokenExpires: Date.now() + 24 * 60 * 60 * 1000, // 1 day
         };
       }
 
       const expiryToken = token.accessTokenExpires as number;
       console.log("token expires in milli secs:", expiryToken - Date.now());
+
       if (Date.now() < expiryToken) {
         return token;
       }
 
-        // Access token has expired, refresh it
-      console.log("refreshing please wait ....")
-          try {
-        const refreshedToken = await refreshAccessToken(
-          token.refreshToken as string
-        );
-            console.log("refreshedToken", refreshedToken);
+      // Access token has expired, refresh it
+      console.log("refreshing please wait ....");
 
-            token = {
-              id: token.id,
-              accessToken: refreshedToken.accessToken,
-              accessTokenExpires: refreshedToken.accessTokenExpires,
-              refreshToken: token.refreshToken,
-              }
+      const refreshedToken = await refreshAccessToken(token.refreshToken as string);
+
+      if ("error" in refreshedToken) {
         return {
-          ...token, 
+          ...token,
+          error: "RefreshAccessTokenError",
         };
-      } catch (error) {
-        console.error("Failed to refresh token:", error);
-        return { ...token, error: "RefreshAccessTokenError" };
       }
+
+      return {
+        ...token,
+        accessToken: refreshedToken.accessToken,
+        accessTokenExpires: refreshedToken.accessTokenExpires,
+        refreshToken: refreshedToken.refreshToken,
+      };
     },
 
     async session({ session, token }) {
@@ -164,12 +383,15 @@ export const options: NextAuthOptions = {
         accessToken: token.accessToken as string,
         refreshToken: token.refreshToken as string,
       };
+
       if (token.error === "RefreshAccessTokenError") {
         session.error = "RefreshAccessTokenError";
       }
+
       return session;
     },
   },
+
   pages: {
     signIn: "/login",
     error: "/login",
@@ -179,13 +401,23 @@ export const options: NextAuthOptions = {
 
   session: {
     strategy: "jwt",
-    maxAge: 7 * 24 * 60 * 60,
-    updateAge : 23 * 60 * 60
-    // maxAge: 5 * 60,
-    // updateAge : 1 * 60
+    maxAge: 7 * 24 * 60 * 60, // 7 days
+    updateAge: 23 * 60 * 60,  // 23 hours
   },
 
   jwt: {
     secret: process.env.NEXTAUTH_SECRET,
+  },
+
+  cookies: {
+    sessionToken: {
+      name: "trukapp-admin.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
   },
 };
