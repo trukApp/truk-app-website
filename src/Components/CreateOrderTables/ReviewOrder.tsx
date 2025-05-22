@@ -11,8 +11,8 @@ import AdditionalDocuments from './AdditionalDocuments';
 
 interface TrucksTableProps {
     trucks: Truck[];
-    additionalDocs: { [key: string]: string }[] ;
-    setAdditionalDocs:  React.Dispatch<React.SetStateAction<{ [key: string]: string }[]>>;
+    additionalDocs: { [key: string]: string }[];
+    setAdditionalDocs: React.Dispatch<React.SetStateAction<{ [key: string]: string }[]>>;
 }
 
 interface PackageDetails {
@@ -21,9 +21,9 @@ interface PackageDetails {
     packages: [];
 }
 
-const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks,additionalDocs, setAdditionalDocs }) => {
+const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks, additionalDocs, setAdditionalDocs }) => {
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
-    console.log("allocated:", selectedPackages)
+    // console.log("allocated:", selectedPackages)
     const selectedTrucks = trucks
     const { data: locationsData } = useGetLocationMasterQuery({})
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
@@ -65,7 +65,7 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks,additionalDocs, 
             headerName: 'Product Details',
             width: 400,
             renderCell: (params: GridCellParams) => {
-                console.log("params.value: ", params.value)
+                // console.log("params.value: ", params.value)
                 const products = Array.isArray(params.value) ? params.value : [];
 
                 if (!products.length) return <div>No products</div>;
@@ -100,11 +100,11 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks,additionalDocs, 
             },
         },
     ];
-const truckPackageIDs = selectedTrucks.flatMap(truck => truck.packages);
+    const truckPackageIDs = selectedTrucks.flatMap(truck => truck.packages);
 
-const matchedPackages = selectedPackages.filter(pkg =>
-  truckPackageIDs.includes(pkg.pack_ID)
-);
+    const matchedPackages = selectedPackages.filter(pkg =>
+        truckPackageIDs.includes(pkg.pack_ID)
+    );
 
     const packageRows = matchedPackages?.map((pkg, index) => ({
         id: index,
@@ -135,80 +135,80 @@ const matchedPackages = selectedPackages.filter(pkg =>
                 </div>
             </Paper>
             <Paper sx={{ mb: 3, p: 2, borderRadius: 2, boxShadow: 3 }}>
-                    <Typography variant="h6" gutterBottom sx={{ color: '#F08C24' }}>
-                        Load and Route Optimised vehicles
-                    </Typography>
-                    <Grid container spacing={2}>
-                        {selectedTrucks?.map((vehicle: Truck, index: number) => (
-                            <Grid item xs={12} md={6} key={index}>
-                                <Box
-                                    sx={{
-                                        p: 2,
-                                        borderRadius: 2,
-                                        boxShadow: 2,
-                                        backgroundColor: "white",
-                                        marginTop: 3
-                                    }}
-                                >
-                                    <Typography variant="subtitle1" gutterBottom>
-                                        Vehicle ID: <strong>{vehicle.vehicle_ID}</strong>
+                <Typography variant="h6" gutterBottom sx={{ color: '#F08C24' }}>
+                    Load and Route Optimised vehicles
+                </Typography>
+                <Grid container spacing={2}>
+                    {selectedTrucks?.map((vehicle: Truck, index: number) => (
+                        <Grid item xs={12} md={6} key={index}>
+                            <Box
+                                sx={{
+                                    p: 2,
+                                    borderRadius: 2,
+                                    boxShadow: 2,
+                                    backgroundColor: "white",
+                                    marginTop: 3
+                                }}
+                            >
+                                <Typography variant="subtitle1" gutterBottom>
+                                    Vehicle ID: <strong>{vehicle.vehicle_ID}</strong>
+                                </Typography>
+                                <Typography>
+                                    Total Weight Capacity: <strong>{vehicle?.totalWeightCapacity?.toFixed(2)} kg</strong>
+                                </Typography>
+                                <Typography>
+                                    Leftover Weight: <strong>{parseFloat(vehicle?.leftoverWeight)?.toFixed(2)} kg</strong>
+                                </Typography>
+                                <Typography>
+                                    Total Volume Capacity: <strong>{vehicle?.totalVolumeCapacity?.toFixed(2)} m³</strong>
+                                </Typography>
+                                <Typography>
+                                    Leftover Volume: <strong>{vehicle.leftoverVolume.toFixed(2)} m³</strong>
+                                </Typography>
+                                <Typography>
+                                    Estimated Cost: <strong>₹{vehicle.cost.toFixed(2)}</strong>
+                                </Typography>
+                                {vehicle.loadArrangement && vehicle.loadArrangement.length > 0 ? (
+                                    <Box sx={{ mt: 2, height: 300, backgroundColor: "white", borderRadius: 1, overflow: "hidden" }}>
+                                        <DataGrid
+                                            rows={vehicle.loadArrangement.map((item: PackageDetails, i) => ({
+                                                id: item.stop || i + 1,
+                                                location: (item.location) || "N/A",
+                                                packages: item.packages ? item.packages.join(", ") : "N/A",
+                                            }))}
+                                            columns={[
+                                                { field: "id", headerName: "Load Arrangement", width: 100 },
+                                                { field: "location", headerName: "Delivery Address", width: 300 },
+                                                { field: "packages", headerName: "Packages", width: 200 },
+                                            ]}
+                                            pageSizeOptions={[5, 10]}
+                                            disableRowSelectionOnClick
+                                            sx={{
+                                                "& .MuiDataGrid-columnHeaders": {
+                                                    backgroundColor: "#f5f5f5",
+                                                    fontWeight: "bold",
+                                                },
+                                                "& .MuiDataGrid-cell": {
+                                                    padding: "8px",
+                                                },
+                                                "& .MuiDataGrid-footerContainer": {
+                                                    display: "none",
+                                                },
+                                            }}
+                                        />
+                                    </Box>
+                                ) : (
+                                    <Typography sx={{ mt: 1, fontStyle: "italic", color: "gray" }}>
+                                        No load arrangement data available.
                                     </Typography>
-                                    <Typography>
-                                        Total Weight Capacity: <strong>{vehicle?.totalWeightCapacity?.toFixed(2)} kg</strong>
-                                    </Typography>
-                                    <Typography>
-                                        Leftover Weight: <strong>{parseFloat(vehicle?.leftoverWeight)?.toFixed(2)} kg</strong>
-                                    </Typography>
-                                    <Typography>
-                                        Total Volume Capacity: <strong>{vehicle?.totalVolumeCapacity?.toFixed(2)} m³</strong>
-                                    </Typography>
-                                    <Typography>
-                                        Leftover Volume: <strong>{vehicle.leftoverVolume.toFixed(2)} m³</strong>
-                                    </Typography>
-                                    <Typography>
-                                        Estimated Cost: <strong>₹{vehicle.cost.toFixed(2)}</strong>
-                                    </Typography>
-                                    {vehicle.loadArrangement && vehicle.loadArrangement.length > 0 ? (
-                                        <Box sx={{ mt: 2, height: 300, backgroundColor: "white", borderRadius: 1, overflow: "hidden" }}>
-                                            <DataGrid
-                                                rows={vehicle.loadArrangement.map((item: PackageDetails, i) => ({
-                                                    id: item.stop || i + 1,
-                                                    location: (item.location) || "N/A",
-                                                    packages: item.packages ? item.packages.join(", ") : "N/A",
-                                                }))}
-                                                columns={[
-                                                    { field: "id", headerName: "Load Arrangement", width: 100 },
-                                                    { field: "location", headerName: "Delivery Address", width: 300 },
-                                                    { field: "packages", headerName: "Packages", width: 200 },
-                                                ]}
-                                                pageSizeOptions={[5, 10]}
-                                                disableRowSelectionOnClick
-                                                sx={{
-                                                    "& .MuiDataGrid-columnHeaders": {
-                                                        backgroundColor: "#f5f5f5",
-                                                        fontWeight: "bold",
-                                                    },
-                                                    "& .MuiDataGrid-cell": {
-                                                        padding: "8px",
-                                                    },
-                                                    "& .MuiDataGrid-footerContainer": {
-                                                        display: "none",
-                                                    },
-                                                }}
-                                            />
-                                        </Box>
-                                    ) : (
-                                        <Typography sx={{ mt: 1, fontStyle: "italic", color: "gray" }}>
-                                            No load arrangement data available.
-                                        </Typography>
-                                    )}
-                                </Box>
-                            </Grid>
-                        ))}
-                    </Grid>
-            </Paper> 
+                                )}
+                            </Box>
+                        </Grid>
+                    ))}
+                </Grid>
+            </Paper>
             <Grid>
-                <AdditionalDocuments documents={additionalDocs} setDocuments={setAdditionalDocs}/>
+                <AdditionalDocuments documents={additionalDocs} setDocuments={setAdditionalDocs} />
             </Grid>
 
 

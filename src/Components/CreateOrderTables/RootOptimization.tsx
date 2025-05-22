@@ -43,7 +43,7 @@ export interface RootOptimizationType {
 
 
 const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
-    console.log('rootOptimization:', rootOptimization);
+    // console.log('rootOptimization:', rootOptimization);
     const { isLoaded, loadError } = useLoadScript({ googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '' });
     // const [selectedVehicle, setSelectedVehicle] = useState<string>(rootOptimization[0]?.vehicle_ID || '');
     const [selectedVehicle, setSelectedVehicle] = useState(() =>
@@ -450,7 +450,7 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
                     const hours = Math.floor(remainingAfterDays / 60);
                     const minutes = remainingAfterDays % 60;
 
-                    console.log('days:', days, 'hours:', hours, 'minutes:', minutes);
+                    // console.log('days:', days, 'hours:', hours, 'minutes:', minutes);
 
                     const durationParts = [];
                     if (days > 0) durationParts.push(`${days} day${days > 1 ? 's' : ''}`);

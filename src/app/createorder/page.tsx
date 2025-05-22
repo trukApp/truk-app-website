@@ -40,12 +40,12 @@ const CreateOrder: React.FC = () => {
     const [modalOpen, setModalOpen] = useState(false);
     const [noVechilePopup, setNoVechilePopup] = useState(false);
     const filters = useAppSelector((state) => state.auth.filters);
-const [additionalDocs, setAdditionalDocs] = useState<{ [key: string]: string }[]>([]);
+    const [additionalDocs, setAdditionalDocs] = useState<{ [key: string]: string }[]>([]);
 
 
     useEffect(() => {
         if (packageSelectErr) {
-            console.log('packageSelectErr:', packageSelectErr);
+            // console.log('packageSelectErr:', packageSelectErr);
             if ("data" in packageSelectErr && packageSelectErr.data && typeof packageSelectErr.data === "object") {
                 const errorMessage = (packageSelectErr.data as { error?: string }).error;
                 if (errorMessage === "All packages must have the same pickup_date (ignoring time).") {
@@ -59,7 +59,12 @@ const [additionalDocs, setAdditionalDocs] = useState<{ [key: string]: string }[]
                 }
                 else if (errorMessage === 'All packages must have the same ship_from location.') {
                     setSnackbarMessage("Please select the packages of the same SHIP FROM location.");
-                } else {
+                } else if (errorMessage === "All packages must share pickup date") {
+                    setSnackbarMessage(`All packages must share pickup date.`)
+                } else if (errorMessage === "All packages must share ship_from") {
+                    setSnackbarMessage(`All packages must be same source location.`)
+                }
+                else {
                     setSnackbarMessage("Something went wrong please try again after some time.");
                 }
             } else {
@@ -88,9 +93,9 @@ const [additionalDocs, setAdditionalDocs] = useState<{ [key: string]: string }[]
             allocations: conformOrderPayload?.allocations,
             unallocated_packages: conformOrderPayload?.unallocatedPackages,
             created_at: new Date().toISOString().split("T")[0],
-            order_docs : additionalDocs
+            order_docs: additionalDocs
         }
-        console.log('createOrderBody',createOrderBody)
+        console.log('createOrderBody', createOrderBody)
         setModalOpen(false);
         try {
             const response = await createOrder(createOrderBody).unwrap();
@@ -143,7 +148,7 @@ const [additionalDocs, setAdditionalDocs] = useState<{ [key: string]: string }[]
                     setNoVechilePopup(true)
                 } else {
                     setConformOrderPayload(response)
-                    console.log('allocated response: ', response.allocations)
+                    // console.log('allocated response: ', response.allocations)
                     setSelectTrucks(response?.allocations);
                     setUnAllocatedPackages(response?.unallocatedPackages)
                     setActiveStep((prev) => prev + 1);
@@ -241,7 +246,7 @@ const [additionalDocs, setAdditionalDocs] = useState<{ [key: string]: string }[]
                 ))}
             </Stepper> */}
             <Box sx={{ px: 2, mt: 2 }}>
-                <Typography variant="h5" color='primary' sx={{ fontWeight: 'bold',  mb: 1 }}>
+                <Typography variant="h5" color='primary' sx={{ fontWeight: 'bold', mb: 1 }}>
                     Create New Order
                 </Typography>
                 <Typography variant="body1" sx={{ color: 'gray', mb: 2 }}>
@@ -292,7 +297,7 @@ const [additionalDocs, setAdditionalDocs] = useState<{ [key: string]: string }[]
 
                 {activeStep === 1 && (
                     <div>
-                        <TrucksTable selectedPackages={selectedPackages}  trucks={selectTrucks} unAllocatedPackages={unAllocatedPackages} />
+                        <TrucksTable selectedPackages={selectedPackages} trucks={selectTrucks} unAllocatedPackages={unAllocatedPackages} />
                     </div>
                 )}
 

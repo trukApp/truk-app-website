@@ -351,7 +351,7 @@ export const options: NextAuthOptions = {
       }
 
       const expiryToken = token.accessTokenExpires as number;
-      console.log("token expires in milli secs:", expiryToken - Date.now());
+      // console.log("token expires in milli secs:", expiryToken - Date.now());
 
       if (Date.now() < expiryToken) {
         return token;
