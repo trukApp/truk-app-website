@@ -656,20 +656,19 @@ const VehicleForm: React.FC = () => {
 			};
 
 			if (isEditing && editRow) {
-				console.log("edit api section : ", editBody);
 				const vehicleId = editRow.id;
 				const response = await editVehicle({
 					body: editBody,
 					vehicleId,
 				}).unwrap();
-				if (response && !response?.updated_record) {
-					setSnackbarMessage(`Vehicle  updated successfully!`);
+				if (response && !response?.vehicle_ID) {
+					setSnackbarMessage(`Vehicle updated successfully!`);
 					setSnackbarSeverity("success");
 					setSnackbarOpen(true);
 				}
-				if (response?.updated_record) {
+				if (response?.vehicle_ID) {
 					setSnackbarMessage(
-						`Vehicle ID ${response?.updated_record} updated successfully!`
+						`Vehicle ID ${response?.vehicle_ID} updated successfully!`
 					);
 					resetForm();
 					setShowForm(false);
@@ -1654,7 +1653,7 @@ const VehicleForm: React.FC = () => {
 											<Grid item xs={12} sm={6} md={2.4}>
 												<TextField
 													fullWidth
-													label="Avg. Cost*"
+													label="PTPK*"
 													name="avgCost"
 													type="number"
 													value={values.avgCost}

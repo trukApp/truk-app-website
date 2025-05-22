@@ -90,7 +90,7 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "PARTNERS", id: "LIST" }],
+      invalidatesTags: [{ type: "PARTNERS", id: "LIST" }, { type: "DataCount", id: "LIST" }],
     }),
 
     vendorRegistration: builder.mutation({
@@ -99,7 +99,7 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "PARTNERS", id: "LIST" }],
+      invalidatesTags: [{ type: "PARTNERS", id: "LIST" }, { type: "DataCount", id: "LIST" }],
     }),
 
     editBusinessPartner: builder.mutation({
@@ -116,7 +116,7 @@ export const apiSlice = createApi({
         url: `business/delete-partner?partner_id=${partnerId}`,
         method: "DELETE",
       }),
-      invalidatesTags: [{ type: "PARTNERS", id: "LIST" }],
+      invalidatesTags: [{ type: "PARTNERS", id: "LIST" }, { type: "DataCount", id: "LIST" }],
     }),
 
     getAllCustomersData: builder.query({
@@ -144,7 +144,7 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "DRIVERS", id: "LIST" }],
+      invalidatesTags: [{ type: "DRIVERS", id: "LIST" }, { type: "DataCount", id: "LIST" }],
     }),
 
     deleteDriver: builder.mutation({
@@ -152,7 +152,7 @@ export const apiSlice = createApi({
         url: `driver/delete-driver?driver_id=${driverId}`,
         method: "DELETE",
       }),
-      invalidatesTags: [{ type: "DRIVERS", id: "LIST" }],
+      invalidatesTags: [{ type: "DRIVERS", id: "LIST" }, { type: "DataCount", id: "LIST" }],
     }),
 
     getFilteredDrivers: builder.query({
@@ -198,7 +198,7 @@ export const apiSlice = createApi({
         method: "GET",
         params,
       }),
-      providesTags: [{ type: "CARRIER", id: "LIST" }],
+      providesTags: [{ type: "CARRIER", id: "LIST" },],
     }),
 
     postCarrierMaster: builder.mutation({
@@ -207,7 +207,7 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "CARRIER", id: "LIST" }, { type: "DataCount", id: "LIST" }],
+      invalidatesTags: [{ type: "CARRIER", id: "LIST" }, { type: "DataCount", id: "LIST" }, { type: "DataCount", id: "LIST" }],
     }),
 
     editCarrierMaster: builder.mutation({
@@ -224,7 +224,7 @@ export const apiSlice = createApi({
         url: `carrier/delete-carrier?cr_id=${carrierId}`,
         method: "DELETE",
       }),
-      invalidatesTags: [{ type: "CARRIER", id: "LIST" }],
+      invalidatesTags: [{ type: "CARRIER", id: "LIST" }, { type: "DataCount", id: "LIST" }],
     }),
 
     //  location master
@@ -252,7 +252,7 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "LocationMaster", id: "LIST" }],
+      invalidatesTags: [{ type: "LocationMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
     }),
 
     editLocationMaster: builder.mutation({
@@ -269,7 +269,7 @@ export const apiSlice = createApi({
         url: `masLoc/delete-location?id=${locationId}`,
         method: "DELETE",
       }),
-      invalidatesTags: [{ type: "LocationMaster", id: "LIST" }],
+      invalidatesTags: [{ type: "LocationMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
     }),
 
     updateShipFromDefaultLocationId: builder.mutation({
@@ -323,7 +323,7 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "VehicleMaster", id: "LIST" }],
+      invalidatesTags: [{ type: "VehicleMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
     }),
 
     editVehicleMaster: builder.mutation({
@@ -340,7 +340,7 @@ export const apiSlice = createApi({
         url: `vehicle/delete-vehicle?veh_id=${vehicleId}`,
         method: "DELETE",
       }),
-      invalidatesTags: [{ type: "VehicleMaster", id: "LIST" }],
+      invalidatesTags: [{ type: "VehicleMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
     }),
 
     // Package master
@@ -359,7 +359,7 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "PackageMaster", id: "LIST" }],
+      invalidatesTags: [{ type: "PackageMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
     }),
 
     editPackageMaster: builder.mutation({
@@ -376,7 +376,7 @@ export const apiSlice = createApi({
         url: `package/delete-package?package_id=${packageId}`,
         method: "DELETE",
       }),
-      invalidatesTags: [{ type: "PackageMaster", id: "LIST" }],
+      invalidatesTags: [{ type: "PackageMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
     }),
 
     // Lanes master
@@ -395,7 +395,7 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "LaneMaster", id: "LIST" }],
+      invalidatesTags: [{ type: "LaneMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
     }),
 
     editLaneMaster: builder.mutation({
@@ -412,7 +412,7 @@ export const apiSlice = createApi({
         url: `lane/delete-lane?ln_id=${laneId}`,
         method: "DELETE",
       }),
-      invalidatesTags: [{ type: "LaneMaster", id: "LIST" }],
+      invalidatesTags: [{ type: "LaneMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
     }),
 
     // Device master
@@ -431,7 +431,7 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "DeviceMaster", id: "LIST" }],
+      invalidatesTags: [{ type: "DeviceMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
     }),
 
     editDeviceMaster: builder.mutation({
@@ -448,7 +448,7 @@ export const apiSlice = createApi({
         url: `device/delete-device?device_id=${deviceId}`,
         method: "DELETE",
       }),
-      invalidatesTags: [{ type: "DeviceMaster", id: "LIST" }],
+      invalidatesTags: [{ type: "DeviceMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
     }),
 
     //  UOM Master
@@ -467,7 +467,7 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "UomMaster", id: "LIST" }],
+      invalidatesTags: [{ type: "UomMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
     }),
 
     editUomMaster: builder.mutation({
@@ -484,7 +484,7 @@ export const apiSlice = createApi({
         url: `masterUom/delete-uom?unit_id=1${uomId}`,
         method: "DELETE",
       }),
-      invalidatesTags: [{ type: "UomMaster", id: "LIST" }],
+      invalidatesTags: [{ type: "UomMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
     }),
 
     // Dock master 
@@ -503,7 +503,7 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "DockMaster", id: "LIST" }],
+      invalidatesTags: [{ type: "DockMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
     }),
 
     editDockMaster: builder.mutation({
@@ -520,7 +520,7 @@ export const apiSlice = createApi({
         url: `masterDock/delete-dock?id=${dock_ID}`,
         method: "DELETE",
       }),
-      invalidatesTags: [{ type: "DockMaster", id: "LIST" }],
+      invalidatesTags: [{ type: "DockMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
     }),
 
     //Product Master
@@ -548,7 +548,7 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "ProductMaster", id: "LIST" }],
+      invalidatesTags: [{ type: "ProductMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
     }),
 
     deleteProduct: builder.mutation({
@@ -556,7 +556,7 @@ export const apiSlice = createApi({
         url: `masterProducts/delete-product?prod_id=${productId}`,
         method: "DELETE",
       }),
-      invalidatesTags: [{ type: "ProductMaster", id: "LIST" }],
+      invalidatesTags: [{ type: "ProductMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
     }),
 
     editProduct: builder.mutation({
