@@ -175,13 +175,16 @@ const validationSchema = Yup.object({
 	locationId: Yup.string().required("Location ID is required"),
 	timeZone: Yup.string().required("Time Zone is required"),
 	unlimitedUsage: Yup.boolean(),
-	individualResources: Yup.number()
-		.typeError("Must be a number")
-		.when("unlimitedUsage", {
-			is: false,
-			then: (schema) => schema.required("Individual Resources is required"),
-			otherwise: (schema) => schema.notRequired().nullable(),
-		}),
+
+	individualResources: Yup.mixed().when("unlimitedUsage", {
+		is: false,
+		then: () =>
+			Yup.number()
+				.typeError("Must be a number")
+				.required("Individual Resources is required"),
+		otherwise: () => Yup.mixed().notRequired().nullable(),
+	}),
+
 	validityFrom: Yup.string().required("Validity start date is required"),
 	validityTo: Yup.string().required("Validity end date is required"),
 	vehicleType: Yup.string().required("Vehicle Type is required"),
@@ -546,9 +549,13 @@ const VehicleForm: React.FC = () => {
 					{
 						loc_ID: values.locationId,
 						unlimited_usage: `${values.unlimitedUsage ? 1 : 0}`,
-						individual_resource: `${
-							values.unlimitedUsage ? null : values.individualResources
-						}`,
+						// individual_resource: `${
+						// 	values.unlimitedUsage ? null : values.individualResources
+						// }`,
+						individual_resource: values.unlimitedUsage
+							? null
+							: values.individualResources,
+
 						transportation_details: {
 							validity_from: values.validityFrom,
 							validity_to: values.validityTo,
@@ -597,9 +604,13 @@ const VehicleForm: React.FC = () => {
 			const editBody = {
 				loc_ID: values.locationId,
 				unlimited_usage: `${values.unlimitedUsage ? 1 : 0}`,
-				individual_resource: `${
-					values.unlimitedUsage ? null : values.individualResources
-				}`,
+				// individual_resource: `${
+				// 	values.unlimitedUsage ? null : values.individualResources
+				// }`,
+				individual_resource: values.unlimitedUsage
+					? null
+					: values.individualResources,
+
 				transportation_details: {
 					validity_from: values.validityFrom,
 					validity_to: values.validityTo,
@@ -644,7 +655,6 @@ const VehicleForm: React.FC = () => {
 				temp_controlled_vehicle: values.temperatureControl,
 			};
 
-			console.log("Edit body: ", editBody);
 			if (isEditing && editRow) {
 				console.log("edit api section : ", editBody);
 				const vehicleId = editRow.id;
@@ -652,9 +662,14 @@ const VehicleForm: React.FC = () => {
 					body: editBody,
 					vehicleId,
 				}).unwrap();
+				if (response && !response?.updated_record) {
+					setSnackbarMessage(`Vehicle  updated successfully!`);
+					setSnackbarSeverity("success");
+					setSnackbarOpen(true);
+				}
 				if (response?.updated_record) {
 					setSnackbarMessage(
-						`Vehicle ID ${response.updated_record} updated successfully!`
+						`Vehicle ID ${response?.updated_record} updated successfully!`
 					);
 					resetForm();
 					setShowForm(false);
