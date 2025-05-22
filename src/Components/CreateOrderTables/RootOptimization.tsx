@@ -62,20 +62,20 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
     const [matchedRoute, setMatchedRoute] = useState<Route | null>(null);
     const [alternateRoutes, setAlternateRoutes] = useState<google.maps.DirectionsResult[]>([]);
     const [selectedRouteIndex, setSelectedRouteIndex] = useState<number | null>(null);
-    const [alternateSelectedRoute, setAlternateSelectedRoute] = useState<{
-        distance: string;
-        duration: string;
-        start: {
-            address: string;
-            latitude: number;
-            longitude: number;
-        };
-        end: {
-            address: string;
-            latitude: number;
-            longitude: number;
-        };
-    } | null>(null);
+    // const [alternateSelectedRoute, setAlternateSelectedRoute] = useState<{
+    //     distance: string;
+    //     duration: string;
+    //     start: {
+    //         address: string;
+    //         latitude: number;
+    //         longitude: number;
+    //     };
+    //     end: {
+    //         address: string;
+    //         latitude: number;
+    //         longitude: number;
+    //     };
+    // } | null>(null);
     // const [selectedRoutesData, setSelectedRoutesData] = useState<VehicleData[]>(rootOptimization);
     const fetchDirections = useCallback(async () => {
         if (!isLoaded || typeof google === 'undefined' || !google.maps || !selectedVehicle) return;
@@ -201,7 +201,6 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
         fetchDirections();
     }, [fetchDirections]);
 
-    // const selectedVehicleData = rootOptimization?.find(vehicle => vehicle?.vehicle_ID === selectedVehicle);
     const selectedVehicleData = rootOptimization?.find(
         (vehicle) =>
             vehicle.vehicle_ID === selectedVehicle?.vehicle_ID &&
@@ -221,6 +220,8 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
             const matchedRoute = selectedVehicleData?.route.find(
                 (route) => route?.start?.address === location || route?.end?.address === location
             );
+            // console.log('matchedRoute:', matchedRoute)
+            // setMatchedRoute(matchedRoute || null);
             setMatchedRoute(matchedRoute || null);
             if (matchedRoute) {
                 fetchAlternateRoutes(matchedRoute);
@@ -242,14 +243,14 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
     }
     const handleRouteSelection = (index: number) => {
         setSelectedRouteIndex(index);
-        const selectedRoute = alternateRoutes[index]?.routes[0];
-        if (selectedRoute) {
-            const transformedData = transformRouteData(selectedRoute);
-            // setAlternateSelectedRoute(selectedRoute || null);
-            setAlternateSelectedRoute(transformedData);
-        } else {
-            console.warn("Invalid route selected");
-        }
+        // const selectedRoute = alternateRoutes[index]?.routes[0];
+        // if (selectedRoute) {
+        //     const transformedData = transformRouteData(selectedRoute);
+        //     // setAlternateSelectedRoute(selectedRoute || null);
+        //     setAlternateSelectedRoute(transformedData);
+        // } else {
+        //     console.warn("Invalid route selected");
+        // }
     };
     // const handleRouteSelection = (index: number) => {
     //     setSelectedRouteIndex(index);
@@ -286,36 +287,36 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
     //     }
     // };
 
-    const transformRouteData = (selectedRoute: google.maps.DirectionsRoute) => {
-        if (!selectedRoute || !selectedRoute.legs || selectedRoute.legs.length === 0) {
-            console.warn("Invalid route data");
-            return null;
-        }
+    // const transformRouteData = (selectedRoute: google.maps.DirectionsRoute) => {
+    //     if (!selectedRoute || !selectedRoute.legs || selectedRoute.legs.length === 0) {
+    //         console.warn("Invalid route data");
+    //         return null;
+    //     }
 
-        const leg = selectedRoute.legs[0];
-        return {
-            distance: leg?.distance?.text || 'N/A',
-            duration: leg?.duration?.text || 'N/A',
-            start: {
-                address: leg?.start_address || 'N/A',
-                latitude: leg?.start_location?.lat() || 0,
-                longitude: leg?.start_location?.lng() || 0,
-            },
-            end: {
-                address: leg?.end_address || 'N/A',
-                latitude: leg?.end_location?.lat() || 0,
-                longitude: leg?.end_location?.lng() || 0,
-            },
-        };
-    };
+    //     const leg = selectedRoute.legs[0];
+    //     return {
+    //         distance: leg?.distance?.text || 'N/A',
+    //         duration: leg?.duration?.text || 'N/A',
+    //         start: {
+    //             address: leg?.start_address || 'N/A',
+    //             latitude: leg?.start_location?.lat() || 0,
+    //             longitude: leg?.start_location?.lng() || 0,
+    //         },
+    //         end: {
+    //             address: leg?.end_address || 'N/A',
+    //             latitude: leg?.end_location?.lat() || 0,
+    //             longitude: leg?.end_location?.lng() || 0,
+    //         },
+    //     };
+    // };
     const handleVehicleSelection = (vehicle_ID: string, startAddress: string, endAddress: string) => {
         setSelectedVehicle({ vehicle_ID, startAddress, endAddress });
         // setAlternateSelectedRoute(null);
         setAlternateRoutes([]);
         setSelectedRouteIndex(null);
     };
-    console.log('alternateSelectedRoute:', alternateSelectedRoute);
-    // console.log('selectesroutesdata:', selectedRoutesData);
+    // console.log('alternateSelectedRoute:', alternateSelectedRoute);
+    // console.log('alternateRoutes:', alternateRoutes);
     return (
         <div>
             <Box sx={{ display: 'flex', gap: 1, marginBottom: 2 }}>
@@ -429,23 +430,45 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
                     }, 0) ?? 0;
 
                     const totalDurationMinutes = selectedVehicleData?.route?.reduce((acc, route) => {
-                        const durationText = route?.duration || '0h 0m';
-                        const [hours = 0, minutes = 0] = durationText.match(/\d+/g)?.map(Number) ?? [0, 0];
-                        return acc + (hours * 60 + minutes);
+                        const durationText = route?.duration || '';
+
+                        let totalMinutes = 0;
+
+                        const dayMatch = durationText.match(/(\d+)\s*day/);
+                        const hourMatch = durationText.match(/(\d+)\s*hour/);
+                        const minuteMatch = durationText.match(/(\d+)\s*min/);
+
+                        if (dayMatch) totalMinutes += parseInt(dayMatch[1], 10) * 24 * 60;
+                        if (hourMatch) totalMinutes += parseInt(hourMatch[1], 10) * 60;
+                        if (minuteMatch) totalMinutes += parseInt(minuteMatch[1], 10);
+
+                        return acc + totalMinutes;
                     }, 0) ?? 0;
 
-                    const totalHours = Math.floor(totalDurationMinutes / 60);
-                    const remainingMinutes = totalDurationMinutes % 60;
+                    const days = Math.floor(totalDurationMinutes / (24 * 60));
+                    const remainingAfterDays = totalDurationMinutes % (24 * 60);
+                    const hours = Math.floor(remainingAfterDays / 60);
+                    const minutes = remainingAfterDays % 60;
+
+                    console.log('days:', days, 'hours:', hours, 'minutes:', minutes);
+
+                    const durationParts = [];
+                    if (days > 0) durationParts.push(`${days} day${days > 1 ? 's' : ''}`);
+                    if (hours > 0) durationParts.push(`${hours} hour${hours > 1 ? 's' : ''}`);
+                    if (minutes > 0) durationParts.push(`${minutes} min${minutes > 1 ? 's' : ''}`);
+
+                    const finalDurationString = durationParts.join(' ');
 
                     return (
                         <Card variant="outlined" sx={{ minWidth: 200 }}>
                             <CardContent>
-                                <Typography variant="subtitle1">Duration: {totalHours}h {remainingMinutes}m</Typography>
+                                <Typography variant="subtitle1">Duration: {finalDurationString}</Typography>
                                 <Typography variant="subtitle1">Distance: {totalDistance} km</Typography>
                             </CardContent>
                         </Card>
                     );
                 })()}
+
             </Box>
             <GoogleMap
                 mapContainerStyle={{ width: '100%', height: '500px' }}
