@@ -229,8 +229,7 @@ const TransportationLanes = () => {
 
   const handleDelete = async (row: LaneDetails) => {
     const laneId = row?.id;
-    if (!laneId) {
-      console.error("Row ID is missing");
+    if (!laneId) { 
       setSnackbarMessage("Error: Lane ID is missing!");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);

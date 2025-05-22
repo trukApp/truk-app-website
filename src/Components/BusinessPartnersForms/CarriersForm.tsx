@@ -96,8 +96,7 @@ const CarrierForm: React.FC = () => {
     const [showForm, setShowForm] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editRow, setEditRow] = useState<CarrierFormFE | null>(null);;
-    const { data, error, isLoading } = useGetCarrierMasterQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize })
-    console.log("carr : ", data)
+    const { data,   isLoading } = useGetCarrierMasterQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize })
     const [postCarrier, { isLoading: postCarrierLoading }] = usePostCarrierMasterMutation()
     const [editCarrier, { isLoading: editCarrierLoading }] = useEditCarrierMasterMutation()
     const [deleteCarrier, { isLoading: deleteCarrierLoading }] = useDeleteCarrierMasterMutation()
@@ -122,10 +121,7 @@ const CarrierForm: React.FC = () => {
     };
 
     const getAllLanes = lanesData?.lanes.length > 0 ? lanesData?.lanes : []
-    if (error) {
-        console.log("err while getting carrier info :", error)
-    }
-
+  
     const getLaneDetails = (lane_ID: string) => {
         const lane = lanesData?.lanes.find((l: Lane) => l.lane_ID === lane_ID);
         if (!lane) return "Lane details not available";
@@ -232,8 +228,7 @@ const CarrierForm: React.FC = () => {
                     : Array.isArray(rawVehicleTypes)
                         ? rawVehicleTypes
                         : [];
-
-            console.log("editing :", editRow)
+ 
             setInitialValues(() => ({
                 id: editRow?.id || '',
                 carrierId: editRow?.carrierId || '',
@@ -341,13 +336,10 @@ const CarrierForm: React.FC = () => {
                     cost: values?.pricing,
                     cost_criteria_per: values?.pricingUnit
                 }
-            }
-            console.log("body: ", body)
-            if (isEditing && editRow) {
-                console.log('edit body : ', editBody)
+            } 
+            if (isEditing && editRow) { 
                 const carrierId = editRow.id
                 const response = await editCarrier({ body: editBody, carrierId }).unwrap()
-                console.log("carr edit:", response)
                 if (response?.updated_record) {
                     setSnackbarMessage(`Carrier ID ${response.updated_record} updated successfully!`);
                     setInitialValues(initialCarrierValues)
@@ -355,8 +347,7 @@ const CarrierForm: React.FC = () => {
                     setSnackbarOpen(true);
                 }
             }
-            else {
-                console.log("post body : ", body)
+            else { 
                 const response = await postCarrier(body).unwrap();
                 if (response?.created_records) {
                     setSnackbarMessage(`Carrier ID ${response.created_records[0]} created successfully!`);

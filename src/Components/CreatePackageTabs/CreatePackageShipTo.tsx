@@ -71,8 +71,7 @@ const ShipTo: React.FC<ShipToProps> = ({ onNext, onBack }) => {
     const shipFromLocationId = shipFromLocationIdData?.split(',')[0] ?? '';
     const getAllLocations = displayLocations.filter(
         (location: Location) => location.loc_ID !== shipFromLocationId
-    );
-    console.log("shipToReduxValues: ", shipToReduxValues)
+    ); 
     const locationTypeOptions = [
         'Production plant',
         'Distribution center',

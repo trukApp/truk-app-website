@@ -31,8 +31,7 @@ export interface OrderDoc {
 	[key: string]: string;
 }
 
-const OrderDetailedOverview: React.FC = () => {
-	// console.log('selectedRoutes create order pagetsx: ', selectedRoutes);
+const OrderDetailedOverview: React.FC = () => { 
 	const [snackbarOpen, setSnackbarOpen] = useState(false);
 	const [snackbarMessage, setSnackbarMessage] = useState("");
 	const [snackbarSeverity, setSnackbarSeverity] = useState<
@@ -53,7 +52,7 @@ const OrderDetailedOverview: React.FC = () => {
 	const handleOpenDialog = () => setOpenDialog(true);
 	const handleCloseDialog = () => setOpenDialog(false);
 	const allocatedPackageDetails = order?.allocated_packages_details;
-	console.log("orderdata :", orderData);
+	 
 	const [openPreview, setOpenPreview] = useState<{
 		url: string;
 		open: boolean;
@@ -111,8 +110,7 @@ const OrderDetailedOverview: React.FC = () => {
 		// handleCloseDialog()
 		const editOrderBody = {
 			order_docs: documents,
-		};
-		console.log("editOrder body", editOrderBody);
+		}; 
 		try {
 			const response = await editOrder(editOrderBody).unwrap();
 			if (response) {
@@ -121,11 +119,6 @@ const OrderDetailedOverview: React.FC = () => {
 				setSnackbarOpen(true);
 			}
 		} catch (error: unknown) {
-			console.log(
-				"Getting error while creating the order from catch block: ",
-				error
-			);
-
 			if (
 				typeof error === "object" &&
 				error !== null &&

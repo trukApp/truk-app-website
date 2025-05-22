@@ -102,8 +102,7 @@ const CreatePackage = () => {
                 return;
             }
         }
-    }, [completedSteps]);
-    console.log("shipToReduxValues: ", shipToReduxValues)
+    }, [completedSteps]); 
 
     const handleSubmit = async () => {
         const firstUnfilledIndex = completedSteps.findIndex((step) => !step);
@@ -180,9 +179,7 @@ const CreatePackage = () => {
 
 
     };
-    if (isPackageCreating) {
-        console.log('creating')
-    }
+  
     return (
         <div>
             <Backdrop

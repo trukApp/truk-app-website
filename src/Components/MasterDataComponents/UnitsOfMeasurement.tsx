@@ -143,16 +143,13 @@ const UnitsOfMeasurement: React.FC = () => {
 	const [altUnitOptions, setAltUnitOptions] = useState<string[]>([]);
 	const [isEditing, setIsEditing] = useState(false);
 	const [editRow, setEditRow] = useState<FormValues | null>(null);
-	const { data, error, isLoading } = useGetUomMasterQuery([]);
+	const { data,   isLoading } = useGetUomMasterQuery([]);
 	const [postUom, { isLoading: postUomLoading }] = usePostUomMasterMutation();
 	const [editUom, { isLoading: editUomLoading }] = useEditUomMasterMutation();
 	const [deleteUom, { isLoading: deleteUomLoading }] =
 		useDeleteUomMasterMutation();
 
-	if (error) {
-		console.error("Error fetching uom:", error);
-		// Handle the error case
-	}
+ 
 	const validationSchema = Yup.object({
 		unitName: Yup.string().required("Unit Name is required"),
 		unitDescription: Yup.string().required("Unit Description is required"),
@@ -259,8 +256,7 @@ const UnitsOfMeasurement: React.FC = () => {
 
 	const handleDelete = async (row: FormValues) => {
 		const uomId = row?.id;
-		if (!uomId) {
-			console.error("Row ID is missing");
+		if (!uomId) { 
 			setSnackbarMessage("Error: UOM ID is missing!");
 			setSnackbarSeverity("error");
 			setSnackbarOpen(true);
@@ -276,7 +272,7 @@ const UnitsOfMeasurement: React.FC = () => {
 			const response = await deleteUom(uomId);
 			console.log("Delete response:", response);
 
-			// Show success snackbar
+		 
 			setSnackbarMessage("UOM deleted successfully!");
 			setSnackbarSeverity("success");
 			setSnackbarOpen(true);

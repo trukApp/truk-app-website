@@ -169,8 +169,7 @@ const SupplierForm: React.FC = () => {
 
     const handleDelete = async (rowData: Customer) => {
         const deleteId = rowData?.partner_id;
-        if (!deleteId) {
-            console.error("Row ID is missing");
+        if (!deleteId) { 
             setSnackbarMessage("Error: Partner ID is missing!");
             setSnackbarSeverity("error");
             setSnackbarOpen(true);
@@ -204,8 +203,7 @@ const SupplierForm: React.FC = () => {
         setUpdateRecordData(rowData)
         setUpdateRecordId(rowData?.partner_id)
         const updatedInitialValues = await mapRowToInitialValues(rowData);
-        setFormInitialValues(updatedInitialValues);
-        console.log(rowData?.location_loc_ID, rowData?.loc_of_source_loc_ID)
+        setFormInitialValues(updatedInitialValues); 
         setSearchKey(rowData?.loc_ID)
         setSearchKeyDestination(rowData?.loc_of_source)
     };

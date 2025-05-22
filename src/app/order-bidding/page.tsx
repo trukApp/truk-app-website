@@ -16,9 +16,7 @@ const OrderBidding: React.FC = () => {
     const getAssignedPendingOrders = allOrdersData?.filter((eachOrder: Order) => {
         return eachOrder?.order_status === 'assignment pending'
     })
-
-    console.log("getAssignedPendingOrders: ", getAssignedPendingOrders)
-    console.log("allOrders: ", allOrders)
+ 
     const handleViewOrder = (orderId: string) => {
         setLoading(true)
         router.push(`/detailed-order-overview?order_ID=${orderId}&from=order-bidding`);

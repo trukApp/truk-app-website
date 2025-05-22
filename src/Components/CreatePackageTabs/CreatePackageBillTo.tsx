@@ -227,8 +227,7 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                                     }
                                 ]
                             }
-                            const response = await postLocation(body).unwrap();
-                            console.log('response in post location:', response);
+                            const response = await postLocation(body).unwrap(); 
                             if (response) {
                                 setFieldValue("locationId", response.created_records[0]);
                             }

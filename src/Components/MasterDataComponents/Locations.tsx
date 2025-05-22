@@ -117,7 +117,7 @@ const Locations: React.FC = () => {
   const [postLocation, { isLoading: postLocationLoading }] = usePostLocationMasterMutation();
   const [editLocation, { isLoading: editLocationLoading }] = useEditLocationMasterMutation();
   const [deleteLocation, { isLoading: deleteLocationLoading }] = useDeleteLocationMasterMutation()
-  console.log('all locations :', data?.locations)
+ 
 
   if (error) {
     console.error("Error fetching locations:", error);
@@ -269,8 +269,7 @@ const Locations: React.FC = () => {
   });
 
   useEffect(() => {
-    if (editRow) {
-      console.log('edit row :', editRow)
+    if (editRow) { 
       formik.setValues({
         id: editRow.id,
         locationId: editRow.locationId,

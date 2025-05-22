@@ -9,8 +9,7 @@
 //     const searchParams = useSearchParams();
 //     const orderId = searchParams.get('order_ID') || '';
 //     const { data: order, isLoading } = useGetOrderByIdQuery({ orderId });
-//     const orderData = order?.order;
-//     console.log("orderData: ", orderData);
+//     const orderData = order?.order; 
 
 //     return (
 //         <Box sx={{ p: 3 }}>

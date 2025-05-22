@@ -16,7 +16,7 @@ const LoadOptimization: React.FC<TrucksTableProps> = ({ trucks }) => {
     const selectedTrucks = trucks
     const getVechiles = selectedTrucks;
     // const selectedRoutes = useSelector((state: RootState) => state.auth.selectedRoutes);
-    // console.log('selectedRoutesFromRedux: ', selectedRoutes);
+ 
     return (
         <Box sx={{ p: 2 }}>
             <Typography variant="h5" gutterBottom color='#F08C24' sx={{ fontWeight: 'bold', marginTop: '30px' }}>

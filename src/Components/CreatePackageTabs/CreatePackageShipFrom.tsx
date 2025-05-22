@@ -194,7 +194,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
         try {
             const updatedLocationId = locId?.split(',')[0] ?? '';
             await updateDefulatFromLocation({ locId: updatedLocationId, defShipFrom: defaultValue ? 1 : 0 }).unwrap();
-            // console.log("response: ", response)
+         
         } catch (error) {
             console.log("Getting error while changing default value: ", error)
         }
@@ -276,8 +276,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                                     <FormControlLabel
                                         control={<Field name="saveAsDefaultShipFromLocation" type="checkbox" as={Checkbox} />}
                                         label="Save as default Ship From Location"
-                                        onChange={() => {
-                                            console.log("saveAsDefaultShipFromLocation1: ", !values.saveAsDefaultShipFromLocation)
+                                        onChange={() => { 
                                             setFieldValue('saveAsDefaultShipFromLocation', !values.saveAsDefaultShipFromLocation);
                                             setFieldValue('saveAsNewLocationId', false);
                                             if (values.locationId) {

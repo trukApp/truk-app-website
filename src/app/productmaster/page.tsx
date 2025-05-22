@@ -152,7 +152,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
     const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
     const getAllPackages = packagesData?.packages.length > 0 ? packagesData?.packages : []
     const allProductsData = productsData?.products || [];
-console.log('filteredLocations',filteredLocations)
+ 
     const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
         setPaginationModel(newPaginationModel);
     };
@@ -396,8 +396,7 @@ console.log('filteredLocations',filteredLocations)
                 temp_controlled: values?.temperatureControl
             }
 
-            if (updateRecord) {
-                console.log('editBody :', editProductBody)
+            if (updateRecord) { 
                 const response = await updateProductDetails({ body: editProductBody, productId: updateRecordId }).unwrap();
                 if (response?.updated_record) {
                     setSnackbarMessage(`Product ID ${response.updated_record} updated successfully!`);
@@ -411,8 +410,7 @@ console.log('filteredLocations',filteredLocations)
                     setSnackbarOpen(true);
                     setSearchKey('')
                 }
-            } else {
-                console.log('post body : ', createProductBody)
+            } else { 
                 const response = await createNewProduct(createProductBody).unwrap();
                 if (response?.created_records) {
                     setSnackbarMessage(`Product ID ${response.created_records[0]} created successfully!`);
@@ -437,8 +435,6 @@ console.log('filteredLocations',filteredLocations)
             setSearchKey('')
         }
     };
-
-
 
     return (
         <>

@@ -56,8 +56,7 @@ const Header = () => {
     setAnchorElHamburger(null);
   };
   useEffect(() => {
-    if (session?.error === "RefreshAccessTokenError") {
-      console.warn("Session expired. Redirecting to login.");
+    if (session?.error === "RefreshAccessTokenError") { 
       signOut({ callbackUrl: "/login" });
     }
   }, [session]);

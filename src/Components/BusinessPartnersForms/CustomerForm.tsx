@@ -321,9 +321,7 @@ const CustomerForm: React.FC = () => {
                     sold_to_party: values?.soldToParty,
                     bill_to_party: values?.billToParty
                 }
-            }
-            console.log("post body: ", body)
-            console.log("editBody: ", editBody)
+            } 
             if (updateRecord) {
                 const response = await updatePartnerDetails({ body: editBody, partnerId: updateRecordId }).unwrap();
                 if (response?.updated_record) {

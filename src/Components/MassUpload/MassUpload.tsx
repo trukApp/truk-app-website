@@ -191,8 +191,7 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
 
           return item;
         }),
-      };
-      console.log("body for mass :", body)
+      }; 
       const response = (await postMapping[arrayKey](body)) as ApiResponse;
       const uploadedRecords = response.data.created_records.length;
       if (uploadedRecords) {

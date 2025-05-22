@@ -57,7 +57,6 @@ export interface Order {
 const TrackingOrder: React.FC = () => {
     const [loading, setLoading] = useState(false)
     const { data: allOrders, error, isLoading } = useGetAllOrdersQuery({});
-    console.log('order :', allOrders)
     const router = useRouter();
     const ordersData = allOrders?.orders || [];
     const getAllTrackingOrders = ordersData.filter((eachOrder: Order) => {

@@ -23,7 +23,7 @@ interface PackageDetails {
 
 const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks, additionalDocs, setAdditionalDocs }) => {
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
-    // console.log("allocated:", selectedPackages)
+   
     const selectedTrucks = trucks
     const { data: locationsData } = useGetLocationMasterQuery({})
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
@@ -64,8 +64,7 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks, additionalDocs,
             field: 'products',
             headerName: 'Product Details',
             width: 400,
-            renderCell: (params: GridCellParams) => {
-                // console.log("params.value: ", params.value)
+            renderCell: (params: GridCellParams) => { 
                 const products = Array.isArray(params.value) ? params.value : [];
 
                 if (!products.length) return <div>No products</div>;

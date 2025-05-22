@@ -224,8 +224,7 @@ const DeviceMaster: React.FC = () => {
 
 	const handleDelete = async (row: DeviceMasterValues) => {
 		const deviceId = row?.id;
-		if (!deviceId) {
-			console.error("Row ID is missing");
+		if (!deviceId) { 
 			setSnackbarMessage("Error: Device ID is missing!");
 			setSnackbarSeverity("error");
 			setSnackbarOpen(true);
@@ -332,8 +331,7 @@ const DeviceMaster: React.FC = () => {
 	];
 
 	useEffect(() => {
-		if (editRow) {
-			console.log("edit:", editRow);
+		if (editRow) { 
 			const locId = editRow?.locationId
 				? editRow.locationId.split(", ")[0] ?? ""
 				: "";

@@ -72,19 +72,17 @@ const VehicleOnly: React.FC = () => {
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const [isEditing, setIsEditing] = useState(false);
     const [editRow, setEditRow] = useState<TruckFormDetails | null>(null);
-    const { data, error, isLoading } = useGetSingleVehicleMasterQuery({
+    const { data,   isLoading } = useGetSingleVehicleMasterQuery({
         // page: paginationModel.page + 1, limit: paginationModel.pageSize
     });
     const { data: vehiclesData, isLoading: isVehiclesLoading } = useGetVehicleMasterQuery({});
     const [postVehicle, { isLoading: postVehicleLoading }] = usePostSingleVehicleMasterMutation();
     const [editVehicle, { isLoading: editVehicleLoading }] = useEditSingleVehicleMasterMutation();
     const [deleteVehicle, { isLoading: deleteVehicleLoading }] = useDeleteSingleVehicleMasterMutation();
-    console.log('all single vehs  :', data?.data)
+    
     const getAllVehicles = vehiclesData?.vehicles
 
-    if (error) {
-        console.log("err in loading vehicles data :", error);
-    }
+ 
     const vehiclesMaster = data?.data;
     // const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
     //     setPaginationModel(newPaginationModel);
@@ -108,8 +106,7 @@ const VehicleOnly: React.FC = () => {
 
     const [initialValues, setInitialValues] = useState(initialFormValues);
     useEffect(() => {
-        if (editRow) {
-            console.log('edit row :', editRow);
+        if (editRow) { 
             setInitialValues({
                 id: editRow?.id || "",
                 truckId: editRow?.truckId || "",
@@ -219,13 +216,11 @@ const VehicleOnly: React.FC = () => {
                 }
             }
             if (isEditing && editRow) {
-                const truckId = editRow?.id;
-                console.log("truck id to edit :", truckId)
+                const truckId = editRow?.id; 
                 const response = await editVehicle({
                     body: editBody,
                     truckId,
-                }).unwrap();
-                console.log("edit response :", response)
+                }).unwrap(); 
                 if (response?.updated_record) {
                     setSnackbarMessage(`Vehicle ID ${response?.updated_record} updated successfully!`);
                     setSnackbarSeverity("success");
@@ -233,8 +228,7 @@ const VehicleOnly: React.FC = () => {
                 }
 
             } else {
-                const response = await postVehicle(body).unwrap();
-                console.log("post response :", response)
+                const response = await postVehicle(body).unwrap(); 
                 if (response?.created_records) {
                     setSnackbarMessage(`Vehicle ID ${response.created_records[0]} created successfully!`);
                     setSnackbarSeverity("success");
@@ -262,8 +256,7 @@ const VehicleOnly: React.FC = () => {
         setEditRow(row);
     };
     const handleDelete = async (row: TruckDetails) => {
-        const truckId = row?.id;
-        console.log("truck to delete : ", truckId)
+        const truckId = row?.id; 
         if (!truckId) {
             setSnackbarMessage("Error: Vehicle ID is missing!");
             setSnackbarSeverity("error");

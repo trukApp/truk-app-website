@@ -129,8 +129,7 @@ const DockManagement: React.FC = () => {
 	const { data: dockById, isLoading: dockLoading } =
 		useGetDocksByLocationIdQuery({ loc_ID: locationId });
 	useEffect(() => {
-		if (dockById) {
-			console.log("dock is :", dockById);
+		if (dockById) { 
 			setDocks(dockById?.dock_details);
 		}
 	}, [dockById]);
@@ -138,23 +137,17 @@ const DockManagement: React.FC = () => {
 		loc_type = "",
 		loc_desc = "";
 
-	if (docks && docks.length > 0) {
+	if (docks && docks?.length > 0) {
 		({ loc_ID, loc_type, loc_desc } = docks[0]);
 	}
-	useEffect(() => {
-		if (dockRequests) {
-			console.log("dockreqs :", dockRequests.data);
-		}
-	}, [dockRequests]);
 
-	if (dockReqsErr) {
-		console.log("docks err:", dockReqsErr);
-		setSnackbarMessage("Error");
+	if (dockReqsErr) { 
+		setSnackbarMessage(`Error `);
 		setSnackbarSeverity("error");
 		setSnackbarOpen(true);
 	}
 	const handleOpenModal = (row: DockRequest) => {
-		console.log("hi", row);
+ 
 		setOpen(true);
 		setRowDetails(row);
 		setOrderId(row.order_ID);
@@ -234,13 +227,11 @@ const DockManagement: React.FC = () => {
 			const body = {
 				cas_ID: carrierAssignId,
 				dock_ID: selectedDockId,
-			};
-			console.log("assign body:", body);
+			}; 
 			const response = await dockAllocate(body).unwrap();
 			if (
 				response.message === "Dock allocated successfully and carrier notified."
-			) {
-				console.log("edit response :", response);
+			) { 
 				setSnackbarMessage(
 					`Dock allocated successfully and carrier ${rowDetails?.confirmed_to} will be notified.`
 				);
@@ -249,7 +240,9 @@ const DockManagement: React.FC = () => {
 				setOpen(false);
 			}
 		} catch (err) {
-			console.error("Dock allocation failed", err);
+			setSnackbarMessage( `${err}` );
+			setSnackbarSeverity("error");
+			setSnackbarOpen(true);
 			setOpen(false);
 		}
 	};

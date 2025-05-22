@@ -154,8 +154,7 @@ const PackagingForm = () => {
   });
 
   useEffect(() => {
-    if (editRow) {
-      console.log('edit row :', editRow)
+    if (editRow) { 
       const dimensions = editRow.packagingDimensions.split(" * ")
       formik.setValues({
         id: editRow?.id,
@@ -181,8 +180,7 @@ const PackagingForm = () => {
 
   const handleDelete = async (row: PackageInfo) => {
     const packageId = row?.id;
-    if (!packageId) {
-      console.error("Row ID is missing");
+    if (!packageId) { 
       setSnackbarMessage("Error: Package ID is missing!");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);

@@ -44,12 +44,10 @@ export interface Order {
 const OrdersGrid: React.FC = () => {
   const [loading, setLoading] = useState(false)
   const { data: allOrders, error, isLoading } = useGetAllOrdersQuery({});
-  console.log('order :', allOrders)
+ 
   const router = useRouter();
 
-  // if (isLoading) {
-  //   return <Typography>Loading...</Typography>;
-  // }
+ 
 
   if (error) {
     return <Typography color="error">Failed to load data. Try after sometime.</Typography>;

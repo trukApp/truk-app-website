@@ -51,9 +51,7 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({ ...prev, logo: file }));
 };
 
-  const handleSubmit = () => {
-    // Example: send form data to backend
-    console.log("Submitted settings:", form);
+  const handleSubmit = () => { 
     alert("Settings saved successfully!");
   };
 

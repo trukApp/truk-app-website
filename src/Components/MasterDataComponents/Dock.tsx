@@ -120,8 +120,7 @@ const DockForm = () => {
 				setToTime(parsedTo);
 			}
 		}
-	};
-	console.log("data doc", data?.docks);
+	}; 
 	const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
 		setAnchorEl(event.currentTarget);
 		const currentValue = formik.values.dock_timings || "";
@@ -139,7 +138,7 @@ const DockForm = () => {
 		}
 	};
 	const getLocationDetails = (loc_ID: string) => {
-		console.log("locid:", loc_ID);
+		 
 		const location = getAllLocations?.find(
 			(loc: Location) => loc.loc_ID === loc_ID
 		);
@@ -170,8 +169,7 @@ const DockForm = () => {
 					},
 				],
 			};
-
-			console.log("body   :", body);
+ 
 			if (isEditing && editRow) {
 				const dock_ID = editRow.dock_ID;
 				const editBody = {
@@ -181,8 +179,7 @@ const DockForm = () => {
 					dock_timings: values.dock_timings,
 					dock_availability: values.dock_availability,
 					default_carriers: values.default_carriers,
-				};
-				// console.log("edit body:", editBody, dock_ID);
+				}; 
 				const response = await editDock({ body: editBody, dock_ID }).unwrap();
 				if (response?.dock_ID) {
 					setSnackbarMessage(`Dock ID ${dock_ID} updated successfully!`);
@@ -260,8 +257,7 @@ const DockForm = () => {
 
 	const handleDelete = async (row: DockFormValues) => {
 		const dockId = row?.dock_ID;
-		if (!dockId) {
-			console.error("Row ID is missing");
+		if (!dockId) { 
 			setSnackbarMessage("Error: Dock ID is missing!");
 			setSnackbarSeverity("error");
 			setSnackbarOpen(true);
@@ -276,8 +272,7 @@ const DockForm = () => {
 		}
 
 		try {
-			const response = await deleteDock(dockId);
-			console.log("response delete dock :", response);
+			const response = await deleteDock(dockId); 
 			if (response?.data?.deleted_record) {
 				setSnackbarMessage(
 					`Dock ID ${response?.data.deleted_record} deleted successfully!`
@@ -294,8 +289,7 @@ const DockForm = () => {
 	};
 
 	useEffect(() => {
-		if (editRow) {
-			console.log("edit row:", editRow);
+		if (editRow) { 
 			const locId = editRow?.locationId
 				? editRow.locationId.split(", ")[0] ?? ""
 				: "";
@@ -306,8 +300,7 @@ const DockForm = () => {
 				dock_name: editRow.dock_name || "",
 				dock_timings: editRow.dock_timings || "",
 				dock_availability: Boolean(editRow.dock_availability),
-				loc_ID: locId,
-				// default_carriers: editRow.default_carriers,
+				loc_ID: locId, 
 				default_carriers:
 					typeof editRow.default_carriers === "string"
 						? editRow.default_carriers.split(",").map((id) => id.trim())

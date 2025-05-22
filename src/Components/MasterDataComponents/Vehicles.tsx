@@ -243,10 +243,8 @@ const VehicleForm: React.FC = () => {
 	const displayLocations = searchKey
 		? filteredLocations?.results || []
 		: getAllLocations;
-	const { data: uom, error: uomErr } = useGetUomMasterQuery([]);
-	if (uomErr) {
-		console.log("uom err:", uomErr);
-	}
+	const { data: uom,   } = useGetUomMasterQuery([]);
+	 
 	useEffect(() => {
 		if (uom && uom.uomList) {
 			const unitsofMeasure = uom.uomList.map(
@@ -254,11 +252,8 @@ const VehicleForm: React.FC = () => {
 			);
 			dispatch(setUnitsofMeasurement(unitsofMeasure));
 		}
-
-		if (uomErr) {
-			console.error("uom error:", uomErr);
-		}
-	}, [uom, uomErr, dispatch]);
+ 
+	}, [uom,  dispatch]);
 
 	useEffect(() => {
 		function handleClickOutside(event: MouseEvent) {
@@ -363,8 +358,7 @@ const VehicleForm: React.FC = () => {
 
 	const [initialValues, setInitialValues] = useState(initialFormValues);
 	useEffect(() => {
-		if (editRow) {
-			console.log("edit row :", editRow);
+		if (editRow) { 
 			const editPayloadWeight = editRow.payloadWeight.split(" ");
 			const editCubicCapacity = editRow?.cubicCapacity.split(" ");
 			const editInteriorLength = editRow.interiorLength.split(" ");
@@ -542,8 +536,7 @@ const VehicleForm: React.FC = () => {
 		values: VehicleFormValues,
 		{ resetForm }: { resetForm: () => void }
 	) => {
-		try {
-			console.log("qwerty");
+		try { 
 			const body = {
 				vehicles: [
 					{
@@ -677,8 +670,7 @@ const VehicleForm: React.FC = () => {
 					setSnackbarOpen(true);
 					setSearchKey("");
 				}
-			} else {
-				// console.log('post api section : ', body)
+			} else { 
 				const response = await postVehicle(body).unwrap();
 				if (response?.created_records) {
 					setSnackbarMessage(
@@ -711,8 +703,7 @@ const VehicleForm: React.FC = () => {
 	};
 	const handleDelete = async (row: VehicleDetails) => {
 		const vehicleId = row?.id;
-		if (!vehicleId) {
-			console.error("Row ID is missing");
+		if (!vehicleId) { 
 			setSnackbarMessage("Error: Vehicle ID is missing!");
 			setSnackbarSeverity("error");
 			setSnackbarOpen(true);

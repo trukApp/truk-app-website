@@ -9,8 +9,6 @@ const ConfigSettings = () => {
     const dispatch = useAppDispatch();
     const filters = useAppSelector((state) => state.auth.filters);
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-    console.log("filters:", filters);
-
     const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const { name, checked } = event.target;
         dispatch(setFilters({ ...filters, [name]: checked }));

@@ -48,7 +48,7 @@ import { useSelector } from 'react-redux';
 
 const RouteDetails = () => {
   const deviationData = useSelector((state: RootState) => state.auth.deviationData);
-  // console.log('deviationData:;', deviationData);
+  
   // const [page, setPage] = useState(0);
   // const [rowsPerPage, setRowsPerPage] = useState(10);
   if (!deviationData) {

@@ -12,20 +12,15 @@ import { setUnitsofMeasurement } from "@/store/authSlice";
 
 const Home = () => {
   const dispatch = useDispatch();
-  const { data: uom, error: uomErr } = useGetUomMasterQuery([])
-  if (uomErr) {
-    console.log("uom err:", uomErr)
-  }
+  const { data: uom,  } = useGetUomMasterQuery([])
+  
   useEffect(() => {
     if (uom && uom.uomList) {
       const unitsofMeasure = uom.uomList.map((item: { unit_name: string }) => item.unit_name);
       dispatch(setUnitsofMeasurement(unitsofMeasure));
     }
-
-    if (uomErr) {
-      console.error("uom error:", uomErr);
-    }
-  }, [uom, uomErr, dispatch]);
+ 
+  }, [uom,  dispatch]);
 
   return (
     <Grid sx={{ marginLeft: { xs: 0, md: '30px' }, marginTop: '30px' }}>

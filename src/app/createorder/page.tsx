@@ -27,13 +27,13 @@ const CreateOrder: React.FC = () => {
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const dispatch = useAppDispatch();
     // const selectedRoutes = useSelector((state: RootState) => state.auth.selectedRoutes);
-    // console.log('selectedRoutes create order pagetsx: ', selectedRoutes);
+    
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const [activeStep, setActiveStep] = useState(0);
     const [selectTheTrucks, { error: packageSelectErr, isLoading: truckSelectionLoading }] = useSelectTheProductsMutation();
-    const [createOrder, { error: createOrderError, isLoading: confirmOrderLoading }] = useConfomOrderMutation();
+    const [createOrder, {  isLoading: confirmOrderLoading }] = useConfomOrderMutation();
     const [selectTrucks, setSelectTrucks] = useState<Truck[]>([]);
     const [unAllocatedPackages, setUnAllocatedPackages] = useState<[]>([]);
     const [conformOrderPayload, setConformOrderPayload] = useState<ConfirmPayload>({});
@@ -44,8 +44,7 @@ const CreateOrder: React.FC = () => {
 
 
     useEffect(() => {
-        if (packageSelectErr) {
-            // console.log('packageSelectErr:', packageSelectErr);
+        if (packageSelectErr) { 
             if ("data" in packageSelectErr && packageSelectErr.data && typeof packageSelectErr.data === "object") {
                 const errorMessage = (packageSelectErr.data as { error?: string }).error;
                 if (errorMessage === "All packages must have the same pickup_date (ignoring time).") {
@@ -94,8 +93,7 @@ const CreateOrder: React.FC = () => {
             unallocated_packages: conformOrderPayload?.unallocatedPackages,
             created_at: new Date().toISOString().split("T")[0],
             order_docs: additionalDocs
-        }
-        console.log('createOrderBody', createOrderBody)
+        } 
         setModalOpen(false);
         try {
             const response = await createOrder(createOrderBody).unwrap();
@@ -110,9 +108,7 @@ const CreateOrder: React.FC = () => {
                 dispatch(setSelectedTrucks([]));
             }
 
-        } catch (error: unknown) {
-            console.log("Getting error while creating the order: ", createOrderError);
-            console.log("Getting error while creating the order from catch block: ", error);
+        } catch (error: unknown) { 
 
             if (
                 typeof error === "object" &&
@@ -144,11 +140,10 @@ const CreateOrder: React.FC = () => {
             const response = await selectTheTrucks(body).unwrap();
             if (response) {
                 if (response?.message === "No suitable vehicles found for these package(s). Possibly special conditions or capacity mismatch.") {
-                    console.log("I am wrong")
+    
                     setNoVechilePopup(true)
                 } else {
-                    setConformOrderPayload(response)
-                    // console.log('allocated response: ', response.allocations)
+                    setConformOrderPayload(response) 
                     setSelectTrucks(response?.allocations);
                     setUnAllocatedPackages(response?.unallocatedPackages)
                     setActiveStep((prev) => prev + 1);

@@ -146,7 +146,6 @@ const DriverForm: React.FC = () => {
     driverAvailable: Yup.string().required('Driver availablity is required'),
   });
   const mapRowToInitialValues = (rowData: Driver) => {
-    console.log("rowData: ", rowData)
     const locationString = Array.isArray(rowData.locations)
       ? rowData.locations[0]
       : rowData.locations;
@@ -187,10 +186,7 @@ const DriverForm: React.FC = () => {
     };
   }, []);
 
-  console.log("formInitialValues: ", formInitialValues)
-
   const handleEdit = async (rowData: Driver) => {
-    console.log("edit: ", rowData)
     setShowForm(true)
     setUpdateRecord(true)
     const updatedInitialValues = await mapRowToInitialValues(rowData);
@@ -203,7 +199,6 @@ const DriverForm: React.FC = () => {
   const handleDelete = async (rowData: Driver) => {
     const deleteId = rowData?.id;
     if (!deleteId) {
-      console.error("Row ID is missing");
       setSnackbarMessage("Error: Driver ID is missing!");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
@@ -287,7 +282,6 @@ const DriverForm: React.FC = () => {
   })) || [];
 
   const handleDriverSubmit: (values: DriverFormValues) => Promise<void> = async (values) => {
-    console.log(values)
     try {
       const body = {
         drivers: [
@@ -324,7 +318,6 @@ const DriverForm: React.FC = () => {
         driver_availability: values?.driverAvailable === 'Yes' ? 1 : 0
       };
 
-      console.log("body: ", body)
       if (updateRecord) {
         const response = await editDriverDetails({ body: editBody, driverId: updateRecordId }).unwrap();
         if (response?.updated_record) {

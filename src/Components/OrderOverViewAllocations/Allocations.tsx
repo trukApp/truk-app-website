@@ -186,8 +186,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 		permit: Yup.string().required("Permit is required"),
 	});
 	const [carrierId, setCarrierId] = useState("");
-	console.log("carrier id :", carrierId);
-	console.log("fromm :", from);
+ 
 	const [openReject, setOpenReject] = useState(false);
 	const [carrierOptions, setCarrierOptions] = useState([]);
 	const [postVehicle, { isLoading: postVehicleLoading }] =
@@ -212,8 +211,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 	const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({});
 	const { data, isLoading: driverLoading } = useGetAllDriversDataQuery({});
 	const { data: allVehicleTrucks, isLoading: vehTrucksLoading } =
-		useGetSingleVehicleMasterQuery({});
-	// console.log('allveh trucks : ', allVehicleTrucks)
+		useGetSingleVehicleMasterQuery({}); 
 	const [searchKey, setSearchKey] = useState("");
 	const [showSuggestions, setShowSuggestions] = useState(false);
 	const driversData = data?.drivers.length > 0 ? data?.drivers : [];
@@ -248,8 +246,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 		);
 	const displayVehicles = searchKeyVehicle
 		? filteredVehicles?.results || []
-		: vehiclesData;
-	// console.log("display vehicles :", displayVehicles)
+		: vehiclesData; 
 	const [assignModal, setAssignModal] = useState(false);
 	const [multipleCarriers, setMultipleCarriers] = useState(false);
 	const [selectedAllocation, setSelectedAllocation] =
@@ -299,14 +296,12 @@ const Allocations: React.FC<AllocationsProps> = ({
 	const [open, setOpen] = useState(false);
 	const [requestedCarrier, setRequestedCarrier] = useState("");
 	const [carrierConfirmed, setCarrierConfirmed] = useState("");
-
-	console.log("requestedCarrier", requestedCarrier);
+ 
 	const handleClose = () => setOpen(false);
 	const handleAssignSubmit = async (
 		values: TruckFormDetails,
 		{ resetForm }: { resetForm: () => void }
-	) => {
-		console.log("Form Values:", values);
+	) => { 
 		try {
 			const body = {
 				vehicles: [
@@ -327,7 +322,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 				],
 			};
 			const response = await postVehicle(body).unwrap();
-			console.log("post response :", response);
+			 
 			if (response?.created_records) {
 				setSnackbarMessage(
 					`Vehicle ID ${response?.created_records[0]} created successfully!`
@@ -394,10 +389,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 			: "Product details not available";
 	};
 	const devicesData = allDevices?.devices.length > 0 ? allDevices?.devices : [];
-	if (driverLoading || vehTrucksLoading) {
-		console.log("driver loading");
-	}
-
+	 
 	const [formData, setFormData] = useState({
 		truckId: "",
 		driverId: "",
@@ -450,7 +442,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 				const lastCarrier = carrierData[carrierData?.length - 1];
 				const carrierRequested = lastCarrier?.req_sent_to?.[0];
 				const confirmed = lastCarrier.confirmed_to;
-				console.log("confirmed:", confirmed);
+			 
 				setCarrierConfirmed(confirmed);
 				setRequestedCarrier(carrierRequested);
 			}
@@ -463,8 +455,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 				assigned_time: new Date().toISOString().slice(0, 16),
 			};
 
-			const response = await postAssignCarrier(body).unwrap();
-			console.log("assign response:", response?.carrier_options);
+			const response = await postAssignCarrier(body).unwrap(); 
 			if (
 				response.message ===
 				"Multiple valid contracted carriers found. Choose one for assignment."
@@ -494,8 +485,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 			carrier_ID: carrierId,
 			assigned_time: new Date().toISOString().slice(0, 16),
 		};
-
-		console.log("body carr: ", body);
+ 
 
 		try {
 			const response = await postAssignCarrierToOrder(body).unwrap();
@@ -540,8 +530,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 		}
 
 		setErrors(newErrors);
-		if (isValid) {
-			console.log("Form submitted:", formData);
+		if (isValid) { 
 			try {
 				const vehicleSelfTruck = formData.truckId.split(",");
 				if (assignedOrder?.data?.length === 0) {
@@ -565,10 +554,8 @@ const Allocations: React.FC<AllocationsProps> = ({
 						self_transport: 1,
 						pod: {},
 						pod_doc: "",
-					};
-					console.log("assign body : ", body);
-					const response = await postAssignOrder(body).unwrap();
-					console.log("assign response :", response);
+					}; 
+					const response = await postAssignOrder(body).unwrap(); 
 					setAssignModal(false);
 					setSnackbarMessage(`Vehicle assined successfully!`);
 					setSnackbarSeverity("success");
@@ -593,8 +580,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 							...assignedOrder?.data[0]?.assigned_vehicle_data,
 							newVehicle,
 						],
-					};
-					console.log("edit API body:", editBody);
+					}; 
 					const response = await editAssignOrder(editBody).unwrap();
 					console.log("Edit Response: ", response);
 					setFormData({
@@ -628,10 +614,8 @@ const Allocations: React.FC<AllocationsProps> = ({
 			fetchOrderById();
 		}
 	}, [orderId, fetchOrderById]);
-
-	if (isFetching) return <p>Loading...</p>;
-	if (error) return <p>Error fetching order details</p>;
-	console.log("order by id:", order?.order?.order_status);
+ 
+	if (error) return <p>Error fetching order details</p>; 
 
 	const handleCreateVehicle = () => {
 		setOpen(true);
@@ -658,10 +642,9 @@ const Allocations: React.FC<AllocationsProps> = ({
 			const body = {
 				carrier_ID: carrierIdForOrder,
 				order_ID: orderId,
-			};
-			console.log("bodyy:", body);
+			}; 
 			const response = await postRejectOrderByCarrier(body).unwrap();
-			console.log("Rejection response:", response);
+		  
 			if (response) {
 				setSnackbarMessage(`Order ${orderId} rejected !`);
 				setSnackbarSeverity("info");
@@ -694,7 +677,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 		setBidModal(true);
 	};
 	const handleBidSubmit = async (values: BiddingModalProps) => {
-		console.log("bid sent");
+	 
 		const formattedDate = new Date(values.bid_start_time)
 			.toISOString()
 			.slice(0, 19);
@@ -703,29 +686,24 @@ const Allocations: React.FC<AllocationsProps> = ({
 			bid_value: values.bid_value,
 			bid_timing: values.bid_timing,
 			bid_start_time: formattedDate,
-		};
-		console.log("bidd body:", body);
+		}; 
 		try {
 			const response = await postInitiateBidding(body).unwrap();
-			console.log("post bid response :", response);
+			 
 			if (response.message === "Open bidding initiated successfully.") {
 				setSnackbarMessage(`Open bidding initiated successfully!`);
 				setSnackbarSeverity("success");
 				setSnackbarOpen(true);
 				setBidModal(false);
 			}
-		} catch (err) {
-			console.log("bid err:", err);
+		} catch (err) { 
 			setSnackbarMessage(`Unable to sent bid request at this time, ${err}`);
 			setSnackbarSeverity("error");
 			setSnackbarOpen(true);
 			setBidModal(false);
 		}
-	};
-	console.log("carrierAssignedOrder:", carrierAssignedOrder);
-	if (order.order.order_status === "carrier assignment") {
-	}
-	console.log("carrierConfirmed :", carrierConfirmed);
+	}; 
+	 
 	return (
 		<Box>
 			<Backdrop
@@ -743,7 +721,10 @@ const Allocations: React.FC<AllocationsProps> = ({
 					editAssignLoading ||
 					deviceLoading ||
 					carrierAssinLoading ||
-					carrierToOrderLoading
+					carrierToOrderLoading ||
+					vehTrucksLoading ||
+					driverLoading ||
+					isFetching
 				}
 			>
 				<CircularProgress color="inherit" />

@@ -54,7 +54,6 @@ const PackagesTable = () => {
     if (allProductsFectchingError) {
     }
     const allPackagesData = packagesOrderData?.packages || [];
-    console.log("allpcakages :", allPackagesData)
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
     const getAllPackages = packagesData?.packages.length > 0 ? packagesData?.packages : []
     const getLocationDetails = (loc_ID: string) => {
