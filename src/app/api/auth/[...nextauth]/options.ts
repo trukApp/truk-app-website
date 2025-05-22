@@ -79,7 +79,7 @@ export const options: NextAuthOptions = {
 
         try {
           const response = await fetch(
-            `https://dev-api.trukapp.com/truk/log/login`,
+            `http://13.127.36.10:8088/truk/log/login`,
             {
               method: "POST",
               headers: {

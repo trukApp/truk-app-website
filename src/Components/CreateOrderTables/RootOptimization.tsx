@@ -315,7 +315,7 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
         setSelectedRouteIndex(null);
     };
     console.log('alternateSelectedRoute:', alternateSelectedRoute);
-    // console.log('selectesroutesdata:', selectedRoutesData);
+    // console.log('alternateRoutes:', alternateRoutes);
     return (
         <div>
             <Box sx={{ display: 'flex', gap: 1, marginBottom: 2 }}>
@@ -429,23 +429,45 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
                     }, 0) ?? 0;
 
                     const totalDurationMinutes = selectedVehicleData?.route?.reduce((acc, route) => {
-                        const durationText = route?.duration || '0h 0m';
-                        const [hours = 0, minutes = 0] = durationText.match(/\d+/g)?.map(Number) ?? [0, 0];
-                        return acc + (hours * 60 + minutes);
+                        const durationText = route?.duration || '';
+
+                        let totalMinutes = 0;
+
+                        const dayMatch = durationText.match(/(\d+)\s*day/);
+                        const hourMatch = durationText.match(/(\d+)\s*hour/);
+                        const minuteMatch = durationText.match(/(\d+)\s*min/);
+
+                        if (dayMatch) totalMinutes += parseInt(dayMatch[1], 10) * 24 * 60;
+                        if (hourMatch) totalMinutes += parseInt(hourMatch[1], 10) * 60;
+                        if (minuteMatch) totalMinutes += parseInt(minuteMatch[1], 10);
+
+                        return acc + totalMinutes;
                     }, 0) ?? 0;
 
-                    const totalHours = Math.floor(totalDurationMinutes / 60);
-                    const remainingMinutes = totalDurationMinutes % 60;
+                    const days = Math.floor(totalDurationMinutes / (24 * 60));
+                    const remainingAfterDays = totalDurationMinutes % (24 * 60);
+                    const hours = Math.floor(remainingAfterDays / 60);
+                    const minutes = remainingAfterDays % 60;
+
+                    console.log('days:', days, 'hours:', hours, 'minutes:', minutes);
+
+                    const durationParts = [];
+                    if (days > 0) durationParts.push(`${days} day${days > 1 ? 's' : ''}`);
+                    if (hours > 0) durationParts.push(`${hours} hour${hours > 1 ? 's' : ''}`);
+                    if (minutes > 0) durationParts.push(`${minutes} min${minutes > 1 ? 's' : ''}`);
+
+                    const finalDurationString = durationParts.join(' ');
 
                     return (
                         <Card variant="outlined" sx={{ minWidth: 200 }}>
                             <CardContent>
-                                <Typography variant="subtitle1">Duration: {totalHours}h {remainingMinutes}m</Typography>
+                                <Typography variant="subtitle1">Duration: {finalDurationString}</Typography>
                                 <Typography variant="subtitle1">Distance: {totalDistance} km</Typography>
                             </CardContent>
                         </Card>
                     );
                 })()}
+
             </Box>
             <GoogleMap
                 mapContainerStyle={{ width: '100%', height: '500px' }}
