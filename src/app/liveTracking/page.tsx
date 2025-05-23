@@ -3,12 +3,12 @@ import React, { useEffect, useRef, useState } from "react";
 import { GoogleMap, Marker, Polyline, useJsApiLoader } from "@react-google-maps/api";
 // import { useSearchParams } from 'next/navigation';
 // import { useRouter } from 'next/navigation';
-import { Box, Typography } from '@mui/material';
+import { Box, Grid, Typography } from '@mui/material';
 import Image from "next/image";
 
 const mapContainerStyle = {
     width: "100%",
-    height: "500px",
+    height: "600px",
 };
 interface Vehicle {
     regNo: string;
@@ -237,97 +237,101 @@ const LiveTracking: React.FC = () => {
 
     return (
         <div>
-            <p style={{ fontSize: '20px', color: "#F08C24", textDecoration: 'underline', fontWeight: 'bold' }}>Suggested Vehicle Route</p>
-            {vehicleSuggestRoute && vehicleSuggestRoute.length > 0 && (
-                <Box sx={{ marginBottom: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', padding: 1, border: '1px solid #ccc', marginBottom: 1, gap: '10px' }}>
-                        <Image
-                            src="/start.svg"
-                            alt="Start"
-                            width={25}
-                            height={25}
-                            unoptimized
-                        />
-                        <Typography variant="h6">Start: {vehicleSuggestRoute[0]?.start?.address}</Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', padding: 1, border: '1px solid #ccc', marginBottom: 1, gap: '10px' }}>
-                        <Image
-                            src="/drop.svg"
-                            alt="End"
-                            width={25}
-                            height={25}
-                            unoptimized
-                        />
-                        <Typography variant="h6">End: {vehicleSuggestRoute[0]?.end?.address}</Typography>
-                    </Box>
-                </Box>
-            )}
-
-            <GoogleMap
-                mapContainerStyle={mapContainerStyle}
-                zoom={14}
-                center={selectedVehicle ? { lat: parseFloat(selectedVehicle.latitude), lng: parseFloat(selectedVehicle.longitude) } : mapCenter}
-            >
-                {vehicles.map((vehicle) => (
-                    <Marker
-                        key={vehicle.deviceId}
-                        position={{
-                            lat: parseFloat(vehicle.latitude),
-                            lng: parseFloat(vehicle.longitude),
-                        }}
-                        icon={{
-                            url: getVehicleIcon(vehicle.vehicleType),
-                            scaledSize: new window.google.maps.Size(60, 60),
-                        }}
-                    />
-                ))}
-
-                {selectedVehicle && vehiclePath[selectedVehicle.deviceId] && (
-                    <Polyline
-                        path={vehiclePath[selectedVehicle.deviceId]}
-                        options={{
-                            strokeColor: "#0000FF",
-                            strokeOpacity: 0.8,
-                            strokeWeight: 4,
-                        }}
-                    />
-                )}
-
-                {trackedPath.length > 1 && (
-                    <Polyline
-                        path={trackedPath}
-                        options={{
-                            strokeColor: "#FF0000",
-                            strokeOpacity: 0.8,
-                            strokeWeight: 4,
-                        }}
-                    />
-                )}
-
-            </GoogleMap>
-
-            {selectedVehicle && (
-                <div>
-                    <h3 style={{ color: "#F08C24", textDecoration: 'underline' }}>Vehicle Details</h3>
-                    <p><strong>Registration:</strong> {selectedVehicle.regNo}</p>
-                    <p><strong>Status:</strong> {selectedVehicle.status}</p>
-                    <p><strong>Speed:</strong> {selectedVehicle.speed} km/h</p>
-                    <p><strong>Last Seen:</strong> {selectedVehicle.lastSeen}</p>
-                    <p><strong>Vehicle ID:</strong> {selectedVehicle.vehicleId}</p>
-                </div>
-            )}
-            {trackedPath.length > 0 && (
-                <div>
-                    <h3>Tracked Route (5-min intervals)</h3>
-                    <ul>
-                        {trackedPath.map((point, index) => (
-                            <li key={index}>
-                                Lat: {point.lat}, Lng: {point.lng}
-                            </li>
+            <Grid container spacing={2}>
+                <Grid item xs={12} md={6} order={{ xs: 2, md: 1 }}>
+                    <p style={{ fontSize: '20px', color: "#F08C24", textDecoration: 'underline', fontWeight: 'bold' }}>Suggested Vehicle Route</p>
+                    {vehicleSuggestRoute && vehicleSuggestRoute.length > 0 && (
+                        <Box sx={{ marginBottom: 2 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', padding: 1, border: '1px solid #ccc', marginBottom: 1, gap: '10px' }}>
+                                <Image
+                                    src="/start.svg"
+                                    alt="Start"
+                                    width={25}
+                                    height={25}
+                                    unoptimized
+                                />
+                                <Typography variant="h6">Start: {vehicleSuggestRoute[0]?.start?.address}</Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', padding: 1, border: '1px solid #ccc', marginBottom: 1, gap: '10px' }}>
+                                <Image
+                                    src="/drop.svg"
+                                    alt="End"
+                                    width={25}
+                                    height={25}
+                                    unoptimized
+                                />
+                                <Typography variant="h6">End: {vehicleSuggestRoute[0]?.end?.address}</Typography>
+                            </Box>
+                        </Box>
+                    )}
+                    {selectedVehicle && (
+                        <div>
+                            <h3 style={{ color: "#F08C24", textDecoration: 'underline' }}>Vehicle Details</h3>
+                            <p><strong>Registration:</strong> {selectedVehicle.regNo}</p>
+                            <p><strong>Status:</strong> {selectedVehicle.status}</p>
+                            <p><strong>Speed:</strong> {selectedVehicle.speed} km/h</p>
+                            <p><strong>Last Seen:</strong> {selectedVehicle.lastSeen}</p>
+                            <p><strong>Vehicle ID:</strong> {selectedVehicle.vehicleId}</p>
+                        </div>
+                    )}
+                    {trackedPath.length > 0 && (
+                        <div>
+                            <h3>Tracked Route (5-min intervals)</h3>
+                            <ul>
+                                {trackedPath.map((point, index) => (
+                                    <li key={index}>
+                                        Lat: {point.lat}, Lng: {point.lng}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                </Grid>
+                <Grid item xs={12} md={6} order={{ xs: 2, md: 1 }}>
+                    <GoogleMap
+                        mapContainerStyle={mapContainerStyle}
+                        zoom={14}
+                        center={selectedVehicle ? { lat: parseFloat(selectedVehicle.latitude), lng: parseFloat(selectedVehicle.longitude) } : mapCenter}
+                    >
+                        {vehicles.map((vehicle) => (
+                            <Marker
+                                key={vehicle.deviceId}
+                                position={{
+                                    lat: parseFloat(vehicle.latitude),
+                                    lng: parseFloat(vehicle.longitude),
+                                }}
+                                icon={{
+                                    url: getVehicleIcon(vehicle.vehicleType),
+                                    scaledSize: new window.google.maps.Size(60, 60),
+                                }}
+                            />
                         ))}
-                    </ul>
-                </div>
-            )}
+
+                        {selectedVehicle && vehiclePath[selectedVehicle.deviceId] && (
+                            <Polyline
+                                path={vehiclePath[selectedVehicle.deviceId]}
+                                options={{
+                                    strokeColor: "#0000FF",
+                                    strokeOpacity: 0.8,
+                                    strokeWeight: 4,
+                                }}
+                            />
+                        )}
+
+                        {trackedPath.length > 1 && (
+                            <Polyline
+                                path={trackedPath}
+                                options={{
+                                    strokeColor: "#FF0000",
+                                    strokeOpacity: 0.8,
+                                    strokeWeight: 4,
+                                }}
+                            />
+                        )}
+
+                    </GoogleMap>
+                </Grid>
+            </Grid>
             {/* <Button
                 variant="contained"
                 color="primary"
