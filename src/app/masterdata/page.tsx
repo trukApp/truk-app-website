@@ -67,7 +67,7 @@ const MasterData: React.FC = () => {
 				<Tab
 					value="Vehicles"
 					sx={{ textTransform: "capitalize", fontSize: "16px" }}
-					label="Vehicles"
+					label="Resources"
 				/>
 				{/* <Tab value="Vehicle group" sx={{textTransform:'capitalize',fontSize:'16px'}} label="Vehicle Group" /> */}
 				<Tab

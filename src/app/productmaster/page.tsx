@@ -170,16 +170,19 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
     }, []);
 
     const validationSchema = Yup.object({
-        productName: Yup.string().required('Product name is required'),
-        productDescription: Yup.string().required('Product Description is required'),
-        weightUoM: Yup.string().required('Weight is required'),
-        volumeUoM: Yup.string().required('Volume is required'),
-        basicUoM: Yup.string().required('Basic Unit of Measure is required'),
-        salesUoM: Yup.string().required('Sales Unit of Measure is required'),
-        locationId: Yup.string().required('Location id is required'),
-        packagingType: Yup.string().required('packaging type is required'),
-        hsncode: Yup.string().required('Hsn code is required'),
-    });
+			productName: Yup.string().required("Product name is required"),
+			productDescription: Yup.string().required(
+				"Product Description is required"
+			),
+			stackingFactor: Yup.number().required("Stacking factor is required"),
+			weightUoM: Yup.string().required("Weight is required"),
+			volumeUoM: Yup.string().required("Volume is required"),
+			basicUoM: Yup.string().required("Basic Unit of Measure is required"),
+			salesUoM: Yup.string().required("Sales Unit of Measure is required"),
+			locationId: Yup.string().required("Location id is required"),
+			packagingType: Yup.string().required("packaging type is required"),
+			hsncode: Yup.string().required("Hsn code is required"),
+		});
 
     const getLocationDetails = (loc_ID: string) => {
         const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
@@ -723,12 +726,20 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                                         <Grid item xs={12} sm={6} md={2.4} >
                                             <TextField
                                                 fullWidth size='small'
-                                                label="Stacking Factor"
-                                                name="stackingFactor"
+                                                label="Stacking Factor*"
+                                                name="stackingFactor" type='number'
                                                 value={values.stackingFactor}
                                                 onChange={handleChange}
-                                                onBlur={handleBlur}
-                                            />
+                                                onBlur={handleBlur}   inputProps={{ min: 0 }}
+                                                error={touched.stackingFactor && Boolean(errors.stackingFactor)}
+                                                helperText={touched.stackingFactor && errors.stackingFactor}
+                                            />  <Typography
+                                            variant="caption"
+                                            color="textSecondary"
+                                            sx={{ mt: 0.5, display: 'block' }}
+                                          >
+                                            Stacking factor (0-infinite, 1-no stacking, &gt;1 is the no of layers/stack)
+                                          </Typography>
                                         </Grid>
 
                                         <Grid item xs={12} sm={6} md={2.4} >
