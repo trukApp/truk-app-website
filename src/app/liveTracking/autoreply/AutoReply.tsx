@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { GoogleMap, Marker, Polyline, useLoadScript } from '@react-google-maps/api';
 import { useSearchParams } from 'next/navigation';
-import { CircularProgress, Box, Typography } from '@mui/material';
+import { CircularProgress, Box, Typography, Grid } from '@mui/material';
 // import { useRouter } from 'next/navigation';
 import { usePostValidateRouteMutation } from '@/api/apiSlice';
 import { setDeviationData } from '@/store/authSlice';
@@ -12,7 +12,7 @@ import RouteDetails from '@/app/route-details/page';
 
 const mapContainerStyle = {
     width: '100%',
-    height: '500px',
+    height: '600px',
 };
 
 interface VehicleLocation {
@@ -155,7 +155,7 @@ const AutoReply = () => {
             </Box>
         );
     }
-    console.log("vehicleLocations: ", vehicleLocations)
+    // console.log("vehicleLocations: ", vehicleLocations)
 
     if (error || vehicleLocations?.length === 0) {
         return (
@@ -193,24 +193,32 @@ const AutoReply = () => {
 
     return (
         <Box>
-            <GoogleMap mapContainerStyle={mapContainerStyle} center={center} zoom={10}>
-                <Marker
-                    position={{ lat: vehicleLocations[0]?.latitude, lng: vehicleLocations[0]?.longitude }}
-                    icon={{
-                        url: vehicleType === 'Bike' ? '/bike.svg' : '/car.svg',
-                        scaledSize: new window.google.maps.Size(40, 40),
-                    }}
-                />
-                <Polyline
-                    path={vehicleLocations.map(loc => ({ lat: loc.latitude, lng: loc.longitude }))}
-                    options={{
-                        strokeColor: '#0000FF',
-                        strokeOpacity: 0.8,
-                        strokeWeight: 4,
-                    }}
-                />
-            </GoogleMap>
-
+            <Grid container spacing={2}>
+                <Grid item xs={12} md={6} order={{ xs: 2, md: 1 }}>
+                    {routeDetails && (
+                        <RouteDetails />
+                    )}
+                </Grid>
+                <Grid item xs={12} md={6} order={{ xs: 2, md: 1 }}>
+                    <GoogleMap mapContainerStyle={mapContainerStyle} center={center} zoom={10}>
+                        <Marker
+                            position={{ lat: vehicleLocations[0]?.latitude, lng: vehicleLocations[0]?.longitude }}
+                            icon={{
+                                url: vehicleType === 'Bike' ? '/bike.svg' : '/car.svg',
+                                scaledSize: new window.google.maps.Size(40, 40),
+                            }}
+                        />
+                        <Polyline
+                            path={vehicleLocations.map(loc => ({ lat: loc.latitude, lng: loc.longitude }))}
+                            options={{
+                                strokeColor: '#0000FF',
+                                strokeOpacity: 0.8,
+                                strokeWeight: 4,
+                            }}
+                        />
+                    </GoogleMap>
+                </Grid>
+            </Grid>
             {/* <Box mt={3} textAlign="center">
                 <Button variant="contained" color="primary" onClick={handleViewRouteDetails}>
                     View Route Details
@@ -235,9 +243,6 @@ const AutoReply = () => {
                     <CircularProgress />
                 </Box>
             </Modal> */}
-            {routeDetails && (
-                <RouteDetails />
-            )}
         </Box>
     );
 };
