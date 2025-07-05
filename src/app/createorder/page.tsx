@@ -63,9 +63,13 @@ const CreateOrder: React.FC = () => {
                 } else if (errorMessage === "All packages must share ship_from") {
                     setSnackbarMessage(`All packages must be same source location.`)
                 }
-                else {
-                    setSnackbarMessage("Something went wrong please try again after some time.");
-                }
+                else if (errorMessage?.includes("Stacking-factor mismatch")) {
+									setSnackbarMessage(errorMessage);
+								} else {
+									setSnackbarMessage(
+										"Something went wrong please try again after some time."
+									);
+								}
             } else {
                 setSnackbarMessage("An unexpected error occurred.");
             }

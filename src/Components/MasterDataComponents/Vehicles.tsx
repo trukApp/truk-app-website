@@ -466,16 +466,6 @@ const VehicleForm: React.FC = () => {
 			const editMaxLength = editRow.maxLength.split(" ");
 			const editMaxWidth = editRow.maxWidth.split(" ");
 			const editMaxHeight = editRow.maxHeight.split(" ");
-			// const locIds = Array.isArray(editRow?.locationId)
-			// 	? editRow.locationId.map((entry: string) => entry.split(",")[0].trim())
-			// 	: [];
-
-			// const locIds: string[] =
-			// 	typeof editRow?.locationId === "string"
-			// 		? editRow.locationId
-			// 				.split(" | ")
-			// 				.map((entry: string): string => entry.split(",")[0].trim())
-			// 		: [];
 			const locIds: string[] =
 				(editRow?.locationId )
 					?.split(" | ")
@@ -498,14 +488,14 @@ console.log("locids :", locIds)
 				ownership: editRow.ownership,
 				payloadWeight: editPayloadWeight[0],
 				payloadWeightUnits: editPayloadWeight[1],
-				cubicCapacity: editCubicCapacity[0],
-				cubicCapacityUnits: editCubicCapacity[1],
 				interiorLength: editInteriorLength[0],
 				interiorLengthUnits: editInteriorLength[1],
 				interiorWidth: editInteriorWidth[0],
 				interiorWidthUnits: editInteriorWidth[1],
 				interiorHeight: editInteriorHeight[0],
 				interiorHeightUnits: editInteriorHeight[1],
+				cubicCapacity: editCubicCapacity[0],
+				cubicCapacityUnits: editCubicCapacity[1],
 				tareWeight: editTareWeight[0],
 				tareWeightUnits: editTareWeight[1],
 				maxGrossWeight: editMaxGrossWeight[0],
@@ -1476,12 +1466,15 @@ console.log("vehiclesMaster:", vehiclesMaster);
 						<Grid item xs={12} sm={6} md={1.6}>
 							<TextField
 								fullWidth
-								label="Cubic Capacity*"
-								name="cubicCapacity"
+								label="Tare Volume*"
+								name="tareVolume"
 								type="number"
-								value={values.cubicCapacity || 1}
-								InputProps={{ readOnly: true }}
 								disabled
+								value={
+									Number(values.interiorLength || 1) *
+									Number(values.interiorWidth || 1) *
+									Number(values.interiorHeight || 1)
+								}
 								size="small"
 							/>
 						</Grid>

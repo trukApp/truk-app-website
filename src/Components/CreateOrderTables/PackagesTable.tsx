@@ -7,6 +7,7 @@ import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader
 import { useGetAllProductsQuery, useGetLocationMasterQuery, useGetPackageMasterQuery } from '@/api/apiSlice';
 import { Location } from '../MasterDataComponents/Locations';
 import moment from 'moment';
+ 
 
 
 export interface Product {
@@ -229,6 +230,7 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
                     />
                 )}
             </Grid>
+              
         </div>
     );
 };

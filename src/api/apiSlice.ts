@@ -307,7 +307,17 @@ export const apiSlice = createApi({
       },
       providesTags: [{ type: "VehicleMaster", id: "LIST" }],
     }),
-
+    getVehicleById: builder.query({
+      query: ({vehicle_ID}) => { 
+        console.log("vehicle_ID:",vehicle_ID)
+        return {
+          url: `vehicle/vehicle?vehicle_ID=${vehicle_ID}`,
+          method: "GET",
+        
+        };
+      },
+      providesTags: [{ type: "VehicleMaster", id: "LIST" }],
+    }),
     getFilteredVehicles: builder.query({
       query: (searchKey) => ({
         url: `self/search-self-vehicles`,
@@ -871,6 +881,7 @@ export const {
   useEditLocationMasterMutation,
   useDeleteLocationMasterMutation,
   useGetVehicleMasterQuery,
+  useGetVehicleByIdQuery,
   useGetFilteredVehiclesQuery,
   usePostVehicleMasterMutation,
   useEditVehicleMasterMutation,

@@ -156,6 +156,8 @@
 // export default TrucksTable;
 
 
+
+
 import React from "react";
 import {
   Box,
@@ -167,6 +169,7 @@ import {
 } from "@mui/material";
 import { useGetAllProductsQuery } from "@/api/apiSlice";
 import { Package, Product } from "./PackagesTable";
+import TruckScene from "./LoadThreeDModal";
 export interface Allocation {
   vehicle_ID: string;
   totalWeightCapacity: number;
@@ -177,26 +180,34 @@ export interface Allocation {
 }
 
 export interface Truck {
-  packages: string[];
-  occupiedVolume: number;
-  occupiedWeight: number;
-  label: string;
-  totalCost: number;
-  allocations: Allocation[];
-  unallocatedPackages: string[];
-  vehicle_ID: string;
-  totalWeightCapacity: number;
-  leftoverWeight: string;
-  totalVolumeCapacity: number;
-  leftoverVolume: number;
-  cost: number;
-  loadArrangement: []
+	packages: string[];
+	occupiedVolume: number;
+	occupiedWeight: number;
+	label: string;
+	totalCost: number;
+	allocations: Allocation[];
+	unallocatedPackages: string[];
+	vehicle_ID: string;
+	totalWeightCapacity: number;
+	leftoverWeight: string;
+	totalVolumeCapacity: number;
+	leftoverVolume: number;
+	cost: number;
+	loadArrangement: [];
+	truckCapacity: {
+		allowedLayers: number;
+		maxLayers: number;
+		maxM3: number;
+		oneLayerM3: number;
+		rawM3: number;
+		usableM3: number;
+	};
 }
 interface UnAllocatedPackage {
   pack_ID: string;
   reason: string;
 }
-interface TrucksTableProps {
+export interface TrucksTableProps {
   trucks: Truck[];
   unAllocatedPackages: [];
   selectedPackages: Package[];
@@ -208,7 +219,7 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
   trucks,
   unAllocatedPackages,
   selectedPackages
-}) => {
+}) => {console.log("trucks :", trucks); 
   const { data: productsData } = useGetAllProductsQuery({});
   const allProductsData = productsData?.products || [];
 
@@ -220,6 +231,7 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
     return `${productInfo.product_name}, Weight: ${productInfo.weight}kg, ID: ${productInfo.product_ID}`;
   };
 
+  
   const getPercentage = (used: number, total: number): number =>
     total ? Math.round((used / total) * 100) : 0;
 
@@ -315,6 +327,10 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
           );
         })}
       </Grid>
+                  <div style={{ height: "100vh", width: "100%" }}>
+            <TruckScene truckData={trucks} selectedPackages={selectedPackages}
+	 />
+          </div>
     </Box>
   );
 };
