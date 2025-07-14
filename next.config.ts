@@ -18,8 +18,8 @@ const nextConfig = {
       // Rewrite API calls except for /api/auth/*
       {
         source: '/api/:path((?!auth).*)',  // Regex negative lookahead to exclude 'auth'
-        // destination: 'http://13.127.36.10:8088/truk/:path*',
-        destination: 'http://192.168.43.78:8088/truk/:path*',
+        destination: 'http://13.127.36.10:8088/truk/:path*',
+        // destination: 'http://192.168.31.37:8088/truk/:path*',
       },
     ];
   },

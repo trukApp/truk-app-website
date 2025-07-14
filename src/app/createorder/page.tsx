@@ -27,13 +27,13 @@ const CreateOrder: React.FC = () => {
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const dispatch = useAppDispatch();
     // const selectedRoutes = useSelector((state: RootState) => state.auth.selectedRoutes);
-    
+
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const [activeStep, setActiveStep] = useState(0);
     const [selectTheTrucks, { error: packageSelectErr, isLoading: truckSelectionLoading }] = useSelectTheProductsMutation();
-    const [createOrder, {  isLoading: confirmOrderLoading }] = useConfomOrderMutation();
+    const [createOrder, { isLoading: confirmOrderLoading }] = useConfomOrderMutation();
     const [selectTrucks, setSelectTrucks] = useState<Truck[]>([]);
     const [unAllocatedPackages, setUnAllocatedPackages] = useState<[]>([]);
     const [conformOrderPayload, setConformOrderPayload] = useState<ConfirmPayload>({});
@@ -44,7 +44,7 @@ const CreateOrder: React.FC = () => {
 
 
     useEffect(() => {
-        if (packageSelectErr) { 
+        if (packageSelectErr) {
             if ("data" in packageSelectErr && packageSelectErr.data && typeof packageSelectErr.data === "object") {
                 const errorMessage = (packageSelectErr.data as { error?: string }).error;
                 if (errorMessage === "All packages must have the same pickup_date (ignoring time).") {
@@ -64,12 +64,12 @@ const CreateOrder: React.FC = () => {
                     setSnackbarMessage(`All packages must be same source location.`)
                 }
                 else if (errorMessage?.includes("Stacking-factor mismatch")) {
-									setSnackbarMessage(errorMessage);
-								} else {
-									setSnackbarMessage(
-										"Something went wrong please try again after some time."
-									);
-								}
+                    setSnackbarMessage(errorMessage);
+                } else {
+                    setSnackbarMessage(
+                        "Something went wrong please try again after some time."
+                    );
+                }
             } else {
                 setSnackbarMessage("An unexpected error occurred.");
             }
@@ -97,7 +97,7 @@ const CreateOrder: React.FC = () => {
             unallocated_packages: conformOrderPayload?.unallocatedPackages,
             created_at: new Date().toISOString().split("T")[0],
             order_docs: additionalDocs
-        } 
+        }
         setModalOpen(false);
         try {
             const response = await createOrder(createOrderBody).unwrap();
@@ -112,7 +112,7 @@ const CreateOrder: React.FC = () => {
                 dispatch(setSelectedTrucks([]));
             }
 
-        } catch (error: unknown) { 
+        } catch (error: unknown) {
 
             if (
                 typeof error === "object" &&
@@ -144,10 +144,10 @@ const CreateOrder: React.FC = () => {
             const response = await selectTheTrucks(body).unwrap();
             if (response) {
                 if (response?.message === "No suitable vehicles found for these package(s). Possibly special conditions or capacity mismatch.") {
-    
+
                     setNoVechilePopup(true)
                 } else {
-                    setConformOrderPayload(response) 
+                    setConformOrderPayload(response)
                     setSelectTrucks(response?.allocations);
                     setUnAllocatedPackages(response?.unallocatedPackages)
                     setActiveStep((prev) => prev + 1);
@@ -237,13 +237,6 @@ const CreateOrder: React.FC = () => {
                     </DialogActions>
                 </Dialog>
             )}
-            {/* <Stepper  activeStep={activeStep} alternativeLabel>
-                {steps.map((label) => (
-                    <Step key={label}>
-                        <StepLabel StepIconComponent={CustomStepIcon}>{label}</StepLabel>
-                    </Step>
-                ))}
-            </Stepper> */}
             <Box sx={{ px: 2, mt: 2 }}>
                 <Typography variant="h5" color='primary' sx={{ fontWeight: 'bold', mb: 1 }}>
                     Create New Order

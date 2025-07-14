@@ -1,131 +1,125 @@
 import React from 'react';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { Box, Typography, Paper } from '@mui/material';
-import { Truck } from './TrucksTable'; 
-// import TruckScene from './LoadThreeDModal';
-
+import { Truck } from './TrucksTable';
+import { useSelector } from 'react-redux';
+import { useAppSelector } from '@/store';
 // import { RootState } from '@/store';
-// import { useSelector } from 'react-redux';
 interface LoadArrangement {
-    stop: number;
-    location: string;
-    packages: string[];
+	stop: number;
+	location: string;
+	packages: string[];
 }
 interface TrucksTableProps {
-    trucks: Truck[];
+	trucks: Truck[];
 }
 const LoadOptimization: React.FC<TrucksTableProps> = ({ trucks }) => {
-    const selectedTrucks = trucks
-    const getVechiles = selectedTrucks;
-    // const selectedRoutes = useSelector((state: RootState) => state.auth.selectedRoutes);
+	const selectedTrucks = trucks
+	const getVechiles = selectedTrucks;
+	const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
+	// const selectedRoutes = useSelector((state: RootState) => state.auth.selectedRoutes);
 
-      
-    return (
-			<Box sx={{ p: 2 }}>
-				<Typography
-					variant="h5"
-					gutterBottom
-					color="#F08C24"
-					sx={{ fontWeight: "bold", marginTop: "30px" }}
-				>
-					Load Optimization Details
-				</Typography>
-				<div
-					style={{
-						display: "flex",
-						justifyContent: "center",
-						alignItems: "center",
-						flexDirection: "column",
-					}}
-				>
-					{getVechiles.map((vehicle, index) => {
-						const columns: GridColDef[] = [
-							{ field: "id", headerName: "Load Arrangement", width: 100 },
-							{ field: "location", headerName: "Delivery Address", width: 400 },
-							{ field: "packages", headerName: "Packages", width: 250 },
-						];
 
-						const rows = (vehicle.loadArrangement ?? []).map(
-							(item: LoadArrangement, i) => ({
-								id: item.stop || i + 1,
-								location: item.location || "N/A",
-								packages: item.packages ? item.packages.join(", ") : "N/A",
-							})
-						);
+	return (
+		<Box sx={{ p: 2 }}>
+			<Typography
+				variant="h5"
+				gutterBottom
+				color="#F08C24"
+				sx={{ fontWeight: "bold", marginTop: "30px" }}
+			>
+				Load Optimization Details
+			</Typography>
+			<div
+				style={{
+					display: "flex",
+					justifyContent: "center",
+					alignItems: "center",
+					flexDirection: "column",
+				}}
+			>
+				{getVechiles.map((vehicle, index) => {
+					const columns: GridColDef[] = [
+						{ field: "id", headerName: "Load Arrangement", width: 100 },
+						{ field: "location", headerName: "Delivery Address", width: 400 },
+						{ field: "packages", headerName: "Packages", width: 250 },
+					];
 
-						return (
-							<Paper
-								key={index}
-								sx={{
-									my: 3,
-									p: 3,
-									borderRadius: 2,
-									boxShadow: 3,
-									width: "75%",
-								}}
+					const rows = (vehicle.loadArrangement ?? []).map(
+						(item: LoadArrangement, i) => ({
+							id: item.stop || i + 1,
+							location: item.location || "N/A",
+							packages: item.packages ? item.packages.join(", ") : "N/A",
+						})
+					);
+
+					return (
+						<Paper
+							key={index}
+							sx={{
+								my: 3,
+								p: 3,
+								borderRadius: 2,
+								boxShadow: 3,
+								width: "75%",
+							}}
+						>
+							<Typography
+								variant="h6"
+								gutterBottom
+								sx={{ mb: 2, fontWeight: "bold" }}
+								color="#F08C24"
 							>
-								<Typography
-									variant="h6"
-									gutterBottom
-									sx={{ mb: 2, fontWeight: "bold" }}
-									color="#F08C24"
-								>
-									Vehicle ID: {vehicle.vehicle_ID}
-								</Typography>
+								Vehicle ID: {vehicle.vehicle_ID}
+							</Typography>
 
-								<Typography variant="body1" sx={{ mb: 1 }}>
-									Total Weight Capacity:{" "}
-									<strong>{vehicle?.totalWeightCapacity?.toFixed(2)} kg</strong>
-								</Typography>
+							<Typography variant="body1" sx={{ mb: 1 }}>
+								Total Weight Capacity:{" "}
+								<strong>{vehicle?.totalWeightCapacity?.toFixed(2)} kg</strong>
+							</Typography>
 
-								<Typography variant="body1" sx={{ mb: 1 }}>
-									Leftover Weight:{" "}
-									<strong>
-										{parseFloat(vehicle?.leftoverWeight)?.toFixed(2)} kg
-									</strong>
-								</Typography>
+							<Typography variant="body1" sx={{ mb: 1 }}>
+								Leftover Weight:{" "}
+								<strong>
+									{parseFloat(vehicle?.leftoverWeight)?.toFixed(2)} kg
+								</strong>
+							</Typography>
 
-								<Typography variant="body1" sx={{ mb: 1 }}>
-									Total Volume Capacity:{" "}
-									<strong>{vehicle?.totalVolumeCapacity?.toFixed(2)} m³</strong>
-								</Typography>
+							<Typography variant="body1" sx={{ mb: 1 }}>
+								Total Volume Capacity:{" "}
+								<strong>{vehicle?.totalVolumeCapacity?.toFixed(2)} m³</strong>
+							</Typography>
 
-								<Typography variant="body1" sx={{ mb: 1 }}>
-									Leftover Volume:{" "}
-									<strong>{vehicle?.leftoverVolume?.toFixed(2)} m³</strong>
+							<Typography variant="body1" sx={{ mb: 1 }}>
+								Leftover Volume:{" "}
+								<strong>{vehicle?.leftoverVolume?.toFixed(2)} m³</strong>
+							</Typography>
+							<Typography variant="body1" sx={{ mb: 1 }}>
+								Estimated Cost: <strong>₹{vehicle?.cost?.toFixed(2)}</strong>
+							</Typography>
+							{rows.length === 0 ? (
+								<Typography variant="body1" sx={{ mt: 2 }}>
+									No load arrangement data available.
 								</Typography>
-								<Typography variant="body1" sx={{ mb: 1 }}>
-									Estimated Cost: <strong>₹{vehicle?.cost?.toFixed(2)}</strong>
-								</Typography>
-								{rows.length === 0 ? (
-									<Typography variant="body1" sx={{ mt: 2 }}>
-										No load arrangement data available.
-									</Typography>
-								) : (
-									<Box sx={{ mt: 2, height: 300, backgroundColor: "white" }}>
-										<DataGrid
-											rows={rows}
-											columns={columns}
-											pageSizeOptions={[5, 10]}
-											initialState={{
-												pagination: { paginationModel: { pageSize: 5 } },
-											}}
-											disableRowSelectionOnClick
-										/>
-									</Box>
-								)}
-							</Paper>
-						);
-					})}
-					{/* <div style={{ height: "100vh", width: "100%" }}>
-						<TruckScene
-							truckData={trucks}
-							selectedPackages={selectedPackages}
-						/>
-					</div> */}
-				</div>
-			</Box>
-		);
+							) : (
+								<Box sx={{ mt: 2, height: 300, backgroundColor: "white" }}>
+									<DataGrid
+										rows={rows}
+										columns={columns}
+										pageSizeOptions={[5, 10]}
+										initialState={{
+											pagination: { paginationModel: { pageSize: 5 } },
+										}}
+										disableRowSelectionOnClick
+									/>
+								</Box>
+							)}
+						</Paper>
+					);
+				})}
+			</div>
+		</Box>
+	);
 };
 
 export default LoadOptimization;

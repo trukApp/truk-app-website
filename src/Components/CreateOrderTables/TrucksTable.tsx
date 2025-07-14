@@ -180,28 +180,28 @@ export interface Allocation {
 }
 
 export interface Truck {
-	packages: string[];
-	occupiedVolume: number;
-	occupiedWeight: number;
-	label: string;
-	totalCost: number;
-	allocations: Allocation[];
-	unallocatedPackages: string[];
-	vehicle_ID: string;
-	totalWeightCapacity: number;
-	leftoverWeight: string;
-	totalVolumeCapacity: number;
-	leftoverVolume: number;
-	cost: number;
-	loadArrangement: [];
-	truckCapacity: {
-		allowedLayers: number;
-		maxLayers: number;
-		maxM3: number;
-		oneLayerM3: number;
-		rawM3: number;
-		usableM3: number;
-	};
+  packages: string[];
+  occupiedVolume: number;
+  occupiedWeight: number;
+  label: string;
+  totalCost: number;
+  allocations: Allocation[];
+  unallocatedPackages: string[];
+  vehicle_ID: string;
+  totalWeightCapacity: number;
+  leftoverWeight: string;
+  totalVolumeCapacity: number;
+  leftoverVolume: number;
+  cost: number;
+  loadArrangement: [];
+  truckCapacity: {
+    allowedLayers: number;
+    maxLayers: number;
+    maxM3: number;
+    oneLayerM3: number;
+    rawM3: number;
+    usableM3: number;
+  };
 }
 interface UnAllocatedPackage {
   pack_ID: string;
@@ -219,7 +219,8 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
   trucks,
   unAllocatedPackages,
   selectedPackages
-}) => {console.log("trucks :", trucks); 
+}) => {
+  console.log("trucks :", trucks);
   const { data: productsData } = useGetAllProductsQuery({});
   const allProductsData = productsData?.products || [];
 
@@ -231,7 +232,7 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
     return `${productInfo.product_name}, Weight: ${productInfo.weight}kg, ID: ${productInfo.product_ID}`;
   };
 
-  
+
   const getPercentage = (used: number, total: number): number =>
     total ? Math.round((used / total) * 100) : 0;
 
@@ -302,21 +303,6 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
                       color="secondary"
                       sx={{ height: 10, borderRadius: 5, mt: 1 }}
                     />
-                    {/* <LinearProgress
-                      variant="determinate"
-                      value={getPercentage(volumeUsed, volumeTotal)}
-                      color="secondary"
-                      sx={{
-                        height: 10,
-                        borderRadius: 5,
-                        mt: 1,
-                        backgroundColor: 'white', // sets the unfilled (track) color
-                        '& .MuiLinearProgress-bar': {
-                          borderRadius: 5,
-                        },
-                      }}
-                    /> */}
-
                     <Typography variant="caption">
                       {getPercentage(volumeUsed, volumeTotal)}% occupied
                     </Typography>
@@ -327,10 +313,10 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
           );
         })}
       </Grid>
-                  <div style={{ height: "100vh", width: "100%" }}>
-            <TruckScene truckData={trucks} selectedPackages={selectedPackages}
-	 />
-          </div>
+      <div style={{ height: "100vh", width: "100%" }}>
+        <TruckScene truckData={trucks} selectedPackages={selectedPackages}
+        />
+      </div>
     </Box>
   );
 };
