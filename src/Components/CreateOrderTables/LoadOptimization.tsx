@@ -3,7 +3,7 @@ import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { Box, Typography, Paper } from '@mui/material';
 import { Truck } from './TrucksTable';
 // import { useSelector } from 'react-redux';
-import { useAppSelector } from '@/store';
+// import { useAppSelector } from '@/store';
 // import { RootState } from '@/store';
 interface LoadArrangement {
 	stop: number;
@@ -16,7 +16,7 @@ interface TrucksTableProps {
 const LoadOptimization: React.FC<TrucksTableProps> = ({ trucks }) => {
 	const selectedTrucks = trucks
 	const getVechiles = selectedTrucks;
-	const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
+	// const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
 	// const selectedRoutes = useSelector((state: RootState) => state.auth.selectedRoutes);
 
 
