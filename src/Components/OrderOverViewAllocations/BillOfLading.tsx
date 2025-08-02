@@ -833,11 +833,18 @@ const BillOfLading: React.FC<AllocationsProps> = ({ allocations, orderId, alloca
                             </Box>
 
                             {/* Assign ref dynamically */}
-                            <Paper
+                            {/* <Paper
                                 // ref={(el) => (pdfRefs.current[shipToId] = el)}
                                 ref={pdfRefs}
                                 sx={{ p: 3, backgroundColor: "#fff", border: "1px solid #000", fontSize: "12px" }}
+                            > */}
+                            <Paper
+                                ref={(el) => {
+                                    pdfRefs.current[shipToId] = el;
+                                }}
+                                sx={{ p: 3, backgroundColor: "#fff", border: "1px solid #000", fontSize: "12px" }}
                             >
+
                                 {/* Header */}
                                 <Box textAlign="center" mb={1}>
                                     <Typography variant="h6" sx={{ fontWeight: "bold" }}>BILL OF LADING</Typography>
