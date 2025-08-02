@@ -2,7 +2,7 @@ import React from 'react';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { Box, Typography, Paper } from '@mui/material';
 import { Truck } from './TrucksTable';
-import { useSelector } from 'react-redux';
+// import { useSelector } from 'react-redux';
 import { useAppSelector } from '@/store';
 // import { RootState } from '@/store';
 interface LoadArrangement {

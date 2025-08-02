@@ -239,8 +239,8 @@ const refreshAccessToken = async (
 > => {
   try {
     const response = await fetch(
-      // https://dev-api.trukapp.com/truk/log/refresh-token,
-      `http://13.127.36.10:8088/truk/log/refresh-token`,
+      `https://dev-api.trukapp.com/truk/log/refresh-token`,
+      // `http://13.127.36.10:8088/truk/log/refresh-token`,
       // `http://192.168.31.37:8088/truk/log/refresh-token`,     //local
 
       {
@@ -296,8 +296,8 @@ export const options: NextAuthOptions = {
 
         try {
           const response = await fetch(
-            // https://dev-api.trukapp.com/truk/log/login,
-            `http://13.127.36.10:8088/truk/log/login`,
+            `https://dev-api.trukapp.com/truk/log/login`,
+            // `http://13.127.36.10:8088/truk/log/login`,
             // `http://192.168.31.37:8088/truk/log/login`,   //local
             {
               method: "POST",

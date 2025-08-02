@@ -65,7 +65,8 @@ const CreateOrder: React.FC = () => {
                 }
                 else if (errorMessage?.includes("Stacking-factor mismatch")) {
                     setSnackbarMessage(errorMessage);
-                } else {
+                }
+                else {
                     setSnackbarMessage(
                         "Something went wrong please try again after some time."
                     );
@@ -144,9 +145,13 @@ const CreateOrder: React.FC = () => {
             const response = await selectTheTrucks(body).unwrap();
             if (response) {
                 if (response?.message === "No suitable vehicles found for these package(s). Possibly special conditions or capacity mismatch.") {
-
                     setNoVechilePopup(true)
-                } else {
+                }
+                else if (response?.message === 'No suitable vehicles found') {
+                    setSnackbarOpen(true);
+                    setSnackbarMessage(`No suitable vehicles found`)
+                }
+                else {
                     setConformOrderPayload(response)
                     setSelectTrucks(response?.allocations);
                     setUnAllocatedPackages(response?.unallocatedPackages)

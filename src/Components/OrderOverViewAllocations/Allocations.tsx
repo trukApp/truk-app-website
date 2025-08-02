@@ -34,7 +34,7 @@ import { useRouter } from "next/navigation";
 import {
 	useEditAssignOrderOrderMutation,
 	useGetAllDriversDataQuery,
-	useGetAllProductsQuery,
+	// useGetAllProductsQuery,
 	useGetAssignedOrderByIdQuery,
 	useGetDeviceMasterQuery,
 	useGetFilteredDriversQuery,
@@ -186,7 +186,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 		permit: Yup.string().required("Permit is required"),
 	});
 	const [carrierId, setCarrierId] = useState("");
- 
+
 	const [openReject, setOpenReject] = useState(false);
 	const [carrierOptions, setCarrierOptions] = useState([]);
 	const [postVehicle, { isLoading: postVehicleLoading }] =
@@ -211,17 +211,17 @@ const Allocations: React.FC<AllocationsProps> = ({
 	const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({});
 	const { data, isLoading: driverLoading } = useGetAllDriversDataQuery({});
 	const { data: allVehicleTrucks, isLoading: vehTrucksLoading } =
-		useGetSingleVehicleMasterQuery({}); 
+		useGetSingleVehicleMasterQuery({});
 	const [searchKey, setSearchKey] = useState("");
 	const [showSuggestions, setShowSuggestions] = useState(false);
 	const driversData = data?.drivers.length > 0 ? data?.drivers : [];
 	const getAvailableDrivers = Array.isArray(driversData)
 		? driversData.reduce((acc: Driver[], eachDriver: Driver) => {
-				if (Number(eachDriver?.driver_availability) === 1) {
-					acc.push(eachDriver);
-				}
-				return acc;
-		  }, [])
+			if (Number(eachDriver?.driver_availability) === 1) {
+				acc.push(eachDriver);
+			}
+			return acc;
+		}, [])
 		: [];
 	const { data: filteredDrivers, isLoading: filteredDriversLoading } =
 		useGetFilteredDriversQuery(searchKey.length >= 3 ? searchKey : null, {
@@ -246,7 +246,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 		);
 	const displayVehicles = searchKeyVehicle
 		? filteredVehicles?.results || []
-		: vehiclesData; 
+		: vehiclesData;
 	const [assignModal, setAssignModal] = useState(false);
 	const [multipleCarriers, setMultipleCarriers] = useState(false);
 	const [selectedAllocation, setSelectedAllocation] =
@@ -269,8 +269,8 @@ const Allocations: React.FC<AllocationsProps> = ({
 	});
 	const { data: allDevices, isLoading: deviceLoading } =
 		useGetDeviceMasterQuery({});
-	const { data: productsData } = useGetAllProductsQuery({});
-	const allProductsData = productsData?.products || [];
+	// const { data: productsData } = useGetAllProductsQuery({});
+	// const allProductsData = productsData?.products || [];
 	const [loading, setLoading] = useState(false);
 	const { data: locationsData } = useGetLocationMasterQuery({});
 	const getAllLocations =
@@ -296,12 +296,13 @@ const Allocations: React.FC<AllocationsProps> = ({
 	const [open, setOpen] = useState(false);
 	const [requestedCarrier, setRequestedCarrier] = useState("");
 	const [carrierConfirmed, setCarrierConfirmed] = useState("");
- 
+
 	const handleClose = () => setOpen(false);
+
 	const handleAssignSubmit = async (
 		values: TruckFormDetails,
 		{ resetForm }: { resetForm: () => void }
-	) => { 
+	) => {
 		try {
 			const body = {
 				vehicles: [
@@ -322,7 +323,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 				],
 			};
 			const response = await postVehicle(body).unwrap();
-			 
+
 			if (response?.created_records) {
 				setSnackbarMessage(
 					`Vehicle ID ${response?.created_records[0]} created successfully!`
@@ -376,20 +377,20 @@ const Allocations: React.FC<AllocationsProps> = ({
 		error,
 	} = useGetOrderByIdQuery({ orderId }, { skip: !orderId });
 
-	const getProductDetails = (productID: string) => {
-		const productInfo = allProductsData.find(
-			(product: ProductDetails) => product.product_ID === productID
-		);
-		if (!productInfo) return "Package details not available";
-		const details = [productInfo.product_name, productInfo.product_ID].filter(
-			Boolean
-		);
-		return details.length > 0
-			? details.join("-")
-			: "Product details not available";
-	};
+	// const getProductDetails = (productID: string) => {
+	// 	const productInfo = allProductsData.find(
+	// 		(product: ProductDetails) => product.product_ID === productID
+	// 	);
+	// 	if (!productInfo) return "Package details not available";
+	// 	const details = [productInfo.product_name, productInfo.product_ID].filter(
+	// 		Boolean
+	// 	);
+	// 	return details.length > 0
+	// 		? details.join("-")
+	// 		: "Product details not available";
+	// };
 	const devicesData = allDevices?.devices.length > 0 ? allDevices?.devices : [];
-	 
+
 	const [formData, setFormData] = useState({
 		truckId: "",
 		driverId: "",
@@ -442,7 +443,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 				const lastCarrier = carrierData[carrierData?.length - 1];
 				const carrierRequested = lastCarrier?.req_sent_to?.[0];
 				const confirmed = lastCarrier.confirmed_to;
-			 
+
 				setCarrierConfirmed(confirmed);
 				setRequestedCarrier(carrierRequested);
 			}
@@ -455,7 +456,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 				assigned_time: new Date().toISOString().slice(0, 16),
 			};
 
-			const response = await postAssignCarrier(body).unwrap(); 
+			const response = await postAssignCarrier(body).unwrap();
 			if (
 				response.message ===
 				"Multiple valid contracted carriers found. Choose one for assignment."
@@ -485,7 +486,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 			carrier_ID: carrierId,
 			assigned_time: new Date().toISOString().slice(0, 16),
 		};
- 
+
 
 		try {
 			const response = await postAssignCarrierToOrder(body).unwrap();
@@ -530,7 +531,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 		}
 
 		setErrors(newErrors);
-		if (isValid) { 
+		if (isValid) {
 			try {
 				const vehicleSelfTruck = formData.truckId.split(",");
 				if (assignedOrder?.data?.length === 0) {
@@ -538,12 +539,6 @@ const Allocations: React.FC<AllocationsProps> = ({
 					const body = {
 						order_ID: orderId,
 						assigned_vehicle_data: [
-							// {
-							//     strk_ID: formData.truckId,
-							//     dri_ID: formData.driverId,
-							//     dev_ID: formData.deviceId,
-							//     vehicle_ID: selectedAllocation?.vehicle_ID
-							// },
 							{
 								strk_ID: vehicleSelfTruck[1],
 								self_vehicle_num: vehicleSelfTruck[0],
@@ -554,8 +549,9 @@ const Allocations: React.FC<AllocationsProps> = ({
 						self_transport: 1,
 						pod: {},
 						pod_doc: "",
-					}; 
-					const response = await postAssignOrder(body).unwrap(); 
+						self_bill: ""
+					};
+					const response = await postAssignOrder(body).unwrap();
 					setAssignModal(false);
 					setSnackbarMessage(`Vehicle assined successfully!`);
 					setSnackbarSeverity("success");
@@ -580,7 +576,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 							...assignedOrder?.data[0]?.assigned_vehicle_data,
 							newVehicle,
 						],
-					}; 
+					};
 					const response = await editAssignOrder(editBody).unwrap();
 					console.log("Edit Response: ", response);
 					setFormData({
@@ -594,6 +590,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 			}
 		}
 	};
+
 	useEffect(() => {
 		function handleClickOutside(event: MouseEvent) {
 			if (
@@ -614,15 +611,12 @@ const Allocations: React.FC<AllocationsProps> = ({
 			fetchOrderById();
 		}
 	}, [orderId, fetchOrderById]);
- 
-	if (error) return <p>Error fetching order details</p>; 
+
+	if (error) return <p>Error fetching order details</p>;
 
 	const handleCreateVehicle = () => {
 		setOpen(true);
 	};
-	// const handleOpenDialog = () => {
-	//     setOpenReject(true);
-	// };
 	const validationSchemaBidding = Yup.object({
 		bid_value: Yup.string().required("Bid value is required"),
 		bid_timing: Yup.string().required("Bid timing is required"),
@@ -642,9 +636,9 @@ const Allocations: React.FC<AllocationsProps> = ({
 			const body = {
 				carrier_ID: carrierIdForOrder,
 				order_ID: orderId,
-			}; 
+			};
 			const response = await postRejectOrderByCarrier(body).unwrap();
-		  
+
 			if (response) {
 				setSnackbarMessage(`Order ${orderId} rejected !`);
 				setSnackbarSeverity("info");
@@ -677,7 +671,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 		setBidModal(true);
 	};
 	const handleBidSubmit = async (values: BiddingModalProps) => {
-	 
+
 		const formattedDate = new Date(values.bid_start_time)
 			.toISOString()
 			.slice(0, 19);
@@ -686,24 +680,24 @@ const Allocations: React.FC<AllocationsProps> = ({
 			bid_value: values.bid_value,
 			bid_timing: values.bid_timing,
 			bid_start_time: formattedDate,
-		}; 
+		};
 		try {
 			const response = await postInitiateBidding(body).unwrap();
-			 
+
 			if (response.message === "Open bidding initiated successfully.") {
 				setSnackbarMessage(`Open bidding initiated successfully!`);
 				setSnackbarSeverity("success");
 				setSnackbarOpen(true);
 				setBidModal(false);
 			}
-		} catch (err) { 
+		} catch (err) {
 			setSnackbarMessage(`Unable to sent bid request at this time, ${err}`);
 			setSnackbarSeverity("error");
 			setSnackbarOpen(true);
 			setBidModal(false);
 		}
-	}; 
-	 
+	};
+
 	return (
 		<Box>
 			<Backdrop
@@ -749,7 +743,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 			</Typography>
 
 			{allocations.map((allocation) => {
-				const uniqueKey = `${allocation.vehicle_ID}_${allocation.route[0].end.address}`;
+				const uniqueKey = `${allocation?.vehicle_ID}_${allocation.route[0]?.end.address}`;
 				return (
 					<>
 						<Dialog open={openAssignModal} onClose={handleCloseAssignModal}>
@@ -1525,8 +1519,8 @@ const Allocations: React.FC<AllocationsProps> = ({
 											Vehicle: {allocation.vehicle_ID}
 											{(from === "order-overview" ||
 												from === "order-bidding") && (
-												<> | Cost: ₹{allocation?.cost?.toFixed(2)}</>
-											)}
+													<> | Cost: ₹{allocation?.cost?.toFixed(2)}</>
+												)}
 										</Typography>
 										{!isGeneratingPDF && (
 											<Typography
@@ -1979,7 +1973,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 																	>
 																		Products:
 																	</Typography>
-																	{pkg.product_ID.map(
+																	{/* {pkg.product_ID.map(
 																		(prod: Product, index: number) => (
 																			<Typography
 																				key={index}
@@ -1990,7 +1984,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 																				(Qty: {prod.quantity})
 																			</Typography>
 																		)
-																	)}
+																	)} */}
 																</Box>
 															</Grid>
 														</Grid>
@@ -2010,57 +2004,57 @@ const Allocations: React.FC<AllocationsProps> = ({
 											{!assignedOrder?.data[0]?.allocated_vehicles?.some(
 												(vehicle: string) => vehicle === allocation.vehicle_ID
 											) && (
-												<>
-													{order?.order?.order_status ===
-														"assignment pending" && (
-														<>
-															<Button
-																variant="contained"
-																color="primary"
-																onClick={handleDialogOpenBidding}
-															>
-																Go for bidding
-															</Button>
-															<Button
-																variant="contained"
-																color="primary"
-																onClick={() =>
-																	handleOpenAssignModal(allocation)
-																}
-															>
-																Assign
-															</Button>
-														</>
-													)}
-												</>
-											)}
+													<>
+														{order?.order?.order_status ===
+															"assignment pending" && (
+																<>
+																	<Button
+																		variant="contained"
+																		color="primary"
+																		onClick={handleDialogOpenBidding}
+																	>
+																		Go for bidding
+																	</Button>
+																	<Button
+																		variant="contained"
+																		color="primary"
+																		onClick={() =>
+																			handleOpenAssignModal(allocation)
+																		}
+																	>
+																		Assign
+																	</Button>
+																</>
+															)}
+													</>
+												)}
 
 											{assignedOrder?.data[0]?.allocated_vehicles?.some(
 												(vehicle: string) => vehicle === allocation.vehicle_ID
 											) && (
-												<>
-													{order?.order?.order_status === "finished" ? (
-														<Button
-															variant="contained"
-															color="primary"
-															onClick={() =>
-																handleRouteReply(allocation.vehicle_ID)
-															}
-														>
-															Route Reply
-														</Button>
-													) : order?.order?.order_status !==
-													  "carrier assignment" ? (
-														<Button
-															variant="contained"
-															color="primary"
-															onClick={() => handleTrack(allocation)}
-														>
-															View Track
-														</Button>
-													) : null}
-												</>
-											)}
+													<>
+														{order?.order?.order_status === "finished" ? (
+															<Button
+																variant="contained"
+																color="primary"
+																onClick={() =>
+																	handleRouteReply(allocation.vehicle_ID)
+																}
+															>
+																Route Reply
+															</Button>
+														) : order?.order?.order_status !==
+															"carrier assignment" ? (
+															<Button
+																variant="contained"
+																color="primary"
+																onClick={() => handleTrack(allocation)}
+															>
+																View Track
+															</Button>
+														) : null}
+													</>
+												)}
 										</Box>
 									)}
 								</Box>

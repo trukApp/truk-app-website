@@ -1,320 +1,236 @@
-// import React, { useEffect, useMemo, useState } from "react";
-// import { Canvas } from "@react-three/fiber";
-// import { OrbitControls, Edges, Stage, Environment } from "@react-three/drei";
-// import {
-// 	useGetVehicleByIdQuery,
-// 	useGetAllProductsQuery,
-// 	useGetPackageMasterQuery
-// } from "@/api/apiSlice";
-// import { Package } from "./PackagesTable";
-// import { Backdrop, CircularProgress } from "@mui/material";
-// import { Truck } from "./TrucksTable";
+// 'use client';
 
-// interface Truck3DProps {
-// 	truckData: Truck[];
-// 	selectedPackages: Package[];
-// }
+// import React from 'react';
+// import { Canvas } from '@react-three/fiber';
+// import { OrbitControls } from '@react-three/drei';
 
-// interface ProductBox {
-// 	position: [number, number, number];
-// 	dimensions: [number, number, number];
+// interface PackageBlock {
+// 	pkg_ID: string;
 // 	color: string;
-// 	label: string;
-// 	stop: number;
+// 	dimensions: [number, number, number];
+// 	position: [number, number, number]; // starting position (ignored for quantity placement)
+// 	quantity: number;
 // }
 
-// const parseMeters = (value: string): number =>
-// 	parseFloat(value?.replace("m", "").trim() || "0");
+// interface TruckSceneProps {
+// 	vehicleDimensions: {
+// 		length: number;
+// 		width: number;
+// 		height: number;
+// 	};
+// 	packageBlocks: PackageBlock[];
+// }
 
-// const TruckScene: React.FC<Truck3DProps> = ({ truckData, selectedPackages }) => {
-// 	const [stats, setStats] = useState({
-// 		totalVolume: 0,
-// 		filledVolume: 0,
-// 		leftoverVolume: 0,
-// 		fillPercentage: 0,
-// 		productCount: 0,
-// 		productQuantity: 0,
-// 		packageCount: 0
-// 	});
+// const TruckScene: React.FC<TruckSceneProps> = ({ vehicleDimensions, packageBlocks }) => {
+// 	const { length, width, height } = vehicleDimensions;
+// 	console.log("packageBlocks: ", packageBlocks)
+// 	const cabinLength = 1.2;
+// 	const cabinHeight = height * 0.6;
+// 	const wheelRadius = 0.5;
+// 	const wheelThickness = 0.3;
+// 	const wheelY = wheelRadius;
+// 	const steelPlateY = wheelY + 0.5;
+// 	const cabinX = cabinLength / 2;
+// 	const cameraDistance = Math.max(length, width, height) * 1.5;
 
-// 	const vehicle_ID = truckData[0]?.vehicle_ID;
-// 	const { data: vehicleById, isLoading: vehicleLoading } = useGetVehicleByIdQuery({ vehicle_ID });
-// 	const { data: productsData } = useGetAllProductsQuery({});
-// 	const { data: allPackageInfo } = useGetPackageMasterQuery({});
+// 	// Generate multiple instances based on quantity
+// 	const generatePackageInstances = (): {
+// 		position: [number, number, number];
+// 		dimensions: [number, number, number];
+// 		color: string;
+// 		pkg_ID: string;
+// 	}[] => {
+// 		const spacing = 0.05;
+// 		const allBlocks: {
+// 			position: [number, number, number];
+// 			dimensions: [number, number, number];
+// 			color: string;
+// 			pkg_ID: string;
+// 		}[] = [];
 
-// 	const allPackages = allPackageInfo?.packages || [];
-// 	const allProducts = productsData?.products || [];
-// 	const truck = truckData[0];
-// 	const vehicle = vehicleById?.vehicle;
+// 		let currentX = 0;
+// 		let currentZ = 0;
+// 		let currentY = 0;
 
-// 	console.log("allProducts: ", allProducts)
+// 		const maxWidth = length;
+// 		const maxDepth = width;
+// 		const maxHeight = height;
 
-// 	const [truckInterior, setTruckInterior] = useState({
-// 		width: 1,
-// 		height: 1,
-// 		length: 2
-// 	});
+// 		for (const block of packageBlocks) {
+// 			const [dx, dy, dz] = block.dimensions;
+// 			const total = block.quantity || 1;
 
-// 	useEffect(() => {
-// 		if (vehicle) {
-// 			const capacity = vehicle?.capacity;
-// 			setTruckInterior({
-// 				width: parseMeters(capacity?.interior_width) * 0.85,
-// 				height: parseMeters(capacity?.interior_height),
-// 				length: parseMeters(capacity?.interior_length) * 0.9
-// 			});
-// 		}
-// 	}, [vehicle]);
-
-// 	const productMap = useMemo(() => {
-// 		const map = new Map<string, { volume: number; weight: number; name: string }>();
-// 		for (const p of allProducts) {
-// 			map.set(p.product_ID, {
-// 				volume: parseFloat(p.volume || "0"),
-// 				weight: parseFloat(p.weight || "0"),
-// 				name: p.product_name
-// 			});
-// 		}
-// 		return map;
-// 	}, [allProducts]);
-
-// 	const stopColors = [
-// 		"#4287f5", "#42f57b", "#f5d142", "#f5427b",
-// 		"#9f42f5", "#f58b42", "#42f5e6", "#a1f542"
-// 	];
-
-// 	// Parameters for wheels
-// 	const wheelRadius = 0.25;
-// 	const wheelWidth = 0.15;
-// 	const axleInset = 0.15;      // distance from side of truck
-// 	const wheelClearance = 0.05; // space between bottom of container and top of wheel
-
-// 	const products: ProductBox[] = useMemo(() => {
-// 		if (!truck?.loadArrangement) return [];
-
-// 		const placedProducts: ProductBox[] = [];
-// 		const stopOrder = [...truck.loadArrangement].reverse();
-
-// 		const cabinLength = 1.3;
-// 		const usableLength = truckInterior.length - cabinLength;
-
-// 		let cursorX = 0;
-// 		let cursorY = 0;
-// 		let cursorZ = 0;
-// 		let maxRowHeight = 0;
-
-// 		const totalVolume = truckInterior.length * truckInterior.width * truckInterior.height;
-// 		let filledVolume = 0;
-
-// 		const moveToNextRow = () => {
-// 			cursorZ = 0;
-// 			cursorX += maxRowHeight;
-// 			maxRowHeight = 0;
-// 		};
-
-// 		const moveToNextLayer = () => {
-// 			cursorX = 0;
-// 			cursorZ = 0;
-// 			cursorY += 0.2;
-// 			maxRowHeight = 0;
-// 		};
-
-// 		for (let stopIndex = 0; stopIndex < stopOrder.length; stopIndex++) {
-// 			const stop = stopOrder[stopIndex];
-// 			const color = stopColors[stopIndex % stopColors.length];
-
-// 			for (const packId of stop.packages) {
-// 				const pkg = selectedPackages.find((p) => p.pack_ID === packId);
-// 				if (!pkg || !pkg.product_ID) continue;
-
-// 				for (const prod of pkg.product_ID) {
-// 					const prodData = productMap.get(prod.prod_ID);
-// 					if (!prodData) continue;
-
-// 					const quantity = prod.quantity || 1;
-// 					const volumePerUnit = prodData.volume;
-
-// 					for (let i = 0; i < quantity; i++) {
-// 						const edge = Math.cbrt(volumePerUnit);
-// 						const dims: [number, number, number] = [edge, edge, edge];
-
-// 						if (cursorZ + dims[2] > truckInterior.width) moveToNextRow();
-// 						if (cursorX + dims[0] > usableLength) moveToNextLayer();
-// 						if (cursorY + dims[1] > truckInterior.height) continue;
-
-// 						const posX = cabinLength + cursorX + dims[0] / 2;
-// 						const posY = wheelRadius + wheelClearance + cursorY + dims[1] / 2;
-// 						const posZ = cursorZ + dims[2] / 2;
-
-// 						placedProducts.push({
-// 							position: [posX, posY, posZ],
-// 							dimensions: dims,
-// 							color,
-// 							label: prodData.name,
-// 							stop: stop.stop
-// 						});
-
-// 						cursorZ += dims[2];
-// 						maxRowHeight = Math.max(maxRowHeight, dims[0]);
-// 						filledVolume += dims[0] * dims[1] * dims[2];
-// 					}
+// 			for (let i = 0; i < total; i++) {
+// 				if (currentX + dx > maxWidth) {
+// 					currentX = 0;
+// 					currentZ += dz + spacing;
 // 				}
+// 				if (currentZ + dz > maxDepth) {
+// 					currentZ = 0;
+// 					currentY += dy + spacing;
+// 				}
+// 				if (currentY + dy > maxHeight) break;
+
+// 				allBlocks.push({
+// 					position: [currentX, currentY, currentZ],
+// 					dimensions: [dx, dy, dz],
+// 					color: block.color,
+// 					pkg_ID: block.pkg_ID,
+// 				});
+
+// 				currentX += dx + spacing;
 // 			}
 // 		}
 
-// 		const fillPct = ((filledVolume / totalVolume) * 100).toFixed(2);
-// 		(window as any).truckFillPercentage = fillPct;
+// 		return allBlocks;
+// 	};
 
-// 		setStats({
-// 			totalVolume,
-// 			filledVolume,
-// 			leftoverVolume: totalVolume - filledVolume,
-// 			fillPercentage: parseFloat(fillPct),
-// 			productCount: placedProducts.length,
-// 			productQuantity: placedProducts.length,
-// 			packageCount: selectedPackages.length
-// 		});
+// 	const calculateWheelPositions = () => {
+// 		const numberOfAxles = length <= 5 ? 2 : length <= 8 ? 3 : 4;
+// 		const insetZ = 0.3;
+// 		const leftZ = insetZ;
+// 		const rightZ = width - insetZ;
+// 		const wheelPositions: [number, number, number][] = [];
 
-// 		return placedProducts;
-// 	}, [truck, selectedPackages, truckInterior, productMap, wheelRadius, wheelClearance]);
+// 		// Front axle under cabin
+// 		wheelPositions.push([cabinX, wheelY, leftZ]);
+// 		wheelPositions.push([cabinX, wheelY, rightZ]);
 
-// 	const fillPercentage = (window as any).truckFillPercentage;
+// 		// Rear axles (start from ~25% into cargo)
+// 		const axleStart = cabinLength + length * 0.25;
+// 		const axleEnd = cabinLength + length - 0.8;
+// 		const axleSpacing = (axleEnd - axleStart) / (numberOfAxles - 1);
 
+// 		for (let i = 0; i < numberOfAxles; i++) {
+// 			const axleX = axleStart + i * axleSpacing;
+// 			wheelPositions.push([axleX, wheelY, leftZ]);
+// 			wheelPositions.push([axleX, wheelY, rightZ]);
+// 		}
 
-// 	// Corrected axle X positions
-// 	const cabinLength = 1.3;
-// 	const frontAxleX = cabinLength + 1.0;
-// 	const middleAxleX = cabinLength + (truckInterior.length - cabinLength) * 0.5;
-// 	const rearAxleX = cabinLength + (truckInterior.length - cabinLength) - 1.0;
+// 		return wheelPositions;
+// 	};
 
-// 	const wheelY = wheelRadius;
-
-// 	const leftZ = axleInset;
-// 	const rightZ = truckInterior.width - axleInset;
-
-// 	const wheelPositions = [
-// 		[frontAxleX, wheelY, leftZ],
-// 		[frontAxleX, wheelY, rightZ],
-// 		[middleAxleX, wheelY, leftZ],
-// 		[middleAxleX, wheelY, rightZ],
-// 		[rearAxleX, wheelY, leftZ],
-// 		[rearAxleX, wheelY, rightZ]
-// 	];
-
-// 	// In JSX
-
-
+// 	const wheelPositions = calculateWheelPositions();
+// 	const packageInstances = generatePackageInstances();
 
 // 	return (
-// 		<>
-// 			<Backdrop
-// 				sx={{ color: "#ffffff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-// 				open={vehicleLoading}
-// 			>
-// 				<CircularProgress color="inherit" />
-// 			</Backdrop>
+// 		<div style={{ display: 'flex', gap: '2rem' }}>
+// 			{/* Truck 3D View */}
+// 			<div style={{ flex: 2 }}>
+// 				<Canvas
+// 					camera={{
+// 						position: [cameraDistance, cameraDistance * 0.6, cameraDistance],
+// 						fov: 45,
+// 					}}
+// 					style={{ height: 600, width: '100%' }}
+// 				>
+// 					<ambientLight intensity={0.8} />
+// 					<directionalLight position={[10, 10, 5]} intensity={1.2} />
+// 					<OrbitControls enableZoom={false} enableRotate enablePan={false} />
 
-// 			<Canvas camera={{ position: [5, 5, 10], fov: 50 }}>
-// 				<ambientLight intensity={0.4} />
-// 				<directionalLight position={[10, 10, 5]} intensity={1} />
-// 				<hemisphereLight intensity={0.3} />
-// 				<OrbitControls enableZoom={false} />
-// 				<Environment preset="warehouse" />
-
-// 				<Stage adjustCamera={false} intensity={0.6}>
-// 					{/* Truck container */}
-// 					<mesh
-// 						position={[
-// 							1.3 + truckInterior.length / 2,
-// 							wheelRadius + wheelClearance + truckInterior.height / 2,
-// 							truckInterior.width / 2
-// 						]}
-// 					>
-// 						<boxGeometry args={[truckInterior.length, truckInterior.height, truckInterior.width]} />
-// 						<meshStandardMaterial color="silver" metalness={0.7} roughness={0.2} transparent opacity={0.15} />
+// 					{/* Driver Cabin */}
+// 					<mesh position={[cabinX, wheelY + cabinHeight / 2 + 0.5, width / 2]}>
+// 						<boxGeometry args={[cabinLength, cabinHeight, width]} />
+// 						<meshStandardMaterial color="#b87333" />
 // 					</mesh>
 
-// 					{/* Cabin */}
-// 					<mesh
-// 						position={[
-// 							0.65,
-// 							wheelRadius + wheelClearance + truckInterior.height * 0.4,
-// 							truckInterior.width / 2
-// 						]}
-// 					>
-// 						<boxGeometry args={[1.0, truckInterior.height * 0.8, truckInterior.width * 0.85]} />
-// 						<meshStandardMaterial color="orange" metalness={0.5} roughness={0.6} opacity={0.85} transparent />
+// 					{/* Cargo area */}
+// 					<mesh position={[cabinLength + length / 2, steelPlateY + (height - steelPlateY) / 2, width / 2]}>
+// 						<boxGeometry args={[length, height - steelPlateY, width]} />
+// 						<meshStandardMaterial color="white" transparent opacity={0.4} />
+// 					</mesh>
+
+// 					{/* Steel floor */}
+// 					<mesh position={[cabinLength + length / 2, steelPlateY, width / 2]}>
+// 						<boxGeometry args={[length, 0.05, width]} />
+// 						<meshStandardMaterial color="#222" metalness={1} roughness={0.3} />
 // 					</mesh>
 
 // 					{/* Wheels */}
-
-// 					{
-// 						wheelPositions.map((pos, i) => (
-// 							<mesh key={i} position={pos as [number, number, number]} rotation={[Math.PI / 2, 0, 0]}>
-// 								<cylinderGeometry args={[wheelRadius, wheelRadius, wheelWidth, 32]} />
-// 								<meshStandardMaterial color="black" />
-// 							</mesh>
-// 						))
-// 					}
-
-// 					{/* Products */}
-// 					{products.map((prod, index) => (
-// 						<mesh key={index} position={prod.position}>
-// 							<boxGeometry args={prod.dimensions} />
-// 							<meshStandardMaterial color={prod.color} metalness={0.2} roughness={0.8} />
-// 							<Edges color="black" />
+// 					{wheelPositions.map((pos, idx) => (
+// 						<mesh key={idx} position={pos} rotation={[Math.PI / 2, 0, 0]}>
+// 							<cylinderGeometry args={[wheelRadius, wheelRadius, wheelThickness, 32]} />
+// 							<meshStandardMaterial color="black" />
 // 						</mesh>
 // 					))}
-// 				</Stage>
-// 			</Canvas>
 
-// 			{/* UI Overlays */}
-// 			<div
-// 				style={{
-// 					position: "absolute",
-// 					top: 10,
-// 					left: 10,
-// 					background: "white",
-// 					padding: "6px 10px",
-// 					borderRadius: 8
-// 				}}
-// 			>
-// 				Truck Fill: <strong>{fillPercentage}%</strong>
+// 					{/* Package Instances */}
+// 					{packageInstances.map((block, index) => (
+// 						<mesh
+// 							key={index}
+// 							position={[
+// 								cabinLength + block.position[0] + block.dimensions[0] / 2,
+// 								steelPlateY + block.position[1] + block.dimensions[1] / 2,
+// 								block.position[2] + block.dimensions[2] / 2,
+// 							]}
+
+// 						>
+// 							<boxGeometry args={block.dimensions} />
+// 							<meshStandardMaterial color={block.color} />
+// 						</mesh>
+// 					))}
+// 				</Canvas>
 // 			</div>
 
-// 			<div
-// 				style={{
-// 					position: "absolute",
-// 					top: 60,
-// 					left: 10,
-// 					background: "white",
-// 					padding: "10px",
-// 					borderRadius: 8,
-// 					fontSize: "0.85rem",
-// 					maxWidth: 300,
-// 					boxShadow: "0 2px 4px rgba(0,0,0,0.2)"
-// 				}}
-// 			>
-// 				<h4>Truck Info</h4>
-// 				<div><strong>Dimensions:</strong> {truckInterior.length.toFixed(2)}m × {truckInterior.width.toFixed(2)}m × {truckInterior.height.toFixed(2)}m</div>
-// 				<div><strong>Total Volume:</strong> {stats.totalVolume.toFixed(2)} m³</div>
-// 				<div><strong>Filled Volume:</strong> {stats.filledVolume.toFixed(2)} m³</div>
-// 				<div><strong>Leftover Volume:</strong> {stats.leftoverVolume.toFixed(2)} m³</div>
-// 				<div><strong>Fill %:</strong> {stats.fillPercentage}%</div>
-// 				<div><strong>Packages:</strong> {stats.packageCount}</div>
-// 				<div><strong>Total Products:</strong> {stats.productCount}</div>
-// 				<hr />
-// 				<div><strong>Stops Legend:</strong>
-// 					<ul style={{ paddingLeft: 18 }}>
-// 						{truck?.loadArrangement?.map((stop, idx) => (
-// 							<li key={stop.stop} style={{ color: stopColors[idx % stopColors.length] }}>
-// 								Stop {stop.stop}: {stop.location}
-// 							</li>
-// 						))}
-// 					</ul>
+// 			{/* Legend and Details */}
+// 			<div style={{ flex: 1 }}>
+// 				<h3>Truck Details</h3>
+// 				<ul style={{ lineHeight: '1.6' }}>
+// 					<li><strong>Length:</strong> {length} m</li>
+// 					<li><strong>Width:</strong> {width} m</li>
+// 					<li><strong>Height:</strong> {height} m</li>
+// 				</ul>
+
+// 				{/* Highlighted Truck Capacity */}
+// 				<div
+// 					style={{
+// 						backgroundColor: '#e0f7fa',
+// 						padding: '12px 16px',
+// 						marginTop: '1.5rem',
+// 						borderLeft: '5px solid #00796b',
+// 						borderRadius: 4,
+// 						boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+// 					}}
+// 				>
+// 					<h4 style={{ margin: 0, color: '#00796b' }}>Truck Capacity</h4>
+// 					<p style={{ margin: '4px 0 0 0', fontWeight: 'bold' }}>
+// 						{(length * width * height).toFixed(2)} m³
+// 					</p>
 // 				</div>
+
+// 				{/* Package Color Legend */}
+// 				{/* Package Color Legend */}
+// 				<h3 style={{ marginTop: '1.5rem' }}>Package Color Legend</h3>
+// 				<ul style={{ paddingLeft: 0, listStyle: 'none' }}>
+// 					{Array.from(
+// 						new Map(packageBlocks.map(block => [block.pkg_ID, block])).values()
+// 					).map((block, idx) => (
+// 						<li
+// 							key={idx}
+// 							style={{
+// 								display: 'flex',
+// 								alignItems: 'center',
+// 								marginBottom: '0.5rem',
+// 								borderBottom: '1px solid #ddd',
+// 								paddingBottom: 4,
+// 							}}
+// 						>
+// 							<div
+// 								style={{
+// 									width: 16,
+// 									height: 16,
+// 									backgroundColor: block.color,
+// 									marginRight: 8,
+// 									border: '1px solid #000',
+// 								}}
+// 							/>
+// 							<span>{block.pkg_ID}</span>
+// 						</li>
+// 					))}
+// 				</ul>
+
 // 			</div>
-// 		</>
+// 		</div>
 // 	);
 // };
 
@@ -322,327 +238,417 @@
 
 
 
-import React, { useEffect, useMemo, useState } from "react";
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Edges, Stage, Environment } from "@react-three/drei";
-import {
-	useGetVehicleByIdQuery,
-	useGetAllProductsQuery,
-	useGetPackageMasterQuery
-} from "@/api/apiSlice";
-import { Package } from "./PackagesTable";
-import { Backdrop, CircularProgress } from "@mui/material";
-import { Truck } from "./TrucksTable";
 
-interface Truck3DProps {
-	truckData: Truck[];
-	selectedPackages: Package[];
-}
+// import React, { useMemo } from 'react';
+// import { Canvas } from '@react-three/fiber';
+// import { OrbitControls } from '@react-three/drei';
 
-interface ProductBox {
-	position: [number, number, number];
-	dimensions: [number, number, number];
+// interface VehicleDimensions {
+// 	interiorWidthM: number;
+// 	interiorLengthM: number;
+// 	interiorHeightM: number;
+// }
+
+// interface BoxPlacement {
+// 	position: [number, number, number];
+// 	dimensions: [number, number, number];
+// 	color: string;
+// 	pkg_ID: string;
+// }
+
+// interface TruckSceneProps {
+// 	vehicleDimensions: VehicleDimensions;
+// 	boxPlacements: Record<string, { boxes: BoxPlacement[] }>;
+// }
+
+// const brightColors = [
+// 	'#FF5733', '#33FF57', '#3357FF', '#FF33A8',
+// 	'#FF8C33', '#33FFF3', '#FFD433', '#D733FF'
+// ];
+
+// const TruckScene: React.FC<TruckSceneProps> = ({ vehicleDimensions, boxPlacements }) => {
+// 	const { interiorLengthM, interiorWidthM, interiorHeightM } = vehicleDimensions;
+// 	const steelPlateHeight = 0.1;
+
+// 	// ✅ Prepare all boxes
+// 	const allBoxes = useMemo(() => {
+// 		let boxes: BoxPlacement[] = [];
+// 		let colorIndex = 0;
+
+// 		for (const pkg_ID in boxPlacements) {
+// 			const color = brightColors[colorIndex % brightColors.length];
+// 			colorIndex++;
+
+// 			for (const box of boxPlacements[pkg_ID].boxes) {
+// 				const [x, y, z] = box.position;
+// 				const [dx, dy, dz] = box.dimensions;
+
+// 				const correctedX = Math.min(x, interiorLengthM - dx);
+// 				const correctedY = Math.min(y, interiorHeightM - dy);
+// 				const correctedZ = Math.min(z, interiorWidthM - dz);
+
+// 				const centeredPosition: [number, number, number] = [
+// 					correctedX + dx / 2 - interiorLengthM / 2,
+// 					dy / 2 + steelPlateHeight,
+// 					correctedZ + dz / 2 - interiorWidthM / 2,
+// 				];
+
+// 				boxes.push({
+// 					position: centeredPosition,
+// 					dimensions: [dx, dy, dz],
+// 					color,
+// 					pkg_ID,
+// 				});
+// 			}
+// 		}
+// 		return boxes;
+// 	}, [boxPlacements, interiorLengthM, interiorHeightM, interiorWidthM]);
+
+// 	// ✅ Driver cabin dimensions
+// 	const cabinLength = interiorLengthM * 0.15;
+// 	const cabinHeight = interiorHeightM * 0.6;
+// 	const cabinWidth = interiorWidthM * 0.6;
+
+// 	// ✅ Smaller wheels (scaled down)
+// 	const wheelRadius = 0.3; // reduced
+// 	const wheelYOffset = wheelRadius * 0.5;
+
+// 	return (
+// 		<div style={{ display: 'flex', gap: '20px' }}>
+// 			{/* ✅ Smaller 3D view */}
+// 			<div style={{ height: '400px', width: '60%' }}>
+// 				<Canvas camera={{ position: [interiorLengthM * 0.6, interiorHeightM * 0.9, interiorWidthM * 0.9], fov: 60 }}>
+// 					<ambientLight intensity={0.6} />
+// 					<directionalLight position={[10, 10, 5]} intensity={0.8} />
+// 					<OrbitControls enableZoom={false} />
+
+// 					{/* Truck Transparent Body */}
+// 					<mesh position={[0, interiorHeightM / 2 + steelPlateHeight, 0]}>
+// 						<boxGeometry args={[interiorLengthM, interiorHeightM, interiorWidthM]} />
+// 						<meshStandardMaterial color="#999" transparent opacity={0.1} />
+// 					</mesh>
+
+// 					{/* Steel Plate */}
+// 					<mesh position={[0, steelPlateHeight / 2, 0]}>
+// 						<boxGeometry args={[interiorLengthM, steelPlateHeight, interiorWidthM]} />
+// 						<meshStandardMaterial color="steelblue" />
+// 					</mesh>
+
+// 					{/* Driver Cabin */}
+// 					<mesh position={[-interiorLengthM / 2 - cabinLength / 2, cabinHeight / 2 + steelPlateHeight, 0]}>
+// 						<boxGeometry args={[cabinLength, cabinHeight, cabinWidth]} />
+// 						<meshStandardMaterial color="#8B4513" />
+// 					</mesh>
+
+// 					{/* Smaller Wheels */}
+// 					{[
+// 						[-1, wheelYOffset, 1],
+// 						[1, wheelYOffset, 1],
+// 						[-1, wheelYOffset, -1],
+// 						[1, wheelYOffset, -1],
+// 					].map(([xMul, y, zMul], i) => (
+// 						<mesh
+// 							key={i}
+// 							position={[xMul * (interiorLengthM / 2 - 1), y, zMul * (interiorWidthM / 2 + 0.5)]}
+// 							rotation={[Math.PI / 2, 0, 0]}
+// 						>
+// 							<cylinderGeometry args={[wheelRadius, wheelRadius, 0.25, 32]} />
+// 							<meshStandardMaterial color="black" />
+// 						</mesh>
+// 					))}
+
+// 					{/* Boxes */}
+// 					{allBoxes.map((box, i) => (
+// 						<mesh key={i} position={box.position}>
+// 							<boxGeometry args={box.dimensions} />
+// 							<meshStandardMaterial color={box.color} />
+// 						</mesh>
+// 					))}
+// 				</Canvas>
+// 			</div>
+
+// 			{/* Info & Legend */}
+// 			<div style={{ flex: 1, paddingTop: '20px' }}>
+// 				<h3>Truck Details</h3>
+// 				<p><strong>Length:</strong> {interiorLengthM} m</p>
+// 				<p><strong>Width:</strong> {interiorWidthM} m</p>
+// 				<p><strong>Height:</strong> {interiorHeightM} m</p>
+// 				<p><strong>Truck Capacity:</strong> {(interiorLengthM * interiorWidthM * interiorHeightM).toFixed(2)} m³</p>
+
+// 				<h3>Package Color Legend</h3>
+// 				{Object.keys(boxPlacements).map((pkg_ID, idx) => (
+// 					<div key={pkg_ID} style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
+// 						<div
+// 							style={{
+// 								width: 20,
+// 								height: 20,
+// 								backgroundColor: brightColors[idx % brightColors.length],
+// 								marginRight: 8,
+// 							}}
+// 						/>
+// 						<span>{pkg_ID}</span>
+// 					</div>
+// 				))}
+// 			</div>
+// 		</div>
+// 	);
+// };
+
+// export default TruckScene;
+
+
+
+'use client';
+
+import React from 'react';
+import { Canvas } from '@react-three/fiber';
+import { OrbitControls } from '@react-three/drei';
+
+interface PackageBlock {
+	pkg_ID: string;
 	color: string;
-	label: string;
-	stop: number;
+	dimensions: [number, number, number];
+	position: [number, number, number]; // starting position (ignored for quantity placement)
+	quantity: number;
 }
 
-const parseMeters = (value: string): number =>
-	parseFloat(value?.replace("m", "").trim() || "0");
-
-const TruckScene: React.FC<Truck3DProps> = ({ truckData, selectedPackages }) => {
-	const [stats, setStats] = useState({
-		totalVolume: 0,
-		filledVolume: 0,
-		leftoverVolume: 0,
-		fillPercentage: 0,
-		productCount: 0,
-		productQuantity: 0,
-		packageCount: 0
-	});
-
-	const vehicle_ID = truckData[0]?.vehicle_ID;
-	const { data: vehicleById, isLoading: vehicleLoading } = useGetVehicleByIdQuery({ vehicle_ID });
-	const { data: productsData } = useGetAllProductsQuery({});
-	const { data: allPackageInfo } = useGetPackageMasterQuery({});
-
-	const allPackages = allPackageInfo?.packages || [];
-	const allProducts = productsData?.products || [];
-	const truck = truckData[0];
-	const vehicle = vehicleById?.vehicle;
-
-	const [truckInterior, setTruckInterior] = useState({
-		width: 1,
-		height: 1,
-		length: 2
-	});
-
-	useEffect(() => {
-		if (vehicle) {
-			const capacity = vehicle?.capacity;
-			// setTruckInterior({
-			// 	width: parseMeters(capacity?.interior_width) * 0.85,
-			// 	height: parseMeters(capacity?.interior_height),
-			// 	length: parseMeters(capacity?.interior_length) * 0.9
-			// });
-			setTruckInterior({
-				width: parseMeters(capacity?.interior_width) * 0.75,
-				height: parseMeters(capacity?.interior_height) * 0.85,
-				length: parseMeters(capacity?.interior_length) * 0.9
-			});
-
+interface TruckSceneProps {
+	vehicleDimensions: {
+		length: number;
+		width: number;
+		height: number;
+	};
+	packageBlocks: PackageBlock[];
+	boxPlacements?: Record<
+		string,
+		{
+			boxes: {
+				position: [number, number, number];
+				dimensions: [number, number, number];
+			}[];
 		}
-	}, [vehicle]);
+	>;
+	truckCapacity?: {   // ✅ Added here
+		allowedLayers: number;
+		maxLayers: number;
+		maxM3: number;
+		oneLayerM3: number;
+		rawM3: number;
+		usableM3: number;
+	};
+}
 
-	const productMap = useMemo(() => {
-		const map = new Map<string, { volume: number; weight: number; name: string }>();
-		for (const p of allProducts) {
-			map.set(p.product_ID, {
-				volume: parseFloat(p.volume || "0"),
-				weight: parseFloat(p.weight || "0"),
-				name: p.product_name
-			});
-		}
-		return map;
-	}, [allProducts]);
+const TruckScene: React.FC<TruckSceneProps> = ({ vehicleDimensions, packageBlocks }) => {
+	const { length, width, height } = vehicleDimensions;
+	const cabinLength = 1.2;
+	const cabinHeight = height * 0.6;
+	const wheelRadius = 0.5;
+	const wheelThickness = 0.3;
+	const wheelY = wheelRadius;
+	const steelPlateY = wheelY + 0.5;
+	const cabinX = cabinLength / 2;
+	const cameraDistance = Math.max(length, width, height) * 1.5;
 
-	const stopColors = [
-		"#4287f5", "#42f57b", "#f5d142", "#f5427b",
-		"#9f42f5", "#f58b42", "#42f5e6", "#a1f542"
-	];
+	// Generate multiple instances based on quantity
+	const generatePackageInstances = (): {
+		position: [number, number, number];
+		dimensions: [number, number, number];
+		color: string;
+		pkg_ID: string;
+	}[] => {
+		const spacing = 0.05;
+		const allBlocks: {
+			position: [number, number, number];
+			dimensions: [number, number, number];
+			color: string;
+			pkg_ID: string;
+		}[] = [];
 
-	// Updated wheel size
-	const wheelRadius = 0.4;
-	const wheelWidth = 0.25;
-	const axleInset = 0.15;
-	const wheelClearance = 0.05;
+		let currentX = 0;
+		let currentZ = 0;
+		let currentY = 0;
 
-	const products: ProductBox[] = useMemo(() => {
-		if (!truck?.loadArrangement) return [];
+		const maxWidth = length;
+		const maxDepth = width;
+		const maxHeight = height;
 
-		const placedProducts: ProductBox[] = [];
-		const stopOrder = [...truck.loadArrangement].reverse();
+		for (const block of packageBlocks) {
+			const [dx, dy, dz] = block.dimensions;
+			const total = block.quantity || 1;
 
-		const cabinLength = 1.3;
-		const usableLength = truckInterior.length - cabinLength;
-
-		let cursorX = 0;
-		let cursorY = 0;
-		let cursorZ = 0;
-		let maxRowHeight = 0;
-
-		const totalVolume = truckInterior.length * truckInterior.width * truckInterior.height;
-		let filledVolume = 0;
-
-		const floorLevel = wheelRadius + wheelClearance;
-
-		const moveToNextRow = () => {
-			cursorZ = 0;
-			cursorX += maxRowHeight;
-			maxRowHeight = 0;
-		};
-
-		const moveToNextLayer = () => {
-			cursorX = 0;
-			cursorZ = 0;
-			cursorY += 0.2;
-			maxRowHeight = 0;
-		};
-
-		for (let stopIndex = 0; stopIndex < stopOrder.length; stopIndex++) {
-			const stop = stopOrder[stopIndex];
-			const color = stopColors[stopIndex % stopColors.length];
-
-			for (const packId of stop.packages) {
-				const pkg = selectedPackages.find((p) => p.pack_ID === packId);
-				if (!pkg || !pkg.product_ID) continue;
-
-				for (const prod of pkg.product_ID) {
-					const prodData = productMap.get(prod.prod_ID);
-					if (!prodData) continue;
-
-					const quantity = prod.quantity || 1;
-					const volumePerUnit = prodData.volume;
-
-					for (let i = 0; i < quantity; i++) {
-						const edge = Math.cbrt(volumePerUnit);
-						const dims: [number, number, number] = [edge, edge, edge];
-
-						if (cursorZ + dims[2] > truckInterior.width) moveToNextRow();
-						if (cursorX + dims[0] > usableLength) moveToNextLayer();
-						if (cursorY + dims[1] > truckInterior.height) continue;
-
-						const posX = cabinLength + cursorX + dims[0] / 2;
-						const posY = floorLevel + cursorY + dims[1] / 2;
-						const posZ = cursorZ + dims[2] / 2;
-
-						// Ensure products never go below the wheel floor
-						if (posY - dims[1] / 2 < floorLevel) continue;
-
-						placedProducts.push({
-							position: [posX, posY, posZ],
-							dimensions: dims,
-							color,
-							label: prodData.name,
-							stop: stop.stop
-						});
-
-						cursorZ += dims[2];
-						maxRowHeight = Math.max(maxRowHeight, dims[0]);
-						filledVolume += dims[0] * dims[1] * dims[2];
-					}
+			for (let i = 0; i < total; i++) {
+				if (currentX + dx > maxWidth) {
+					currentX = 0;
+					currentZ += dz + spacing;
 				}
+				if (currentZ + dz > maxDepth) {
+					currentZ = 0;
+					currentY += dy + spacing;
+				}
+				if (currentY + dy > maxHeight) break;
+
+				allBlocks.push({
+					position: [currentX, currentY, currentZ],
+					dimensions: [dx, dy, dz],
+					color: block.color,
+					pkg_ID: block.pkg_ID,
+				});
+
+				currentX += dx + spacing;
 			}
 		}
 
-		const fillPct = ((filledVolume / totalVolume) * 100).toFixed(2);
-		(window as any).truckFillPercentage = fillPct;
+		return allBlocks;
+	};
 
-		setStats({
-			totalVolume,
-			filledVolume,
-			leftoverVolume: totalVolume - filledVolume,
-			fillPercentage: parseFloat(fillPct),
-			productCount: placedProducts.length,
-			productQuantity: placedProducts.length,
-			packageCount: selectedPackages.length
-		});
+	const calculateWheelPositions = () => {
+		const numberOfAxles = length <= 5 ? 2 : length <= 8 ? 3 : 4;
+		const insetZ = 0.3;
+		const leftZ = insetZ;
+		const rightZ = width - insetZ;
+		const wheelPositions: [number, number, number][] = [];
 
-		return placedProducts;
-	}, [truck, selectedPackages, truckInterior, productMap, wheelRadius, wheelClearance]);
+		// Front axle under cabin
+		wheelPositions.push([cabinX, wheelY, leftZ]);
+		wheelPositions.push([cabinX, wheelY, rightZ]);
 
-	const fillPercentage = (window as any).truckFillPercentage;
+		// Rear axles (start from ~25% into cargo)
+		const axleStart = cabinLength + length * 0.25;
+		const axleEnd = cabinLength + length - 0.8;
+		const axleSpacing = (axleEnd - axleStart) / (numberOfAxles - 1);
 
-	// Truck wheel layout
-	const cabinLength = 1.3;
-	const frontAxleX = cabinLength * 0.5; // under the driver cabin itself
-	const midAxleX = cabinLength + (truckInterior.length - cabinLength) * 0.4;
-	const rearAxleX = cabinLength + (truckInterior.length - cabinLength) - 0.8;
+		for (let i = 0; i < numberOfAxles; i++) {
+			const axleX = axleStart + i * axleSpacing;
+			wheelPositions.push([axleX, wheelY, leftZ]);
+			wheelPositions.push([axleX, wheelY, rightZ]);
+		}
 
-	const wheelY = wheelRadius;
-	const leftZ = axleInset;
-	const rightZ = truckInterior.width - axleInset;
+		return wheelPositions;
+	};
 
-	const wheelPositions = [
-		// Under driver cabin
-		[frontAxleX, wheelY, leftZ],
-		[frontAxleX, wheelY, rightZ],
-
-		// Mid and rear axles
-		[midAxleX, wheelY, leftZ],
-		[midAxleX, wheelY, rightZ],
-		[rearAxleX, wheelY, leftZ],
-		[rearAxleX, wheelY, rightZ]
-	];
+	const wheelPositions = calculateWheelPositions();
+	const packageInstances = generatePackageInstances();
 
 	return (
-		<>
-			<Backdrop
-				sx={{ color: "#ffffff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-				open={vehicleLoading}
-			>
-				<CircularProgress color="inherit" />
-			</Backdrop>
+		<div style={{ display: 'flex', gap: '2rem' }}>
+			{/* Truck 3D View */}
+			<div style={{ flex: 2 }}>
+				<Canvas
+					camera={{
+						position: [cameraDistance, cameraDistance * 0.6, cameraDistance],
+						fov: 45,
+					}}
+					style={{ height: 600, width: '100%' }}
+				>
+					<ambientLight intensity={0.8} />
+					<directionalLight position={[10, 10, 5]} intensity={1.2} />
+					<OrbitControls enableZoom={false} enableRotate enablePan={false} />
 
-			<Canvas camera={{ position: [5, 5, 10], fov: 50 }}>
-				<ambientLight intensity={0.4} />
-				<directionalLight position={[10, 10, 5]} intensity={1} />
-				<hemisphereLight intensity={0.3} />
-				<OrbitControls enableZoom={false} />
-				<Environment preset="warehouse" />
-
-				<Stage adjustCamera={false} intensity={0.6}>
-					{/* Truck container */}
-					<mesh
-						position={[
-							1.3 + truckInterior.length / 2,
-							wheelRadius + wheelClearance + truckInterior.height / 2,
-							truckInterior.width / 2
-						]}
-					>
-						<boxGeometry args={[truckInterior.length, truckInterior.height, truckInterior.width]} />
-						<meshStandardMaterial color="silver" metalness={0.7} roughness={0.2} transparent opacity={0.15} />
+					{/* Driver Cabin */}
+					<mesh position={[cabinX, wheelY + cabinHeight / 2 + 0.5, width / 2]}>
+						<boxGeometry args={[cabinLength, cabinHeight, width]} />
+						<meshStandardMaterial color="#b87333" />
 					</mesh>
 
-					{/* Cabin */}
-					<mesh
-						position={[
-							0.65,
-							wheelRadius + wheelClearance + truckInterior.height * 0.4,
-							truckInterior.width / 2
-						]}
-					>
-						<boxGeometry args={[1.0, truckInterior.height * 0.8, truckInterior.width * 0.85]} />
-						<meshStandardMaterial color="orange" metalness={0.5} roughness={0.6} opacity={0.85} transparent />
+					{/* Cargo area */}
+					<mesh position={[cabinLength + length / 2, steelPlateY + (height - steelPlateY) / 2, width / 2]}>
+						<boxGeometry args={[length, height - steelPlateY, width]} />
+						<meshStandardMaterial color="white" transparent opacity={0.4} />
+					</mesh>
+
+					{/* Steel floor */}
+					<mesh position={[cabinLength + length / 2, steelPlateY, width / 2]}>
+						<boxGeometry args={[length, 0.05, width]} />
+						<meshStandardMaterial color="#222" metalness={1} roughness={0.3} />
 					</mesh>
 
 					{/* Wheels */}
-					{wheelPositions.map((pos, i) => (
-						<mesh key={i} position={pos as [number, number, number]} rotation={[Math.PI / 2, 0, 0]}>
-							<cylinderGeometry args={[wheelRadius, wheelRadius, wheelWidth, 32]} />
+					{wheelPositions.map((pos, idx) => (
+						<mesh key={idx} position={pos} rotation={[Math.PI / 2, 0, 0]}>
+							<cylinderGeometry args={[wheelRadius, wheelRadius, wheelThickness, 32]} />
 							<meshStandardMaterial color="black" />
 						</mesh>
 					))}
 
-					{/* Products */}
-					{products.map((prod, index) => (
-						<mesh key={index} position={prod.position}>
-							<boxGeometry args={prod.dimensions} />
-							<meshStandardMaterial color={prod.color} metalness={0.2} roughness={0.8} />
-							<Edges color="black" />
+					{/* Package Instances */}
+					{packageInstances.map((block, index) => (
+						<mesh
+							key={index}
+							position={[
+								cabinLength + block.position[0] + block.dimensions[0] / 2,
+								steelPlateY + block.position[1] + block.dimensions[1] / 2,
+								block.position[2] + block.dimensions[2] / 2,
+							]}
+
+						>
+							<boxGeometry args={block.dimensions} />
+							<meshStandardMaterial color={block.color} />
 						</mesh>
 					))}
-				</Stage>
-			</Canvas>
-
-			{/* UI Overlays */}
-			<div
-				style={{
-					position: "absolute",
-					top: 10,
-					left: 10,
-					background: "white",
-					padding: "6px 10px",
-					borderRadius: 8
-				}}
-			>
-				Truck Fill: <strong>{fillPercentage}%</strong>
+				</Canvas>
 			</div>
 
-			<div
-				style={{
-					position: "absolute",
-					top: 60,
-					left: 10,
-					background: "white",
-					padding: "10px",
-					borderRadius: 8,
-					fontSize: "0.85rem",
-					maxWidth: 300,
-					boxShadow: "0 2px 4px rgba(0,0,0,0.2)"
-				}}
-			>
-				<h4>Truck Info</h4>
-				<div><strong>Dimensions:</strong> {truckInterior.length.toFixed(2)}m × {truckInterior.width.toFixed(2)}m × {truckInterior.height.toFixed(2)}m</div>
-				<div><strong>Total Volume:</strong> {stats.totalVolume.toFixed(2)} m³</div>
-				<div><strong>Filled Volume:</strong> {stats.filledVolume.toFixed(2)} m³</div>
-				<div><strong>Leftover Volume:</strong> {stats.leftoverVolume.toFixed(2)} m³</div>
-				<div><strong>Fill %:</strong> {stats.fillPercentage}%</div>
-				<div><strong>Packages:</strong> {stats.packageCount}</div>
-				<div><strong>Total Products:</strong> {stats.productCount}</div>
-				<hr />
-				<div><strong>Stops Legend:</strong>
-					<ul style={{ paddingLeft: 18 }}>
-						{truck?.loadArrangement?.map((stop, idx) => (
-							<li key={stop.stop} style={{ color: stopColors[idx % stopColors.length] }}>
-								Stop {stop.stop}: {stop.location}
-							</li>
-						))}
-					</ul>
+			{/* Legend and Details */}
+			<div style={{ flex: 1 }}>
+				<h3>Truck Details</h3>
+				<ul style={{ lineHeight: '1.6' }}>
+					<li><strong>Length:</strong> {length} m</li>
+					<li><strong>Width:</strong> {width} m</li>
+					<li><strong>Height:</strong> {height} m</li>
+				</ul>
+
+				{/* Highlighted Truck Capacity */}
+				<div
+					style={{
+						backgroundColor: '#e0f7fa',
+						padding: '12px 16px',
+						marginTop: '1.5rem',
+						borderLeft: '5px solid #00796b',
+						borderRadius: 4,
+						boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+					}}
+				>
+					<h4 style={{ margin: 0, color: '#00796b' }}>Truck Capacity</h4>
+					<p style={{ margin: '4px 0 0 0', fontWeight: 'bold' }}>
+						{(length * width * height).toFixed(2)} m³
+					</p>
 				</div>
+
+				{/* Package Color Legend */}
+				{/* Package Color Legend */}
+				<h3 style={{ marginTop: '1.5rem' }}>Package Color Legend</h3>
+				<ul style={{ paddingLeft: 0, listStyle: 'none' }}>
+					{Array.from(
+						new Map(packageBlocks.map(block => [block.pkg_ID, block])).values()
+					).map((block, idx) => (
+						<li
+							key={idx}
+							style={{
+								display: 'flex',
+								alignItems: 'center',
+								marginBottom: '0.5rem',
+								borderBottom: '1px solid #ddd',
+								paddingBottom: 4,
+							}}
+						>
+							<div
+								style={{
+									width: 16,
+									height: 16,
+									backgroundColor: block.color,
+									marginRight: 8,
+									border: '1px solid #000',
+								}}
+							/>
+							<span>{block.pkg_ID}</span>
+						</li>
+					))}
+				</ul>
+
 			</div>
-		</>
+		</div>
 	);
 };
 
 export default TruckScene;
+

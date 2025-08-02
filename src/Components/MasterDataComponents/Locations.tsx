@@ -56,7 +56,8 @@ export interface Location {
   contact_email: string;
   def_ship_from: number | boolean;
   def_bill_to: number | boolean;
-  locationId: string
+  locationId: string;
+  gst: string;
 }
 
 // Define the type for each row in the DataGrid
@@ -95,7 +96,7 @@ const validationSchema = Yup.object({
   state: Yup.string().required('State  is required'),
   country: Yup.string().required('Country is required'),
   pincode: Yup.string().matches(/^[0-9]{6}$/, "Pincode must be exactly 6 digits").required("Pincode is required"),
-  locationContactName: Yup.string().required('Contact person name is required'), 
+  locationContactName: Yup.string().required('Contact person name is required'),
   locationContactNumber: Yup.string().matches(/^[0-9]{10}$/, "Phone number must be exactly 10 digits").required("Phone number is required"),
   locationContactEmail: Yup.string().email("Enter a valid email").required("Email is required"),
 
@@ -117,7 +118,7 @@ const Locations: React.FC = () => {
   const [postLocation, { isLoading: postLocationLoading }] = usePostLocationMasterMutation();
   const [editLocation, { isLoading: editLocationLoading }] = useEditLocationMasterMutation();
   const [deleteLocation, { isLoading: deleteLocationLoading }] = useDeleteLocationMasterMutation()
- 
+
 
   if (error) {
     console.error("Error fetching locations:", error);
@@ -269,20 +270,20 @@ const Locations: React.FC = () => {
   });
 
   useEffect(() => {
-    if (editRow) { 
+    if (editRow) {
       formik.setValues({
         id: editRow.id,
         locationId: editRow.locationId,
         locationDescription: editRow.locationDescription,
         locationType: editRow.locationType,
-        glnCode: editRow.glnCode !=='NA' ? editRow.glnCode : "",
-        iataCode: editRow.iataCode !=='NA' ? editRow.iataCode : "" ,
+        glnCode: editRow.glnCode !== 'NA' ? editRow.glnCode : "",
+        iataCode: editRow.iataCode !== 'NA' ? editRow.iataCode : "",
         longitude: editRow.longitude,
         latitude: editRow.latitude,
         timeZone: editRow.timeZone,
         city: editRow.city,
         addressLine1: editRow.addressLine1 ? editRow.addressLine1 : '',
-        addressLine2: editRow.addressLine2 ? editRow.addressLine2 :'',
+        addressLine2: editRow.addressLine2 ? editRow.addressLine2 : '',
         district: editRow.district,
         state: editRow.state,
         country: editRow.country,
@@ -293,7 +294,7 @@ const Locations: React.FC = () => {
         locationContactEmail: editRow.locationContactEmail,
       });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editRow]);
   const { values, errors, touched, handleChange, handleBlur, handleSubmit } = formik;
 
@@ -360,24 +361,24 @@ const Locations: React.FC = () => {
     },
   ];
   const locationTypeOptions = [
-  'Production plant',
-  'Distribution center',
-  'Shipping point',
-  'Customer',
-  'Vendor',
-  'Terminal',
-  'Port',
-  'Airport',
-  'Railway station',
-  'Container freight station',
-  'Hub',
-  'Gateway',
-  'Container yard',
-  'Warehouse',
-  'Carrier warehouse',
-  'Rail junction',
-  'Border crossing point',
-];
+    'Production plant',
+    'Distribution center',
+    'Shipping point',
+    'Customer',
+    'Vendor',
+    'Terminal',
+    'Port',
+    'Airport',
+    'Railway station',
+    'Container freight station',
+    'Hub',
+    'Gateway',
+    'Container yard',
+    'Warehouse',
+    'Carrier warehouse',
+    'Rail junction',
+    'Border crossing point',
+  ];
 
   return (
     <>
@@ -410,7 +411,7 @@ const Locations: React.FC = () => {
         </Typography> */}
         <Box display="flex" justifyContent="flex-end">
           <Box gap={2}>
-            <Button 
+            <Button
               onClick={() => setShowForm((prev) => !prev)}
               className={styles.createButton}
             >
@@ -428,7 +429,7 @@ const Locations: React.FC = () => {
               </Typography>
               <Grid container spacing={2}>
                 {isEditing &&
-                 <Grid item xs={12} sm={6} md={2.4}>
+                  <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth disabled
                       size="small"
@@ -441,8 +442,8 @@ const Locations: React.FC = () => {
                         readOnly: true,
                       }}
                     />
-                  </Grid> }
-               
+                  </Grid>}
+
                 <Grid item xs={12} sm={6} md={2.4}>
                   <TextField
                     fullWidth
@@ -680,20 +681,20 @@ const Locations: React.FC = () => {
               </Grid>
 
             </Grid>
-            
+
             <Box sx={{ marginTop: '24px', textAlign: 'center' }}>
-                <CustomButtonFilled  >{isEditing ? "Update location" : "Create location"}</CustomButtonFilled>
-                <Button
-                  variant='outlined'
-                  color="secondary"
-                  onClick={() => {
-                    formik.resetForm()
-                    setIsEditing(false);
-                    setEditRow(null);
-                  }}
-                  style={{ marginLeft: "10px" }}>Reset
-                </Button>
-              </Box>
+              <CustomButtonFilled  >{isEditing ? "Update location" : "Create location"}</CustomButtonFilled>
+              <Button
+                variant='outlined'
+                color="secondary"
+                onClick={() => {
+                  formik.resetForm()
+                  setIsEditing(false);
+                  setEditRow(null);
+                }}
+                style={{ marginLeft: "10px" }}>Reset
+              </Button>
+            </Box>
           </Box>
         </Collapse>
       </Box>

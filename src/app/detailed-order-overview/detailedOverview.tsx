@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { useEditOrderMutation, useGetOrderByIdQuery } from "@/api/apiSlice";
 import {
 	Backdrop,
@@ -9,7 +9,6 @@ import {
 	Typography,
 	Box,
 	Button,
-	Tooltip,
 	Dialog,
 	DialogContent,
 	DialogActions,
@@ -19,25 +18,20 @@ import {
 import Allocations from "@/Components/OrderOverViewAllocations/Allocations";
 import { useSearchParams } from "next/navigation";
 import moment from "moment";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 import Image from "next/image";
 import AdditionalDocuments from "@/Components/CreateOrderTables/AdditionalDocuments";
 import CloseIcon from "@mui/icons-material/Close";
 import SnackbarAlert from "@/Components/ReusableComponents/SnackbarAlerts";
-// import BillOfLading from "@/Components/OrderOverViewAllocations/BillOfLading";
+import BillOfLading from "@/Components/OrderOverViewAllocations/BillOfLading";
 
 export interface OrderDoc {
 	[key: string]: string;
 }
 
-const OrderDetailedOverview: React.FC = () => { 
+const OrderDetailedOverview: React.FC = () => {
 	const [snackbarOpen, setSnackbarOpen] = useState(false);
 	const [snackbarMessage, setSnackbarMessage] = useState("");
-	const [snackbarSeverity, setSnackbarSeverity] = useState<
-		"success" | "error" | "warning" | "info"
-	>("success");
-	const pdfRef = useRef<HTMLDivElement>(null);
+	const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
 	const [editOrder, { isLoading: confirmOrderLoading }] =
 		useEditOrderMutation();
 	const searchParams = useSearchParams();
@@ -49,10 +43,11 @@ const OrderDetailedOverview: React.FC = () => {
 	const [openDialog, setOpenDialog] = useState(false);
 	const [documents, setDocuments] = useState<{ [key: string]: string }[]>([]);
 
+
 	const handleOpenDialog = () => setOpenDialog(true);
 	const handleCloseDialog = () => setOpenDialog(false);
 	const allocatedPackageDetails = order?.allocated_packages_details;
-	 
+
 	const [openPreview, setOpenPreview] = useState<{
 		url: string;
 		open: boolean;
@@ -62,57 +57,21 @@ const OrderDetailedOverview: React.FC = () => {
 	});
 	const handlePreview = (url: string) => {
 		setOpenPreview({ url, open: true });
-	};
-
-	const generatePDF = async () => {
-		setIsGeneratingPDF(true);
-
-		await new Promise((resolve) => setTimeout(resolve, 0)); // Wait for re-render
-
-		const input = pdfRef.current;
-		if (!input) return;
-
-		const canvas = await html2canvas(input, {
-			scale: 1.5, // Lower scale reduces file size and improves performance
-			useCORS: true,
-			scrollY: -window.scrollY,
-		});
-
-		const imgData = canvas.toDataURL("image/jpeg", 0.6); // JPEG and quality=0.6 to reduce size
-
-		const pdf = new jsPDF("p", "mm", "a4");
-		const pdfWidth = pdf.internal.pageSize.getWidth();
-		const pdfHeight = pdf.internal.pageSize.getHeight();
-
-		const imgWidth = pdfWidth;
-		const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-
-		let heightLeft = imgHeight;
-		let position = 10;
-
-		// First page
-		pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
-		heightLeft -= pdfHeight;
-
-		// Add remaining pages
-		while (heightLeft > 0) {
-			position = heightLeft - imgHeight;
-			pdf.addPage();
-			pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
-			heightLeft -= pdfHeight;
-		}
-
-		pdf.save("order-details.pdf");
 		setIsGeneratingPDF(false);
 	};
+
+
 
 	const handleUpdateDocuments = async () => {
 		// handleCloseDialog()
 		const editOrderBody = {
 			order_docs: documents,
-		}; 
+		};
 		try {
-			const response = await editOrder(editOrderBody).unwrap();
+			const response = await editOrder({
+				body: editOrderBody,
+				params: { order_ID: orderId } // Pass as query param
+			}).unwrap();
 			if (response) {
 				setSnackbarMessage(`Order updated successfully!`);
 				setSnackbarSeverity("success");
@@ -140,7 +99,9 @@ const OrderDetailedOverview: React.FC = () => {
 				}
 			}
 		}
-	};
+	}
+
+
 	return (
 		<Box sx={{ p: { xs: 0.2, md: 2 } }}>
 			<SnackbarAlert
@@ -214,17 +175,10 @@ const OrderDetailedOverview: React.FC = () => {
 				<CircularProgress color="inherit" />
 			</Backdrop>
 			<Paper
-				ref={pdfRef}
-				key={orderData?.order_ID}
-				elevation={0}
-				sx={{
-					border: "none",
-					boxShadow: "none",
-				}}
 			>
 				{orderData && (
 					<Paper
-						sx={{ p: 3, mb: 3, marginLeft: isGeneratingPDF ? "30px" : "2px" }}
+						sx={{ p: 3, mb: 3 }}
 					>
 						<Grid
 							sx={{
@@ -240,38 +194,6 @@ const OrderDetailedOverview: React.FC = () => {
 							>
 								Order Details
 							</Typography>
-
-							{orderData?.order_status === "assignment pending" &&
-								!isGeneratingPDF && (
-									<Grid
-										sx={{
-											display: "flex",
-											flexDirection: "row",
-											justifyContent: "flex-end",
-											alignSelf: "flex-end",
-										}}
-									>
-										<Tooltip
-											title="Download the full order details as a PDF"
-											arrow
-										>
-											<Button
-												type="button"
-												sx={{
-													backgroundColor: "#F08C24",
-													color: "#fff",
-													"&:hover": {
-														backgroundColor: "#FCF0DE",
-														color: "#F08C24",
-													},
-												}}
-												onClick={generatePDF}
-											>
-												⬇ Download
-											</Button>
-										</Tooltip>
-									</Grid>
-								)}
 						</Grid>
 						<Grid container spacing={1}>
 							<Grid item xs={12} md={6}>
@@ -389,25 +311,31 @@ const OrderDetailedOverview: React.FC = () => {
 				)}
 
 				{orderData?.allocations && (
-					<Allocations
-						isGeneratingPDF={isGeneratingPDF}
-						allocations={orderData.allocations}
-						orderId={orderData.order_ID}
-						allocatedPackageDetails={allocatedPackageDetails}
-						from={from}
-					/>
+					<>
+						<Allocations
+							isGeneratingPDF={isGeneratingPDF}
+							allocations={orderData.allocations}
+							orderId={orderData.order_ID}
+							allocatedPackageDetails={allocatedPackageDetails}
+							from={from}
+						/>
+						<BillOfLading
+							allocations={orderData.allocations}
+							orderId={orderData.order_ID}
+							allocatedPackageDetails={allocatedPackageDetails}
+							order={orderData}
+							from={from}
+							orderStatus={orderData.order_status}
+						/>
+					</>
 				)}
-				{/* {orderData?.allocations && (
-					<BillOfLading
-						allocations={orderData.allocations}
-						orderId={orderData.order_ID}
-						allocatedPackageDetails={allocatedPackageDetails}
-						from={from}
-					/>
-				)} */}
+
+
+
 			</Paper>
 		</Box>
 	);
 };
 
 export default OrderDetailedOverview;
+
