@@ -34,7 +34,7 @@ import { useRouter } from "next/navigation";
 import {
 	useEditAssignOrderOrderMutation,
 	useGetAllDriversDataQuery,
-	// useGetAllProductsQuery,
+	useGetAllProductsQuery,
 	useGetAssignedOrderByIdQuery,
 	useGetDeviceMasterQuery,
 	useGetFilteredDriversQuery,
@@ -142,7 +142,14 @@ interface TaxInformation {
 	self_transport: string;
 	tax_rate: string;
 }
+
+interface ProductLine {
+    prod_ID: string;
+    quantity: number;
+    package_info: string;
+}
 interface PackageDetail {
+	product_lines: ProductLine[];
 	pac_id: string;
 	pack_ID: string;
 	package_status: string;
@@ -269,8 +276,8 @@ const Allocations: React.FC<AllocationsProps> = ({
 	});
 	const { data: allDevices, isLoading: deviceLoading } =
 		useGetDeviceMasterQuery({});
-	// const { data: productsData } = useGetAllProductsQuery({});
-	// const allProductsData = productsData?.products || [];
+	const { data: productsData } = useGetAllProductsQuery({});
+	const allProductsData = productsData?.products || [];
 	const [loading, setLoading] = useState(false);
 	const { data: locationsData } = useGetLocationMasterQuery({});
 	const getAllLocations =
@@ -377,18 +384,18 @@ const Allocations: React.FC<AllocationsProps> = ({
 		error,
 	} = useGetOrderByIdQuery({ orderId }, { skip: !orderId });
 
-	// const getProductDetails = (productID: string) => {
-	// 	const productInfo = allProductsData.find(
-	// 		(product: ProductDetails) => product.product_ID === productID
-	// 	);
-	// 	if (!productInfo) return "Package details not available";
-	// 	const details = [productInfo.product_name, productInfo.product_ID].filter(
-	// 		Boolean
-	// 	);
-	// 	return details.length > 0
-	// 		? details.join("-")
-	// 		: "Product details not available";
-	// };
+	const getProductDetails = (productID: string) => {
+		const productInfo = allProductsData.find(
+			(product: ProductDetails) => product.product_ID === productID
+		);
+		if (!productInfo) return "Package details not available";
+		const details = [productInfo.product_name, productInfo.product_ID].filter(
+			Boolean
+		);
+		return details.length > 0
+			? details.join("-")
+			: "Product details not available";
+	};
 	const devicesData = allDevices?.devices.length > 0 ? allDevices?.devices : [];
 
 	const [formData, setFormData] = useState({
@@ -1973,7 +1980,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 																	>
 																		Products:
 																	</Typography>
-																	{/* {pkg.product_ID.map(
+																	{pkg.product_lines.map(
 																		(prod: Product, index: number) => (
 																			<Typography
 																				key={index}
@@ -1984,7 +1991,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 																				(Qty: {prod.quantity})
 																			</Typography>
 																		)
-																	)} */}
+																	)}
 																</Box>
 															</Grid>
 														</Grid>

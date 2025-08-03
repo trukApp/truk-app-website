@@ -879,10 +879,10 @@ const BillOfLading: React.FC<AllocationsProps> = ({ allocations, orderId, alloca
 
                                 {/* Carrier Info */}
                                 <Grid container spacing={2} sx={{ mt: 1 }}>
-                                    <Grid item xs={6}>
-                                        <Typography>Carrier Name: {assignedOrder?.transporter_name || "-"}</Typography>
-                                        <Typography>Carrier ID: {allocation.vehicle_ID || "-"}</Typography>
-                                    </Grid>
+                                     {/* <Grid item xs={6}>
+                                         <Typography>Carrier Name: {assignedOrder?.transporter_name || "-"}</Typography> 
+                                         <Typography>Carrier ID: {allocation.vehicle_ID || "-"}</Typography>
+                                    </Grid> */}
                                     <Grid item xs={6}>
                                         <Typography>Ship Date: {shipperPkg?.pickup_date_time || "-"}</Typography>
                                         <Typography>BOL No: {shipperPkg?.pac_id || "-"}</Typography>
@@ -893,7 +893,7 @@ const BillOfLading: React.FC<AllocationsProps> = ({ allocations, orderId, alloca
                                 <Box mt={2}>
                                     <Paper sx={{ border: "1px solid #000" }}>
                                         <Grid container sx={{ borderBottom: "1px solid #000", fontWeight: "bold", p: 1 }}>
-                                            <Grid item xs={2}>Package ID</Grid>
+                                            {/* <Grid item xs={2}>Package ID</Grid> */}
                                             <Grid item xs={3}>Description</Grid>
                                             <Grid item xs={2}>Quantity</Grid>
                                             <Grid item xs={2}>Weight</Grid>
@@ -913,11 +913,11 @@ const BillOfLading: React.FC<AllocationsProps> = ({ allocations, orderId, alloca
 
                                                 return (
                                                     <Grid container key={`${line.pac_ID}-${j}`} sx={{ p: 1, borderBottom: "1px solid #ddd" }}>
-                                                        <Grid item xs={2}>{line.package_info?.pac_ID || "-"}</Grid>
+                                                        {/* <Grid item xs={2}>{line.package_info?.pac_ID || "-"}</Grid> */}
                                                         <Grid item xs={3}>{line.package_info?.handling_unit_type || line.package_info?.packaging_type_name || "-"}</Grid>
                                                         <Grid item xs={2}>{line.quantity}</Grid>
                                                         <Grid item xs={2}>{packageWeight !== "-" ? `${packageWeight} ${weightUom}` : "-"}</Grid>
-                                                        <Grid item xs={3}>{packageCount}</Grid>
+                                                        <Grid item xs={3}>1</Grid>
                                                     </Grid>
                                                 );
                                             })

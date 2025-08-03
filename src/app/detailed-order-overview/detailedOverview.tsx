@@ -319,14 +319,16 @@ const OrderDetailedOverview: React.FC = () => {
 							allocatedPackageDetails={allocatedPackageDetails}
 							from={from}
 						/>
-						<BillOfLading
-							allocations={orderData.allocations}
-							orderId={orderData.order_ID}
-							allocatedPackageDetails={allocatedPackageDetails}
-							order={orderData}
-							from={from}
-							orderStatus={orderData.order_status}
-						/>
+						{orderData?.order_status === null || orderData?.order_status === "assignment pending" ? null : (
+							<BillOfLading
+								allocations={orderData.allocations}
+								orderId={orderData.order_ID}
+								allocatedPackageDetails={allocatedPackageDetails}
+								order={orderData}
+								from={from}
+								orderStatus={orderData.order_status}
+							/>
+						)}
 					</>
 				)}
 
