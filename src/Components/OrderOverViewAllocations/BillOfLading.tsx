@@ -440,8 +440,8 @@
 
 
 
-import { useEditOrderMutation, useGetAssignedOrderByIdQuery, useGetLocationMasterQuery, useImageUploadingMutation } from "@/api/apiSlice";
-import { Typography, Paper, Backdrop, CircularProgress, Grid, Divider, Box, Button } from "@mui/material";
+import { useEditOrderMutation, useGetLocationMasterQuery, useImageUploadingMutation } from "@/api/apiSlice";
+import { Typography, Paper, Grid, Divider, Box, Button } from "@mui/material";
 import { Location } from "../MasterDataComponents/Locations";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -671,7 +671,7 @@ const BillOfLading: React.FC<AllocationsProps> = ({ allocations, orderId, alloca
     const [editOrder] = useEditOrderMutation();
     const { data: locationsData } = useGetLocationMasterQuery({});
     const getAllLocations: Location[] = locationsData?.locations?.length > 0 ? locationsData.locations : [];
-    const { data: assignedOrder, isLoading: ordersLoading } = useGetAssignedOrderByIdQuery({ order_ID: orderId });
+    // const { data: assignedOrder, isLoading: ordersLoading } = useGetAssignedOrderByIdQuery({ order_ID: orderId });
     const [imageUploading] = useImageUploadingMutation();
 
     const billOfLadding = order?.bill_of_lading || [];
@@ -772,9 +772,10 @@ const BillOfLading: React.FC<AllocationsProps> = ({ allocations, orderId, alloca
 
     return (
         <>
-            <Backdrop sx={{ color: "#ffffff", zIndex: (theme) => theme.zIndex.drawer + 1 }} open={ordersLoading}>
+            {/* <Backdrop sx={{ color: "#ffffff", zIndex: (theme) => theme.zIndex.drawer + 1 }} open={ordersLoading}> */}
+            {/* <Backdrop sx={{ color: "#ffffff", zIndex: (theme) => theme.zIndex.drawer + 1 }}>
                 <CircularProgress color="inherit" />
-            </Backdrop>
+            </Backdrop> */}
 
             {allocations.map((allocation, allocIndex) => {
                 const vehiclePackages = allocatedPackageDetails.filter((pkg) => allocation.packages.includes(pkg.pack_ID));
@@ -879,7 +880,7 @@ const BillOfLading: React.FC<AllocationsProps> = ({ allocations, orderId, alloca
 
                                 {/* Carrier Info */}
                                 <Grid container spacing={2} sx={{ mt: 1 }}>
-                                     {/* <Grid item xs={6}>
+                                    {/* <Grid item xs={6}>
                                          <Typography>Carrier Name: {assignedOrder?.transporter_name || "-"}</Typography> 
                                          <Typography>Carrier ID: {allocation.vehicle_ID || "-"}</Typography>
                                     </Grid> */}
@@ -907,9 +908,9 @@ const BillOfLading: React.FC<AllocationsProps> = ({ allocations, orderId, alloca
                                                 const packageWeight = packageDetail?.package_weight || allocation.occupiedWeight || "-";
                                                 const weightUom = packageDetail?.weight_uom || "kg";
 
-                                                const packageCount = allocation.packageDetails?.filter(
-                                                    (p) => p.pack_ID === pkg.pkg_ID
-                                                ).length || 0;
+                                                // const packageCount = allocation.packageDetails?.filter(
+                                                //     (p) => p.pack_ID === pkg.pkg_ID
+                                                // ).length || 0;
 
                                                 return (
                                                     <Grid container key={`${line.pac_ID}-${j}`} sx={{ p: 1, borderBottom: "1px solid #ddd" }}>
