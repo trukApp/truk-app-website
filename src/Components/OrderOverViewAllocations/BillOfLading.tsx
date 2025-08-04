@@ -1,447 +1,6 @@
-// import { useEditOrderMutation, useGetAssignedOrderByIdQuery, useGetLocationMasterQuery, useImageUploadingMutation } from "@/api/apiSlice";
-// import { Typography, Paper, Backdrop, CircularProgress, Grid, Divider, Box, Button } from "@mui/material";
-// import { Location } from "../MasterDataComponents/Locations";
-// import jsPDF from "jspdf";
-// import html2canvas from "html2canvas";
-// import JsBarcode from "jsbarcode";
-// import { useRef } from "react";
-
-// interface RoutePoint {
-//     start: { address: string; latitude: number; longitude: number };
-//     end: { address: string; latitude: number; longitude: number };
-//     distance: string;
-//     duration: string;
-// }
-// interface Allocation {
-//     vehicle_ID: string;
-//     cost: number;
-//     totalVolumeCapacity: number;
-//     totalWeightCapacity: number;
-//     occupiedVolume: number;
-//     occupiedWeight: number;
-//     leftoverVolume: number;
-//     leftoverWeight: number;
-//     packages: string[];
-//     route: RoutePoint[];
-//     ship_from: string;
-//     packageInfoDetails?: PackageInfoDetail[];
-// }
-// interface AllocationsProps {
-//     allocations: Allocation[];
-//     orderId: string;
-//     allocatedPackageDetails: PackageDetail[];
-//     from: string;
-//     orderStatus: string;
-// }
-// interface Product {
-//     prod_ID: string;
-//     quantity: number;
-//     package_info: string;
-// }
-// interface AdditionalInformation {
-//     reference_id: string;
-//     invoice: string;
-//     department: string;
-//     sales_order_number: string;
-//     po_number: string;
-//     attachment: string;
-// }
-// interface TaxInformation {
-//     sender_gst: string;
-//     receiver_gst: string;
-//     carrier_gst: string;
-//     self_transport: string;
-//     tax_rate: string;
-// }
-// interface PackageDetail {
-//     pac_id: string;
-//     pack_ID: string;
-//     package_status: string;
-//     ship_from: string;
-//     ship_to: string;
-//     pickup_date_time: string;
-//     dropoff_date_time: string;
-//     return_label: boolean;
-//     product_ID: Product[];
-//     bill_to: string;
-//     additional_info: AdditionalInformation;
-//     tax_info: TaxInformation;
-// }
-// interface PackageInfoLine {
-//     pac_ID: string;
-//     prod_ID: string;
-//     quantity: number;
-//     package_info: PackageInfo;
-//     packagingDimensions: { widthM: number; heightM: number; lengthM: number };
-// }
-// interface PackageInfo {
-//     pac_ID: string;
-//     pack_width: string;
-//     package_id: number;
-//     pack_height: string;
-//     pack_length: string;
-//     pack_volume: string;
-//     dimensions_uom: string;
-//     pack_volume_uom: string;
-//     handling_unit_type: string;
-//     packaging_type_name: string;
-// }
-// interface PackageInfoDetail {
-//     lines: PackageInfoLine[];
-//     pkg_ID: string;
-// }
-
-// const BillOfLading: React.FC<AllocationsProps> = ({ allocations, orderId, allocatedPackageDetails, orderStatus, order }) => {
-//     const [editOrder] = useEditOrderMutation();
-//     const { data: locationsData } = useGetLocationMasterQuery({});
-//     const getAllLocations: Location[] = locationsData?.locations?.length > 0 ? locationsData.locations : [];
-//     const { data: assignedOrder, isLoading: ordersLoading } = useGetAssignedOrderByIdQuery({ order_ID: orderId });
-//     const [imageUploading] = useImageUploadingMutation();
-//     console.log(order?.bill_of_lading)
-//     const getLocationDetails = (loc_ID: string): string => {
-//         const location = getAllLocations.find((loc) => loc.loc_ID === loc_ID);
-//         if (!location) return "Location details not available";
-//         return [location.address_1, location.city, location.state, location.country, location.pincode].filter(Boolean).join(", ");
-//     };
-//     const billOfLadding = order?.bill_of_lading || [];
-
-
-//     const getCustomerDetails = (loc_ID: string) => {
-//         const location = getAllLocations.find((loc) => loc.loc_ID === loc_ID);
-//         if (!location) return null;
-//         return {
-//             name: location.contact_name || "Name not available",
-//             email: location.contact_email || "Email not available",
-//             phone: location.contact_phone_number || "Phone not available",
-//             gst: location.gst || "N/A",
-//         };
-//     };
-
-//     const getLogoBase64 = async (): Promise<string> => {
-//         const response = await fetch("/TrukAppLogo.png");
-//         const blob = await response.blob();
-//         return new Promise((resolve) => {
-//             const reader = new FileReader();
-//             reader.onloadend = () => resolve(reader.result as string);
-//             reader.readAsDataURL(blob);
-//         });
-//     };
-
-//     const generateBarcode = (value: string): string => {
-//         const canvas = document.createElement("canvas");
-//         JsBarcode(canvas, value, { format: "CODE128", width: 2, height: 50 });
-//         return canvas.toDataURL("image/png");
-//     };
-
-//     // const generateAndUploadPDF = async (
-//     //     ref: HTMLDivElement,
-//     //     fileName: string,
-//     //     barcodeValue: string,
-//     //     shipToId: string,
-//     //     orderStatus: string // ✅ Pass order status to decide bol_to
-//     // ) => {
-//     //     // ✅ Generate PDF
-//     //     const pdf = new jsPDF("p", "mm", "a4");
-//     //     const logoBase64 = await getLogoBase64();
-//     //     const barcode = generateBarcode(barcodeValue);
-
-//     //     pdf.addImage(logoBase64, "PNG", 10, 5, 50, 20);
-//     //     pdf.addImage(barcode, "PNG", 140, 5, 60, 20);
-
-//     //     const canvas = await html2canvas(ref, { scale: 2, useCORS: true });
-//     //     const imgData = canvas.toDataURL("image/png");
-//     //     const pdfWidth = pdf.internal.pageSize.getWidth();
-//     //     const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-
-//     //     pdf.addImage(imgData, "PNG", 0, 30, pdfWidth, imgHeight);
-
-//     //     const pdfBlob = pdf.output("blob");
-
-//     //     // ✅ Upload PDF to S3
-//     //     const formData = new FormData();
-//     //     formData.append("image", pdfBlob, fileName);
-
-//     //     console.log(`📤 Uploading PDF: ${fileName}`);
-//     //     const uploadResponse = await imageUploading(formData).unwrap();
-//     //     console.log("✅ File uploaded:", uploadResponse);
-
-//     //     const pdfUrl = uploadResponse?.imageUrl;
-
-//     //     // ✅ Determine bol_to based on order status
-//     //     let bol_to = "";
-//     //     if (orderStatus === "self assigned") bol_to = "self";
-//     //     else if (orderStatus === "carrier assignment") bol_to = "carrier";
-//     //     else if (orderStatus === "bidding") bol_to = "bidding";
-
-//     //     // ✅ Build edit order payload
-//     //     const editOrderBody = {
-//     //         bill_of_lading: [
-//     //             {
-//     //                 package: "",
-//     //                 self_bill_url: pdfUrl,
-//     //                 loaction_ID: shipToId,
-//     //                 bol_to: bol_to,
-//     //             },
-//     //         ],
-//     //     };
-
-//     //     console.log("📤 Editing Order with BOL:", editOrderBody);
-
-//     //     // ✅ Call edit order API
-//     //     await editOrder({
-//     //         body: editOrderBody,
-//     //         params: { order_ID: orderId }, // pass as query params
-//     //     }).unwrap();
-
-//     //     console.log("✅ Order updated successfully with Bill of Lading.");
-//     // };
-
-//     const generateAndUploadPDF = async (
-//         ref: HTMLDivElement,
-//         fileName: string,
-//         barcodeValue: string,
-//         shipToId: string,
-//         orderStatus: string
-//     ) => {
-//         // ✅ Generate PDF
-//         const pdf = new jsPDF("p", "mm", "a4");
-//         const logoBase64 = await getLogoBase64();
-
-//         // ✅ First, create temporary barcode (for layout)
-//         const tempBarcode = generateBarcode(barcodeValue);
-//         pdf.addImage(logoBase64, "PNG", 10, 5, 50, 20);
-//         pdf.addImage(tempBarcode, "PNG", 140, 5, 60, 20);
-
-//         const canvas = await html2canvas(ref, { scale: 2, useCORS: true });
-//         const imgData = canvas.toDataURL("image/png");
-//         const pdfWidth = pdf.internal.pageSize.getWidth();
-//         const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-
-//         pdf.addImage(imgData, "PNG", 0, 30, pdfWidth, imgHeight);
-
-//         // ✅ Convert to Blob and upload
-//         const pdfBlob = pdf.output("blob");
-//         const formData = new FormData();
-//         formData.append("image", pdfBlob, fileName);
-
-//         console.log(`📤 Uploading PDF: ${fileName}`);
-//         const uploadResponse = await imageUploading(formData).unwrap();
-//         const pdfUrl = uploadResponse?.imageUrl;
-//         console.log("✅ File uploaded:", pdfUrl);
-
-//         // ✅ Now regenerate PDF with barcode as PDF URL
-//         const finalPDF = new jsPDF("p", "mm", "a4");
-//         const barcodeWithUrl = generateBarcode(pdfUrl); // Barcode with PDF URL
-
-//         finalPDF.addImage(logoBase64, "PNG", 10, 5, 50, 20);
-//         finalPDF.addImage(barcodeWithUrl, "PNG", 140, 5, 60, 20);
-//         finalPDF.addImage(imgData, "PNG", 0, 30, pdfWidth, imgHeight);
-
-//         const finalBlob = finalPDF.output("blob");
-//         const finalFormData = new FormData();
-//         finalFormData.append("image", finalBlob, fileName);
-
-//         // ✅ Upload final PDF (with barcode URL)
-//         const finalUploadResponse = await imageUploading(finalFormData).unwrap();
-//         const finalPdfUrl = finalUploadResponse?.imageUrl;
-
-//         // ✅ Update order with final URL
-//         let bol_to = "";
-//         if (orderStatus === "self assigned") bol_to = "self";
-//         else if (orderStatus === "carrier assignment") bol_to = "carrier";
-//         else if (orderStatus === "bidding") bol_to = "bidding";
-
-//         const editOrderBody = {
-//             bill_of_lading: [
-//                 {
-//                     package: "",
-//                     self_bill_url: finalPdfUrl,
-//                     loaction_ID: shipToId,
-//                     bol_to: bol_to,
-//                 },
-//             ],
-//         };
-
-//         await editOrder({
-//             body: editOrderBody,
-//             params: { order_ID: orderId },
-//         }).unwrap();
-
-//         console.log("✅ Final PDF uploaded with barcode containing URL:", finalPdfUrl);
-//     };
-
-//     return (
-//         <>
-//             <Backdrop sx={{ color: "#ffffff", zIndex: (theme) => theme.zIndex.drawer + 1 }} open={ordersLoading}>
-//                 <CircularProgress color="inherit" />
-//             </Backdrop>
-
-//             {allocations.map((allocation, allocIndex) => {
-//                 const vehiclePackages = allocatedPackageDetails.filter((pkg) => allocation.packages.includes(pkg.pack_ID));
-//                 const packagesByShipTo: Record<string, PackageDetail[]> = {};
-
-//                 vehiclePackages.forEach((pkg) => {
-//                     if (pkg.ship_to) {
-//                         if (!packagesByShipTo[pkg.ship_to]) packagesByShipTo[pkg.ship_to] = [];
-//                         packagesByShipTo[pkg.ship_to].push(pkg);
-//                     }
-//                 });
-
-//                 return Object.entries(packagesByShipTo).map(([shipToId, pkgList], index) => {
-//                     const shipperPkg = pkgList[0];
-//                     const shipperDetails = getCustomerDetails(shipperPkg?.ship_from ?? "");
-//                     const consigneeDetails = getCustomerDetails(shipToId);
-//                     const billToDetails = getCustomerDetails(shipperPkg?.bill_to ?? "");
-//                     const pdfRef = useRef<HTMLDivElement>(null);
-//                     const existingBOL = billOfLadding.find((bol: any) => bol.loaction_ID === shipToId);
-//                     const filteredPackageInfo = allocation.packageInfoDetails?.filter((pkg) =>
-//                         pkgList.some((p) => p.pack_ID === pkg.pkg_ID)
-//                     );
-
-//                     return (
-//                         <Box key={`${allocIndex}-${index}`} mt={4}>
-//                             <Box textAlign="right" mb={1}>
-//                                 {existingBOL ? (
-//                                     // ✅ Download Button if BOL already exists
-//                                     <Button
-//                                         variant="outlined"
-//                                         color="secondary"
-//                                         onClick={() => window.open(existingBOL.self_bill_url, "_blank")}
-//                                     >
-//                                         ⬇ Download Existing BOL
-//                                     </Button>
-//                                 ) : (
-//                                     // ✅ Generate & Upload if not present
-//                                     <Button
-//                                         variant="contained"
-//                                         color="primary"
-//                                         onClick={() =>
-//                                             pdfRef.current &&
-//                                             generateAndUploadPDF(
-//                                                 pdfRef.current,
-//                                                 `BillOfLading_${allocation.vehicle_ID}_${shipToId}.pdf`,
-//                                                 shipperPkg?.pac_id || "BOL12345",
-//                                                 shipToId,
-//                                                 orderStatus // Pass order status
-//                                             )
-//                                         }
-//                                     >
-//                                         ⬆ Generate & Upload BOL
-//                                     </Button>
-//                                 )}
-//                             </Box>
-
-//                             <Paper ref={pdfRef} sx={{ p: 3, backgroundColor: "#fff", border: "1px solid #000", fontSize: "12px" }}>
-//                                 <Box textAlign="center" mb={2}>
-//                                     <Typography variant="h6" sx={{ fontWeight: "bold" }}>BILL OF LADING</Typography>
-//                                 </Box>
-//                                 <Divider sx={{ my: 1 }} />
-
-//                                 {/* Top Section */}
-//                                 <Grid container spacing={2}>
-//                                     <Grid item xs={4}><Typography>Sales Order: <strong>{shipperPkg?.additional_info?.sales_order_number || "-"}</strong></Typography></Grid>
-//                                     <Grid item xs={4}><Typography>Cust. PO No: <strong>{shipperPkg?.additional_info?.po_number || "-"}</strong></Typography></Grid>
-//                                     <Grid item xs={4}><Typography>Delivery: <strong>{shipperPkg?.pac_id || "-"}</strong></Typography></Grid>
-//                                 </Grid>
-
-//                                 {/* Shipper / Consignee / Bill To */}
-//                                 <Grid container spacing={2} sx={{ mt: 2 }}>
-//                                     <Grid item xs={4}>
-//                                         <Typography variant="subtitle2">Shipper:</Typography>
-//                                         <Typography>{shipperDetails?.name}</Typography>
-//                                         <Typography>{getLocationDetails(shipperPkg?.ship_from)}</Typography>
-//                                     </Grid>
-//                                     <Grid item xs={4}>
-//                                         <Typography variant="subtitle2">Consigned To:</Typography>
-//                                         <Typography>{consigneeDetails?.name}</Typography>
-//                                         <Typography>{getLocationDetails(shipToId)}</Typography>
-//                                     </Grid>
-//                                     <Grid item xs={4}>
-//                                         <Typography variant="subtitle2">Bill To / Invoice To:</Typography>
-//                                         <Typography>{billToDetails?.name || "—"}</Typography>
-//                                         <Typography>{billToDetails ? getLocationDetails(shipperPkg?.bill_to) : "—"}</Typography>
-//                                     </Grid>
-//                                 </Grid>
-
-//                                 {/* Carrier Info */}
-//                                 <Grid container spacing={2} sx={{ mt: 2 }}>
-//                                     <Grid item xs={6}>
-//                                         <Typography>Carrier Name: {assignedOrder?.transporter_name || "-"}</Typography>
-//                                         <Typography>Carrier ID: {allocation.vehicle_ID || "-"}</Typography>
-//                                     </Grid>
-//                                     <Grid item xs={6}>
-//                                         <Typography>Ship Date: {shipperPkg?.pickup_date_time || "-"}</Typography>
-//                                         <Typography>BOL No: {shipperPkg?.pac_id || "-"}</Typography>
-//                                     </Grid>
-//                                 </Grid>
-
-//                                 {/* Goods Table */}
-//                                 <Box mt={2}>
-//                                     <Paper sx={{ border: "1px solid #000" }}>
-//                                         <Grid container sx={{ borderBottom: "1px solid #000", fontWeight: "bold", p: 1 }}>
-//                                             <Grid item xs={3}>Package ID</Grid>
-//                                             <Grid item xs={3}>Description</Grid>
-//                                             <Grid item xs={3}>Dimensions (LxWxH)</Grid>
-//                                             <Grid item xs={3}>Quantity</Grid>
-//                                         </Grid>
-//                                         {filteredPackageInfo?.map((pkg) =>
-//                                             pkg.lines.map((line, j) => (
-//                                                 <Grid container key={`${line.pac_ID}-${j}`} sx={{ p: 1, borderBottom: "1px solid #ddd" }}>
-//                                                     <Grid item xs={3}>{line.package_info?.pac_ID || "-"}</Grid>
-//                                                     <Grid item xs={3}>{line.package_info?.handling_unit_type || line.package_info?.packaging_type_name || "-"}</Grid>
-//                                                     <Grid item xs={3}>
-//                                                         {`${line.package_info.pack_length} x ${line.package_info.pack_width} x ${line.package_info.pack_height} ${line.package_info.dimensions_uom}`}
-//                                                     </Grid>
-//                                                     <Grid item xs={3}>{line.quantity}</Grid>
-//                                                 </Grid>
-//                                             ))
-//                                         )}
-//                                     </Paper>
-//                                 </Box>
-
-//                                 {/* Declaration Section */}
-//                                 <Box mt={3} sx={{ border: "1px solid #000", p: 2 }}>
-//                                     <Typography sx={{ fontWeight: "bold", textAlign: "center", mb: 1 }}>
-//                                         DRIVE WILL NOT REIMBURSE CARRIER FOR CONSIGNEE ADDED ACCESSORIAL CHARGES WITHOUT PRIOR CONSENT
-//                                     </Typography>
-//                                     <Typography sx={{ fontSize: "11px", mb: 2 }}>
-//                                         This is to certify that the here-in named materials are properly classified, described, packaged, marked, and labelled,
-//                                         and are in proper condition for transportation according to applicable regulations of the Department of Transportation.
-//                                     </Typography>
-
-//                                     <Grid container spacing={2} sx={{ mb: 2 }}>
-//                                         <Grid item xs={6}><Typography>Shipper Signature: ___________________________</Typography></Grid>
-//                                         <Grid item xs={6}><Typography>Date: ___________________________</Typography></Grid>
-//                                     </Grid>
-//                                     <Grid container spacing={2} sx={{ mb: 2 }}>
-//                                         <Grid item xs={6}><Typography>Driver Signature: ___________________________</Typography></Grid>
-//                                         <Grid item xs={6}><Typography>Date: ___________________________</Typography></Grid>
-//                                     </Grid>
-//                                     <Grid container spacing={2} sx={{ mb: 2 }}>
-//                                         <Grid item xs={6}><Typography>Driver License #: ___________________________</Typography></Grid>
-//                                         <Grid item xs={6}><Typography># of Pallets: ______  &nbsp;&nbsp;  # of Cartons: ______</Typography></Grid>
-//                                     </Grid>
-//                                     <Grid container spacing={2} sx={{ mb: 2 }}>
-//                                         <Grid item xs={8}><Typography>All items received in good condition: [ ] Yes &nbsp;&nbsp; [ ] No</Typography></Grid>
-//                                         <Grid item xs={4}><Typography>Date: ___________________________</Typography></Grid>
-//                                     </Grid>
-//                                     <Typography>Customer Signature: ___________________________  &nbsp;&nbsp; Print Name: ___________________________</Typography>
-//                                 </Box>
-//                             </Paper>
-//                         </Box>
-//                     );
-//                 });
-//             })}
-//         </>
-//     );
-// };
-
-// export default BillOfLading;
-
-
-
+import React from "react";
 import { useEditOrderMutation, useGetLocationMasterQuery, useImageUploadingMutation } from "@/api/apiSlice";
-import { Typography, Paper, Grid, Divider, Box, Button } from "@mui/material";
+import { Typography, Paper, Grid, Divider, Box, Button, Backdrop, CircularProgress } from "@mui/material";
 import { Location } from "../MasterDataComponents/Locations";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -506,19 +65,6 @@ interface PackageInfoLine {
         lengthM: number;
     };
 }
-
-// interface PackageInfoDetails {
-//     lines: PackageInfoLine[];
-//     pkg_ID: string;
-// }
-
-// interface Route {
-//     start: { address: string; latitude: number; longitude: number };
-//     end: { address: string; latitude: number; longitude: number };
-//     distance: string;
-//     duration: string;
-//     loadAfterStop?: number;
-// }
 
 interface VehicleDimensions {
     interiorWidthM: number;
@@ -664,16 +210,13 @@ interface PackageInfoDetail {
     pkg_ID: string;
 }
 
-
-
-
 const BillOfLading: React.FC<AllocationsProps> = ({ allocations, orderId, allocatedPackageDetails, orderStatus, order }) => {
     const [editOrder] = useEditOrderMutation();
     const { data: locationsData } = useGetLocationMasterQuery({});
     const getAllLocations: Location[] = locationsData?.locations?.length > 0 ? locationsData.locations : [];
     // const { data: assignedOrder, isLoading: ordersLoading } = useGetAssignedOrderByIdQuery({ order_ID: orderId });
     const [imageUploading] = useImageUploadingMutation();
-
+    const [isLoading, setIsLoading] = React.useState(false);
     const billOfLadding = order?.bill_of_lading || [];
 
     // ✅ Refs for PDFs
@@ -718,6 +261,7 @@ const BillOfLading: React.FC<AllocationsProps> = ({ allocations, orderId, alloca
         shipToId: string,
         orderStatus: string
     ) => {
+        setIsLoading(true);
         const pdf = new jsPDF("p", "mm", "a4");
         const logoBase64 = await getLogoBase64();
 
@@ -726,7 +270,8 @@ const BillOfLading: React.FC<AllocationsProps> = ({ allocations, orderId, alloca
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const imgHeight = (canvas.height * pdfWidth) / canvas.width;
 
-        pdf.addImage(logoBase64, "PNG", 10, 5, 30, 15);
+        // pdf.addImage(logoBase64, "PNG", 10, 5, 30, 15);
+        pdf.addImage(logoBase64, "PNG", 10, 5, 50, 15);
         pdf.addImage(imgData, "PNG", 0, 25, pdfWidth, imgHeight);
 
         const pdfBlob = pdf.output("blob");
@@ -739,7 +284,8 @@ const BillOfLading: React.FC<AllocationsProps> = ({ allocations, orderId, alloca
         const qrCode = await generateQRCode(pdfUrl);
 
         const finalPDF = new jsPDF("p", "mm", "a4");
-        finalPDF.addImage(logoBase64, "PNG", 10, 5, 30, 15);
+        // finalPDF.addImage(logoBase64, "PNG", 10, 5, 30, 15);
+        finalPDF.addImage(logoBase64, "PNG", 10, 5, 50, 15);
         finalPDF.addImage(qrCode, "PNG", 160, 5, 20, 20);
         finalPDF.addImage(imgData, "PNG", 0, 25, pdfWidth, imgHeight);
 
@@ -768,14 +314,15 @@ const BillOfLading: React.FC<AllocationsProps> = ({ allocations, orderId, alloca
             },
             params: { order_ID: orderId },
         }).unwrap();
+
+        setIsLoading(false);
     };
 
     return (
         <>
-            {/* <Backdrop sx={{ color: "#ffffff", zIndex: (theme) => theme.zIndex.drawer + 1 }} open={ordersLoading}> */}
-            {/* <Backdrop sx={{ color: "#ffffff", zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+            <Backdrop sx={{ color: "#ffffff", zIndex: (theme) => theme.zIndex.drawer + 1 }} open={isLoading}>
                 <CircularProgress color="inherit" />
-            </Backdrop> */}
+            </Backdrop>
 
             {allocations.map((allocation, allocIndex) => {
                 const vehiclePackages = allocatedPackageDetails.filter((pkg) => allocation.packages.includes(pkg.pack_ID));
@@ -812,7 +359,7 @@ const BillOfLading: React.FC<AllocationsProps> = ({ allocations, orderId, alloca
                                         // onClick={() => window.open(existingBOL.self_bill_url, "_blank")}
                                         onClick={() => existingBOL && window.open(existingBOL.self_bill_url, "_blank")}
                                     >
-                                        ⬇ Download Existing BOL
+                                        ⬇ Download BOL
                                     </Button>
                                 ) : (
                                     <Button
@@ -822,7 +369,7 @@ const BillOfLading: React.FC<AllocationsProps> = ({ allocations, orderId, alloca
                                             pdfRefs.current[shipToId] &&
                                             generateAndUploadPDF(
                                                 pdfRefs.current[shipToId]!,
-                                                `BillOfLading_${allocation.vehicle_ID}_${shipToId}.pdf`,
+                                                `BOL-${allocation.vehicle_ID}_${shipToId}.pdf`,
                                                 shipToId,
                                                 orderStatus
                                             )
@@ -885,7 +432,20 @@ const BillOfLading: React.FC<AllocationsProps> = ({ allocations, orderId, alloca
                                          <Typography>Carrier ID: {allocation.vehicle_ID || "-"}</Typography>
                                     </Grid> */}
                                     <Grid item xs={6}>
-                                        <Typography>Ship Date: {shipperPkg?.pickup_date_time || "-"}</Typography>
+                                        {/* <Typography>Ship Date: {shipperPkg?.pickup_date_time || "-"}</Typography> */}
+                                        <Typography>
+                                            Ship Date & Time: {shipperPkg?.pickup_date_time
+                                                ? new Intl.DateTimeFormat("en-GB", {
+                                                    day: "2-digit",
+                                                    month: "2-digit",
+                                                    year: "numeric",
+                                                    hour: "numeric",
+                                                    minute: "numeric",
+                                                    hour12: true
+                                                }).format(new Date(shipperPkg.pickup_date_time))
+                                                : "-"}
+                                        </Typography>
+
                                         <Typography>BOL No: {shipperPkg?.pac_id || "-"}</Typography>
                                     </Grid>
                                 </Grid>
@@ -893,7 +453,7 @@ const BillOfLading: React.FC<AllocationsProps> = ({ allocations, orderId, alloca
                                 {/* Goods Table */}
                                 <Box mt={2}>
                                     <Paper sx={{ border: "1px solid #000" }}>
-                                        <Grid container sx={{ borderBottom: "1px solid #000", fontWeight: "bold", p: 1 }}>
+                                        <Grid container sx={{ borderBottom: "1px solid #000", fontWeight: "bold", p: 2, fontSize: "15px" }}>
                                             {/* <Grid item xs={2}>Package ID</Grid> */}
                                             <Grid item xs={3}>Description</Grid>
                                             <Grid item xs={2}>Quantity</Grid>
@@ -907,13 +467,8 @@ const BillOfLading: React.FC<AllocationsProps> = ({ allocations, orderId, alloca
                                                 );
                                                 const packageWeight = packageDetail?.package_weight || allocation.occupiedWeight || "-";
                                                 const weightUom = packageDetail?.weight_uom || "kg";
-
-                                                // const packageCount = allocation.packageDetails?.filter(
-                                                //     (p) => p.pack_ID === pkg.pkg_ID
-                                                // ).length || 0;
-
                                                 return (
-                                                    <Grid container key={`${line.pac_ID}-${j}`} sx={{ p: 1, borderBottom: "1px solid #ddd" }}>
+                                                    <Grid container key={`${line.pac_ID}-${j}`} sx={{ p: 2, borderBottom: "1px solid #ddd", fontSize: "15px" }}>
                                                         {/* <Grid item xs={2}>{line.package_info?.pac_ID || "-"}</Grid> */}
                                                         <Grid item xs={3}>{line.package_info?.handling_unit_type || line.package_info?.packaging_type_name || "-"}</Grid>
                                                         <Grid item xs={2}>{line.quantity}</Grid>
