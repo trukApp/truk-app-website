@@ -31,6 +31,7 @@ import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 import { Location } from '../MasterDataComponents/Locations';
 import { Lane } from '../MasterDataComponents/Lanes';
+import CarrierProNumbers from '../MassUpload/CarrierProNumbers';
 export interface CarrierFormFE {
     id: string;
     carrierId: string,
@@ -54,6 +55,7 @@ export interface CarrierFormFE {
     pricingCriteria: string;
     contractSigned: string;
     isContract: boolean;
+    CarrierProNumbers: string[]
 };
 
 interface Pricing {
@@ -88,6 +90,8 @@ export interface CarrierFormBE {
 }
 
 const CarrierForm: React.FC = () => {
+    const [carrierPro, setCarrierPro]= useState<string[]>([])
+    const [editCarrierPro,setEditCarrierPro]  = useState<string[]>([])
     const wrapperRef = useRef<HTMLDivElement>(null);
     const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10, });
     const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -195,32 +199,35 @@ const CarrierForm: React.FC = () => {
     };
 
     const initialCarrierValues: CarrierFormFE = {
-        id: '',
-        carrierId: '',
-        name: '',
-        address: '',
-        contactPerson: '',
-        contactNumber: '',
-        emailId: '',
-        vehicleTypes: [] as string[] | string,
-        locationIds: [] as string[],
-        laneIds: [] as string[],
-        deviceDetails: '',
-        enrollSpotAuction: false,
-        preferredCarrier: false,
-        contractValidUpto: "",
-        pricing: "",
-        pricingUnit: "km",
-        isContract: false,
-        carrier_network_portal: 0,
-        pricingCost: '',
-        pricingCriteria: 'km',
-        contractSigned: ''
-    };
+			id: "",
+			carrierId: "",
+			name: "",
+			address: "",
+			contactPerson: "",
+			contactNumber: "",
+			emailId: "",
+			vehicleTypes: [] as string[] | string,
+			locationIds: [] as string[],
+			laneIds: [] as string[],
+			deviceDetails: "",
+			enrollSpotAuction: false,
+			preferredCarrier: false,
+			contractValidUpto: "",
+			pricing: "",
+			pricingUnit: "km",
+			isContract: false,
+			carrier_network_portal: 0,
+			pricingCost: "",
+			pricingCriteria: "km",
+			contractSigned: "",
+			CarrierProNumbers: [] as string[],
+		};
     const [initialValues, setInitialValues] = useState(initialCarrierValues)
 
     useEffect(() => {
         if (editRow) {
+            console.log("editt:", editRow)
+              setEditCarrierPro(editRow?.CarrierProNumbers);
             const rawVehicleTypes = editRow?.vehicleTypes;
             const normalizedVehicleTypes =
                 typeof rawVehicleTypes === 'string'
@@ -242,7 +249,7 @@ const CarrierForm: React.FC = () => {
                 laneIds: editRow?.laneIds || [],
                 deviceDetails: editRow?.deviceDetails || '',
                 enrollSpotAuction: editRow?.enrollSpotAuction || false,
-                preferredCarrier: !!editRow?.preferredCarrier, // convert "1" or truthy to boolean
+                preferredCarrier: !!editRow?.preferredCarrier,
                 contractValidUpto: editRow?.contractValidUpto || "",
                 pricing: editRow?.pricingCost || "",
                 pricingUnit: editRow?.pricingCriteria || "",
@@ -250,32 +257,22 @@ const CarrierForm: React.FC = () => {
                 carrier_network_portal: editRow?.carrier_network_portal || 0,
                 pricingCost: editRow?.pricingCost || '',
                 pricingCriteria: editRow?.pricingCriteria || '',
-                contractSigned: editRow?.contractSigned || ''
+                contractSigned: editRow?.contractSigned || '',
+                CarrierProNumbers : editRow.CarrierProNumbers
             }));
         }
     }, [editRow]);
 
+  const handleUploadComplete = (uploadedValues: string[]) => {
+		console.log("CSV uploaded values from CarrierProNumbers:", uploadedValues);
+        setCarrierPro(uploadedValues)
+        if (editRow) {
+            console.log('editRow :', editRow?.CarrierProNumbers)
 
-    // useEffect(() => {
-    //     if (editRow) {
-    //         setInitialValues(() => ({
-    //             id: editRow?.id || '',
-    //             carrierId: editRow?.carrierId || '',
-    //             name: editRow?.name || '',
-    //             address: editRow?.address || '',
-    //             contactPerson: editRow?.contactPerson || '',
-    //             contactNumber: editRow?.contactNumber || '',
-    //             emailId: editRow?.emailId || '',
-    //             vehicleTypes: editRow?.vehicleTypes || [],
-    //             locationIds: editRow?.locationIds || [],
-    //             laneIds: editRow?.laneIds || [],
-    //             deviceDetails: editRow?.deviceDetails || '',
-    //             enrollSpotAuction: editRow?.enrollSpotAuction || false,
-    //             preferredCarrier: editRow?.preferredCarrier || false,
-    //         }))
-    //     }
-    // }, [editRow]);
+          
 
+        }
+	};
     const carrierValidationSchema = Yup.object({
         name: Yup.string().required('Name is required'),
         address: Yup.string().required('Address is required'),
@@ -314,29 +311,32 @@ const CarrierForm: React.FC = () => {
                         pricing: {
                             cost: values?.pricing,
                             cost_criteria_per: values?.pricingUnit
-                        }
+                        },
+                        carrier_pro_numbers: carrierPro
                     },
                 ]
             }
+            console.log("post :", body)
             const editBody = {
-                carrier_name: values.name,
-                carrier_address: values.address,
-                carrier_correspondence: {
-                    name: values.contactPerson,
-                    email: values.emailId,
-                    phone: values.contactNumber
-                },
-                carrier_network_portal: `${values.preferredCarrier ? 1 : 0}`,
-                vehicle_types_handling: values.vehicleTypes,
-                carrier_loc_of_operation: values.locationIds,
-                carrier_lanes: values.laneIds,
-                contract: `${values?.isContract ? 1 : 0}`,
-                contract_valid_upto: values?.contractValidUpto,
-                pricing: {
-                    cost: values?.pricing,
-                    cost_criteria_per: values?.pricingUnit
-                }
-            } 
+							carrier_name: values.name,
+							carrier_address: values.address,
+							carrier_correspondence: {
+								name: values.contactPerson,
+								email: values.emailId,
+								phone: values.contactNumber,
+							},
+							carrier_network_portal: `${values.preferredCarrier ? 1 : 0}`,
+							vehicle_types_handling: values.vehicleTypes,
+							carrier_loc_of_operation: values.locationIds,
+							carrier_lanes: values.laneIds,
+							contract: `${values?.isContract ? 1 : 0}`,
+							contract_valid_upto: values?.contractValidUpto,
+							pricing: {
+								cost: values?.pricing,
+								cost_criteria_per: values?.pricingUnit,
+							},
+							carrier_pro_numbers: carrierPro
+						}; 
             if (isEditing && editRow) { 
                 const carrierId = editRow.id
                 const response = await editCarrier({ body: editBody, carrierId }).unwrap()
@@ -443,252 +443,310 @@ const CarrierForm: React.FC = () => {
     ];
 
     return (
-        <div className={styles.formsMainContainer}>
-            <Backdrop
-                sx={{
-                    color: "#ffffff",
-                    zIndex: (theme) => theme.zIndex.drawer + 1,
-                }}
-                open={postCarrierLoading || editCarrierLoading || deleteCarrierLoading || isLocationLoading}
-            >
-                <CircularProgress color="inherit" />
-            </Backdrop>
-            <SnackbarAlert
-                open={snackbarOpen}
-                message={snackbarMessage}
-                severity={snackbarSeverity}
-                onClose={() => setSnackbarOpen(false)}
-            />
-            <Box display="flex" justifyContent="flex-end" gap={2}>
-                <Button
-                    onClick={() => setShowForm((prev) => !prev)}
-                    className={styles.createButton}
-                >
-                    Create Carrier
-                    {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 4 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 4 }} />}
-                </Button>
-                <MassUpload arrayKey='carriers' />
-            </Box>
+			<div className={styles.formsMainContainer}>
+				<Backdrop
+					sx={{
+						color: "#ffffff",
+						zIndex: (theme) => theme.zIndex.drawer + 1,
+					}}
+					open={
+						postCarrierLoading ||
+						editCarrierLoading ||
+						deleteCarrierLoading ||
+						isLocationLoading
+					}
+				>
+					<CircularProgress color="inherit" />
+				</Backdrop>
+				<SnackbarAlert
+					open={snackbarOpen}
+					message={snackbarMessage}
+					severity={snackbarSeverity}
+					onClose={() => setSnackbarOpen(false)}
+				/>
+				<Box display="flex" justifyContent="flex-end" gap={2}>
+					<Button
+						onClick={() => setShowForm((prev) => !prev)}
+						className={styles.createButton}
+					>
+						Create Carrier
+						{showForm ? (
+							<KeyboardArrowUpIcon style={{ marginLeft: 4 }} />
+						) : (
+							<KeyboardArrowDownIcon style={{ marginLeft: 4 }} />
+						)}
+					</Button>
+					<MassUpload arrayKey="carriers" />
+				</Box>
 
-            <Collapse in={showForm}>
-                <Box marginBottom={4} padding={2} border="1px solid #ccc" borderRadius={2}>
-                    <Formik
-                        initialValues={initialValues}
-                        enableReinitialize={true}
-                        validationSchema={carrierValidationSchema}
-                        onSubmit={handleCarrierSubmit}
-                    >
-                        {({ values, handleChange, handleBlur, errors, touched, resetForm,
-                            setFieldValue
-                        }) => (
-                            <Form>
-                                <h3 className={styles.mainHeading}>General Data</h3>
-                                <Grid container spacing={2}>
-                                    {isEditing &&
-                                        <Grid item xs={12} sm={6} md={4}>
-                                            <TextField disabled
-                                                fullWidth size="small"
-                                                label="Carrier ID"
-                                                name="carrierId"
-                                                value={values.carrierId}
-                                                onChange={handleChange}
-                                                onBlur={handleBlur}
-                                            />
-                                        </Grid>}
+				<Collapse in={showForm}>
+					<Box
+						marginBottom={4}
+						padding={2}
+						border="1px solid #ccc"
+						borderRadius={2}
+					>
+						<Formik
+							initialValues={initialValues}
+							enableReinitialize={true}
+							validationSchema={carrierValidationSchema}
+							onSubmit={handleCarrierSubmit}
+						>
+							{({
+								values,
+								handleChange,
+								handleBlur,
+								errors,
+								touched,
+								resetForm,
+								setFieldValue,
+							}) => (
+								<Form>
+									<h3 className={styles.mainHeading}>General Data</h3>
+									<Grid container spacing={2}>
+										{isEditing && (
+											<Grid item xs={12} sm={6} md={4}>
+												<TextField
+													disabled
+													fullWidth
+													size="small"
+													label="Carrier ID"
+													name="carrierId"
+													value={values.carrierId}
+													onChange={handleChange}
+													onBlur={handleBlur}
+												/>
+											</Grid>
+										)}
 
-                                    <Grid item xs={12} sm={6} md={4}>
-                                        <TextField
-                                            fullWidth size="small"
-                                            label="Name"
-                                            name="name"
-                                            value={values.name}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.name && Boolean(errors.name)}
-                                            helperText={touched.name && errors.name}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} sm={6} md={4}>
-                                        <TextField
-                                            fullWidth size="small"
-                                            label="Address"
-                                            name="address"
-                                            value={values.address}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.address && Boolean(errors.address)}
-                                            helperText={touched.address && errors.address}
-                                        />
-                                    </Grid>
-                                </Grid>
+										<Grid item xs={12} sm={6} md={4}>
+											<TextField
+												fullWidth
+												size="small"
+												label="Name"
+												name="name"
+												value={values.name}
+												onChange={handleChange}
+												onBlur={handleBlur}
+												error={touched.name && Boolean(errors.name)}
+												helperText={touched.name && errors.name}
+											/>
+										</Grid>
+										<Grid item xs={12} sm={6} md={4}>
+											<TextField
+												fullWidth
+												size="small"
+												label="Address"
+												name="address"
+												value={values.address}
+												onChange={handleChange}
+												onBlur={handleBlur}
+												error={touched.address && Boolean(errors.address)}
+												helperText={touched.address && errors.address}
+											/>
+										</Grid>
+									</Grid>
 
-                                <h3 className={styles.mainHeading}>Correspondence</h3>
-                                <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6} md={4}>
-                                        <TextField
-                                            fullWidth size="small"
-                                            label="Contact Person"
-                                            name="contactPerson"
-                                            value={values.contactPerson}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.contactPerson && Boolean(errors.contactPerson)}
-                                            helperText={touched.contactPerson && errors.contactPerson}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} sm={6} md={4}>
-                                        <TextField
-                                            fullWidth size="small"
-                                            label="Contact Number"
-                                            name="contactNumber" type='number'
-                                            value={values.contactNumber}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.contactNumber && Boolean(errors.contactNumber)}
-                                            helperText={touched.contactNumber && errors.contactNumber}
-                                            inputProps={{
-                                                maxLength: 10,
-                                                inputMode: "numeric",
-                                                pattern: "[0-9]*"
-                                            }}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} sm={6} md={4}>
-                                        <TextField
-                                            fullWidth size="small"
-                                            label="Email ID"
-                                            name="emailId"
-                                            value={values.emailId}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.emailId && Boolean(errors.emailId)}
-                                            helperText={touched.emailId && errors.emailId}
-                                        />
-                                    </Grid>
-                                </Grid>
+									<h3 className={styles.mainHeading}>Correspondence</h3>
+									<Grid container spacing={2}>
+										<Grid item xs={12} sm={6} md={4}>
+											<TextField
+												fullWidth
+												size="small"
+												label="Contact Person"
+												name="contactPerson"
+												value={values.contactPerson}
+												onChange={handleChange}
+												onBlur={handleBlur}
+												error={
+													touched.contactPerson && Boolean(errors.contactPerson)
+												}
+												helperText={
+													touched.contactPerson && errors.contactPerson
+												}
+											/>
+										</Grid>
+										<Grid item xs={12} sm={6} md={4}>
+											<TextField
+												fullWidth
+												size="small"
+												label="Contact Number"
+												name="contactNumber"
+												type="number"
+												value={values.contactNumber}
+												onChange={handleChange}
+												onBlur={handleBlur}
+												error={
+													touched.contactNumber && Boolean(errors.contactNumber)
+												}
+												helperText={
+													touched.contactNumber && errors.contactNumber
+												}
+												inputProps={{
+													maxLength: 10,
+													inputMode: "numeric",
+													pattern: "[0-9]*",
+												}}
+											/>
+										</Grid>
+										<Grid item xs={12} sm={6} md={4}>
+											<TextField
+												fullWidth
+												size="small"
+												label="Email ID"
+												name="emailId"
+												value={values.emailId}
+												onChange={handleChange}
+												onBlur={handleBlur}
+												error={touched.emailId && Boolean(errors.emailId)}
+												helperText={touched.emailId && errors.emailId}
+											/>
+										</Grid>
+									</Grid>
 
-                                <h3 className={styles.mainHeading}>Transport Data</h3>
-                                <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6} md={4}>
-                                        <TextField
-                                            fullWidth
-                                            label="Vehicle Types"
-                                            name="vehicleTypes"
-                                            value={values.vehicleTypes}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.vehicleTypes && Boolean(errors.vehicleTypes)}
-                                            helperText={touched.vehicleTypes && errors.vehicleTypes}
-                                            size="small"
-                                            select
-                                            SelectProps={{
-                                                multiple: true,
-                                                renderValue: (selected) => (selected as string[]).join(','),
-                                            }}
-                                        >
-                                            <MenuItem value="Truck">Truck</MenuItem>
-                                            <MenuItem value="Bike">Bike</MenuItem>
-                                            <MenuItem value="Van">Van</MenuItem>
-                                            <MenuItem value="Trailer">Trailer</MenuItem>
-                                            <MenuItem value="Container">Container</MenuItem>
-                                        </TextField>
-                                    </Grid>
-                                    <Grid item xs={12} sm={6} md={4}>
-                                        <TextField
-                                            fullWidth
-                                            size="small"
-                                            label="Locations of Operation (Location IDs)"
-                                            onFocus={() => {
-                                                if (!searchKey) {
-                                                    setSearchKey("");
-                                                    setShowSuggestions(true);
-                                                }
-                                            }}
-                                            onChange={(e) => {
-                                                setSearchKey(e.target.value);
-                                                setShowSuggestions(true);
-                                            }}
-                                            value={searchKey}
-                                            error={touched.locationIds && Boolean(errors.locationIds)}
-                                            helperText={
-                                                touched.locationIds && typeof errors.locationIds === "string"
-                                                    ? errors.locationIds
-                                                    : ""
-                                            }
-                                            InputProps={{
-                                                endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
-                                            }}
-                                        />
-                                        <div ref={wrapperRef}>
-                                            {showSuggestions && displayLocations?.length > 0 && (
-                                                <Paper
-                                                    style={{
-                                                        maxHeight: 200,
-                                                        overflowY: "auto",
-                                                        position: "absolute",
-                                                        zIndex: 10,
-                                                        width: "100%",
-                                                    }}
-                                                >
-                                                    <List>
-                                                        {displayLocations.map((location: Location) => (
-                                                            <ListItem
-                                                                key={location.loc_ID}
-                                                                component="li"
-                                                                onClick={() => {
-                                                                    setShowSuggestions(false);
-                                                                    // const selectedDisplay = `${location.loc_ID}, ${location.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
-                                                                    if (!values.locationIds.includes(location.loc_ID)) {
-                                                                        setFieldValue("locationIds", [...values.locationIds, location.loc_ID]);
-                                                                    }
-                                                                    setSearchKey("");
-                                                                }}
-                                                                sx={{ cursor: "pointer" }}
-                                                            >
-                                                                <Tooltip
-                                                                    title={`${location.loc_desc}, ${location.address_1}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                                                    placement="right"
-                                                                >
-                                                                    <span style={{ fontSize: "14px" }}>
-                                                                        {location.loc_ID}, {location.loc_desc}, {location.city}, {location.state}, {location.pincode}
-                                                                    </span>
-                                                                </Tooltip>
-                                                            </ListItem>
-                                                        ))}
-                                                    </List>
-                                                </Paper>
-                                            )}
-                                        </div>
-                                        {values.locationIds.length > 0 && (
-                                            <Paper
-                                                style={{
-                                                    marginTop: 8,
-                                                    padding: 8,
-                                                    minHeight: 40,
-                                                    background: "#f5f5f5",
-                                                }}
-                                            >
-                                                {values.locationIds.map((locId: string) => {
-                                                    const location = displayLocations.find((loc: Location) => loc.loc_ID === locId);
-                                                    return (
-                                                        <Chip
-                                                            key={locId}
-                                                            label={`${location?.loc_ID}, ${location?.loc_desc}`}
-                                                            onDelete={() => {
-                                                                setFieldValue(
-                                                                    "locationIds",
-                                                                    values.locationIds.filter((id) => id !== locId)
-                                                                );
-                                                            }}
-                                                            style={{ margin: 4 }}
-                                                        />
-                                                    );
-                                                })}
-                                            </Paper>
-                                        )}
-                                    </Grid>
+									<h3 className={styles.mainHeading}>Transport Data</h3>
+									<Grid container spacing={2}>
+										<Grid item xs={12} sm={6} md={4}>
+											<TextField
+												fullWidth
+												label="Vehicle Types"
+												name="vehicleTypes"
+												value={values.vehicleTypes}
+												onChange={handleChange}
+												onBlur={handleBlur}
+												error={
+													touched.vehicleTypes && Boolean(errors.vehicleTypes)
+												}
+												helperText={touched.vehicleTypes && errors.vehicleTypes}
+												size="small"
+												select
+												SelectProps={{
+													multiple: true,
+													renderValue: (selected) =>
+														(selected as string[]).join(","),
+												}}
+											>
+												<MenuItem value="Truck">Truck</MenuItem>
+												<MenuItem value="Bike">Bike</MenuItem>
+												<MenuItem value="Van">Van</MenuItem>
+												<MenuItem value="Trailer">Trailer</MenuItem>
+												<MenuItem value="Container">Container</MenuItem>
+											</TextField>
+										</Grid>
+										<Grid item xs={12} sm={6} md={4}>
+											<TextField
+												fullWidth
+												size="small"
+												label="Locations of Operation (Location IDs)"
+												onFocus={() => {
+													if (!searchKey) {
+														setSearchKey("");
+														setShowSuggestions(true);
+													}
+												}}
+												onChange={(e) => {
+													setSearchKey(e.target.value);
+													setShowSuggestions(true);
+												}}
+												value={searchKey}
+												error={
+													touched.locationIds && Boolean(errors.locationIds)
+												}
+												helperText={
+													touched.locationIds &&
+													typeof errors.locationIds === "string"
+														? errors.locationIds
+														: ""
+												}
+												InputProps={{
+													endAdornment: filteredLocationLoading ? (
+														<CircularProgress size={20} />
+													) : null,
+												}}
+											/>
+											<div ref={wrapperRef}>
+												{showSuggestions && displayLocations?.length > 0 && (
+													<Paper
+														style={{
+															maxHeight: 200,
+															overflowY: "auto",
+															position: "absolute",
+															zIndex: 10,
+															width: "100%",
+														}}
+													>
+														<List>
+															{displayLocations.map((location: Location) => (
+																<ListItem
+																	key={location.loc_ID}
+																	component="li"
+																	onClick={() => {
+																		setShowSuggestions(false);
+																		// const selectedDisplay = `${location.loc_ID}, ${location.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
+																		if (
+																			!values.locationIds.includes(
+																				location.loc_ID
+																			)
+																		) {
+																			setFieldValue("locationIds", [
+																				...values.locationIds,
+																				location.loc_ID,
+																			]);
+																		}
+																		setSearchKey("");
+																	}}
+																	sx={{ cursor: "pointer" }}
+																>
+																	<Tooltip
+																		title={`${location.loc_desc}, ${location.address_1}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
+																		placement="right"
+																	>
+																		<span style={{ fontSize: "14px" }}>
+																			{location.loc_ID}, {location.loc_desc},{" "}
+																			{location.city}, {location.state},{" "}
+																			{location.pincode}
+																		</span>
+																	</Tooltip>
+																</ListItem>
+															))}
+														</List>
+													</Paper>
+												)}
+											</div>
+											{values.locationIds.length > 0 && (
+												<Paper
+													style={{
+														marginTop: 8,
+														padding: 8,
+														minHeight: 40,
+														background: "#f5f5f5",
+													}}
+												>
+													{values.locationIds.map((locId: string) => {
+														const location = displayLocations.find(
+															(loc: Location) => loc.loc_ID === locId
+														);
+														return (
+															<Chip
+																key={locId}
+																label={`${location?.loc_ID}, ${location?.loc_desc}`}
+																onDelete={() => {
+																	setFieldValue(
+																		"locationIds",
+																		values.locationIds.filter(
+																			(id) => id !== locId
+																		)
+																	);
+																}}
+																style={{ margin: 4 }}
+															/>
+														);
+													})}
+												</Paper>
+											)}
+										</Grid>
 
-                                    {/* <Grid item xs={12} sm={6} md={4}>
+										{/* <Grid item xs={12} sm={6} md={4}>
                                         <FormControl fullWidth size="small" error={touched.laneIds && Boolean(errors.laneIds)}>
                                             <InputLabel>Lane IDs</InputLabel>
                                             <Select
@@ -712,189 +770,224 @@ const CarrierForm: React.FC = () => {
                                         </FormControl>
 
                                     </Grid> */}
-                                    <Grid item xs={12} sm={6} md={4}>
-                                        <FormControl fullWidth size="small" error={touched.laneIds && Boolean(errors.laneIds)}>
-                                            <InputLabel >Lane IDs</InputLabel>
-                                            <Select
-                                                multiple
-                                                name="laneIds"
-                                                value={values.laneIds}
-                                                onChange={handleChange}
-                                                onBlur={handleBlur}
-                                                renderValue={() => null}
-                                            >
-                                                {getAllLanes?.map((lane: Lane) => (
-                                                    <MenuItem key={lane.lane_ID} value={String(lane.lane_ID)}>
-                                                        <span style={{ flex: 1 }}>
-                                                            {lane.lane_ID} :- {lane.src_loc_desc} to {lane.des_loc_desc}
-                                                        </span>
-                                                    </MenuItem>
-                                                ))}
-                                            </Select>
-                                            {touched.laneIds && errors.laneIds && <FormHelperText>{errors.laneIds}</FormHelperText>}
-                                        </FormControl>
-                                        {values.laneIds.length > 0 && (
-                                            <Paper
-                                                style={{
-                                                    marginTop: 8,
-                                                    padding: 8,
-                                                    minHeight: 40,
-                                                    background: "#f5f5f5",
-                                                    display: "flex",
-                                                    flexWrap: "wrap",
-                                                    gap: 8,
-                                                }}
-                                            >
-                                                {values.laneIds.map((laneId: string) => {
-                                                    const lane = getAllLanes.find((l: Lane) => String(l.lane_ID) === laneId);
-                                                    return (
-                                                        <Chip
-                                                            key={laneId}
-                                                            label={`${lane?.lane_ID} : ${lane?.src_loc_desc} to ${lane?.des_loc_desc}`}
-                                                            onDelete={() => {
-                                                                setFieldValue(
-                                                                    "laneIds",
-                                                                    values.laneIds.filter((id) => id !== laneId)
-                                                                );
-                                                            }}
-                                                            style={{ margin: 4 }}
-                                                        />
-                                                    );
-                                                })}
-                                            </Paper>
-                                        )}
-                                    </Grid>
+										<Grid item xs={12} sm={6} md={4}>
+											<FormControl
+												fullWidth
+												size="small"
+												error={touched.laneIds && Boolean(errors.laneIds)}
+											>
+												<InputLabel>Lane IDs</InputLabel>
+												<Select
+													multiple
+													name="laneIds"
+													value={values.laneIds}
+													onChange={handleChange}
+													onBlur={handleBlur}
+													renderValue={() => null}
+												>
+													{getAllLanes?.map((lane: Lane) => (
+														<MenuItem
+															key={lane.lane_ID}
+															value={String(lane.lane_ID)}
+														>
+															<span style={{ flex: 1 }}>
+																{lane.lane_ID} :- {lane.src_loc_desc} to{" "}
+																{lane.des_loc_desc}
+															</span>
+														</MenuItem>
+													))}
+												</Select>
+												{touched.laneIds && errors.laneIds && (
+													<FormHelperText>{errors.laneIds}</FormHelperText>
+												)}
+											</FormControl>
+											{values.laneIds.length > 0 && (
+												<Paper
+													style={{
+														marginTop: 8,
+														padding: 8,
+														minHeight: 40,
+														background: "#f5f5f5",
+														display: "flex",
+														flexWrap: "wrap",
+														gap: 8,
+													}}
+												>
+													{values.laneIds.map((laneId: string) => {
+														const lane = getAllLanes.find(
+															(l: Lane) => String(l.lane_ID) === laneId
+														);
+														return (
+															<Chip
+																key={laneId}
+																label={`${lane?.lane_ID} : ${lane?.src_loc_desc} to ${lane?.des_loc_desc}`}
+																onDelete={() => {
+																	setFieldValue(
+																		"laneIds",
+																		values.laneIds.filter((id) => id !== laneId)
+																	);
+																}}
+																style={{ margin: 4 }}
+															/>
+														);
+													})}
+												</Paper>
+											)}
+										</Grid>
+									</Grid>
 
+									<h3 className={styles.mainHeading}>Addtional Information</h3>
+									<Grid container spacing={2}>
+										<Grid item xs={12} sm={6} md={4}>
+											<TextField
+												fullWidth
+												size="small"
+												type="date"
+												label="Contract Valid Upto"
+												name="contractValidUpto"
+												InputLabelProps={{ shrink: true }}
+												value={values.contractValidUpto}
+												onChange={handleChange}
+												onBlur={handleBlur}
+												error={
+													touched.contractValidUpto &&
+													Boolean(errors.contractValidUpto)
+												}
+												helperText={
+													touched.contractValidUpto && errors.contractValidUpto
+												}
+											/>
+										</Grid>
 
+										{/* Pricing input field */}
+										<Grid item xs={6} sm={3} md={2}>
+											<TextField
+												fullWidth
+												size="small"
+												label="Pricing"
+												name="pricing"
+												value={values.pricing}
+												onChange={handleChange}
+												onBlur={handleBlur}
+												error={touched.pricing && Boolean(errors.pricing)}
+												helperText={touched.pricing && errors.pricing}
+											/>
+										</Grid>
 
-                                </Grid>
+										{/* Dropdown for pricing unit */}
+										<Grid item xs={6} sm={3} md={2}>
+											<FormControl
+												fullWidth
+												size="small"
+												error={
+													touched.pricingUnit && Boolean(errors.pricingUnit)
+												}
+											>
+												<InputLabel>Cost criteria per</InputLabel>
+												<Select
+													name="pricingUnit"
+													value={values.pricingUnit}
+													onChange={handleChange}
+													onBlur={handleBlur}
+													label="Cost criteria per"
+												>
+													<MenuItem value="km">km</MenuItem>
+													<MenuItem value="ton">ton</MenuItem>
+												</Select>
+												{touched.pricingUnit && errors.pricingUnit && (
+													<FormHelperText>{errors.pricingUnit}</FormHelperText>
+												)}
+											</FormControl>
+										</Grid>
 
-                                <h3 className={styles.mainHeading}>Addtional Information</h3>
-                                <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6} md={4}>
-                                        <TextField
-                                            fullWidth
-                                            size="small"
-                                            type="date"
-                                            label="Contract Valid Upto"
-                                            name="contractValidUpto"
-                                            InputLabelProps={{ shrink: true }}
-                                            value={values.contractValidUpto}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.contractValidUpto && Boolean(errors.contractValidUpto)}
-                                            helperText={touched.contractValidUpto && errors.contractValidUpto}
-                                        />
-                                    </Grid>
+										{/* Contract checkbox */}
+										<Grid
+											item
+											xs={12}
+											sm={6}
+											md={4}
+											display="flex"
+											alignItems="center"
+										>
+											<FormControlLabel
+												control={
+													<Checkbox
+														name="isContract"
+														checked={values.isContract}
+														onChange={(e) =>
+															setFieldValue("isContract", e.target.checked)
+														}
+														// color="primary"
+													/>
+												}
+												label="Is Contract"
+											/>
+										</Grid>
+									</Grid>
 
-                                    {/* Pricing input field */}
-                                    <Grid item xs={6} sm={3} md={2}>
-                                        <TextField
-                                            fullWidth
-                                            size="small"
-                                            label="Pricing"
-                                            name="pricing"
-                                            value={values.pricing}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched.pricing && Boolean(errors.pricing)}
-                                            helperText={touched.pricing && errors.pricing}
-                                        />
-                                    </Grid>
-
-                                    {/* Dropdown for pricing unit */}
-                                    <Grid item xs={6} sm={3} md={2}>
-                                        <FormControl fullWidth size="small" error={touched.pricingUnit && Boolean(errors.pricingUnit)}>
-                                            <InputLabel>Cost criteria per</InputLabel>
-                                            <Select
-                                                name="pricingUnit"
-                                                value={values.pricingUnit}
-                                                onChange={handleChange}
-                                                onBlur={handleBlur}
-                                                label="Cost criteria per"
-                                            >
-                                                <MenuItem value="km">km</MenuItem>
-                                                <MenuItem value="ton">ton</MenuItem>
-                                            </Select>
-                                            {touched.pricingUnit && errors.pricingUnit && (
-                                                <FormHelperText>{errors.pricingUnit}</FormHelperText>
-                                            )}
-                                        </FormControl>
-                                    </Grid>
-
-                                    {/* Contract checkbox */}
-                                    <Grid item xs={12} sm={6} md={4} display="flex" alignItems="center">
-                                        <FormControlLabel
-                                            control={
-                                                <Checkbox
-                                                    name="isContract"
-                                                    checked={values.isContract}
-                                                    onChange={(e) => setFieldValue('isContract', e.target.checked)}
-                                                // color="primary"
-                                                />
-                                            }
-                                            label="Is Contract"
-                                        />
-                                    </Grid>
-                                </Grid>
-
-
-                                <Grid item xs={12} sm={6} md={4}>
-                                    <FormControlLabel
-                                        control={
-                                            <Checkbox
-                                                checked={values.preferredCarrier}
-                                                onChange={(e) => setFieldValue('preferredCarrier', e.target.checked)}
-                                            />
-                                        }
-                                        label="Is enrolled on carrier network portal"
-                                    />
-                                </Grid>
-                                <Box marginTop={3} textAlign="center">
-                                    <Button
-                                        type="submit"
-                                        variant="contained"
-                                        sx={{
-                                            backgroundColor: "#F08C24",
-                                            color: "#fff",
-                                            "&:hover": {
-                                                backgroundColor: "#fff",
-                                                color: "#F08C24"
-                                            }
-                                        }}
-                                    >
-                                        {isEditing ? "Update carrier" : "Create carrier"}
-                                    </Button>
-                                    <Button variant="outlined" color="secondary"
-                                        onClick={() => {
-                                            setInitialValues(initialCarrierValues)
-                                            setIsEditing(false)
-                                            resetForm()
-                                        }}
-                                        style={{ marginLeft: "10px" }}>Reset
-                                    </Button>
-                                </Box>
-                            </Form>
-                        )}
-                    </Formik>
-                </Box>
-            </Collapse>
-            <div style={{ marginTop: "40px" }}>
-                {isLoading ? (
-                    <DataGridSkeletonLoader columns={columns} />
-                ) : (
-                    <DataGridComponent
-                        columns={columns}
-                        rows={rows}
-                        isLoading={isLoading}
-                        paginationModel={paginationModel}
-                        activeEntity='carriers'
-                        onPaginationModelChange={handlePaginationModelChange}
-                    />
-                )}
-            </div>
-        </div>
-    );
+									<Grid item xs={12} sm={6} md={4}>
+										<FormControlLabel
+											control={
+												<Checkbox
+													checked={values.preferredCarrier}
+													onChange={(e) =>
+														setFieldValue("preferredCarrier", e.target.checked)
+													}
+												/>
+											}
+											label="Is enrolled on carrier network portal"
+										/>
+									</Grid>
+									<CarrierProNumbers onUploadComplete={handleUploadComplete} editPro={editCarrierPro} />
+									<Box marginTop={3} textAlign="center">
+										<Button
+											type="submit"
+											variant="contained"
+											sx={{
+												backgroundColor: "#F08C24",
+												color: "#fff",
+												"&:hover": {
+													backgroundColor: "#fff",
+													color: "#F08C24",
+												},
+											}}
+										>
+											{isEditing ? "Update carrier" : "Create carrier"}
+										</Button>
+										<Button
+											variant="outlined"
+											color="secondary"
+											onClick={() => {
+												setInitialValues(initialCarrierValues);
+												setIsEditing(false);
+												resetForm();
+											}}
+											style={{ marginLeft: "10px" }}
+										>
+											Reset
+										</Button>
+									</Box>
+								</Form>
+							)}
+						</Formik>
+					</Box>
+				</Collapse>
+				<div style={{ marginTop: "40px" }}>
+					{isLoading ? (
+						<DataGridSkeletonLoader columns={columns} />
+					) : (
+						<DataGridComponent
+							columns={columns}
+							rows={rows}
+							isLoading={isLoading}
+							paginationModel={paginationModel}
+							activeEntity="carriers"
+							onPaginationModelChange={handlePaginationModelChange}
+						/>
+					)}
+				</div>
+			</div>
+		);
 };
 
 export default CarrierForm;
