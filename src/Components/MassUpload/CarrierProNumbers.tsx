@@ -14,7 +14,7 @@ import { DropzoneArea } from 'mui-file-dropzone';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 type Props = {
 	onUploadComplete?: (values: string[]) => void;
-	editPro?: string[]
+	// editPro?: string[]
 };
 
 const CarrierProNumbers: React.FC<Props> = ({ onUploadComplete,editPro }) => {
