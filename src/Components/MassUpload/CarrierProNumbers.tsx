@@ -33,10 +33,10 @@ const CarrierProNumbers: React.FC<Props> = ({ onUploadComplete,editPro }) => {
 const handleDownloadTemplate = () => {
 	const header = ["Carrier Pro numbers"];
 
-	const defaultRows = Array.from({ length: 20 }, () => [""]); // 20 empty rows
+	const defaultRows = Array.from({ length: 20 }, () => [""]); 
 
 	const editRows = editPro?.length
-		? editPro?.map((val: string) => [val]) // convert to 2D array
+		? editPro?.map((val: string) => [val])  
 		: defaultRows;
 
 	const csvContent = [header, ...editRows]

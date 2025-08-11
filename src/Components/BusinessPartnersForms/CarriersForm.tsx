@@ -84,6 +84,7 @@ export interface CarrierFormBE {
     contract: number;
     cost: string;
     contract_valid_upto: string;
+	carrier_pro_numbers :string[];
 
 
 
@@ -349,6 +350,7 @@ const CarrierForm: React.FC = () => {
             }
             else { 
                 const response = await postCarrier(body).unwrap();
+				console.log("carrier pro response :", response)
                 if (response?.created_records) {
                     setSnackbarMessage(`Carrier ID ${response.created_records[0]} created successfully!`);
                     setInitialValues(initialCarrierValues)
@@ -400,47 +402,61 @@ const CarrierForm: React.FC = () => {
             contractValidUpto: carrier.contract_valid_upto,
             pricingCost: carrier.pricing?.cost,
             pricingCriteria: carrier.pricing?.cost_criteria_per,
-        };
+			CarrierProNumbers : carrier.carrier_pro_numbers
+        }
     }) || [];
 
     const columns: GridColDef[] = [
-        { field: 'carrierId', headerName: 'Carrier ID', width: 150 },
-        { field: 'name', headerName: 'Name', width: 150 },
-        { field: 'address', headerName: 'Address', width: 150 },
-        { field: 'contactPerson', headerName: 'Contact Person', width: 150 },
-        { field: 'contactNumber', headerName: 'Contact Number', width: 150 },
-        { field: 'emailId', headerName: 'Email ID', width: 150 },
-        { field: 'vehicleTypes', headerName: 'Vehicle Types', width: 150 },
-        { field: "allLocationIdsDetails", headerName: "Locations", width: 250 },
-        { field: "allLaneIdsDetails", headerName: "Lane Details", width: 250 },
-        { field: 'contractSigned', headerName: 'Contract Signed', width: 150, renderCell: (params) => params.value ? 'Yes' : 'No' },
-        { field: 'contractValidUpto', headerName: 'Contract Valid Upto', width: 150 },
-        { field: 'pricingCost', headerName: 'Pricing Cost', width: 120 },
-        { field: 'pricingCriteria', headerName: 'Cost Criteria', width: 150 },
+			{ field: "carrierId", headerName: "Carrier ID", width: 150 },
+			{ field: "name", headerName: "Name", width: 150 },
+			{ field: "address", headerName: "Address", width: 150 },
+			{ field: "contactPerson", headerName: "Contact Person", width: 150 },
+			{ field: "contactNumber", headerName: "Contact Number", width: 150 },
+			{ field: "emailId", headerName: "Email ID", width: 150 },
+			{ field: "vehicleTypes", headerName: "Vehicle Types", width: 150 },
+			{ field: "allLocationIdsDetails", headerName: "Locations", width: 250 },
+			{ field: "allLaneIdsDetails", headerName: "Lane Details", width: 250 },
+			{
+				field: "contractSigned",
+				headerName: "Contract Signed",
+				width: 150,
+				renderCell: (params) => (params.value ? "Yes" : "No"),
+			},
+			{
+				field: "contractValidUpto",
+				headerName: "Contract Valid Upto",
+				width: 150,
+			},
+			{ field: "pricingCost", headerName: "Pricing Cost", width: 120 },
+			{ field: "pricingCriteria", headerName: "Cost Criteria", width: 150 },
 
-        { field: 'preferredCarrier', headerName: 'Is enrolled on carrier network portal', width: 150, renderCell: (params) => params.value ? 'Yes' : 'No' },
-        {
-            field: "actions",
-            headerName: "Actions",
-            width: 100,
-            renderCell: (params) => (
-                <div>
-                    <IconButton
-                        color="primary"
-                        onClick={() => handleEdit(params.row)}
-                    >
-                        <EditIcon />
-                    </IconButton>
-                    <IconButton
-                        color="error"
-                        onClick={() => handleDelete(params.row)}
-                    >
-                        <DeleteIcon />
-                    </IconButton>
-                </div>
-            ),
-        },
-    ];
+			{
+				field: "preferredCarrier",
+				headerName: "Is enrolled on carrier network portal",
+				width: 150,
+				renderCell: (params) => (params.value ? "Yes" : "No"),
+			},
+			{
+				field: "CarrierProNumbers",
+				headerName: "Carrier Pro numbers ",
+				width: 200,
+			},
+			{
+				field: "actions",
+				headerName: "Actions",
+				width: 100,
+				renderCell: (params) => (
+					<div>
+						<IconButton color="primary" onClick={() => handleEdit(params.row)}>
+							<EditIcon />
+						</IconButton>
+						<IconButton color="error" onClick={() => handleDelete(params.row)}>
+							<DeleteIcon />
+						</IconButton>
+					</div>
+				),
+			},
+		];
 
     return (
 			<div className={styles.formsMainContainer}>
