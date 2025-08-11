@@ -498,7 +498,7 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
                       onClick={() => setOpenTruckIndex(openTruckIndex === index ? null : index)}
                       fullWidth
                     >
-                      {openTruckIndex === index ? "Hide Load Arrangement" : "Show Load Arrangement"}
+                      {openTruckIndex === index ? "Hide load builder" : "Show load builder"}
                     </Button>
                   </Box>
                 </CardContent>

@@ -102,7 +102,7 @@ const CreatePackage = () => {
                 return;
             }
         }
-    }, [completedSteps]); 
+    }, [completedSteps]);
 
     const handleSubmit = async () => {
         const firstUnfilledIndex = completedSteps.findIndex((step) => !step);
@@ -171,7 +171,12 @@ const CreatePackage = () => {
             }
             catch (error) {
                 console.log("err :", error)
-                setSnackbarMessage("Something went wrong! please try again.");
+                if (error.message === "All products in a package must have the same stacking factor. Found: 0, 3") {
+                    setSnackbarMessage("Products must have the same stacking factor.");
+                } else {
+                    setSnackbarMessage("Something went wrong! please try again.");
+                }
+
                 setSnackbarSeverity("error");
                 setSnackbarOpen(true);
             }
@@ -179,7 +184,7 @@ const CreatePackage = () => {
 
 
     };
-  
+
     return (
         <div>
             <Backdrop
