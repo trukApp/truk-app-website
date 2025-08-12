@@ -1,56 +1,56 @@
 import React, { useState } from 'react';
 import Papa from 'papaparse';
 import {
-  Backdrop,
-  Box,
-  Button,
-  CircularProgress,
-  Link,
-  Modal,
-  Typography,
-  useTheme,
+	//   Backdrop,
+	Box,
+	Button,
+	//   CircularProgress,
+	Link,
+	Modal,
+	Typography,
+	useTheme,
 } from '@mui/material';
 import { DropzoneArea } from 'mui-file-dropzone';
 import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
 type Props = {
 	onUploadComplete?: (values: string[]) => void;
-	// editPro?: string[]
+	editPro?: string[]
 };
 
-const CarrierProNumbers: React.FC<Props> = ({ onUploadComplete,editPro }) => {
+const CarrierProNumbers: React.FC<Props> = ({ onUploadComplete, editPro }) => {
 	const theme = useTheme();
 
-	 
+
 	const [snackbarOpen, setSnackbarOpen] = useState(false);
 	const [snackbarMessage, setSnackbarMessage] = useState("");
-	const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+	// const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [file, setFile] = useState<File | null>(null);
 	const [isUploading, setIsUploading] = useState(false);
 	const [message, setMessage] = useState("");
 
 	// ⬇ CSV Template Downloader
-const handleDownloadTemplate = () => {
-	const header = ["Carrier Pro numbers"];
+	const handleDownloadTemplate = () => {
+		const header = ["Carrier Pro numbers"];
 
-	const defaultRows = Array.from({ length: 20 }, () => [""]); 
+		const defaultRows = Array.from({ length: 20 }, () => [""]);
 
-	const editRows = editPro?.length
-		? editPro?.map((val: string) => [val])  
-		: defaultRows;
+		const editRows = editPro?.length
+			? editPro?.map((val: string) => [val])
+			: defaultRows;
 
-	const csvContent = [header, ...editRows]
-		.map((row) => row.join(","))
-		.join("\n");
+		const csvContent = [header, ...editRows]
+			.map((row) => row.join(","))
+			.join("\n");
 
-	const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-	const link = document.createElement("a");
-	link.href = URL.createObjectURL(blob);
-	link.setAttribute("download", "carrier-pro-numbers.csv");
-	document.body.appendChild(link);
-	link.click();
-	document.body.removeChild(link);
-};
+		const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+		const link = document.createElement("a");
+		link.href = URL.createObjectURL(blob);
+		link.setAttribute("download", "carrier-pro-numbers.csv");
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+	};
 
 	// ⬇ Upload and Parse
 	const handleUpload = () => {
@@ -65,13 +65,13 @@ const handleDownloadTemplate = () => {
 			skipEmptyLines: true,
 			complete: (results) => {
 				const data = results.data as { [key: string]: string }[];
-				const columnValues = data.map((row) => Object.values(row)[0]); 
+				const columnValues = data.map((row) => Object.values(row)[0]);
 				if (onUploadComplete) {
 					onUploadComplete(columnValues);
 				}
 				// setMessage("Upload successful!");
 				setSnackbarMessage("CSV uploaded and parsed successfully");
-				setSnackbarSeverity("success");
+				// setSnackbarSeverity("success");
 				setSnackbarOpen(true);
 				setFile(null);
 				setIsModalOpen(false);
@@ -80,7 +80,7 @@ const handleDownloadTemplate = () => {
 			error: () => {
 				setMessage("Error parsing CSV");
 				setSnackbarMessage("Failed to parse CSV");
-				setSnackbarSeverity("error");
+				// setSnackbarSeverity("error");
 				setSnackbarOpen(true);
 				setIsUploading(false);
 			},
@@ -96,7 +96,7 @@ const handleDownloadTemplate = () => {
 			/>
 
 			<Button variant="contained" onClick={() => setIsModalOpen(true)}>
-			 Upload Carrier pro numbers
+				Upload Carrier pro numbers
 			</Button>
 
 			<Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
