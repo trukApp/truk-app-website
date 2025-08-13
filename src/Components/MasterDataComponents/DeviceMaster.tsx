@@ -224,7 +224,7 @@ const DeviceMaster: React.FC = () => {
 
 	const handleDelete = async (row: DeviceMasterValues) => {
 		const deviceId = row?.id;
-		if (!deviceId) { 
+		if (!deviceId) {
 			setSnackbarMessage("Error: Device ID is missing!");
 			setSnackbarSeverity("error");
 			setSnackbarOpen(true);
@@ -331,7 +331,7 @@ const DeviceMaster: React.FC = () => {
 	];
 
 	useEffect(() => {
-		if (editRow) { 
+		if (editRow) {
 			const locId = editRow?.locationId
 				? editRow.locationId.split(", ")[0] ?? ""
 				: "";
@@ -370,9 +370,6 @@ const DeviceMaster: React.FC = () => {
 				severity={snackbarSeverity}
 				onClose={() => setSnackbarOpen(false)}
 			/>
-			{/* <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md: '24px' } }} color='primary' gutterBottom>
-        Device master
-      </Typography> */}
 			<Box display="flex" justifyContent="flex-end">
 				<Button
 					// variant="contained"
@@ -406,7 +403,7 @@ const DeviceMaster: React.FC = () => {
 										size="small"
 										id="deviceId"
 										name="deviceId"
-										label="Device ID (Auto Generated)"
+										label="Device ID (Auto Generated)*"
 										value={formik.values.deviceId}
 										onChange={formik.handleChange}
 										onBlur={formik.handleBlur}
@@ -422,7 +419,7 @@ const DeviceMaster: React.FC = () => {
 									size="small"
 									id="deviceType"
 									name="deviceType"
-									label="Device Type"
+									label="Device Type*"
 									value={formik.values.deviceType}
 									onChange={formik.handleChange}
 									onBlur={formik.handleBlur}
@@ -443,7 +440,7 @@ const DeviceMaster: React.FC = () => {
 									size="small"
 									id="deviceUID"
 									name="deviceUID"
-									label="Device UID"
+									label="Device UID*"
 									value={formik.values.deviceUID}
 									onChange={formik.handleChange}
 									onBlur={formik.handleBlur}
@@ -463,7 +460,7 @@ const DeviceMaster: React.FC = () => {
 									size="small"
 									id="simImeiNumber"
 									name="simImeiNumber"
-									label="SIM IMEI Number"
+									label="SIM IMEI Number*"
 									value={formik.values.simImeiNumber}
 									onChange={formik.handleChange}
 									onBlur={formik.handleBlur}
@@ -484,7 +481,7 @@ const DeviceMaster: React.FC = () => {
 									size="small"
 									id="vehicleNumber"
 									name="vehicleNumber"
-									label="Vehicle Number"
+									label="Vehicle Number*"
 									value={formik.values.vehicleNumber}
 									onChange={formik.handleChange}
 									onBlur={formik.handleBlur}
@@ -507,10 +504,10 @@ const DeviceMaster: React.FC = () => {
 										formik.touched.carrierId && Boolean(formik.errors.carrierId)
 									}
 								>
-									<InputLabel>Carrier ID</InputLabel>
+									<InputLabel>Carrier ID*</InputLabel>
 									<Select
 										fullWidth
-										label="Carrier ID"
+										label="Carrier ID*"
 										name="carrierId"
 										value={formik.values.carrierId}
 										onChange={formik.handleChange}
@@ -553,7 +550,7 @@ const DeviceMaster: React.FC = () => {
 									fullWidth
 									name="locationId"
 									size="small"
-									label="Location ID"
+									label="Location ID*"
 									onFocus={() => {
 										if (!searchKey) {
 											setSearchKey(formik.values?.locationId || "");
@@ -571,7 +568,7 @@ const DeviceMaster: React.FC = () => {
 									}
 									helperText={
 										formik.touched?.locationId &&
-										typeof formik.errors?.locationId === "string"
+											typeof formik.errors?.locationId === "string"
 											? formik.errors.locationId
 											: ""
 									}

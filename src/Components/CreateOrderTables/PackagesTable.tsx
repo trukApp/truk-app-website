@@ -7,7 +7,7 @@ import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader
 import { useGetAllProductsQuery, useGetLocationMasterQuery, useGetPackageMasterQuery } from '@/api/apiSlice';
 import { Location } from '../MasterDataComponents/Locations';
 import moment from 'moment';
- 
+
 
 
 export interface Product {
@@ -56,7 +56,7 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
     const [selectionModel, setSelectionModel] = useState<number[]>([]);
     const { data: locationsData } = useGetLocationMasterQuery({})
-     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
+    const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
     const { data: productsData } = useGetAllProductsQuery({})
     const allProductsData = productsData?.products || [];
     const { data: packagesData } = useGetPackageMasterQuery({})
@@ -77,7 +77,7 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
             location.state,
             location.country,
             location.pincode,
-            
+
         ].filter(Boolean);
 
         return details.length > 0 ? details.join(", ") : "Location details not available";
@@ -90,7 +90,7 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
             packageInfo.packaging_type_name,
             packageInfo.dimensions,
             packageInfo.handling_unit_type,
-            packageInfo.pac_ID
+            // packageInfo.pac_ID
         ].filter(Boolean);
         return details.length > 0 ? details.join(", ") : "Package details not available";
     };
@@ -101,7 +101,7 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
         const details = [
             productInfo.product_name,
             productInfo.weight,
-            productInfo.product_ID,
+            // productInfo.product_ID,
         ].filter(Boolean);
         return details.length > 0 ? details.join("-") : "Product details not available";
     };
@@ -206,6 +206,8 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
     }));
 
 
+
+
     const handleSelectionChange = (newSelection: number[]) => {
         setSelectionModel(newSelection);
         const selectedPackages = newSelection
@@ -230,7 +232,7 @@ const PackagesTable: React.FC<PackagesTableProps> = ({ allPackagesData, isPackag
                     />
                 )}
             </Grid>
-              
+
         </div>
     );
 };

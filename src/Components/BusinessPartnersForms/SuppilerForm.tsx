@@ -169,7 +169,7 @@ const SupplierForm: React.FC = () => {
 
     const handleDelete = async (rowData: Customer) => {
         const deleteId = rowData?.partner_id;
-        if (!deleteId) { 
+        if (!deleteId) {
             setSnackbarMessage("Error: Partner ID is missing!");
             setSnackbarSeverity("error");
             setSnackbarOpen(true);
@@ -203,7 +203,7 @@ const SupplierForm: React.FC = () => {
         setUpdateRecordData(rowData)
         setUpdateRecordId(rowData?.partner_id)
         const updatedInitialValues = await mapRowToInitialValues(rowData);
-        setFormInitialValues(updatedInitialValues); 
+        setFormInitialValues(updatedInitialValues);
         setSearchKey(rowData?.loc_ID)
         setSearchKeyDestination(rowData?.loc_of_source)
     };
@@ -255,13 +255,9 @@ const SupplierForm: React.FC = () => {
         contact_person: item.correspondence?.contact_person || "",
         contact_number: item.correspondence?.contact_number || "",
         email: item.correspondence?.email || "",
-        // ordering_address: getVendorDetails(item.partner_functions?.ordering_address) || "",
-        // goods_supplier: getVendorDetails(item.partner_functions?.goods_supplier) || "",
-        // forwarding_agent: getVendorDetails(item.partner_functions?.forwarding_agent) || "",
     }));
 
     const supplierValidationSchema = Yup.object({
-        // supplierId: Yup.string().required('Supplier ID is required'),
         name: Yup.string().required('Name is required'),
         locationId: Yup.string().required('Location ID is required'),
         pincode: Yup.string().required('Pincode is required'),
@@ -403,7 +399,7 @@ const SupplierForm: React.FC = () => {
                                         <Grid item xs={12} sm={6} md={2.4}>
                                             <TextField
                                                 fullWidth size='small' disabled
-                                                label="Supplier ID"
+                                                label="Supplier ID*"
                                                 name="supplierID"
                                                 value={values.supplierID}
                                                 onChange={handleChange}
@@ -414,7 +410,7 @@ const SupplierForm: React.FC = () => {
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
-                                            label="Name"
+                                            label="Name*"
                                             name="name"
                                             value={values.name}
                                             onChange={handleChange}
@@ -428,7 +424,7 @@ const SupplierForm: React.FC = () => {
                                             fullWidth
                                             name="locationId"
                                             size="small"
-                                            label="Location ID"
+                                            label="Location ID*"
                                             onFocus={() => {
                                                 if (!searchKey) {
                                                     setSearchKey(values.locationId || '');
@@ -508,7 +504,7 @@ const SupplierForm: React.FC = () => {
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
-                                            label="Pincode"
+                                            label="Pincode*"
                                             name="pincode" disabled
                                             value={values.pincode}
                                             onChange={handleChange}
@@ -517,7 +513,7 @@ const SupplierForm: React.FC = () => {
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
-                                            label="City"
+                                            label="City*"
                                             name="city" disabled
                                             value={values.city}
                                             onChange={handleChange}
@@ -527,7 +523,7 @@ const SupplierForm: React.FC = () => {
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small' disabled
-                                            label="State"
+                                            label="State*"
                                             name="state"
                                             value={values.state}
                                             onChange={handleChange}
@@ -542,7 +538,7 @@ const SupplierForm: React.FC = () => {
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
-                                            label="Contact Person"
+                                            label="Contact Person*"
                                             name="contactPerson"
                                             value={values.contactPerson}
                                             onChange={handleChange}
@@ -554,7 +550,7 @@ const SupplierForm: React.FC = () => {
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
-                                            label="Contact Number" type="number"
+                                            label="Contact Number*" type="number"
                                             name="contactNumber"
                                             value={values.contactNumber}
                                             onChange={handleChange}
@@ -566,7 +562,7 @@ const SupplierForm: React.FC = () => {
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
-                                            label="Email ID"
+                                            label="Email ID*"
                                             name="emailId"
                                             value={values.emailId}
                                             onChange={handleChange}
@@ -585,7 +581,7 @@ const SupplierForm: React.FC = () => {
                                             fullWidth
                                             name="locationOfSource"
                                             size="small"
-                                            label="Location of Source"
+                                            label="Location of Source*"
                                             onFocus={() => {
                                                 if (!searchKeyDestination) {
                                                     setSearchKeyDestination(values?.locationOfSource[0] || "");
@@ -664,7 +660,7 @@ const SupplierForm: React.FC = () => {
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
-                                            label="Ordering Address"
+                                            label="Ordering Address*"
                                             name="orderingAddress"
                                             value={values.orderingAddress}
                                             onChange={handleChange}
@@ -676,7 +672,7 @@ const SupplierForm: React.FC = () => {
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
-                                            label="Goods Supplier"
+                                            label="Goods Supplier*"
                                             name="goodsSupplier"
                                             value={values.goodsSupplier}
                                             onChange={handleChange}
@@ -688,7 +684,7 @@ const SupplierForm: React.FC = () => {
                                     <Grid item xs={12} sm={6} md={2.4}>
                                         <TextField
                                             fullWidth size='small'
-                                            label="Forwarding Agent"
+                                            label="Forwarding Agent*"
                                             name="forwardingAgent"
                                             value={values.forwardingAgent}
                                             onChange={handleChange}

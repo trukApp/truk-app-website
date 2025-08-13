@@ -152,7 +152,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
     const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
     const getAllPackages = packagesData?.packages.length > 0 ? packagesData?.packages : []
     const allProductsData = productsData?.products || [];
- 
+
     const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
         setPaginationModel(newPaginationModel);
     };
@@ -170,19 +170,19 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
     }, []);
 
     const validationSchema = Yup.object({
-			productName: Yup.string().required("Product name is required"),
-			productDescription: Yup.string().required(
-				"Product Description is required"
-			),
-			stackingFactor: Yup.number().required("Stacking factor is required"),
-			weightUoM: Yup.string().required("Weight is required"),
-			volumeUoM: Yup.string().required("Volume is required"),
-			basicUoM: Yup.string().required("Basic Unit of Measure is required"),
-			salesUoM: Yup.string().required("Sales Unit of Measure is required"),
-			locationId: Yup.string().required("Location id is required"),
-			packagingType: Yup.string().required("packaging type is required"),
-			hsncode: Yup.string().required("Hsn code is required"),
-		});
+        productName: Yup.string().required("Product name is required"),
+        productDescription: Yup.string().required(
+            "Product Description is required"
+        ),
+        stackingFactor: Yup.number().required("Stacking factor is required"),
+        weightUoM: Yup.string().required("Weight is required"),
+        volumeUoM: Yup.string().required("Volume is required"),
+        basicUoM: Yup.string().required("Basic Unit of Measure is required"),
+        salesUoM: Yup.string().required("Sales Unit of Measure is required"),
+        locationId: Yup.string().required("Location id is required"),
+        packagingType: Yup.string().required("packaging type is required"),
+        hsncode: Yup.string().required("Hsn code is required"),
+    });
 
     const getLocationDetails = (loc_ID: string) => {
         const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
@@ -399,7 +399,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                 temp_controlled: values?.temperatureControl
             }
 
-            if (updateRecord) { 
+            if (updateRecord) {
                 const response = await updateProductDetails({ body: editProductBody, productId: updateRecordId }).unwrap();
                 if (response?.updated_record) {
                     setSnackbarMessage(`Product ID ${response.updated_record} updated successfully!`);
@@ -413,7 +413,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                     setSnackbarOpen(true);
                     setSearchKey('')
                 }
-            } else { 
+            } else {
                 const response = await createNewProduct(createProductBody).unwrap();
                 if (response?.created_records) {
                     setSnackbarMessage(`Product ID ${response.created_records[0]} created successfully!`);
@@ -457,14 +457,14 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                     severity={snackbarSeverity}
                     onClose={() => setSnackbarOpen(false)}
                 />
-                <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md: '24px' } }}  color='primary' gutterBottom>
+                <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md: '24px' } }} color='primary' gutterBottom>
                     Product master
                 </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Add and manage products used in your packaging and logistics workflows. Fill in the required fields including product name, HSN code, packaging type, and location.
+                <Typography variant="body2" color="text.secondary">
+                    Add and Manage Products Used in Your Packaging and Logistics Workflows. Fill in the Required Fields Including Product Name, HSN code, Packaging Type, and Location.
                 </Typography>
                 <Box display="flex" justifyContent="flex-end" gap={2}>
-                    <Button 
+                    <Button
                         onClick={() => setShowForm((prev) => !prev)}
                         className={style.createButton}
                     >
@@ -485,7 +485,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                             {({ values, handleChange, handleBlur, errors, touched, setFieldValue, resetForm }) => (
                                 <Form>
                                     <Typography variant="h6" sx={{ fontWeight: 600, marginTop: 2 }} >
-                                        Basic data
+                                        Basic Data
                                     </Typography>
                                     <Grid container spacing={2}>
                                         {updateRecord &&
@@ -502,7 +502,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                                         <Grid item xs={12} sm={6} md={2.4} >
                                             <TextField
                                                 fullWidth size='small'
-                                                label="Product name*"
+                                                label="Product Name*"
                                                 name="productName"
                                                 value={values.productName}
                                                 onChange={handleChange}
@@ -570,13 +570,13 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                                                 value={values.weightUoM}
                                                 // onChange={handleChange}
                                                 onChange={(e) => {
-														const inputValue = e.target.value;
-														const numericValue = Number(inputValue);
+                                                    const inputValue = e.target.value;
+                                                    const numericValue = Number(inputValue);
 
-														if (numericValue > 0 || inputValue === "") {
-															handleChange(e);
-														}
-													}}
+                                                    if (numericValue > 0 || inputValue === "") {
+                                                        handleChange(e);
+                                                    }
+                                                }}
                                                 onBlur={handleBlur}
                                                 error={touched.weightUoM && Boolean(errors.weightUoM)}
                                                 helperText={touched.weightUoM && errors.weightUoM}
@@ -607,13 +607,13 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                                                 value={values.volumeUoM}
                                                 // onChange={handleChange}
                                                 onChange={(e) => {
-														const inputValue = e.target.value;
-														const numericValue = Number(inputValue);
+                                                    const inputValue = e.target.value;
+                                                    const numericValue = Number(inputValue);
 
-														if (numericValue > 0 || inputValue === "") {
-															handleChange(e);
-														}
-													}}
+                                                    if (numericValue > 0 || inputValue === "") {
+                                                        handleChange(e);
+                                                    }
+                                                }}
                                                 onBlur={handleBlur}
                                                 error={touched.volumeUoM && Boolean(errors.volumeUoM)}
                                                 helperText={touched.volumeUoM && errors.volumeUoM}
@@ -639,7 +639,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                                     </Grid>
 
                                     <Typography variant="h6" sx={{ fontWeight: 600, marginTop: 2 }}>
-                                        Shelf life
+                                        Shelf Life
                                     </Typography>
 
                                     <Grid container spacing={2}>
@@ -730,16 +730,16 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                                                 name="stackingFactor" type='number'
                                                 value={values.stackingFactor}
                                                 onChange={handleChange}
-                                                onBlur={handleBlur}   inputProps={{ min: 0 }}
+                                                onBlur={handleBlur} inputProps={{ min: 0 }}
                                                 error={touched.stackingFactor && Boolean(errors.stackingFactor)}
                                                 helperText={touched.stackingFactor && errors.stackingFactor}
                                             />  <Typography
-                                            variant="caption"
-                                            color="textSecondary"
-                                            sx={{ mt: 0.5, display: 'block' }}
-                                          >
-                                            Stacking factor (0-infinite, 1-no stacking, &gt;1 is the no of layers/stack)
-                                          </Typography>
+                                                variant="caption"
+                                                color="textSecondary"
+                                                sx={{ mt: 0.5, display: 'block' }}
+                                            >
+                                                Stacking factor (0-infinite, 1-no stacking, &gt;1 is the no of layers/stack)
+                                            </Typography>
                                         </Grid>
 
                                         <Grid item xs={12} sm={6} md={2.4} >

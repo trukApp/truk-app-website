@@ -8,15 +8,15 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 const RatingsAndReviews = () => {
   const tiles = [
     {
-      title: 'Transport order analytics',
+      title: 'Transport Order Analytics',
       icon: <AnalyticsIcon sx={{ fontSize: { xs: 40, sm: 50, md: 60 } }} />,
     },
     {
-      title: 'Carrier performance',
+      title: 'Carrier Performance',
       icon: <LocalShippingIcon sx={{ fontSize: { xs: 40, sm: 50, md: 60 } }} />,
     },
     {
-      title: 'Cost analysis',
+      title: 'Cost Analysis',
       icon: <AttachMoneyIcon sx={{ fontSize: { xs: 40, sm: 50, md: 60 } }} />,
     },
   ];

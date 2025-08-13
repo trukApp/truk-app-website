@@ -26,13 +26,13 @@ const TransportManagement = () => {
       onClick: () => handleNavigation('/createpackage'),
     },
     {
-      title: 'Product master',
+      title: 'Product Master',
       icon: <StorefrontIcon sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
       // onClick: () => router.push('/productmaster'),
       onClick: () => handleNavigation('/productmaster'),
     },
     {
-      title: 'Business partners',
+      title: 'Business Partners',
       icon: <BusinessIcon sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
       // onClick: () => router.push('/businesspartners'),
       onClick: () => handleNavigation('/businesspartners'),
@@ -87,7 +87,7 @@ const TransportManagement = () => {
                 alignItems: 'center',
                 textAlign: 'center',
                 backgroundColor: '#ffffff',
-                boxShadow: 3, 
+                boxShadow: 3,
                 borderRadius: 5,
                 transition: 'transform 0.2s, box-shadow 0.2s',
                 '&:hover': {

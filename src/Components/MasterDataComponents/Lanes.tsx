@@ -229,7 +229,7 @@ const TransportationLanes = () => {
 
   const handleDelete = async (row: LaneDetails) => {
     const laneId = row?.id;
-    if (!laneId) { 
+    if (!laneId) {
       setSnackbarMessage("Error: Lane ID is missing!");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
@@ -403,9 +403,6 @@ const TransportationLanes = () => {
         severity={snackbarSeverity}
         onClose={() => setSnackbarOpen(false)}
       />
-      {/* <Typography sx={{ fontWeight: 'bold', fontSize: { xs: '20px', md: '24px' } }} color='primary' gutterBottom>
-        Transportation lanes master
-      </Typography> */}
       <Box display="flex" justifyContent="flex-end">
         <Box  >
           <Button
@@ -434,7 +431,7 @@ const TransportationLanes = () => {
                       fullWidth
                       id="laneId" disabled
                       name="laneId"
-                      label="Lane ID (Auto-generated)"
+                      label="Lane ID (Auto-generated)*"
                       value={formik.values.laneId}
                       onChange={formik.handleChange}
                       InputProps={{ readOnly: true }}
@@ -446,7 +443,7 @@ const TransportationLanes = () => {
                     fullWidth
                     name="sourceLocationId"
                     size="small"
-                    label="Search for source Location... "
+                    label="Search for source Location*"
                     onFocus={() => {
                       if (!searchKey) {
                         setSearchKey(formik.values?.sourceLocationId || "");
@@ -507,7 +504,7 @@ const TransportationLanes = () => {
                           </List>
                         ) : (
                           <div style={{ padding: "10px", fontSize: "13px", color: "#777", textAlign: "center" }}>
-                            No results found
+                            No Results Found
                           </div>
                         )}
                       </Paper>
@@ -520,7 +517,7 @@ const TransportationLanes = () => {
                     fullWidth
                     name="destinationLocationId"
                     size="small"
-                    label="Search for destination Location... "
+                    label="Search for destination Location*"
                     onFocus={() => {
                       if (!searchKeyDestination) {
                         setSearchKeyDestination(formik.values?.destinationLocationId || "");
@@ -588,24 +585,24 @@ const TransportationLanes = () => {
               <h3>2. Transport Data</h3>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6} md={2.4}>
-                    <TextField
-                      fullWidth
-                      label="Vehicle Type "
-                      name="vehicleType"
-                      value={formik.values.vehicleType}
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      error={formik.touched.vehicleType && Boolean(formik.errors.vehicleType)}
-                      helperText={formik.touched.vehicleType && formik.errors.vehicleType}
-                      size="small"
-                      select  
+                  <TextField
+                    fullWidth
+                    label="Vehicle Type*"
+                    name="vehicleType"
+                    value={formik.values.vehicleType}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    error={formik.touched.vehicleType && Boolean(formik.errors.vehicleType)}
+                    helperText={formik.touched.vehicleType && formik.errors.vehicleType}
+                    size="small"
+                    select
                   >
                     <MenuItem value="Truck">Truck</MenuItem>
-                      <MenuItem value="Truck">Van</MenuItem>
-                      <MenuItem value="Trailer">Trailer</MenuItem>
-                      <MenuItem value="Container">Container</MenuItem>
-                
-                    </TextField>
+                    <MenuItem value="Truck">Van</MenuItem>
+                    <MenuItem value="Trailer">Trailer</MenuItem>
+                    <MenuItem value="Container">Container</MenuItem>
+
+                  </TextField>
 
 
                 </Grid>
@@ -647,15 +644,15 @@ const TransportationLanes = () => {
                     id="transportDistance"
                     name="transportDistance"
                     label="Transport Distance* "
-                    type="number" 
+                    type="number"
                     onChange={(e) => {
-														const inputValue = e.target.value;
-														const numericValue = Number(inputValue);
+                      const inputValue = e.target.value;
+                      const numericValue = Number(inputValue);
 
-														if (numericValue > 0 || inputValue === "") {
-															formik.handleChange(e);
-														}
-													}}
+                      if (numericValue > 0 || inputValue === "") {
+                        formik.handleChange(e);
+                      }
+                    }}
                     value={formik.values.transportDistance}
                     // onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
@@ -691,13 +688,13 @@ const TransportationLanes = () => {
                     value={formik.values.transportDuration}
                     // onChange={formik.handleChange}
                     onChange={(e) => {
-														const inputValue = e.target.value;
-														const numericValue = Number(inputValue);
+                      const inputValue = e.target.value;
+                      const numericValue = Number(inputValue);
 
-														if (numericValue > 0 || inputValue === "") {
-															formik.handleChange(e);
-														}
-													}}
+                      if (numericValue > 0 || inputValue === "") {
+                        formik.handleChange(e);
+                      }
+                    }}
                     onBlur={formik.handleBlur}
                     error={formik.touched.transportDuration && Boolean(formik.errors.transportDuration)}
                     helperText={formik.touched.transportDuration && formik.errors.transportDuration}
@@ -729,13 +726,13 @@ const TransportationLanes = () => {
                     value={formik.values.transportCost}
                     // onChange={formik.handleChange}
                     onChange={(e) => {
-														const inputValue = e.target.value;
-														const numericValue = Number(inputValue);
+                      const inputValue = e.target.value;
+                      const numericValue = Number(inputValue);
 
-														if (numericValue > 0 || inputValue === "") {
-															formik.handleChange(e);
-														}
-													}}
+                      if (numericValue > 0 || inputValue === "") {
+                        formik.handleChange(e);
+                      }
+                    }}
                     onBlur={formik.handleBlur}
                     error={formik.touched.transportCost && Boolean(formik.errors.transportCost)}
                     helperText={formik.touched.transportCost && formik.errors.transportCost}

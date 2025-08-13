@@ -227,7 +227,7 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                                     }
                                 ]
                             }
-                            const response = await postLocation(body).unwrap(); 
+                            const response = await postLocation(body).unwrap();
                             if (response) {
                                 setFieldValue("locationId", response.created_records[0]);
                             }
@@ -246,12 +246,12 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
             >
                 {({ values, touched, errors, handleSubmit, setFieldValue, handleBlur, handleChange }) => (
                     <Form  >
-                        <Typography variant="h6" sx={{ fontWeight: 'bold',  marginTop: 3,marginLeft: "15px"  }}>Bill to Details</Typography>
+                        <Typography variant="h6" sx={{ fontWeight: 'bold', marginTop: 3, marginLeft: "15px" }}>Bill to Details</Typography>
                         <Grid item xs={12} sx={{ display: 'flex', flexDirection: { md: "row", xs: "column" }, gap: { md: '20px', xs: '2px' }, marginLeft: "15px" }}>
                             {values?.saveAsNewLocationId ? null : (
                                 <FormControlLabel
                                     control={<Field name="saveAsDefaultShipFromLocation" type="checkbox" as={Checkbox} />}
-                                    label="Save as default bill to location"
+                                    label="Save as Default Bill to Location"
                                     onChange={() => {
                                         setFieldValue('saveAsDefaultShipFromLocation', !values.saveAsDefaultShipFromLocation);
                                         setFieldValue('saveAsNewLocationId', false);
@@ -263,7 +263,7 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                             )}
                             <FormControlLabel
                                 control={<Field name="saveAsNewLocationId" type="checkbox" as={Checkbox} />}
-                                label="Save as new Location ID"
+                                label="Save as New Location ID"
                                 onChange={() => {
                                     setFieldValue('saveAsNewLocationId', !values.saveAsNewLocationId);
                                     setFieldValue('saveAsDefaultShipFromLocation', false);
@@ -373,7 +373,7 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                                                     </List>
                                                 ) : (
                                                     <Typography variant="body2" color="textSecondary">
-                                                        No results found
+                                                        No Results Found
                                                     </Typography>
                                                 )}
                                             </Paper>
@@ -421,7 +421,7 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                                         name="timeZone"
                                         disabled={!values.saveAsNewLocationId}
                                         as={TextField}
-                                        label="Time zone"
+                                        label="Time Zone"
                                         InputLabelProps={{ shrink: true }} size='small' fullWidth
                                     />
                                 </Grid>
@@ -430,7 +430,7 @@ const BillTo: React.FC<ShipFromProps> = ({ onNext, onBack }) => {
                                         fullWidth
                                         size="small"
                                         select
-                                        label="Location type"
+                                        label="Location Type"
                                         name="locationType"
                                         value={values.locationType}
                                         onChange={handleChange}

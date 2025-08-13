@@ -66,20 +66,6 @@ const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
     ),
   });
 
-  // const initialValues: FormValues = {
-  //   packageDetails: productListFromRedux.length > 0
-  //     ? productListFromRedux
-  //     : [{
-  //       productId: "",
-  //       productName: "",
-  //       hsnCode: "",
-  //       rfid: "",
-  //       dimensions: "",
-  //       quantity: "",
-  //       weight: "",
-  //       packagingType: "",
-  //     }],
-  // };
   const initialValues: FormValues = {
     packageDetails: productListFromRedux.length > 0
       ? productListFromRedux.map((p) => ({
@@ -109,7 +95,7 @@ const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
       <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleFormSubmit}>
         {({ values, handleSubmit, setFieldValue }) => (
           <Form onSubmit={handleSubmit} className={styles.formsBgContainer}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', marginLeft: "15px"  }}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold', marginLeft: "15px" }}>
               Package Details
             </Typography>
             <FieldArray name="packageDetails">
@@ -198,7 +184,7 @@ const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
                         />
                       </Grid>
 
-                      {["productName", "hsnCode", "rfid", "dimensions", "quantity", "weight", "packagingType"].map((fieldName) => (
+                      {["productName", "hsnCode", "RFID-EPC Code", "dimensions", "quantity", "weight", "packagingType"].map((fieldName) => (
                         <Grid item xs={12} md={2.4} key={fieldName}>
                           <Field name={`packageDetails.${index}.${fieldName}`}>
                             {({ field, meta }: FieldProps) => (
@@ -213,18 +199,18 @@ const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
                                 type={fieldName === "quantity" ? "number" : "text"}
                                 error={meta.touched && Boolean(meta.error)}
                                 helperText={meta.touched && meta.error}
-                                      inputProps={
-                        fieldName === "quantity"
-                          ? {
-                              min: 1,
-                              onKeyDown: (e) => {
-                                if (e.key === "-" || e.key === "e") {
-                                  e.preventDefault();
+                                inputProps={
+                                  fieldName === "quantity"
+                                    ? {
+                                      min: 1,
+                                      onKeyDown: (e) => {
+                                        if (e.key === "-" || e.key === "e") {
+                                          e.preventDefault();
+                                        }
+                                      },
+                                    }
+                                    : {}
                                 }
-                              },
-                            }
-                          : {}
-                      }
                               />
                             )}
                           </Field>

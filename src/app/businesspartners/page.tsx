@@ -27,7 +27,7 @@ const BusinessPartnersPage: React.FC = () => {
                     Business Partners Management
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                    Select and manage different types of business partners such as customers, vendors, carriers, and drivers. Each partner type has its own form for detailed information and setup.
+                    Select and Manage Different Types of Business Partners Such as Customers, Vendors, Carriers, and Drivers. Each Partner Type has its Own Form For Detailed Information And Setup.
                 </Typography>
             </Box>
             <Grid container spacing={2} justifyContent="flex-end">

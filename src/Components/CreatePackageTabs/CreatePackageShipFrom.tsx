@@ -63,23 +63,23 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
     const billToReduxValues = useAppSelector((state) => state.auth.packageBillTo)
 
     const locationTypeOptions = [
-        'Production plant',
-        'Distribution center',
-        'Shipping point',
+        'Production Plant',
+        'Distribution Center',
+        'Shipping Point',
         'Customer',
         'Vendor',
         'Terminal',
         'Port',
         'Airport',
-        'Railway station',
-        'Container freight station',
+        'Railway Station',
+        'Container Freight Station',
         'Hub',
         'Gateway',
-        'Container yard',
+        'Container Yard',
         'Warehouse',
-        'Carrier warehouse',
-        'Rail junction',
-        'Border crossing point',
+        'Carrier Warehouse',
+        'Rail Junction',
+        'Border Crossing Point',
     ];
 
     const shipFromInitialValues = {
@@ -194,7 +194,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
         try {
             const updatedLocationId = locId?.split(',')[0] ?? '';
             await updateDefulatFromLocation({ locId: updatedLocationId, defShipFrom: defaultValue ? 1 : 0 }).unwrap();
-         
+
         } catch (error) {
             console.log("Getting error while changing default value: ", error)
         }
@@ -270,13 +270,13 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                 >
                     {({ values, touched, errors, handleSubmit, setFieldValue, handleChange, handleBlur }) => (
                         <Form >
-                                <Typography variant="h6" sx={{ fontWeight: 'bold'  , marginTop: 3,marginLeft: "15px"  }}>Ship from Details</Typography>
+                            <Typography variant="h6" sx={{ fontWeight: 'bold', marginTop: 3, marginLeft: "15px" }}>Ship From Details</Typography>
                             <Grid item xs={12} sx={{ display: 'flex', flexDirection: { md: "row", xs: "column" }, gap: { md: '20px', xs: '2px' }, marginLeft: "15px" }}>
                                 {values?.saveAsNewLocationId ? (null) : (
                                     <FormControlLabel
                                         control={<Field name="saveAsDefaultShipFromLocation" type="checkbox" as={Checkbox} />}
-                                        label="Save as default Ship From Location"
-                                        onChange={() => { 
+                                        label="Save as Default Ship From Location"
+                                        onChange={() => {
                                             setFieldValue('saveAsDefaultShipFromLocation', !values.saveAsDefaultShipFromLocation);
                                             setFieldValue('saveAsNewLocationId', false);
                                             if (values.locationId) {
@@ -287,7 +287,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                                 )}
                                 <FormControlLabel
                                     control={<Field name="saveAsNewLocationId" type="checkbox" as={Checkbox} />}
-                                    label="Save as new Location ID"
+                                    label="Save as New Location ID"
                                     onChange={() => {
                                         setFieldValue('saveAsNewLocationId', !values.saveAsNewLocationId);
                                         setFieldValue('saveAsDefaultShipFromLocation', false);
@@ -397,7 +397,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                                                         </List>
                                                     ) : (
                                                         <Typography variant="body2" color="textSecondary">
-                                                            No results found
+                                                            No Results Found
                                                         </Typography>
                                                     )}
                                                 </Paper>
@@ -444,7 +444,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                                             name="timeZone"
                                             as={TextField}
                                             disabled={!values.saveAsNewLocationId}
-                                            label="Time zone"
+                                            label="Time Zone"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
                                         />
                                     </Grid>
@@ -453,7 +453,7 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
                                             fullWidth
                                             size="small"
                                             select
-                                            label="Location type"
+                                            label="Location Type"
                                             name="locationType"
                                             value={values.locationType}
                                             onChange={handleChange}

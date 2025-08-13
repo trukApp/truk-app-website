@@ -321,7 +321,7 @@ const CustomerForm: React.FC = () => {
                     sold_to_party: values?.soldToParty,
                     bill_to_party: values?.billToParty
                 }
-            } 
+            }
             if (updateRecord) {
                 const response = await updatePartnerDetails({ body: editBody, partnerId: updateRecordId }).unwrap();
                 if (response?.updated_record) {
@@ -504,7 +504,7 @@ const CustomerForm: React.FC = () => {
                                                     </List>) :
                                                     (
                                                         <Typography variant="body2" color="textSecondary">
-                                                            No results found
+                                                            No Results Found
                                                         </Typography>
                                                     )
                                                     }

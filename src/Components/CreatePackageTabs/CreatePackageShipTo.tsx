@@ -14,25 +14,25 @@ import { CustomButtonFilled, CustomButtonOutlined } from '../ReusableComponents/
 export interface IShipTo {
     saveAsNewLocationId: boolean;
     saveAsDefaultShipFromLocation: boolean;
-  addressLine1: string;
-  addressLine2: string;
-  city: string;
-  contactPerson: string;
-  country: string;
-  email: string;
-  locationDescription: string;
-  locationId: string;
-  phoneNumber: string;
-  pincode: string;
-  state: string;
-  latitude: string;
-  longitude: string;
-  timeZone: string;
-  locationType: string;
-  glnCode: string;
-  iataCode: string;
-  destination_radius: string;
-  destination_radius_unit: string;
+    addressLine1: string;
+    addressLine2: string;
+    city: string;
+    contactPerson: string;
+    country: string;
+    email: string;
+    locationDescription: string;
+    locationId: string;
+    phoneNumber: string;
+    pincode: string;
+    state: string;
+    latitude: string;
+    longitude: string;
+    timeZone: string;
+    locationType: string;
+    glnCode: string;
+    iataCode: string;
+    destination_radius: string;
+    destination_radius_unit: string;
 }
 interface ShipToProps {
     onNext: (values: IShipTo) => void;
@@ -71,7 +71,7 @@ const ShipTo: React.FC<ShipToProps> = ({ onNext, onBack }) => {
     const shipFromLocationId = shipFromLocationIdData?.split(',')[0] ?? '';
     const getAllLocations = displayLocations.filter(
         (location: Location) => location.loc_ID !== shipFromLocationId
-    ); 
+    );
     const locationTypeOptions = [
         'Production plant',
         'Distribution center',
@@ -233,8 +233,6 @@ const ShipTo: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                         const { saveAsNewLocationId, saveAsDefaultShipFromLocation, ...shipFromData } = values;
                         console.log(saveAsNewLocationId, saveAsDefaultShipFromLocation)
                         dispatch(setPackageShipTo(shipFromData))
-                        // dispatch(setCompletedState(1));
-
                         if (values.saveAsNewLocationId) {
                             try {
 
@@ -288,7 +286,7 @@ const ShipTo: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                 {values?.saveAsNewLocationId ? null : (
                                     <FormControlLabel
                                         control={<Field name="saveAsDefaultShipFromLocation" type="checkbox" as={Checkbox} />}
-                                        label="Save as default Ship To Location"
+                                        label="Save as Default Ship To Location"
                                         onChange={() => {
                                             setFieldValue('saveAsDefaultShipFromLocation', !values.saveAsDefaultShipFromLocation);
                                             setFieldValue('saveAsNewLocationId', false);
@@ -300,7 +298,7 @@ const ShipTo: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                 )}
                                 <FormControlLabel
                                     control={<Field name="saveAsNewLocationId" type="checkbox" as={Checkbox} />}
-                                    label="Save as new Location ID"
+                                    label="Save as New Location ID"
                                     onChange={() => {
                                         setFieldValue('saveAsNewLocationId', !values.saveAsNewLocationId);
                                         setFieldValue('saveAsDefaultShipFromLocation', false);
@@ -400,11 +398,6 @@ const ShipTo: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                                                 }}
                                                                 sx={{ cursor: "pointer" }}
                                                             >
-                                                                {/* <Tooltip
-                                                                    title={`${location.address_1}, ${location.address_2}, ${location.city}, ${location.state}, ${location.country}, ${location.pincode}`}
-                                                                    placement="right"
-                                                                >
-                                                                </Tooltip> */}
                                                                 <span style={{ fontSize: '14px' }}>{location.loc_ID},{location?.loc_desc}, {location.city}, {location.state}, {location.country}, {location.pincode}</span>
                                                             </ListItem>
                                                         ))}
@@ -452,7 +445,7 @@ const ShipTo: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                             name="timeZone"
                                             disabled={!values.saveAsNewLocationId}
                                             as={TextField}
-                                            label="Time zone"
+                                            label="Time Zone"
                                             InputLabelProps={{ shrink: true }} size='small' fullWidth
                                         />
                                     </Grid>
@@ -461,7 +454,7 @@ const ShipTo: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                             fullWidth
                                             size="small"
                                             select
-                                            label="Location type"
+                                            label="Location Type"
                                             name="locationType"
                                             value={values.locationType}
                                             onChange={handleChange}
@@ -612,7 +605,7 @@ const ShipTo: React.FC<ShipToProps> = ({ onNext, onBack }) => {
                                     </Grid>
                                     {values.saveAsNewLocationId ? null : (
                                         <Grid item xs={12} md={2.4}>
-                                            <Grid container spacing={1} alignItems="center">
+                                            <Grid container spacing={1}>
                                                 <Grid item xs={7}>
                                                     <Field
                                                         name="destination_radius"

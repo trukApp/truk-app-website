@@ -144,9 +144,9 @@ interface TaxInformation {
 }
 
 interface ProductLine {
-    prod_ID: string;
-    quantity: number;
-    package_info: string;
+	prod_ID: string;
+	quantity: number;
+	package_info: string;
 }
 interface PackageDetail {
 	product_lines: ProductLine[];
@@ -1179,7 +1179,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 																				width: "100%",
 																			}}
 																		>
-																			No results found
+																			No Results Found
 																		</Typography>
 																	</ListItem>
 																) : (
@@ -1277,7 +1277,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 																			width: "100%",
 																		}}
 																	>
-																		No results found
+																		No Results Found
 																	</Typography>
 																</ListItem>
 															) : (

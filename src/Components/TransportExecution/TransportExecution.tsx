@@ -24,14 +24,14 @@ const TransportExecution = () => {
 
 	const tiles = [
 		{
-			title: "Transport order overview",
+			title: "Transport Order Overview",
 			icon: (
 				<LocalShipping sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />
 			),
 			onClick: () => handleNavigation("/order-overview"),
 		},
 		{
-			title: "Dock management",
+			title: "Dock Management",
 			icon: <Warehouse sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
 			onClick: () => handleNavigation("/dock-management"),
 		},

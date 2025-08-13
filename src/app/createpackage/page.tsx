@@ -95,7 +95,7 @@ const CreatePackage = () => {
             const firstUnfilledIndex = completedSteps.findIndex(step => !step);
             setActiveStep(firstUnfilledIndex !== -1 ? firstUnfilledIndex : completedSteps.length);
             if (firstUnfilledIndex !== -1) {
-                setSnackbarMessage("Some steps are unfilled! Navigating to first unfilled step...");
+                setSnackbarMessage("Some Steps are Unfilled! Navigating to First Unfilled Step...");
                 setSnackbarSeverity("warning");
                 setSnackbarOpen(true);
                 setActiveStep(firstUnfilledIndex);
@@ -107,7 +107,7 @@ const CreatePackage = () => {
     const handleSubmit = async () => {
         const firstUnfilledIndex = completedSteps.findIndex((step) => !step);
         if (firstUnfilledIndex !== -1) {
-            setSnackbarMessage("Some steps are unfilled! Navigating to first unfilled step...");
+            setSnackbarMessage("Some Steps are Unfilled! Navigating to First Unfilled Step...");
             setSnackbarSeverity("warning");
             setSnackbarOpen(true);
             setActiveStep(firstUnfilledIndex);
@@ -212,7 +212,7 @@ const CreatePackage = () => {
                 <Dialog open={modalOpen} onClose={() => setModalOpen(false)} >
                     <DialogTitle>Package Created Successfully</DialogTitle>
                     <DialogContent>
-                        <Typography>Your package has been created successfully. What would you like to do next?</Typography>
+                        <Typography>Your Package Has Been Created Successfully. What Would You Like to do Next?</Typography>
                     </DialogContent>
                     <DialogActions>
                         <Button variant="outlined" onClick={handleCreateAnother} color="primary">
@@ -229,7 +229,7 @@ const CreatePackage = () => {
                     Create a Package
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                    Fill out the following steps to successfully create a package with all relevant shipping, billing, and tax details.
+                    Fill out the Following Steps to Successfully Create a Package With all Relevant Shipping, Billing, and Tax Details.
                 </Typography>
             </Box>
 

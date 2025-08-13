@@ -45,10 +45,10 @@ const MasterData: React.FC = () => {
 					Master Data Management
 				</Typography>
 				<Typography variant="body1" color="text.secondary">
-					Manage foundational data such as vehicles, devices, lanes, locations,
-					packaging info, and units of measurement. This information is
-					essential for smooth operations across your logistics and transport
-					workflows.
+					Manage Foundational Data Such as Vehicles, Devices, Lanes, Locations,
+					Packaging Info, and Units of Measurement. This Information is
+					Essential for Smooth Operations Across your Logistics and Transport
+					Workflows.
 				</Typography>
 			</Box>
 			{/* Tabs Menu */}

@@ -152,7 +152,6 @@ const DriverForm: React.FC = () => {
 
     const locId = locationString?.split(",").at(0)?.trim() ?? "";
     setSearchKey(locationString)
-    // setSearchKey(rowData.locations[0] || '');
 
     const matchedLocation = getAllLocations.find((loc: Location) => loc.loc_ID === locId);
     return {
@@ -303,7 +302,6 @@ const DriverForm: React.FC = () => {
       };
 
       const editBody = {
-        // ...updateRecordData,
         locations: [values?.locations],
         driver_name: values?.driverName,
         address: [values?.address1, values?.address2, values?.city, values?.state, values?.country, values?.pincode,].filter((part) => part).join(', '),
@@ -398,7 +396,7 @@ const DriverForm: React.FC = () => {
                     <Grid item xs={12} sm={6} md={2.4}>
                       <TextField
                         fullWidth size='small'
-                        label="Driver ID" disabled
+                        label="Driver ID*" disabled
                         name="driverId"
                         value={values.driverId}
                         onChange={handleChange}
@@ -409,7 +407,7 @@ const DriverForm: React.FC = () => {
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth size='small'
-                      label="Driver Name"
+                      label="Driver Name*"
                       name="driverName"
                       value={values.driverName}
                       onChange={handleChange}
@@ -423,7 +421,7 @@ const DriverForm: React.FC = () => {
                       fullWidth
                       name="locations"
                       size="small"
-                      label="Location ID"
+                      label="Location ID*"
                       onFocus={() => {
                         if (!searchKey) {
                           setSearchKey(values.locations[0] || '');
@@ -468,10 +466,8 @@ const DriverForm: React.FC = () => {
                                   setShowSuggestions(false)
                                   const selectedDisplay = `${location.loc_ID},${location?.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
                                   setSearchKey(selectedDisplay);
-                                  // setSearchKey(location.loc_ID);
                                   setFieldValue("locations", location.loc_ID)
                                   const matchedLocation = getAllLocations.find((loc: Location) => loc.loc_ID === location.loc_ID);
-
                                   if (matchedLocation) {
                                     setFieldValue('address1', matchedLocation.address_1 || '');
                                     setFieldValue('address2', matchedLocation.address_2 || '');
@@ -502,7 +498,7 @@ const DriverForm: React.FC = () => {
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth size='small'
-                      label="Pincode" disabled
+                      label="Pincode*" disabled
                       name="pincode"
                       value={values.pincode}
                       onChange={handleChange}
@@ -514,7 +510,7 @@ const DriverForm: React.FC = () => {
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth size='small'
-                      label="Address1" disabled
+                      label="Address1*" disabled
                       name="address1"
                       value={values.address1}
                       onChange={handleChange}
@@ -526,7 +522,7 @@ const DriverForm: React.FC = () => {
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth size='small'
-                      label="Address2" disabled
+                      label="Address2*" disabled
                       name="address2"
                       value={values.address2}
                       onChange={handleChange}
@@ -538,7 +534,7 @@ const DriverForm: React.FC = () => {
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth size='small'
-                      label="City" disabled
+                      label="City*" disabled
                       name="city"
                       value={values.city}
                       onChange={handleChange}
@@ -550,7 +546,7 @@ const DriverForm: React.FC = () => {
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth size='small'
-                      label="State" disabled
+                      label="State*" disabled
                       name="state"
                       value={values.state}
                       onChange={handleChange}
@@ -563,7 +559,7 @@ const DriverForm: React.FC = () => {
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth size='small'
-                      label="Country" disabled
+                      label="Country*" disabled
                       name="country"
                       value={values.country}
                       onChange={handleChange}
@@ -579,7 +575,7 @@ const DriverForm: React.FC = () => {
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth size='small'
-                      label="Driving License"
+                      label="Driving License*"
                       name="drivingLicense"
                       value={values.drivingLicense}
                       onChange={handleChange}
@@ -593,7 +589,7 @@ const DriverForm: React.FC = () => {
                     <TextField
                       fullWidth
                       size="small"
-                      label="Expiry Date"
+                      label="Expiry Date*"
                       name="expiryDate"
                       type="date"
                       value={values.expiryDate}
@@ -608,7 +604,7 @@ const DriverForm: React.FC = () => {
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth size='small'
-                      label="Contact Number"
+                      label="Contact Number*"
                       name="driverContactNumber"
                       value={values.driverContactNumber}
                       onChange={handleChange} inputProps={{ maxLength: 10 }}
@@ -620,7 +616,7 @@ const DriverForm: React.FC = () => {
                   <Grid item xs={12} sm={6} md={2.4}>
                     <TextField
                       fullWidth size='small'
-                      label="Email ID"
+                      label="Email ID*"
                       name="emailID"
                       type="email"
                       value={values.emailID}
@@ -639,7 +635,7 @@ const DriverForm: React.FC = () => {
                       select
                       fullWidth
                       size="small"
-                      label="Vehicle Types"
+                      label="Vehicle Types*"
                       name="vehicleTypes"
                       value={values.vehicleTypes}
                       onChange={(e) => setFieldValue('vehicleTypes', e.target.value)}
@@ -662,7 +658,7 @@ const DriverForm: React.FC = () => {
                       select
                       fullWidth
                       size="small"
-                      label="Is Driver Available"
+                      label="Is Driver Available*"
                       name="driverAvailable"
                       value={values.driverAvailable}
                       onChange={(e) => setFieldValue('driverAvailable', e.target.value)}
