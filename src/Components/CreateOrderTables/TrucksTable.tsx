@@ -233,7 +233,8 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
             }}
             truckCapacity={trucks[openTruckIndex].truckCapacity}
             packageBlocks={generatePackageBlocks(
-              trucks[openTruckIndex].boxPlacements,
+              Object.values(trucks[openTruckIndex].boxPlacements)
+                .flatMap((entry) => entry.boxes)
             )}
           />
         </Box>
