@@ -96,39 +96,76 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
     total ? Math.round((used / total) * 100) : 0;
 
   const generatePackageBlocks = (
-    boxPlacements: {
-      pkgID: string;
-      stop: number;
-      position: { x: number; y: number; z: number };
-      dimensions: { length: number; width: number; height: number };
-    }[]
+    boxPlacements:
+      | {
+        pkgID: string;
+        stop: number;
+        position: { x: number; y: number; z: number };
+        dimensions: { length: number; width: number; height: number };
+      }[]
+      | Record<string, { boxes: { position: number[]; dimensions: number[] }[] }>
   ): PackageBlock[] => {
     const colorPalette = [
-      "#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#14b8a6"
+      "#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#14b8a6",
     ];
     const colorMap: Record<string, string> = {};
     let colorIndex = 0;
     const allBlocks: PackageBlock[] = [];
 
-    boxPlacements.forEach((box) => {
-      const { pkgID, position, dimensions } = box;
+    // New format: array
+    if (Array.isArray(boxPlacements)) {
+      boxPlacements.forEach((box) => {
+        const { pkgID, position, dimensions } = box;
 
-      if (!colorMap[pkgID]) {
-        colorMap[pkgID] = colorPalette[colorIndex % colorPalette.length];
-        colorIndex++;
-      }
+        if (!colorMap[pkgID]) {
+          colorMap[pkgID] = colorPalette[colorIndex % colorPalette.length];
+          colorIndex++;
+        }
 
-      allBlocks.push({
-        pkg_ID: pkgID,
-        color: colorMap[pkgID],
-        dimensions: [dimensions.length, dimensions.height, dimensions.width] as [number, number, number], // ✅ fixed tuple
-        position: [position.x, position.y, position.z] as [number, number, number], // ✅ fixed tuple
-        quantity: 1,
+        allBlocks.push({
+          pkg_ID: pkgID,
+          color: colorMap[pkgID],
+          dimensions: [
+            dimensions.length,
+            dimensions.height,
+            dimensions.width,
+          ] as [number, number, number],
+          position: [position.x, position.y, position.z] as [number, number, number],
+          quantity: 1,
+        });
       });
-    });
+    }
+    // Old format: Record<string, { boxes: any[] }>
+    else {
+      Object.entries(boxPlacements).forEach(([pkg_ID, { boxes }]) => {
+        if (!colorMap[pkg_ID]) {
+          colorMap[pkg_ID] = colorPalette[colorIndex % colorPalette.length];
+          colorIndex++;
+        }
+
+        boxes.forEach((box) => {
+          allBlocks.push({
+            pkg_ID,
+            color: colorMap[pkg_ID],
+            dimensions: [
+              box.dimensions?.[0] ?? 0,
+              box.dimensions?.[1] ?? 0,
+              box.dimensions?.[2] ?? 0,
+            ] as [number, number, number],
+            position: [
+              box.position?.[0] ?? 0,
+              box.position?.[1] ?? 0,
+              box.position?.[2] ?? 0,
+            ] as [number, number, number],
+            quantity: boxes.length,
+          });
+        });
+      });
+    }
 
     return allBlocks;
   };
+
 
 
 
