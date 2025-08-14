@@ -390,9 +390,9 @@ const TruckScene: React.FC<TruckSceneProps> = ({ vehicleDimensions, packageBlock
 							key={index}
 							position={[
 								// X: start at cabinLength, then move by block.position
-								cabinLength + block.position[0] + block.dimensions[2] / 8,
+								cabinLength + block.position[0] + block.dimensions[2] / 2,
 								// Y: start directly above steel plate
-								steelPlateY + block.position[1] + block.dimensions[2] / 10,
+								steelPlateY + block.position[1] + block.dimensions[2] / 2,
 								// Z: no change (width direction)
 								block.position[2] + block.dimensions[2] / 2,
 							]}
