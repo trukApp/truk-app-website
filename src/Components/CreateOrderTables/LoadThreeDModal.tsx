@@ -285,6 +285,7 @@ interface TruckSceneProps {
 }
 
 const TruckScene: React.FC<TruckSceneProps> = ({ vehicleDimensions, packageBlocks }) => {
+	console.log('packageBlocks:', packageBlocks)
 	const { length, width, height } = vehicleDimensions;
 	const cabinLength = 1.2;
 	const cabinHeight = height * 0.6;
