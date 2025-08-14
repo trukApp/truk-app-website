@@ -253,105 +253,137 @@ const OrdersGrid: React.FC = () => {
   }, [ordersData, dateFilter]);
 
   const ordersColumns: GridColDef[] = [
-    { field: 'order_ID', headerName: 'Order ID', width: 150 },
-    { field: 'scenario_label', headerName: 'Scenario', width: 150 },
-    { field: 'total_cost', headerName: 'Total Cost', width: 150 },
-    { field: 'unallocated_packages', headerName: 'Unallocated Packages', width: 250 },
-    { field: 'created_at', headerName: 'Created At', width: 200 },
-    {
-      field: 'order_status',
-      headerName: 'Order Status',
-      width: 200,
-      renderCell: (params: GridRenderCellParams) => {
-        const status = params.value || "";
-        const pascalStatus = toPascalCase(status);
-        return (
-          <Typography
-            sx={{
-              fontWeight: 500,
-              color: statusColors[status.toLowerCase()] || "#000",
-              marginTop: 1.6,
-            }}
-          >
-            {pascalStatus}
-          </Typography>
-        );
-      },
-    },
-    {
-      field: 'view',
-      headerName: 'View',
-      width: 100,
-      sortable: false,
-      renderCell: (params: GridRenderCellParams) => (
-        <IconButton onClick={() => handleViewOrder(params.row.order_ID)} sx={{ color: "#F08C24" }}>
-          <Visibility />
-        </IconButton>
-      ),
-    },
-  ];
-
+		{ field: "order_ID", headerName: "Order ID", width: 150 },
+		{ field: "scenario_label", headerName: "Scenario", width: 150 },
+		{ field: "total_cost", headerName: "Total Cost", width: 150 },
+		{
+			field: "unallocated_packages",
+			headerName: "Unallocated Packages",
+			width: 250,
+		},
+		{
+			field: "created_at",
+			headerName: "Created At",
+			width: 200,
+			sortable: true,
+			sortComparator: (v1, v2, param1, param2) =>
+				new Date(
+					param1.api.getCellValue(param1.id, "created_at_raw")
+				).getTime() -
+				new Date(
+					param2.api.getCellValue(param2.id, "created_at_raw")
+				).getTime(),
+		},
+		{
+			field: "order_status",
+			headerName: "Order Status",
+			width: 200,
+			renderCell: (params: GridRenderCellParams) => {
+				const status = params.value || "";
+				const pascalStatus = toPascalCase(status);
+				return (
+					<Typography
+						sx={{
+							fontWeight: 500,
+							color: statusColors[status.toLowerCase()] || "#000",
+							marginTop: 1.6,
+						}}
+					>
+						{pascalStatus}
+					</Typography>
+				);
+			},
+		},
+		{
+			field: "view",
+			headerName: "View",
+			width: 100,
+			sortable: false,
+			renderCell: (params: GridRenderCellParams) => (
+				<IconButton
+					onClick={() => handleViewOrder(params.row.order_ID)}
+					sx={{ color: "#F08C24" }}
+				>
+					<Visibility />
+				</IconButton>
+			),
+		},
+	];
+    const formatCreateDate = (createDate: string) => {
+        return moment(createDate).format('MMM DD, YYYY h:mm A');
+    };
   return (
-    <Box sx={{ width: '100%', marginTop: 2 }}>
-      <Backdrop
-        open={loading || isLoading}
-        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
-      >
-        <CircularProgress color="inherit" />
-      </Backdrop>
+		<Box sx={{ width: "100%", marginTop: 2 }}>
+			<Backdrop
+				open={loading || isLoading}
+				sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+			>
+				<CircularProgress color="inherit" />
+			</Backdrop>
 
-      <Grid container alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-        <Grid item>
-          <Typography variant="h5" color="primary" sx={{ fontWeight: 600 }}>
-            Order Overview
-          </Typography>
-          <Typography variant="body1">
-            Review and manage all aspects of your order including General Data, Partner Details, Delivery Information,
-            Attachments, Statuses, and Flows.
-          </Typography>
-        </Grid>
-        <Grid container justifyContent="flex-end" sx={{ mb: 2, mt: 2 }}>
-          <Grid item xs={12} sm={4} md={3}>
-            <TextField
-              select
-              fullWidth
-              size="small"
-              label="Filter by Date"
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-            >
-              <MenuItem value="All">All</MenuItem>
-              <MenuItem value="Today">Today</MenuItem>
-              <MenuItem value="Yesterday">Yesterday</MenuItem>
-              <MenuItem value="This Week">This Week</MenuItem>
-              <MenuItem value="This Month">This Month</MenuItem>
-              <MenuItem value="This Year">This Year</MenuItem>
-            </TextField>
-          </Grid>
-        </Grid>
+			<Grid
+				container
+				alignItems="center"
+				justifyContent="space-between"
+				sx={{ mb: 2 }}
+			>
+				<Grid item>
+					<Typography variant="h5" color="primary" sx={{ fontWeight: 600 }}>
+						Order Overview
+					</Typography>
+					<Typography variant="body1">
+						Review and manage all aspects of your order including General Data,
+						Partner Details, Delivery Information, Attachments, Statuses, and
+						Flows.
+					</Typography>
+				</Grid>
+				<Grid container justifyContent="flex-end" sx={{ mb: 2, mt: 2 }}>
+					<Grid item xs={12} sm={4} md={3}>
+						<TextField
+							select
+							fullWidth
+							size="small"
+							label="Filter by Date"
+							value={dateFilter}
+							onChange={(e) => setDateFilter(e.target.value)}
+						>
+							<MenuItem value="All">All</MenuItem>
+							<MenuItem value="Today">Today</MenuItem>
+							<MenuItem value="Yesterday">Yesterday</MenuItem>
+							<MenuItem value="This Week">This Week</MenuItem>
+							<MenuItem value="This Month">This Month</MenuItem>
+							<MenuItem value="This Year">This Year</MenuItem>
+						</TextField>
+					</Grid>
+				</Grid>
+			</Grid>
 
-      </Grid>
-
-      <DataGrid
-        rows={filteredOrders.map((order: Order) => ({
-          id: order.ord_id,
-          order_ID: order?.order_ID,
-          scenario_label: order?.scenario_label,
-          total_cost: parseFloat(order?.total_cost || '0').toFixed(2),
-          unallocated_packages: order?.unallocated_packages?.map((pkg: Pack) => pkg.pack_ID).join(', ') || 'None',
-          order_status: order?.order_status,
-          created_at: moment(new Date(order?.created_at).toLocaleString()).format("DD MMM YYYY, hh:mm A"),
-        }))}
-        columns={ordersColumns}
-        autoHeight
-        disableRowSelectionOnClick
-        pageSizeOptions={[10, 20, 30]}
-        initialState={{
-          pagination: { paginationModel: { pageSize: 10 } },
-        }}
-      />
-    </Box>
-  );
+			<DataGrid
+				rows={filteredOrders.map((order: Order) => ({
+					id: order.ord_id,
+					order_ID: order?.order_ID,
+					scenario_label: order?.scenario_label,
+					total_cost: parseFloat(order?.total_cost || "0").toFixed(2),
+					unallocated_packages:
+						order?.unallocated_packages
+							?.map((pkg: Pack) => pkg.pack_ID)
+							.join(", ") || "None",
+					order_status: order?.order_status,
+					created_at_raw: order?.created_at
+						? new Date(order?.created_at)
+						: null,
+					created_at: formatCreateDate(order?.created_at)
+				}))}
+				columns={ordersColumns}
+				autoHeight
+				disableRowSelectionOnClick
+				pageSizeOptions={[10, 20, 30]}
+				initialState={{
+					pagination: { paginationModel: { pageSize: 10 } },
+				}}
+			/>
+		</Box>
+	);
 };
 
 export default OrdersGrid;

@@ -9,7 +9,10 @@ import {
     setPackagePickAndDropTimings
 } from '@/store/authSlice';
 import { CustomButtonFilled, CustomButtonOutlined } from '../ReusableComponents/ButtonsComponent';
-
+import dayjs from 'dayjs';
+import { DateTimePicker } from '@mui/x-date-pickers';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 interface PickupDropTab {
     onNext: (values: FormValues) => void;
     onBack: () => void;
@@ -54,96 +57,153 @@ const PickupDropoff: React.FC<PickupDropTab> = ({ onNext, onBack }) => {
         actions.setSubmitting(false);
         
     };
-
     return (
-        <Grid  sx={{width: '100%'}}>
-              <Formik
-            initialValues={initialValues}
-            validationSchema={validationSchema}
-            onSubmit={(values, actions) => handleFormSubmit(values, actions, onNext)}
-        >
-            {({ errors, touched , values }) => (
-                    <Form style={{ width: '100%' }}>
-                          <Typography variant="h6" sx={{fontWeight:'bold', marginLeft: "15px"  , marginTop:4, marginBottom:1}}>Pickup and dropoff Details</Typography>
-                        <Grid container spacing={2}
-                            sx={{ 
-                        marginTop: 3, 
-                        width: '100%', 
-                        m: 0 
-                            }}  >
-                          
-                        <Grid item  xs={12} md={3}>
-                            <Field
-                                as={TextField}
-                                type="datetime-local"
-                                name="pickupDateTime"
-                                label="Pick up Date & Time (Estimated)"
-                                fullWidth size='small'
-                                InputLabelProps={{ shrink: true }}
-                                error={touched.pickupDateTime && Boolean(errors.pickupDateTime)}
-                                helperText={touched.pickupDateTime && errors.pickupDateTime}
-                                inputProps={{
-                            min: new Date().toISOString().slice(0, 16), 
-                        }}
-                            />
-                        </Grid>
+			<Grid sx={{ width: "100%" }}>
+				<Formik
+					initialValues={initialValues}
+					validationSchema={validationSchema}
+					onSubmit={(values, actions) =>
+						handleFormSubmit(values, actions, onNext)
+					}
+				>
+					{({ errors, touched, values, setFieldValue }) => (
+						<Form style={{ width: "100%" }}>
+							<Typography
+								variant="h6"
+								sx={{
+									fontWeight: "bold",
+									marginLeft: "15px",
+									marginTop: 4,
+									marginBottom: 1,
+								}}
+							>
+								Pickup and dropoff Details
+							</Typography>
+							<Grid
+								container
+								spacing={2}
+								sx={{
+									marginTop: 3,
+									width: "100%",
+									m: 0,
+								}}
+							>
+								<Grid item xs={12} md={3}>
+									<LocalizationProvider dateAdapter={AdapterDayjs}>
+										<DateTimePicker
+											label="Pick up Date & Time (Estimated)"
+											value={
+												values.pickupDateTime
+													? dayjs(values.pickupDateTime)
+													: null
+											}
+											minDateTime={dayjs()} // min current time
+											onChange={(newValue) => {
+												if (newValue) {
+													setFieldValue(
+														"pickupDateTime",
+														newValue.format("YYYY-MM-DDTHH:mm")
+													);
+												}
+											}}
+											onAccept={(finalValue) => {
+												console.log("Final selection:", finalValue?.toString());
+											}}
+											slotProps={{
+												textField: {
+													size: "small",
+													fullWidth: true,
+													error:
+														touched.pickupDateTime &&
+														Boolean(errors.pickupDateTime),
+													helperText:
+														touched.pickupDateTime && errors.pickupDateTime,
+												},
+											}}
+										/>
+									</LocalizationProvider>
+								</Grid>
 
-                        {/* Drop off Date & Time */}
-                            <Grid item xs={12} md={3}>
-                                <Field
-                                    as={TextField}
-                                    type="datetime-local"
-                                    name="dropoffDateTime"
-                                    label="Drop off Date & Time (Estimated)"
-                                    fullWidth
-                                    size="small"
-                                    InputLabelProps={{ shrink: true }}
-                                    error={touched.dropoffDateTime && Boolean(errors.dropoffDateTime)}
-                                    helperText={(touched.dropoffDateTime && errors.dropoffDateTime)}
-                                    inputProps={{
-                                        min: values.pickupDateTime ? values.pickupDateTime  : new Date().toISOString().slice(0, 16),
-                                    }}
-                                />
-                            </Grid>
+								{/* Drop off Date & Time */}
+								<Grid item xs={12} md={3}>
+									<LocalizationProvider dateAdapter={AdapterDayjs}>
+										<DateTimePicker
+											label="Drop off Date & Time (Estimated)"
+											value={
+												values.dropoffDateTime
+													? dayjs(values.dropoffDateTime)
+													: null
+											}
+											minDateTime={dayjs()}
+											onChange={(newValue) => {
+												if (newValue) {
+													setFieldValue(
+														"dropoffDateTime",
+														newValue.format("YYYY-MM-DDTHH:mm")
+													);
+												}
+											}}
+											onAccept={(finalValue) => {
+												console.log("Final selection:", finalValue?.toString());
+											}}
+											slotProps={{
+												textField: {
+													size: "small",
+													fullWidth: true,
+													error:
+														touched.dropoffDateTime &&
+														Boolean(errors.dropoffDateTime),
+													helperText:
+														touched.dropoffDateTime && errors.dropoffDateTime,
+												},
+											}}
+										/>
+									</LocalizationProvider>
+								</Grid>
 
+								{/* Optional Notes */}
+								<Grid item xs={12} md={6}>
+									<Field
+										as={TextField}
+										name="notes"
+										label="Notes (Optional)"
+										fullWidth
+										size="small"
+									/>
+								</Grid>
 
-                        {/* Optional Notes */}
-                        <Grid item xs={12} md={6}>
-                            <Field
-                                as={TextField}
-                                name="notes"
-                                label="Notes (Optional)"
-                                fullWidth size='small'
-                            />
-                        </Grid>
-
-                        {/* Submit Button */}
-                        <Grid container spacing={2} justifyContent="center" marginTop={2}>
-                            <Grid item>
-                                {/* <Button variant="outlined" onClick={onBack}  >
+								{/* Submit Button */}
+								<Grid
+									container
+									spacing={2}
+									justifyContent="center"
+									marginTop={2}
+								>
+									<Grid item>
+										{/* <Button variant="outlined" onClick={onBack}  >
                                     Back
                                 </Button> */}
-                                    <CustomButtonOutlined onClick={onBack}>Back</CustomButtonOutlined>
-                            </Grid>
-                            <Grid item>
-                                {/* <Button
+										<CustomButtonOutlined onClick={onBack}>
+											Back
+										</CustomButtonOutlined>
+									</Grid>
+									<Grid item>
+										{/* <Button
                                     type="submit"
                                     variant="contained"
                                     color="primary"
                                 >
                                     Next
                                 </Button> */}
-                                 <CustomButtonFilled type="submit">Next</CustomButtonFilled>
-
-                            </Grid>
-                        </Grid>
-                    </Grid>
-                </Form>
-            )}
-        </Formik>
-        </Grid>
-      
-    );
+										<CustomButtonFilled type="submit">Next</CustomButtonFilled>
+									</Grid>
+								</Grid>
+							</Grid>
+						</Form>
+					)}
+				</Formik>
+			</Grid>
+		);
 };
 
 export default PickupDropoff;
