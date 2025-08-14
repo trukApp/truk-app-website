@@ -19,7 +19,7 @@ import {
 	Paper,
 	List,
 	ListItem,
-	Chip, 
+	Chip,
 	// ,Tooltip
 } from "@mui/material";
 import { DataGridComponent } from "../GridComponent";
@@ -285,15 +285,15 @@ const VehicleForm: React.FC = () => {
 		usePostVehicleMasterMutation();
 	const [editVehicle, { isLoading: editVehicleLoading }] =
 		useEditVehicleMasterMutation();
-	const [deleteVehicle, { isLoading: deleteVehicleLoading , error : deleteVehicleError }] =
+	const [deleteVehicle, { isLoading: deleteVehicleLoading, error: deleteVehicleError }] =
 		useDeleteVehicleMasterMutation();
 	const wrapperRef = useRef<HTMLDivElement>(null);
 	const { data: locationsData } = useGetLocationMasterQuery({});
 	const getAllLocations =
 		locationsData?.locations.length > 0 ? locationsData?.locations : [];
- const [searchKey, setSearchKey] = useState("");
+	const [searchKey, setSearchKey] = useState("");
 	const [showSuggestions, setShowSuggestions] = useState(false);
-	const { data: filteredLocations, isLoading: filteredLocationLoading 
+	const { data: filteredLocations, isLoading: filteredLocationLoading
 	} =
 		useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, {
 			skip: searchKey.length < 3,
@@ -301,8 +301,8 @@ const VehicleForm: React.FC = () => {
 	const displayLocations = searchKey
 		? filteredLocations?.results || []
 		: getAllLocations;
-	const { data: uom,   } = useGetUomMasterQuery([]);
-	 
+	const { data: uom, } = useGetUomMasterQuery([]);
+
 	useEffect(() => {
 		if (uom && uom.uomList) {
 			const unitsofMeasure = uom.uomList.map(
@@ -310,8 +310,8 @@ const VehicleForm: React.FC = () => {
 			);
 			dispatch(setUnitsofMeasurement(unitsofMeasure));
 		}
- 
-	}, [uom,  dispatch]);
+
+	}, [uom, dispatch]);
 
 	useEffect(() => {
 		function handleClickOutside(event: MouseEvent) {
@@ -330,23 +330,7 @@ const VehicleForm: React.FC = () => {
 	if (error) {
 		console.log("err in loading vehicles data :", error);
 	}
-	// const getLocationDetails = (loc_ID: string) => {
-	// 	const location = getAllLocations.find(
-	// 		(loc: Location) => loc.loc_ID === loc_ID
-	// 	);
-	// 	if (!location) return "Location details not available";
-	// 	const details = [
-	// 		location.loc_ID,
-	// 		location.desc,
-	// 		location.city,
-	// 		location.state,
-	// 		location.pincode,
-	// 	].filter(Boolean);
 
-	// 	return details.length > 0
-	// 		? details.join(", ")
-	// 		: "Location details not available";
-	// };
 	const getLocationDetails = (loc_IDs: string[]): string => {
 		if (!Array.isArray(loc_IDs)) return "Location details not available";
 
@@ -367,13 +351,13 @@ const VehicleForm: React.FC = () => {
 
 				return details.join(", ");
 			})
-			.filter(Boolean); // remove any nulls
+			.filter(Boolean);
 
 		return detailsList.length > 0
-			? detailsList.join(" | ") // use " | " to separate multiple location strings
+			? detailsList.join(" | ")
 			: "Location details not available";
 	};
-	
+
 	const vehiclesMaster = data?.vehicles;
 	const unitsofMeasurement = useSelector(
 		(state: RootState) => state.auth.unitsofMeasurement
@@ -385,7 +369,7 @@ const VehicleForm: React.FC = () => {
 	};
 	const [showForm, setShowForm] = useState(false);
 	useEffect(() => {
-		if (deleteVehicleError) { 
+		if (deleteVehicleError) {
 			console.log("err in deleting :", deleteVehicleError)
 			const error = deleteVehicleError as { data?: { message?: string } };
 			const message = error?.data?.message ?? "An unknown error occurred";
@@ -394,11 +378,11 @@ const VehicleForm: React.FC = () => {
 			setSnackbarOpen(true);
 		}
 	}, [deleteVehicleError]);
-	
+
 	const initialFormValues = {
 		id: "",
 		vehicleId: "",
-		locationId: [] as string[] ,
+		locationId: [] as string[],
 		timeZone: "",
 		unlimitedUsage: false,
 		individualResources: "",
@@ -453,7 +437,7 @@ const VehicleForm: React.FC = () => {
 
 	const [initialValues, setInitialValues] = useState(initialFormValues);
 	useEffect(() => {
-		if (editRow) { 
+		if (editRow) {
 			console.log("edit row :", editRow)
 			const editPayloadWeight = editRow.payloadWeight.split(" ");
 			const editCubicCapacity = editRow?.cubicCapacity.split(" ");
@@ -467,13 +451,13 @@ const VehicleForm: React.FC = () => {
 			const editMaxWidth = editRow.maxWidth.split(" ");
 			const editMaxHeight = editRow.maxHeight.split(" ");
 			const locIds: string[] =
-				(editRow?.locationId )
+				(editRow?.locationId)
 					?.split(" | ")
 					.map((entry: string): string => entry.split(",")[0].trim()) || [];
 
-		  
+
 			// setSearchKey(locIds.join(", "));
-console.log("locids :", locIds)
+			console.log("locids :", locIds)
 			setInitialValues(() => ({
 				id: "",
 				vehicleId: editRow?.vehicleId,
@@ -531,7 +515,6 @@ console.log("locids :", locIds)
 			}));
 		}
 	}, [editRow]);
-console.log("vehiclesMaster:", vehiclesMaster);
 	const rows = vehiclesMaster?.map((vehicle: VehicleDetails) => ({
 		id: vehicle?.veh_id,
 		vehicleId: vehicle.vehicle_ID,
@@ -634,9 +617,9 @@ console.log("vehiclesMaster:", vehiclesMaster);
 	const handleSubmit = async (
 		values: VehicleFormValues,
 		{ resetForm }: { resetForm: () => void }
-	) => 
-		{ console.log("hii")
-		try { 
+	) => {
+		console.log("hii")
+		try {
 			const body = {
 				vehicles: [
 					{
@@ -697,7 +680,7 @@ console.log("vehiclesMaster:", vehiclesMaster);
 					},
 				],
 			};
-			const editBody = { 
+			const editBody = {
 				loc_ID: values.locationId,
 				unlimited_usage: `${values.unlimitedUsage ? 1 : 0}`,
 				// individual_resource: `${
@@ -752,7 +735,7 @@ console.log("vehiclesMaster:", vehiclesMaster);
 				temp_controlled_vehicle: values.temperatureControl,
 			};
 
-			if (isEditing && editRow) { 
+			if (isEditing && editRow) {
 				console.log("edit vehicle body :", editBody)
 				const vehicleId = editRow.id;
 				const response = await editVehicle({
@@ -775,7 +758,7 @@ console.log("vehiclesMaster:", vehiclesMaster);
 					setSnackbarOpen(true);
 					setSearchKey("");
 				}
-			} else { 
+			} else {
 				console.log("vehicle post body :", body)
 				const response = await postVehicle(body).unwrap();
 				if (response?.created_records) {
@@ -809,7 +792,7 @@ console.log("vehiclesMaster:", vehiclesMaster);
 	};
 	const handleDelete = async (row: VehicleDetails) => {
 		const vehicleId = row?.id;
-		if (!vehicleId) { 
+		if (!vehicleId) {
 			setSnackbarMessage("Error: Vehicle ID is missing!");
 			setSnackbarSeverity("error");
 			setSnackbarOpen(true);
@@ -835,8 +818,8 @@ console.log("vehiclesMaster:", vehiclesMaster);
 		} catch (error) {
 			console.error("Error deleting vehicle:", error);
 		}
-	};  
-	
+	};
+
 
 	return (
 		<>
@@ -897,19 +880,19 @@ console.log("vehiclesMaster:", vehiclesMaster);
 								errors,
 								touched,
 								handleChange,
-								handleBlur, 
+								handleBlur,
 								resetForm,
 								setFieldValue,
 								// handleSubmit
-							} ) => 
-								 { const handleUnitChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+							}) => {
+								const handleUnitChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 									const newUnit = e.target.value;
 									setFieldValue('interiorHeightUnits', newUnit);
 									setFieldValue('interiorWidthUnits', newUnit);
 									setFieldValue('interiorLengthUnits', newUnit);
 									const cubicUnit = `${newUnit}³`;
 									setFieldValue('cubicCapacityUnits', cubicUnit);
-								} 
+								}
 								const handleTareChange = (
 									e: React.ChangeEvent<HTMLInputElement>
 								) => {
@@ -919,32 +902,32 @@ console.log("vehiclesMaster:", vehiclesMaster);
 									setFieldValue("maxHeightUnits", newUnit);
 									const cubicUnit = `${newUnit}³`;
 									setFieldValue("tareVolumeUnits", cubicUnit);
-								}; 
-								
-								  
-		return (
-			<Form>
-				<Grid>
-					{/* General Data */}
-					<Typography variant="h6" mt={1} mb={1}>
-						1. General Data
-					</Typography>
-					<Grid container spacing={2}>
-						{isEditing && (
-							<Grid item xs={12} sm={6} md={2.4}>
-								<TextField
-									fullWidth
-									label="Resource ID"
-									name="vehicleId"
-									value={values.vehicleId}
-									onChange={handleChange}
-									onBlur={handleBlur}
-									size="small"
-									disabled
-								/>
-							</Grid>
-						)}
-						{/* <Grid item xs={12} sm={6} md={2.4}>
+								};
+
+
+								return (
+									<Form>
+										<Grid>
+											{/* General Data */}
+											<Typography variant="h6" mt={1} mb={1}>
+												1. General Data
+											</Typography>
+											<Grid container spacing={2}>
+												{isEditing && (
+													<Grid item xs={12} sm={6} md={2.4}>
+														<TextField
+															fullWidth
+															label="Resource ID"
+															name="vehicleId"
+															value={values.vehicleId}
+															onChange={handleChange}
+															onBlur={handleBlur}
+															size="small"
+															disabled
+														/>
+													</Grid>
+												)}
+												{/* <Grid item xs={12} sm={6} md={2.4}>
 												<TextField
 													fullWidth
 													name="locationId"
@@ -1019,910 +1002,911 @@ console.log("vehiclesMaster:", vehiclesMaster);
 													)}
 												</div>
 											</Grid> */}
-						<Grid item xs={12} sm={6} md={4.8}>
-							<TextField
-								fullWidth
-								name="locationId"
-								size="small"
-								label="Search Location... "
-								onFocus={() => {
-									if (!searchKey) {
-										setSearchKey("");
-										setShowSuggestions(true);
-									}
-								}}
-								onChange={(e) => {
-									setSearchKey(e.target.value);
-									setShowSuggestions(true);
-								}}
-								value={searchKey}
-								error={touched?.locationId && Boolean(errors?.locationId)}
-								helperText={
-									touched?.locationId && typeof errors?.locationId === "string"
-										? errors.locationId
-										: ""
-								}
-								InputProps={{
-									endAdornment: filteredLocationLoading ? (
-										<CircularProgress size={20} />
-									) : null,
-								}}
-							/>
-
-							<div ref={wrapperRef} style={{ position: "relative" }}>
-								{showSuggestions && displayLocations?.length > 0 && (
-									<Paper
-										style={{
-											maxHeight: 200,
-											overflowY: "auto",
-											position: "absolute",
-											zIndex: 10,
-											width: "100%",
-										}}
-									>
-										<List>
-											{displayLocations.map((location: Location) => {
-												const selectedDisplay = `${location.loc_ID}, ${location.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
-												const isSelected =
-													Array.isArray(values.locationId) &&
-													(values.locationId as string[]).includes(
-														location.loc_ID
-													);
-
-												return (
-													<ListItem
-														key={location.loc_ID}
-														component="li"
-														onClick={() => {
-															setShowSuggestions(false);
-															setSearchKey("");
-
-															if (!isSelected) {
-																setFieldValue("locationId", [
-																	...(values.locationId || []),
-																	location.loc_ID,
-																]);
-																if (
-																	!values.locationId ||
-																	values.locationId.length === 0
-																) {
-																	setFieldValue("timeZone", location.time_zone);
-																}
+												<Grid item xs={12} sm={6} md={4.8}>
+													<TextField
+														fullWidth
+														name="locationId"
+														size="small"
+														label="Search Location... "
+														onFocus={() => {
+															if (!searchKey) {
+																setSearchKey("");
+																setShowSuggestions(true);
 															}
 														}}
-														sx={{
-															cursor: "pointer",
-															backgroundColor: isSelected
-																? "#f0f0f0"
-																: "transparent",
+														onChange={(e) => {
+															setSearchKey(e.target.value);
+															setShowSuggestions(true);
 														}}
+														value={searchKey}
+														error={touched?.locationId && Boolean(errors?.locationId)}
+														helperText={
+															touched?.locationId && typeof errors?.locationId === "string"
+																? errors.locationId
+																: ""
+														}
+														InputProps={{
+															endAdornment: filteredLocationLoading ? (
+																<CircularProgress size={20} />
+															) : null,
+														}}
+													/>
+
+													<div ref={wrapperRef} style={{ position: "relative" }}>
+														{showSuggestions && displayLocations?.length > 0 && (
+															<Paper
+																style={{
+																	maxHeight: 200,
+																	overflowY: "auto",
+																	position: "absolute",
+																	zIndex: 10,
+																	width: "100%",
+																}}
+															>
+																<List>
+																	{displayLocations.map((location: Location) => {
+																		const selectedDisplay = `${location.loc_ID}, ${location.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
+																		const isSelected =
+																			Array.isArray(values.locationId) &&
+																			(values.locationId as string[]).includes(
+																				location.loc_ID
+																			);
+
+																		return (
+																			<ListItem
+																				key={location.loc_ID}
+																				component="li"
+																				onClick={() => {
+																					setShowSuggestions(false);
+																					setSearchKey("");
+
+																					if (!isSelected) {
+																						setFieldValue("locationId", [
+																							...(values.locationId || []),
+																							location.loc_ID,
+																						]);
+																						if (
+																							!values.locationId ||
+																							values.locationId.length === 0
+																						) {
+																							setFieldValue("timeZone", location.time_zone);
+																						}
+																					}
+																				}}
+																				sx={{
+																					cursor: "pointer",
+																					backgroundColor: isSelected
+																						? "#f0f0f0"
+																						: "transparent",
+																				}}
+																			>
+																				<span style={{ fontSize: "13px" }}>
+																					{selectedDisplay}
+																				</span>
+																			</ListItem>
+																		);
+																	})}
+																</List>
+															</Paper>
+														)}
+													</div>
+
+													{/* Display selected chips with full location info */}
+													<Box mt={1} display="flex" flexWrap="wrap" gap={1}>
+														{Array.isArray(values.locationId) &&
+															values.locationId.map((locId: string) => {
+																const location = displayLocations.find(
+																	(loc: Location) => loc.loc_ID === locId
+																);
+																const label = location
+																	? `${location.loc_ID}, ${location.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`
+																	: locId;
+
+																return (
+																	<Chip
+																		key={locId}
+																		label={label}
+																		onDelete={() => {
+																			const updated = (values.locationId || []).filter(
+																				(id) => id !== locId
+																			);
+																			setFieldValue("locationId", updated);
+																		}}
+																		size="small"
+																	/>
+																);
+															})}
+													</Box>
+												</Grid>
+
+												<Grid item xs={12} sm={6} md={2.4}>
+													<TextField
+														fullWidth
+														label="Time Zone*"
+														name="timeZone"
+														value={values.timeZone}
+														onChange={handleChange}
+														onBlur={handleBlur}
+														// error={touched.timeZone && Boolean(errors.timeZone)}
+														// helperText={touched.timeZone && errors.timeZone}
+														size="small"
+													/>
+												</Grid>
+												<Grid item xs={12}>
+													<FormControlLabel
+														control={
+															<Checkbox
+																checked={values.unlimitedUsage}
+																onChange={(e) => {
+																	const checked = e.target.checked;
+																	setFieldValue("unlimitedUsage", checked);
+																	if (checked) {
+																		setFieldValue("individualResources", null);
+																		setFieldValue("individualResources", "");
+																	}
+																}}
+															/>
+														}
+														label="Unlimited Usage"
+													/>
+												</Grid>
+
+												{!values.unlimitedUsage && (
+													<Grid item xs={12} sm={6} md={2.4}>
+														<TextField
+															fullWidth
+															label="Individual Resources*"
+															name="individualResources"
+															type="number"
+															value={
+																!values.unlimitedUsage ? values.individualResources : ""
+															}
+															onChange={(e) => {
+																const inputValue = e.target.value;
+																const numericValue = Number(inputValue);
+
+																if (numericValue > 0 || inputValue === "") {
+																	setFieldValue(
+																		"individualResources",
+																		inputValue ? numericValue : ""
+																	);
+																}
+															}}
+															onBlur={handleBlur}
+															size="small"
+															error={
+																!values.unlimitedUsage &&
+																touched.individualResources &&
+																Boolean(errors.individualResources)
+															}
+															helperText={
+																!values.unlimitedUsage &&
+																touched.individualResources &&
+																errors.individualResources
+															}
+														/>
+													</Grid>
+												)}
+											</Grid>
+
+											{/* Transportation Details */}
+											<Typography variant="h6" mt={3} mb={1}>
+												2. Transportation Details
+											</Typography>
+											<Grid container spacing={2}>
+												<Grid item xs={12} sm={6} md={2.4}>
+													<TextField
+														fullWidth
+														size="small"
+														label="Validity From*"
+														name="validityFrom"
+														type="date"
+														value={values.validityFrom}
+														onChange={handleChange}
+														onBlur={handleBlur}
+														error={touched.validityFrom && Boolean(errors.validityFrom)}
+														helperText={touched.validityFrom && errors.validityFrom}
+														InputLabelProps={{ shrink: true }}
+														inputProps={{
+															max: new Date().toISOString().split("T")[0],
+														}}
+													/>
+												</Grid>
+												<Grid item xs={12} sm={6} md={2.4}>
+													<TextField
+														fullWidth
+														size="small"
+														label="Validity To*"
+														name="validityTo"
+														type="date"
+														value={values.validityTo}
+														onChange={handleChange}
+														onBlur={handleBlur}
+														error={touched.validityTo && Boolean(errors.validityTo)}
+														helperText={touched.validityTo && errors.validityTo}
+														InputLabelProps={{ shrink: true }}
+														inputProps={{
+															min: new Date().toISOString().split("T")[0],
+														}}
+													/>
+												</Grid>
+												<Grid item xs={12} sm={6} md={2.4}>
+													<TextField
+														fullWidth
+														label="Vehicle Type "
+														name="vehicleType"
+														value={values.vehicleType}
+														onChange={handleChange}
+														onBlur={handleBlur}
+														error={touched.vehicleType && Boolean(errors.vehicleType)}
+														helperText={touched.vehicleType && errors.vehicleType}
+														size="small"
+														select
 													>
-														<span style={{ fontSize: "13px" }}>
-															{selectedDisplay}
-														</span>
-													</ListItem>
-												);
-											})}
-										</List>
-									</Paper>
-								)}
-							</div>
+														<MenuItem value="Truck">Truck</MenuItem>
+														<MenuItem value="Truck">Van</MenuItem>
+														<MenuItem value="Trailer">Trailer</MenuItem>
+														<MenuItem value="Container">Container</MenuItem>
+													</TextField>
+												</Grid>
+												<Grid item xs={12} sm={6} md={2.4}>
+													<TextField
+														fullWidth
+														label="Vehicle Group*"
+														name="vehicleGroup"
+														value={values.vehicleGroup}
+														onChange={handleChange}
+														onBlur={handleBlur}
+														error={touched.vehicleGroup && Boolean(errors.vehicleGroup)}
+														helperText={touched.vehicleGroup && errors.vehicleGroup}
+														size="small"
+													/>
+												</Grid>
+												<Grid item xs={12} sm={6} md={2.4}>
+													<TextField
+														fullWidth
+														select
+														label="Ownership*"
+														name="ownership"
+														value={values.ownership}
+														onChange={handleChange}
+														onBlur={handleBlur}
+														error={touched.ownership && Boolean(errors.ownership)}
+														helperText={touched.ownership && errors.ownership}
+														size="small"
+													>
+														<MenuItem value="self">Self</MenuItem>
+														<MenuItem value="carrier">Carrier</MenuItem>
+													</TextField>
+												</Grid>
+											</Grid>
 
-							{/* Display selected chips with full location info */}
-							<Box mt={1} display="flex" flexWrap="wrap" gap={1}>
-								{Array.isArray(values.locationId) &&
-									values.locationId.map((locId: string) => {
-										const location = displayLocations.find(
-											(loc: Location) => loc.loc_ID === locId
-										);
-										const label = location
-											? `${location.loc_ID}, ${location.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`
-											: locId;
+											{/* Capacity */}
+											<Typography variant="h6" mt={3} mb={1}>
+												3. Capacity
+											</Typography>
+											<Grid container spacing={2}>
+												<Grid item xs={12} sm={6} md={1.6}>
+													<TextField
+														fullWidth
+														label="Payload Weight*"
+														name="payloadWeight"
+														type="number"
+														value={values.payloadWeight}
+														// onChange={handleChange}
+														onChange={(e) => {
+															const inputValue = e.target.value;
+															const numericValue = Number(inputValue);
 
-										return (
-											<Chip
-												key={locId}
-												label={label}
-												onDelete={() => {
-													const updated = (values.locationId || []).filter(
-														(id) => id !== locId
-													);
-													setFieldValue("locationId", updated);
-												}}
-												size="small"
-											/>
-										);
-									})}
-							</Box>
-						</Grid>
+															if (numericValue > 0 || inputValue === "") {
+																handleChange(e);
+															}
+														}}
+														onBlur={handleBlur}
+														error={touched.payloadWeight && Boolean(errors.payloadWeight)}
+														helperText={touched.payloadWeight && errors.payloadWeight}
+														size="small"
+													/>
+												</Grid>
+												<Grid item xs={12} sm={6} md={0.8}>
+													<TextField
+														fullWidth
+														name="payloadWeightUnits"
+														select
+														onChange={handleChange}
+														onBlur={handleBlur}
+														value={values.payloadWeightUnits}
+														size="small"
+													>
+														{unitsofMeasurement.map((unit) => (
+															<MenuItem key={unit} value={unit}>
+																{unit}
+															</MenuItem>
+														))}
+													</TextField>
+												</Grid>
 
-						<Grid item xs={12} sm={6} md={2.4}>
-							<TextField
-								fullWidth
-								label="Time Zone*"
-								name="timeZone"
-								value={values.timeZone}
-								onChange={handleChange}
-								onBlur={handleBlur}
-								// error={touched.timeZone && Boolean(errors.timeZone)}
-								// helperText={touched.timeZone && errors.timeZone}
-								size="small"
-							/>
-						</Grid>
-						<Grid item xs={12}>
-							<FormControlLabel
-								control={
-									<Checkbox
-										checked={values.unlimitedUsage}
-										onChange={(e) => {
-											const checked = e.target.checked;
-											setFieldValue("unlimitedUsage", checked);
-											if (checked) {
-												setFieldValue("individualResources", null);
-												setFieldValue("individualResources", "");
-											}
-										}}
-									/>
-								}
-								label="Unlimited Usage"
-							/>
-						</Grid>
+												{/* Interior Length */}
+												<Grid item xs={12} sm={6} md={1.6}>
+													<TextField
+														fullWidth
+														label="Interior Length*"
+														name="interiorLength"
+														type="number"
+														value={values.interiorLength}
+														onChange={(e) => {
+															const inputValue = e.target.value;
+															const numericValue = Number(inputValue);
 
-						{!values.unlimitedUsage && (
-							<Grid item xs={12} sm={6} md={2.4}>
-								<TextField
-									fullWidth
-									label="Individual Resources*"
-									name="individualResources"
-									type="number"
-									value={
-										!values.unlimitedUsage ? values.individualResources : ""
-									}
-									onChange={(e) => {
-										const inputValue = e.target.value;
-										const numericValue = Number(inputValue);
+															if (numericValue > 0 || inputValue === "") {
+																handleChange(e);
+															}
+														}}
+														onBlur={handleBlur}
+														error={touched.interiorLength && Boolean(errors.interiorLength)}
+														helperText={touched.interiorLength && errors.interiorLength}
+														size="small"
+													/>
+												</Grid>
+												<Grid item xs={12} sm={6} md={0.8}>
+													<TextField
+														fullWidth
+														select
+														onBlur={handleBlur}
+														name="interiorLengthUnits"
+														value={values.interiorLengthUnits || ""}
+														onChange={handleUnitChange}
+														size="small"
+													>
+														{unitsofMeasurement.map((unit) => (
+															<MenuItem key={unit} value={unit}>
+																{unit}
+															</MenuItem>
+														))}
+													</TextField>
+												</Grid>
 
-										if (numericValue > 0 || inputValue === "") {
-											setFieldValue(
-												"individualResources",
-												inputValue ? numericValue : ""
-											);
-										}
-									}}
-									onBlur={handleBlur}
-									size="small"
-									error={
-										!values.unlimitedUsage &&
-										touched.individualResources &&
-										Boolean(errors.individualResources)
-									}
-									helperText={
-										!values.unlimitedUsage &&
-										touched.individualResources &&
-										errors.individualResources
-									}
-								/>
-							</Grid>
-						)}
-					</Grid>
+												{/* Interior Width */}
+												<Grid item xs={12} sm={6} md={1.6}>
+													<TextField
+														fullWidth
+														label="Interior Width*"
+														name="interiorWidth"
+														type="number"
+														value={values.interiorWidth}
+														onChange={(e) => {
+															const inputValue = e.target.value;
+															const numericValue = Number(inputValue);
 
-					{/* Transportation Details */}
-					<Typography variant="h6" mt={3} mb={1}>
-						2. Transportation Details
-					</Typography>
-					<Grid container spacing={2}>
-						<Grid item xs={12} sm={6} md={2.4}>
-							<TextField
-								fullWidth
-								size="small"
-								label="Validity From*"
-								name="validityFrom"
-								type="date"
-								value={values.validityFrom}
-								onChange={handleChange}
-								onBlur={handleBlur}
-								error={touched.validityFrom && Boolean(errors.validityFrom)}
-								helperText={touched.validityFrom && errors.validityFrom}
-								InputLabelProps={{ shrink: true }}
-								inputProps={{
-									max: new Date().toISOString().split("T")[0],
-								}}
-							/>
-						</Grid>
-						<Grid item xs={12} sm={6} md={2.4}>
-							<TextField
-								fullWidth
-								size="small"
-								label="Validity To*"
-								name="validityTo"
-								type="date"
-								value={values.validityTo}
-								onChange={handleChange}
-								onBlur={handleBlur}
-								error={touched.validityTo && Boolean(errors.validityTo)}
-								helperText={touched.validityTo && errors.validityTo}
-								InputLabelProps={{ shrink: true }}
-								inputProps={{
-									min: new Date().toISOString().split("T")[0],
-								}}
-							/>
-						</Grid>
-						<Grid item xs={12} sm={6} md={2.4}>
-							<TextField
-								fullWidth
-								label="Vehicle Type "
-								name="vehicleType"
-								value={values.vehicleType}
-								onChange={handleChange}
-								onBlur={handleBlur}
-								error={touched.vehicleType && Boolean(errors.vehicleType)}
-								helperText={touched.vehicleType && errors.vehicleType}
-								size="small"
-								select
-							>
-								<MenuItem value="Truck">Truck</MenuItem>
-								<MenuItem value="Truck">Van</MenuItem>
-								<MenuItem value="Trailer">Trailer</MenuItem>
-								<MenuItem value="Container">Container</MenuItem>
-							</TextField>
-						</Grid>
-						<Grid item xs={12} sm={6} md={2.4}>
-							<TextField
-								fullWidth
-								label="Vehicle Group*"
-								name="vehicleGroup"
-								value={values.vehicleGroup}
-								onChange={handleChange}
-								onBlur={handleBlur}
-								error={touched.vehicleGroup && Boolean(errors.vehicleGroup)}
-								helperText={touched.vehicleGroup && errors.vehicleGroup}
-								size="small"
-							/>
-						</Grid>
-						<Grid item xs={12} sm={6} md={2.4}>
-							<TextField
-								fullWidth
-								select
-								label="Ownership*"
-								name="ownership"
-								value={values.ownership}
-								onChange={handleChange}
-								onBlur={handleBlur}
-								error={touched.ownership && Boolean(errors.ownership)}
-								helperText={touched.ownership && errors.ownership}
-								size="small"
-							>
-								<MenuItem value="self">Self</MenuItem>
-								<MenuItem value="carrier">Carrier</MenuItem>
-							</TextField>
-						</Grid>
-					</Grid>
+															if (numericValue > 0 || inputValue === "") {
+																handleChange(e);
+															}
+														}}
+														onBlur={handleBlur}
+														error={touched.interiorWidth && Boolean(errors.interiorWidth)}
+														helperText={touched.interiorWidth && errors.interiorWidth}
+														size="small"
+													/>
+												</Grid>
+												<Grid item xs={12} sm={6} md={0.8}>
+													<TextField
+														fullWidth
+														select
+														onBlur={handleBlur}
+														name="interiorWidthUnits"
+														value={values.interiorWidthUnits || ""}
+														onChange={handleUnitChange}
+														size="small"
+													>
+														{unitsofMeasurement.map((unit) => (
+															<MenuItem key={unit} value={unit}>
+																{unit}
+															</MenuItem>
+														))}
+													</TextField>
+												</Grid>
 
-					{/* Capacity */}
-					<Typography variant="h6" mt={3} mb={1}>
-						3. Capacity
-					</Typography>
-					<Grid container spacing={2}>
-						<Grid item xs={12} sm={6} md={1.6}>
-							<TextField
-								fullWidth
-								label="Payload Weight*"
-								name="payloadWeight"
-								type="number"
-								value={values.payloadWeight}
-								// onChange={handleChange}
-								onChange={(e) => {
-									const inputValue = e.target.value;
-									const numericValue = Number(inputValue);
+												{/* Interior Height */}
+												<Grid item xs={12} sm={6} md={1.6}>
+													<TextField
+														fullWidth
+														label="Interior Height*"
+														name="interiorHeight"
+														type="number"
+														value={values.interiorHeight}
+														onChange={(e) => {
+															const inputValue = e.target.value;
+															const numericValue = Number(inputValue);
 
-									if (numericValue > 0 || inputValue === "") {
-										handleChange(e);
-									}
-								}}
-								onBlur={handleBlur}
-								error={touched.payloadWeight && Boolean(errors.payloadWeight)}
-								helperText={touched.payloadWeight && errors.payloadWeight}
-								size="small"
-							/>
-						</Grid>
-						<Grid item xs={12} sm={6} md={0.8}>
-							<TextField
-								fullWidth
-								name="payloadWeightUnits"
-								select
-								onChange={handleChange}
-								onBlur={handleBlur}
-								value={values.payloadWeightUnits}
-								size="small"
-							>
-								{unitsofMeasurement.map((unit) => (
-									<MenuItem key={unit} value={unit}>
-										{unit}
-									</MenuItem>
-								))}
-							</TextField>
-						</Grid>
+															if (numericValue > 0 || inputValue === "") {
+																handleChange(e);
+															}
+														}}
+														onBlur={handleBlur}
+														error={touched.interiorHeight && Boolean(errors.interiorHeight)}
+														helperText={touched.interiorHeight && errors.interiorHeight}
+														size="small"
+													/>
+												</Grid>
+												<Grid item xs={12} sm={6} md={0.8}>
+													<TextField
+														fullWidth
+														select
+														onBlur={handleBlur}
+														name="interiorHeightUnits"
+														value={values.interiorHeightUnits || ""}
+														onChange={handleUnitChange}
+														size="small"
+													>
+														{unitsofMeasurement.map((unit) => (
+															<MenuItem key={unit} value={unit}>
+																{unit}
+															</MenuItem>
+														))}
+													</TextField>
+												</Grid>
+												{/* Cubic Capacity */}
+												<Grid item xs={12} sm={6} md={1.6}>
+													<TextField
+														fullWidth
+														label="Tare Volume*"
+														name="tareVolume"
+														type="number"
+														disabled
+														value={
+															Number(values.interiorLength || 1) *
+															Number(values.interiorWidth || 1) *
+															Number(values.interiorHeight || 1)
+														}
+														size="small"
+													/>
+												</Grid>
 
-						{/* Interior Length */}
-						<Grid item xs={12} sm={6} md={1.6}>
-							<TextField
-								fullWidth
-								label="Interior Length*"
-								name="interiorLength"
-								type="number"
-								value={values.interiorLength}
-								onChange={(e) => {
-									const inputValue = e.target.value;
-									const numericValue = Number(inputValue);
+												<Grid item xs={12} sm={6} md={0.8}>
+													<TextField
+														disabled
+														fullWidth
+														name="cubicCapacityUnits"
+														value={values.cubicCapacityUnits}
+														onChange={handleUnitChange}
+														size="small"
+													></TextField>
+												</Grid>
+											</Grid>
 
-									if (numericValue > 0 || inputValue === "") {
-										handleChange(e);
-									}
-								}}
-								onBlur={handleBlur}
-								error={touched.interiorLength && Boolean(errors.interiorLength)}
-								helperText={touched.interiorLength && errors.interiorLength}
-								size="small"
-							/>
-						</Grid>
-						<Grid item xs={12} sm={6} md={0.8}>
-							<TextField
-								fullWidth
-								select
-								onBlur={handleBlur}
-								name="interiorLengthUnits"
-								value={values.interiorLengthUnits || ""}
-								onChange={handleUnitChange}
-								size="small"
-							>
-								{unitsofMeasurement.map((unit) => (
-									<MenuItem key={unit} value={unit}>
-										{unit}
-									</MenuItem>
-								))}
-							</TextField>
-						</Grid>
+											{/* Physical Properties */}
+											<Typography variant="h6" mt={3} mb={1}>
+												4. Physical Properties
+											</Typography>
+											<Grid container spacing={2}>
+												{/* Max. Gross Weight */}
+												<Grid item xs={12} sm={6} md={1.6}>
+													<TextField
+														fullWidth
+														label="Max. Gross Weight*"
+														name="maxGrossWeight"
+														type="number"
+														value={values.maxGrossWeight}
+														onChange={(e) => {
+															const inputValue = e.target.value;
+															const numericValue = Number(inputValue);
 
-						{/* Interior Width */}
-						<Grid item xs={12} sm={6} md={1.6}>
-							<TextField
-								fullWidth
-								label="Interior Width*"
-								name="interiorWidth"
-								type="number"
-								value={values.interiorWidth}
-								onChange={(e) => {
-									const inputValue = e.target.value;
-									const numericValue = Number(inputValue);
+															if (numericValue > 0 || inputValue === "") {
+																handleChange(e);
+															}
+														}}
+														onBlur={handleBlur}
+														error={touched.maxGrossWeight && Boolean(errors.maxGrossWeight)}
+														helperText={touched.maxGrossWeight && errors.maxGrossWeight}
+														size="small"
+													/>
+												</Grid>
+												<Grid item xs={12} sm={6} md={0.8}>
+													<TextField
+														fullWidth
+														select
+														onBlur={handleBlur}
+														name="maxGrossWeightUnits"
+														value={values.maxGrossWeightUnits || ""}
+														onChange={handleChange}
+														size="small"
+													>
+														{unitsofMeasurement.map((unit) => (
+															<MenuItem key={unit} value={unit}>
+																{unit}
+															</MenuItem>
+														))}
+													</TextField>
+												</Grid>
 
-									if (numericValue > 0 || inputValue === "") {
-										handleChange(e);
-									}
-								}}
-								onBlur={handleBlur}
-								error={touched.interiorWidth && Boolean(errors.interiorWidth)}
-								helperText={touched.interiorWidth && errors.interiorWidth}
-								size="small"
-							/>
-						</Grid>
-						<Grid item xs={12} sm={6} md={0.8}>
-							<TextField
-								fullWidth
-								select
-								onBlur={handleBlur}
-								name="interiorWidthUnits"
-								value={values.interiorWidthUnits || ""}
-								onChange={handleUnitChange}
-								size="small"
-							>
-								{unitsofMeasurement.map((unit) => (
-									<MenuItem key={unit} value={unit}>
-										{unit}
-									</MenuItem>
-								))}
-							</TextField>
-						</Grid>
+												{/* Tare Weight */}
+												<Grid item xs={12} sm={6} md={1.6}>
+													<TextField
+														fullWidth
+														label="Tare Weight*"
+														name="tareWeight"
+														type="number"
+														value={values.tareWeight}
+														onChange={(e) => {
+															const inputValue = e.target.value;
+															const numericValue = Number(inputValue);
 
-						{/* Interior Height */}
-						<Grid item xs={12} sm={6} md={1.6}>
-							<TextField
-								fullWidth
-								label="Interior Height*"
-								name="interiorHeight"
-								type="number"
-								value={values.interiorHeight}
-								onChange={(e) => {
-									const inputValue = e.target.value;
-									const numericValue = Number(inputValue);
+															if (numericValue > 0 || inputValue === "") {
+																handleChange(e);
+															}
+														}}
+														onBlur={handleBlur}
+														error={touched.tareWeight && Boolean(errors.tareWeight)}
+														helperText={touched.tareWeight && errors.tareWeight}
+														size="small"
+													/>
+												</Grid>
+												<Grid item xs={12} sm={6} md={0.8}>
+													<TextField
+														fullWidth
+														select
+														onBlur={handleBlur}
+														name="tareWeightUnits"
+														value={values.tareWeightUnits || ""}
+														onChange={handleChange}
+														size="small"
+													>
+														{unitsofMeasurement.map((unit) => (
+															<MenuItem key={unit} value={unit}>
+																{unit}
+															</MenuItem>
+														))}
+													</TextField>
+												</Grid>
 
-									if (numericValue > 0 || inputValue === "") {
-										handleChange(e);
-									}
-								}}
-								onBlur={handleBlur}
-								error={touched.interiorHeight && Boolean(errors.interiorHeight)}
-								helperText={touched.interiorHeight && errors.interiorHeight}
-								size="small"
-							/>
-						</Grid>
-						<Grid item xs={12} sm={6} md={0.8}>
-							<TextField
-								fullWidth
-								select
-								onBlur={handleBlur}
-								name="interiorHeightUnits"
-								value={values.interiorHeightUnits || ""}
-								onChange={handleUnitChange}
-								size="small"
-							>
-								{unitsofMeasurement.map((unit) => (
-									<MenuItem key={unit} value={unit}>
-										{unit}
-									</MenuItem>
-								))}
-							</TextField>
-						</Grid>
-						{/* Cubic Capacity */}
-						<Grid item xs={12} sm={6} md={1.6}>
-							<TextField
-								fullWidth
-								label="Tare Volume*"
-								name="tareVolume"
-								type="number"
-								disabled
-								value={
-									Number(values.interiorLength || 1) *
-									Number(values.interiorWidth || 1) *
-									Number(values.interiorHeight || 1)
-								}
-								size="small"
-							/>
-						</Grid>
+												{/* Max. Length */}
+												<Grid item xs={12} sm={6} md={1.6}>
+													<TextField
+														fullWidth
+														label="Max. Length*"
+														name="maxLength"
+														type="number"
+														value={values.maxLength}
+														// onChange={handleChange}
+														onChange={(e) => {
+															const inputValue = e.target.value;
+															const numericValue = Number(inputValue);
 
-						<Grid item xs={12} sm={6} md={0.8}>
-							<TextField
-								disabled
-								fullWidth
-								name="cubicCapacityUnits"
-								value={values.cubicCapacityUnits}
-								onChange={handleUnitChange}
-								size="small"
-							></TextField>
-						</Grid>
-					</Grid>
+															if (numericValue > 0 || inputValue === "") {
+																handleChange(e);
+															}
+														}}
+														onBlur={handleBlur}
+														error={touched.maxLength && Boolean(errors.maxLength)}
+														helperText={touched.maxLength && errors.maxLength}
+														size="small"
+													/>
+												</Grid>
+												<Grid item xs={12} sm={6} md={0.8}>
+													<TextField
+														fullWidth
+														select
+														onBlur={handleBlur}
+														name="maxLengthUnits"
+														value={values.maxLengthUnits || ""}
+														onChange={handleTareChange}
+														size="small"
+													>
+														{unitsofMeasurement.map((unit) => (
+															<MenuItem key={unit} value={unit}>
+																{unit}
+															</MenuItem>
+														))}
+													</TextField>
+												</Grid>
 
-					{/* Physical Properties */}
-					<Typography variant="h6" mt={3} mb={1}>
-						4. Physical Properties
-					</Typography>
-					<Grid container spacing={2}>
-						{/* Max. Gross Weight */}
-						<Grid item xs={12} sm={6} md={1.6}>
-							<TextField
-								fullWidth
-								label="Max. Gross Weight*"
-								name="maxGrossWeight"
-								type="number"
-								value={values.maxGrossWeight}
-								onChange={(e) => {
-									const inputValue = e.target.value;
-									const numericValue = Number(inputValue);
+												{/* Max. Width */}
+												<Grid item xs={12} sm={6} md={1.6}>
+													<TextField
+														fullWidth
+														label="Max. Width*"
+														name="maxWidth"
+														type="number"
+														value={values.maxWidth}
+														onChange={(e) => {
+															const inputValue = e.target.value;
+															const numericValue = Number(inputValue);
 
-									if (numericValue > 0 || inputValue === "") {
-										handleChange(e);
-									}
-								}}
-								onBlur={handleBlur}
-								error={touched.maxGrossWeight && Boolean(errors.maxGrossWeight)}
-								helperText={touched.maxGrossWeight && errors.maxGrossWeight}
-								size="small"
-							/>
-						</Grid>
-						<Grid item xs={12} sm={6} md={0.8}>
-							<TextField
-								fullWidth
-								select
-								onBlur={handleBlur}
-								name="maxGrossWeightUnits"
-								value={values.maxGrossWeightUnits || ""}
-								onChange={handleChange}
-								size="small"
-							>
-								{unitsofMeasurement.map((unit) => (
-									<MenuItem key={unit} value={unit}>
-										{unit}
-									</MenuItem>
-								))}
-							</TextField>
-						</Grid>
+															if (numericValue > 0 || inputValue === "") {
+																handleChange(e);
+															}
+														}}
+														onBlur={handleBlur}
+														error={touched.maxWidth && Boolean(errors.maxWidth)}
+														helperText={touched.maxWidth && errors.maxWidth}
+														size="small"
+													/>
+												</Grid>
+												<Grid item xs={12} sm={6} md={0.8}>
+													<TextField
+														fullWidth
+														select
+														onBlur={handleBlur}
+														name="maxWidthUnits"
+														value={values.maxWidthUnits || ""}
+														onChange={handleTareChange}
+														size="small"
+													>
+														{unitsofMeasurement.map((unit) => (
+															<MenuItem key={unit} value={unit}>
+																{unit}
+															</MenuItem>
+														))}
+													</TextField>
+												</Grid>
 
-						{/* Tare Weight */}
-						<Grid item xs={12} sm={6} md={1.6}>
-							<TextField
-								fullWidth
-								label="Tare Weight*"
-								name="tareWeight"
-								type="number"
-								value={values.tareWeight}
-								onChange={(e) => {
-									const inputValue = e.target.value;
-									const numericValue = Number(inputValue);
+												{/* Max. Height */}
+												<Grid item xs={12} sm={6} md={1.6}>
+													<TextField
+														fullWidth
+														label="Max. Height*"
+														name="maxHeight"
+														type="number"
+														value={values.maxHeight}
+														onChange={(e) => {
+															const inputValue = e.target.value;
+															const numericValue = Number(inputValue);
 
-									if (numericValue > 0 || inputValue === "") {
-										handleChange(e);
-									}
-								}}
-								onBlur={handleBlur}
-								error={touched.tareWeight && Boolean(errors.tareWeight)}
-								helperText={touched.tareWeight && errors.tareWeight}
-								size="small"
-							/>
-						</Grid>
-						<Grid item xs={12} sm={6} md={0.8}>
-							<TextField
-								fullWidth
-								select
-								onBlur={handleBlur}
-								name="tareWeightUnits"
-								value={values.tareWeightUnits || ""}
-								onChange={handleChange}
-								size="small"
-							>
-								{unitsofMeasurement.map((unit) => (
-									<MenuItem key={unit} value={unit}>
-										{unit}
-									</MenuItem>
-								))}
-							</TextField>
-						</Grid>
+															if (numericValue > 0 || inputValue === "") {
+																handleChange(e);
+															}
+														}}
+														onBlur={handleBlur}
+														error={touched.maxHeight && Boolean(errors.maxHeight)}
+														helperText={touched.maxHeight && errors.maxHeight}
+														size="small"
+													/>
+												</Grid>
+												<Grid item xs={12} sm={6} md={0.8}>
+													<TextField
+														fullWidth
+														select
+														onBlur={handleBlur}
+														name="maxHeightUnits"
+														value={values.maxHeightUnits || ""}
+														onChange={handleTareChange}
+														size="small"
+													>
+														{unitsofMeasurement.map((unit) => (
+															<MenuItem key={unit} value={unit}>
+																{unit}
+															</MenuItem>
+														))}
+													</TextField>
+												</Grid>
 
-						{/* Max. Length */}
-						<Grid item xs={12} sm={6} md={1.6}>
-							<TextField
-								fullWidth
-								label="Max. Length*"
-								name="maxLength"
-								type="number"
-								value={values.maxLength}
-								// onChange={handleChange}
-								onChange={(e) => {
-									const inputValue = e.target.value;
-									const numericValue = Number(inputValue);
+												{/* Tare Volume */}
+												<Grid item xs={12} sm={6} md={1.6}>
+													<TextField
+														fullWidth
+														label="Tare Volume*"
+														name="tareVolume"
+														type="number"
+														disabled
+														value={
+															Number(values.maxLength || 1) *
+															Number(values.maxWidth || 1) *
+															Number(values.maxHeight || 1)
+														}
+														size="small"
+													/>
+												</Grid>
+												<Grid item xs={12} sm={6} md={0.8}>
+													<TextField
+														fullWidth
+														onBlur={handleBlur}
+														name="tareVolumeUnits"
+														disabled
+														value={values.tareVolumeUnits || ""}
+														onChange={handleTareChange}
+														size="small"
+													></TextField>
+												</Grid>
+											</Grid>
 
-									if (numericValue > 0 || inputValue === "") {
-										handleChange(e);
-									}
-								}}
-								onBlur={handleBlur}
-								error={touched.maxLength && Boolean(errors.maxLength)}
-								helperText={touched.maxLength && errors.maxLength}
-								size="small"
-							/>
-						</Grid>
-						<Grid item xs={12} sm={6} md={0.8}>
-							<TextField
-								fullWidth
-								select
-								onBlur={handleBlur}
-								name="maxLengthUnits"
-								value={values.maxLengthUnits || ""}
-								onChange={handleTareChange}
-								size="small"
-							>
-								{unitsofMeasurement.map((unit) => (
-									<MenuItem key={unit} value={unit}>
-										{unit}
-									</MenuItem>
-								))}
-							</TextField>
-						</Grid>
+											{/* Downtimes */}
+											<Typography variant="h6" mt={3} mb={1}>
+												5. Downtimes
+											</Typography>
+											<Grid container spacing={2}>
+												<Grid item xs={12} sm={6} md={2.4}>
+													<TextField
+														fullWidth
+														size="small"
+														label="Start From"
+														name="downtimeStart"
+														type="date"
+														value={values.downtimeStart}
+														onChange={handleChange}
+														onBlur={handleBlur}
+														InputLabelProps={{ shrink: true }}
+														inputProps={{
+															min: new Date().toISOString().split("T")[0],
+														}}
+													/>
+												</Grid>
 
-						{/* Max. Width */}
-						<Grid item xs={12} sm={6} md={1.6}>
-							<TextField
-								fullWidth
-								label="Max. Width*"
-								name="maxWidth"
-								type="number"
-								value={values.maxWidth}
-								onChange={(e) => {
-									const inputValue = e.target.value;
-									const numericValue = Number(inputValue);
+												<Grid item xs={12} sm={6} md={2.4}>
+													<TextField
+														fullWidth
+														size="small"
+														label="Ends at"
+														name="downtimeEnd"
+														type="date"
+														value={values.downtimeEnd}
+														onChange={handleChange}
+														onBlur={handleBlur}
+														InputLabelProps={{ shrink: true }}
+														inputProps={{
+															min: new Date().toISOString().split("T")[0],
+														}}
+													/>
+												</Grid>
 
-									if (numericValue > 0 || inputValue === "") {
-										handleChange(e);
-									}
-								}}
-								onBlur={handleBlur}
-								error={touched.maxWidth && Boolean(errors.maxWidth)}
-								helperText={touched.maxWidth && errors.maxWidth}
-								size="small"
-							/>
-						</Grid>
-						<Grid item xs={12} sm={6} md={0.8}>
-							<TextField
-								fullWidth
-								select
-								onBlur={handleBlur}
-								name="maxWidthUnits"
-								value={values.maxWidthUnits || ""}
-								onChange={handleTareChange}
-								size="small"
-							>
-								{unitsofMeasurement.map((unit) => (
-									<MenuItem key={unit} value={unit}>
-										{unit}
-									</MenuItem>
-								))}
-							</TextField>
-						</Grid>
+												<Grid item xs={12} sm={6} md={2.4}>
+													<TextField
+														fullWidth
+														label="Location"
+														name="downtimeLocation"
+														value={values.downtimeLocation}
+														onChange={handleChange}
+														onBlur={handleBlur}
+														size="small"
+													/>
+												</Grid>
+												<Grid item xs={12} sm={6} md={2.4}>
+													<TextField
+														fullWidth
+														label="Description"
+														name="downtimeDescription"
+														value={values.downtimeDescription}
+														onChange={handleChange}
+														onBlur={handleBlur}
+														size="small"
+													/>
+												</Grid>
 
-						{/* Max. Height */}
-						<Grid item xs={12} sm={6} md={1.6}>
-							<TextField
-								fullWidth
-								label="Max. Height*"
-								name="maxHeight"
-								type="number"
-								value={values.maxHeight}
-								onChange={(e) => {
-									const inputValue = e.target.value;
-									const numericValue = Number(inputValue);
+												{/* Reason */}
+												<Grid item xs={12} sm={6} md={2.4}>
+													<TextField
+														fullWidth
+														// select
+														label="Reason"
+														name="downtimeReason"
+														value={values.downtimeReason}
+														onChange={handleChange}
+														onBlur={handleBlur}
+														size="small"
+													></TextField>
+												</Grid>
+											</Grid>
 
-									if (numericValue > 0 || inputValue === "") {
-										handleChange(e);
-									}
-								}}
-								onBlur={handleBlur}
-								error={touched.maxHeight && Boolean(errors.maxHeight)}
-								helperText={touched.maxHeight && errors.maxHeight}
-								size="small"
-							/>
-						</Grid>
-						<Grid item xs={12} sm={6} md={0.8}>
-							<TextField
-								fullWidth
-								select
-								onBlur={handleBlur}
-								name="maxHeightUnits"
-								value={values.maxHeightUnits || ""}
-								onChange={handleTareChange}
-								size="small"
-							>
-								{unitsofMeasurement.map((unit) => (
-									<MenuItem key={unit} value={unit}>
-										{unit}
-									</MenuItem>
-								))}
-							</TextField>
-						</Grid>
+											{/* Additional Details */}
+											<Typography variant="h5" mt={3}>
+												6. Additional Details
+											</Typography>
+											<Grid container spacing={2}>
+												<Grid item xs={12} sm={6} md={2.4}>
+													<TextField
+														fullWidth
+														label="PTPK*"
+														name="avgCost"
+														type="number"
+														value={values.avgCost}
+														onChange={(e) => {
+															const inputValue = e.target.value;
+															const numericValue = Number(inputValue);
 
-						{/* Tare Volume */}
-						<Grid item xs={12} sm={6} md={1.6}>
-							<TextField
-								fullWidth
-								label="Tare Volume*"
-								name="tareVolume"
-								type="number"
-								disabled
-								value={
-									Number(values.maxLength || 1) *
-									Number(values.maxWidth || 1) *
-									Number(values.maxHeight || 1)
-								}
-								size="small"
-							/>
-						</Grid>
-						<Grid item xs={12} sm={6} md={0.8}>
-							<TextField
-								fullWidth
-								onBlur={handleBlur}
-								name="tareVolumeUnits"
-								disabled
-								value={values.tareVolumeUnits || ""}
-								onChange={handleTareChange}
-								size="small"
-							></TextField>
-						</Grid>
-					</Grid>
+															if (numericValue > 0 || inputValue === "") {
+																handleChange(e);
+															}
+														}}
+														onBlur={handleBlur}
+														size="small"
+														error={touched.avgCost && Boolean(errors.avgCost)}
+														helperText={touched.avgCost && errors.avgCost}
+													/>
+												</Grid>
 
-					{/* Downtimes */}
-					<Typography variant="h6" mt={3} mb={1}>
-						5. Downtimes
-					</Typography>
-					<Grid container spacing={2}>
-						<Grid item xs={12} sm={6} md={2.4}>
-							<TextField
-								fullWidth
-								size="small"
-								label="Start From"
-								name="downtimeStart"
-								type="date"
-								value={values.downtimeStart}
-								onChange={handleChange}
-								onBlur={handleBlur}
-								InputLabelProps={{ shrink: true }}
-								inputProps={{
-									min: new Date().toISOString().split("T")[0],
-								}}
-							/>
-						</Grid>
+												<Grid item xs={12} md={2.4}>
+													<FormControlLabel
+														control={
+															<Checkbox
+																name="fragileGoods"
+																checked={values.fragileGoods}
+																onChange={(e) =>
+																	setFieldValue("fragileGoods", e.target.checked)
+																}
+															/>
+														}
+														label="Fragile Goods"
+													/>
+												</Grid>
+												<Grid item xs={12} md={2.4}>
+													<FormControlLabel
+														control={
+															<Checkbox
+																name="dangerousGoods"
+																checked={values.dangerousGoods}
+																onChange={(e) =>
+																	setFieldValue("dangerousGoods", e.target.checked)
+																}
+															/>
+														}
+														label="Dangerous Goods"
+													/>
+												</Grid>
+												<Grid item xs={12} md={2.4}>
+													<FormControlLabel
+														control={
+															<Checkbox
+																name="hazardousStorage"
+																checked={values.hazardousStorage}
+																onChange={(e) =>
+																	setFieldValue("hazardousStorage", e.target.checked)
+																}
+															/>
+														}
+														label="Hazardous Substance Storage"
+													/>
+												</Grid>
+												<Grid item xs={12} md={2.4}>
+													<FormControlLabel
+														control={
+															<Checkbox
+																name="temperatureControl"
+																checked={values.temperatureControl}
+																onChange={(e) =>
+																	setFieldValue("temperatureControl", e.target.checked)
+																}
+															/>
+														}
+														label="Temperature control"
+													/>
+												</Grid>
+											</Grid>
 
-						<Grid item xs={12} sm={6} md={2.4}>
-							<TextField
-								fullWidth
-								size="small"
-								label="Ends at"
-								name="downtimeEnd"
-								type="date"
-								value={values.downtimeEnd}
-								onChange={handleChange}
-								onBlur={handleBlur}
-								InputLabelProps={{ shrink: true }}
-								inputProps={{
-									min: new Date().toISOString().split("T")[0],
-								}}
-							/>
-						</Grid>
+											<Box mt={3} textAlign="center">
+												<Button
+													type="submit"
+													variant="contained"
+													sx={{
+														backgroundColor: "#F08C24",
+														color: "#fff",
+														"&:hover": {
+															backgroundColor: "#fff",
+															color: "#F08C24",
+														},
+													}}
+												// onClick={() => handleSubmit()}
+												>
+													{isEditing ? "Update vehicle" : "Create vehicle"}
+												</Button>
 
-						<Grid item xs={12} sm={6} md={2.4}>
-							<TextField
-								fullWidth
-								label="Location"
-								name="downtimeLocation"
-								value={values.downtimeLocation}
-								onChange={handleChange}
-								onBlur={handleBlur}
-								size="small"
-							/>
-						</Grid>
-						<Grid item xs={12} sm={6} md={2.4}>
-							<TextField
-								fullWidth
-								label="Description"
-								name="downtimeDescription"
-								value={values.downtimeDescription}
-								onChange={handleChange}
-								onBlur={handleBlur}
-								size="small"
-							/>
-						</Grid>
-
-						{/* Reason */}
-						<Grid item xs={12} sm={6} md={2.4}>
-							<TextField
-								fullWidth
-								// select
-								label="Reason"
-								name="downtimeReason"
-								value={values.downtimeReason}
-								onChange={handleChange}
-								onBlur={handleBlur}
-								size="small"
-							></TextField>
-						</Grid>
-					</Grid>
-
-					{/* Additional Details */}
-					<Typography variant="h5" mt={3}>
-						6. Additional Details
-					</Typography>
-					<Grid container spacing={2}>
-						<Grid item xs={12} sm={6} md={2.4}>
-							<TextField
-								fullWidth
-								label="PTPK*"
-								name="avgCost"
-								type="number"
-								value={values.avgCost}
-								onChange={(e) => {
-									const inputValue = e.target.value;
-									const numericValue = Number(inputValue);
-
-									if (numericValue > 0 || inputValue === "") {
-										handleChange(e);
-									}
-								}}
-								onBlur={handleBlur}
-								size="small"
-								error={touched.avgCost && Boolean(errors.avgCost)}
-								helperText={touched.avgCost && errors.avgCost}
-							/>
-						</Grid>
-
-						<Grid item xs={12} md={2.4}>
-							<FormControlLabel
-								control={
-									<Checkbox
-										name="fragileGoods"
-										checked={values.fragileGoods}
-										onChange={(e) =>
-											setFieldValue("fragileGoods", e.target.checked)
-										}
-									/>
-								}
-								label="Fragile Goods"
-							/>
-						</Grid>
-						<Grid item xs={12} md={2.4}>
-							<FormControlLabel
-								control={
-									<Checkbox
-										name="dangerousGoods"
-										checked={values.dangerousGoods}
-										onChange={(e) =>
-											setFieldValue("dangerousGoods", e.target.checked)
-										}
-									/>
-								}
-								label="Dangerous Goods"
-							/>
-						</Grid>
-						<Grid item xs={12} md={2.4}>
-							<FormControlLabel
-								control={
-									<Checkbox
-										name="hazardousStorage"
-										checked={values.hazardousStorage}
-										onChange={(e) =>
-											setFieldValue("hazardousStorage", e.target.checked)
-										}
-									/>
-								}
-								label="Hazardous Substance Storage"
-							/>
-						</Grid>
-						<Grid item xs={12} md={2.4}>
-							<FormControlLabel
-								control={
-									<Checkbox
-										name="temperatureControl"
-										checked={values.temperatureControl}
-										onChange={(e) =>
-											setFieldValue("temperatureControl", e.target.checked)
-										}
-									/>
-								}
-								label="Temperature control"
-							/>
-						</Grid>
-					</Grid>
-
-					<Box mt={3} textAlign="center">
-						<Button
-							type="submit"
-							variant="contained"
-							sx={{
-								backgroundColor: "#F08C24",
-								color: "#fff",
-								"&:hover": {
-									backgroundColor: "#fff",
-									color: "#F08C24",
-								},
+												<Button
+													variant="outlined"
+													color="secondary"
+													onClick={() => {
+														setInitialValues(initialFormValues);
+														setIsEditing(false);
+														setEditRow(null);
+														resetForm();
+														setSearchKey("");
+													}}
+													style={{ marginLeft: "10px" }}
+												>
+													Reset
+												</Button>
+											</Box>
+										</Grid>
+									</Form>
+								);
 							}}
-							// onClick={() => handleSubmit()}
-						>
-							{isEditing ? "Update vehicle" : "Create vehicle"}
-						</Button>
-
-						<Button
-							variant="outlined"
-							color="secondary"
-							onClick={() => {
-								setInitialValues(initialFormValues);
-								setIsEditing(false);
-								setEditRow(null);
-								resetForm();
-								setSearchKey("");
-							}}
-							style={{ marginLeft: "10px" }}
-						>
-							Reset
-						</Button>
-					</Box>
-				</Grid>
-			</Form>
-		); } }
 						</Formik>
 					</Box>
 				</Collapse>

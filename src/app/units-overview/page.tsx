@@ -1,15 +1,24 @@
 'use client'
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { DataGrid, GridCellParams, GridColDef } from '@mui/x-data-grid';
-import { Grid, Tooltip, Typography } from '@mui/material';
+import { Grid, Tooltip, Typography, MenuItem, TextField } from '@mui/material';
+import dayjs from 'dayjs';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+import isoWeek from 'dayjs/plugin/isoWeek';
 import DataGridSkeletonLoader from '@/Components/ReusableComponents/DataGridSkeletonLoader';
-import { useGetAllPackagesForOrderQuery, useGetLocationMasterQuery, useGetPackageMasterQuery } from '@/api/apiSlice';
+import { useGetAllPackagesForOrderQuery, useGetAllProductsQuery, useGetLocationMasterQuery, useGetPackageMasterQuery } from '@/api/apiSlice';
 import { Location } from '@/Components/MasterDataComponents/Locations';
+import moment from 'moment';
 
+dayjs.extend(isSameOrAfter);
+dayjs.extend(isSameOrBefore);
+dayjs.extend(isoWeek);
 
 export interface Product {
     prod_ID: string;
     quantity: number;
+    product_ID: string;
 }
 
 export interface AdditionalInfo {
@@ -42,20 +51,63 @@ export interface Package {
     tax_info: TaxInfo;
 }
 
-// interface PackagesTableProps {
-//     allPackagesData: Package[];
-//     isPackagesLoading: boolean;
-// }
-
 const PackagesTable = () => {
-    const { data: locationsData } = useGetLocationMasterQuery({})
-    const { data: packagesData } = useGetPackageMasterQuery({})
-    const { data: packagesOrderData, error: allProductsFectchingError, isLoading: isPackagesLoading } = useGetAllPackagesForOrderQuery([]);
-    if (allProductsFectchingError) {
-    }
+    const [dateFilter, setDateFilter] = useState<string>('All');
+
+    const { data: locationsData } = useGetLocationMasterQuery({});
+    const { data: packagesData } = useGetPackageMasterQuery({});
+    const { data: packagesOrderData, isLoading: isPackagesLoading } = useGetAllPackagesForOrderQuery([]);
+
     const allPackagesData = packagesOrderData?.packages || [];
-    const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
-    const getAllPackages = packagesData?.packages.length > 0 ? packagesData?.packages : []
+    const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : [];
+    const getAllPackages = packagesData?.packages.length > 0 ? packagesData?.packages : [];
+
+
+
+    const { data: productsData } = useGetAllProductsQuery({});
+    const allProductsData = productsData?.products || [];
+
+    const getLocationDescription = (loc_ID: string) => {
+        const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
+        if (!location) return 'Location details not available';
+        const details = [
+            location.loc_ID,
+            location.loc_desc,
+            location.address_1,
+            location.city,
+            location.state,
+            location.country,
+            location.pincode
+        ].filter(Boolean);
+        return details.length > 0 ? details.join(', ') : 'Location details not available';
+    };
+
+    const getPackageDetails = (pac_ID: string) => {
+        const packageInfo = getAllPackages.find((pkg: Package) => pkg.pac_ID === pac_ID);
+        if (!packageInfo) return 'Package details not available';
+        const details = [
+            packageInfo.packaging_type_name,
+            packageInfo.dimensions,
+            packageInfo.handling_unit_type
+        ].filter(Boolean);
+        return details.length > 0 ? details.join(', ') : 'Package details not available';
+    };
+
+    const getProductDetails = (productID: string) => {
+        const productInfo = allProductsData.find((product: Product) => product.product_ID === productID);
+        if (!productInfo) return 'Package details not available';
+        const details = [
+            productInfo.product_name,
+            productInfo.weight
+        ].filter(Boolean);
+        return details.length > 0 ? details.join('-') : 'Product details not available';
+    };
+
+    const formatPickupDateTime = (pickupDateTime: string) => {
+        return moment(pickupDateTime).format('MMM DD, YYYY h:mm A');
+    };
+
+
     const getLocationDetails = (loc_ID: string) => {
         const location = getAllLocations.find((loc: Location) => loc.loc_ID === loc_ID);
         if (!location) return "Location details not available";
@@ -70,20 +122,8 @@ const PackagesTable = () => {
 
         return details.length > 0 ? details.join(", ") : "Location details not available";
     };
-    const getPackageDetails = (pac_ID: string) => {
-        const packageInfo = getAllPackages.find((pkg: Package) => pkg.pac_ID === pac_ID);
 
-        if (!packageInfo) return "Package details not available";
 
-        const details = [
-            packageInfo.packaging_type_name,
-            packageInfo.dimensions,
-            packageInfo.handling_unit_type,
-
-        ].filter(Boolean);
-
-        return details.length > 0 ? details.join(", ") : "Package details not available";
-    };
     const columns: GridColDef[] = [
         { field: 'pack_ID', headerName: 'Package ID', width: 150 },
         {
@@ -133,17 +173,24 @@ const PackagesTable = () => {
         {
             field: 'product_details',
             headerName: 'Product Details',
-            width: 300,
+            width: 400,
             renderCell: (params: GridCellParams) => {
-                const products = params.value as { prod_ID: string; quantity: number }[];
+                const products = Array.isArray(params.value) ? params.value : [];
+                if (!products.length) return <div>No products</div>;
+
+                const productText = products
+                    .map((prod) => {
+                        const detail = getProductDetails(prod.prod_ID);
+                        return `${detail} (Qty: ${prod.quantity})`;
+                    })
+                    .join(', ');
+
                 return (
-                    <div>
-                        {products?.map((prod) => (
-                            <div key={prod.prod_ID}>{`${prod.prod_ID} (Qty: ${prod.quantity})`}</div>
-                        ))}
+                    <div style={{ whiteSpace: 'normal', wordWrap: 'break-word' }}>
+                        {productText}
                     </div>
                 );
-            },
+            }
         },
         {
             field: 'additional_info',
@@ -167,39 +214,79 @@ const PackagesTable = () => {
                 <Typography
                     sx={{
                         color: params.value === 'ordered' ? 'green' : '#F08C24', fontSize: '14px', marginTop: 2, fontWeight: 600
-
                     }}
                 >
                     {params.value === 'ordered' ? 'Order placed' : 'Not ordered'}
                 </Typography>
             ),
         },
-
-
     ];
 
     const rows = allPackagesData.map((pkg: Package) => ({
         id: pkg.pac_id,
         pack_ID: pkg.pack_ID,
-        ship_from: pkg.ship_from,
-        ship_to: pkg.ship_to,
-        package_info: pkg.package_info,
-        bill_to: pkg.bill_to,
+        ship_from: getLocationDescription(pkg.ship_from),
+        ship_to: getLocationDescription(pkg.ship_to),
+        package_info: getPackageDetails(pkg.package_info),
+        bill_to: getLocationDescription(pkg.bill_to),
         return_label: pkg.return_label,
-        pickup_date_time: pkg.pickup_date_time,
-        dropoff_date_time: pkg.dropoff_date_time,
+        pickup_date_time: formatPickupDateTime(pkg.pickup_date_time),
+        dropoff_date_time: formatPickupDateTime(pkg.dropoff_date_time),
         tax_rate: pkg.tax_info.tax_rate,
-        product_details: pkg.product_ID,
-        additional_info: pkg.additional_info,
-        package_status: pkg.package_status
+        product_details: pkg.product_ID ?? [],
+        additional_info: pkg.additional_info
     }));
+
+    // Filter rows based on dateFilter
+    const filteredRows = useMemo(() => {
+        if (dateFilter === 'All') return rows;
+        const today = dayjs();
+
+        return rows.filter((row: ReturnType<typeof rows[number]>) => {
+            const pickupDate = dayjs(row.pickup_date_time);
+            switch (dateFilter) {
+                case 'Today':
+                    return pickupDate.isSame(today, 'day');
+                case 'Yesterday':
+                    return pickupDate.isSame(today.subtract(1, 'day'), 'day');
+                case 'This Week':
+                    return pickupDate.isSame(today, 'week');
+                case 'This Month':
+                    return pickupDate.isSame(today, 'month');
+                case 'This Year':
+                    return pickupDate.isSame(today, 'year');
+                default:
+                    return true;
+            }
+        });
+    }, [rows, dateFilter]);
 
     return (
         <Grid sx={{ margin: 3 }}>
-            <Typography variant='h5' color='primary' sx={{   fontWeight: 'bold' }} >All Packages for order</Typography>
-            <Typography variant="body1" sx={{ mb: 2, color: 'gray', }}>
-                    This page displays all package units associated. You can view package details like shipping addresses, product contents, tax rates, pickup/drop-off timings, and more. Hover over values to see additional information from master data records.
-                </Typography>
+            <Grid container spacing={2} justifyContent="flex-end" sx={{ mb: 2 }}>
+                <Grid item xs={12} md={3}>
+                    <TextField
+                        size="small"
+                        fullWidth
+                        select
+                        label="Date Filter"
+                        value={dateFilter}
+                        onChange={(e) => setDateFilter(e.target.value)}
+                    >
+                        <MenuItem value="All">All</MenuItem>
+                        <MenuItem value="Today">Today</MenuItem>
+                        <MenuItem value="Yesterday">Yesterday</MenuItem>
+                        <MenuItem value="This Week">This Week</MenuItem>
+                        <MenuItem value="This Month">This Month</MenuItem>
+                        <MenuItem value="This Year">This Year</MenuItem>
+                    </TextField>
+                </Grid>
+            </Grid>
+
+
+            <Typography variant="body1" sx={{ mb: 2, color: 'gray', mt: 1 }}>
+                This page displays all package units associated. You can view package details like shipping addresses, product contents, tax rates, pickup/drop-off timings, and more.
+            </Typography>
 
             <Grid sx={{ marginTop: '20px', marginBottom: '20px', marginLeft: '20px', marginRight: '20px' }}>
                 {isPackagesLoading ? (
@@ -207,11 +294,8 @@ const PackagesTable = () => {
                 ) : (
                     <DataGrid
                         columns={columns}
-                        rows={rows}
-                        // checkboxSelection
+                        rows={filteredRows}
                         pageSizeOptions={[10, 20, 30]}
-                    // rowSelectionModel={selectionModel}
-                    // onRowSelectionModelChange={(model) => handleSelectionChange(model as number[])}
                     />
                 )}
             </Grid>
