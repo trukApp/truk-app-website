@@ -389,14 +389,20 @@ const TruckScene: React.FC<TruckSceneProps> = ({ vehicleDimensions, packageBlock
 					{packageBlocks.map((block, index) => (
 						<mesh
 							key={index}
+							// position={[
+							// 	// X: start at cabinLength, then move by block.position
+							// 	cabinLength + block.position[0] + block.dimensions[2] / 2,
+							// 	// Y: start directly above steel plate
+							// 	steelPlateY + block.position[1] + block.dimensions[2] / 2,
+							// 	// Z: no change (width direction)
+							// 	block.position[2] + block.dimensions[2] / 2,
+							// ]}
 							position={[
-								// X: start at cabinLength, then move by block.position
-								cabinLength + block.position[0] + block.dimensions[2] / 2,
-								// Y: start directly above steel plate
-								steelPlateY + block.position[1] + block.dimensions[2] / 2,
-								// Z: no change (width direction)
-								block.position[2] + block.dimensions[2] / 2,
+								cabinLength + block.position[0] + block.dimensions[0] / 2, // X = length
+								steelPlateY + block.position[1] + block.dimensions[1] / 2, // Y = height
+								block.position[2] + block.dimensions[2] / 2                // Z = width
 							]}
+
 						>
 							<boxGeometry args={block.dimensions} />
 							<meshStandardMaterial color={block.color} />
