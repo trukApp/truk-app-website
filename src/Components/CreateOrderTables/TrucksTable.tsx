@@ -166,13 +166,84 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
   //   return allBlocks;
   // };
 
+  // const generatePackageBlocks = (
+  //   boxPlacements:
+  //     | {
+  //       pkg_ID: string;
+  //       prod_ID?: string;
+  //       position: { x: number; y: number; z: number };
+  //       dimensions: { length: number; width: number; height: number };
+  //     }[]
+  //     | Record<string, { boxes: { position: number[]; dimensions: number[] }[] }>
+  // ): PackageBlock[] => {
+  //   const colorPalette = [
+  //     "#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#14b8a6",
+  //   ];
+  //   const colorMap: Record<string, string> = {};
+  //   let colorIndex = 0;
+  //   const allBlocks: PackageBlock[] = [];
+
+  //   // ✅ New format (array from API)
+  //   if (Array.isArray(boxPlacements)) {
+  //     boxPlacements.forEach((box) => {
+  //       const { pkg_ID, position, dimensions } = box;
+
+  //       if (!colorMap[pkg_ID]) {
+  //         colorMap[pkg_ID] = colorPalette[colorIndex % colorPalette.length];
+  //         colorIndex++;
+  //       }
+
+  //       allBlocks.push({
+  //         pkg_ID,
+  //         color: colorMap[pkg_ID],
+  //         dimensions: [
+  //           dimensions.length,
+  //           dimensions.height,
+  //           dimensions.width,
+  //         ] as [number, number, number],
+  //         position: [position.x, position.y, position.z] as [number, number, number],
+  //         quantity: 1,
+  //       });
+  //     });
+  //   }
+  //   // ✅ Old format (Record<string, { boxes: [...] }>)
+  //   else {
+  //     Object.entries(boxPlacements).forEach(([pkg_ID, { boxes }]) => {
+  //       if (!colorMap[pkg_ID]) {
+  //         colorMap[pkg_ID] = colorPalette[colorIndex % colorPalette.length];
+  //         colorIndex++;
+  //       }
+
+  //       boxes.forEach((box) => {
+  //         allBlocks.push({
+  //           pkg_ID,
+  //           color: colorMap[pkg_ID],
+  //           dimensions: [
+  //             box.dimensions?.[0] ?? 0,
+  //             box.dimensions?.[1] ?? 0,
+  //             box.dimensions?.[2] ?? 0,
+  //           ] as [number, number, number],
+  //           position: [
+  //             box.position?.[0] ?? 0,
+  //             box.position?.[1] ?? 0,
+  //             box.position?.[2] ?? 0,
+  //           ] as [number, number, number],
+  //           quantity: boxes.length,
+  //         });
+  //       });
+  //     });
+  //   }
+
+  //   return allBlocks;
+  // };
+
   const generatePackageBlocks = (
     boxPlacements:
       | {
         pkg_ID: string;
-        prod_ID?: string;
-        position: { x: number; y: number; z: number };
-        dimensions: { length: number; width: number; height: number };
+        color?: string;
+        position: number[];       // <- correct type
+        dimensions: number[];     // <- correct type
       }[]
       | Record<string, { boxes: { position: number[]; dimensions: number[] }[] }>
   ): PackageBlock[] => {
@@ -183,13 +254,12 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
     let colorIndex = 0;
     const allBlocks: PackageBlock[] = [];
 
-    // ✅ New format (array from API)
     if (Array.isArray(boxPlacements)) {
       boxPlacements.forEach((box) => {
-        const { pkg_ID, position, dimensions } = box;
+        const { pkg_ID, position, dimensions, color } = box;
 
         if (!colorMap[pkg_ID]) {
-          colorMap[pkg_ID] = colorPalette[colorIndex % colorPalette.length];
+          colorMap[pkg_ID] = color ?? colorPalette[colorIndex % colorPalette.length];
           colorIndex++;
         }
 
@@ -197,17 +267,19 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
           pkg_ID,
           color: colorMap[pkg_ID],
           dimensions: [
-            dimensions.length,
-            dimensions.height,
-            dimensions.width,
+            dimensions[0] ?? 0,
+            dimensions[1] ?? 0,
+            dimensions[2] ?? 0,
           ] as [number, number, number],
-          position: [position.x, position.y, position.z] as [number, number, number],
+          position: [
+            position[0] ?? 0,
+            position[1] ?? 0,
+            position[2] ?? 0,
+          ] as [number, number, number],
           quantity: 1,
         });
       });
-    }
-    // ✅ Old format (Record<string, { boxes: [...] }>)
-    else {
+    } else {
       Object.entries(boxPlacements).forEach(([pkg_ID, { boxes }]) => {
         if (!colorMap[pkg_ID]) {
           colorMap[pkg_ID] = colorPalette[colorIndex % colorPalette.length];
@@ -236,7 +308,6 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
 
     return allBlocks;
   };
-
 
 
 
