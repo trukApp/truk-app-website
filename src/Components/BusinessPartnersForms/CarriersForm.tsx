@@ -397,7 +397,8 @@ const CarrierForm: React.FC = () => {
 			contractValidUpto: carrier.contract_valid_upto,
 			pricingCost: carrier.pricing?.cost,
 			pricingCriteria: carrier.pricing?.cost_criteria_per,
-			CarrierProNumbers: carrier.carrier_pro_numbers
+			// CarrierProNumbers: carrier.carrier_pro_numbers
+			carrierProNumbersCount: carrier.carrier_pro_numbers?.length || 0,
 		}
 	}) || [];
 
@@ -431,9 +432,14 @@ const CarrierForm: React.FC = () => {
 			width: 150,
 			renderCell: (params) => (params.value ? "Yes" : "No"),
 		},
+		// {
+		// 	field: "CarrierProNumbers",
+		// 	headerName: "Carrier Pro numbers ",
+		// 	width: 200,
+		// },
 		{
-			field: "CarrierProNumbers",
-			headerName: "Carrier Pro numbers ",
+			field: "carrierProNumbersCount",
+			headerName: "Carrier Pro Numbers Count",
 			width: 200,
 		},
 		{
