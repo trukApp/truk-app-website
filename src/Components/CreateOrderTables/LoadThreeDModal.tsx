@@ -1,5 +1,4 @@
 // 'use client';
-
 // import React from 'react';
 // import { Canvas } from '@react-three/fiber';
 // import { OrbitControls } from '@react-three/drei';
@@ -8,7 +7,7 @@
 // 	pkg_ID: string;
 // 	color: string;
 // 	dimensions: [number, number, number];
-// 	position: [number, number, number]; // starting position (ignored for quantity placement)
+// 	position: [number, number, number];
 // 	quantity: number;
 // }
 
@@ -19,16 +18,7 @@
 // 		height: number;
 // 	};
 // 	packageBlocks: PackageBlock[];
-// 	boxPlacements?: Record<
-// 		string,
-// 		{
-// 			boxes: {
-// 				position: [number, number, number];
-// 				dimensions: [number, number, number];
-// 			}[];
-// 		}
-// 	>;
-// 	truckCapacity?: {   // ✅ Added here
+// 	truckCapacity?: {
 // 		allowedLayers: number;
 // 		maxLayers: number;
 // 		maxM3: number;
@@ -39,67 +29,15 @@
 // }
 
 // const TruckScene: React.FC<TruckSceneProps> = ({ vehicleDimensions, packageBlocks }) => {
+// 	console.log('packageBlocks:', packageBlocks)
 // 	const { length, width, height } = vehicleDimensions;
 // 	const cabinLength = 1.2;
 // 	const cabinHeight = height * 0.6;
 // 	const wheelRadius = 0.5;
-// 	const wheelThickness = 0.3;
 // 	const wheelY = wheelRadius;
 // 	const steelPlateY = wheelY + 0.5;
 // 	const cabinX = cabinLength / 2;
 // 	const cameraDistance = Math.max(length, width, height) * 1.5;
-
-// 	// Generate multiple instances based on quantity
-// 	const generatePackageInstances = (): {
-// 		position: [number, number, number];
-// 		dimensions: [number, number, number];
-// 		color: string;
-// 		pkg_ID: string;
-// 	}[] => {
-// 		const spacing = 0.05;
-// 		const allBlocks: {
-// 			position: [number, number, number];
-// 			dimensions: [number, number, number];
-// 			color: string;
-// 			pkg_ID: string;
-// 		}[] = [];
-
-// 		let currentX = 0;
-// 		let currentZ = 0;
-// 		let currentY = 0;
-
-// 		const maxWidth = length;
-// 		const maxDepth = width;
-// 		const maxHeight = height;
-
-// 		for (const block of packageBlocks) {
-// 			const [dx, dy, dz] = block.dimensions;
-// 			const total = block.quantity || 1;
-
-// 			for (let i = 0; i < total; i++) {
-// 				if (currentX + dx > maxWidth) {
-// 					currentX = 0;
-// 					currentZ += dz + spacing;
-// 				}
-// 				if (currentZ + dz > maxDepth) {
-// 					currentZ = 0;
-// 					currentY += dy + spacing;
-// 				}
-// 				if (currentY + dy > maxHeight) break;
-
-// 				allBlocks.push({
-// 					position: [currentX, currentY, currentZ],
-// 					dimensions: [dx, dy, dz],
-// 					color: block.color,
-// 					pkg_ID: block.pkg_ID,
-// 				});
-
-// 				currentX += dx + spacing;
-// 			}
-// 		}
-
-// 		return allBlocks;
-// 	};
 
 // 	const calculateWheelPositions = () => {
 // 		const numberOfAxles = length <= 5 ? 2 : length <= 8 ? 3 : 4;
@@ -108,11 +46,9 @@
 // 		const rightZ = width - insetZ;
 // 		const wheelPositions: [number, number, number][] = [];
 
-// 		// Front axle under cabin
 // 		wheelPositions.push([cabinX, wheelY, leftZ]);
 // 		wheelPositions.push([cabinX, wheelY, rightZ]);
 
-// 		// Rear axles (start from ~25% into cargo)
 // 		const axleStart = cabinLength + length * 0.25;
 // 		const axleEnd = cabinLength + length - 0.8;
 // 		const axleSpacing = (axleEnd - axleStart) / (numberOfAxles - 1);
@@ -127,11 +63,9 @@
 // 	};
 
 // 	const wheelPositions = calculateWheelPositions();
-// 	const packageInstances = generatePackageInstances();
 
 // 	return (
 // 		<div style={{ display: 'flex', gap: '2rem' }}>
-// 			{/* Truck 3D View */}
 // 			<div style={{ flex: 2 }}>
 // 				<Canvas
 // 					camera={{
@@ -144,19 +78,23 @@
 // 					<directionalLight position={[10, 10, 5]} intensity={1.2} />
 // 					<OrbitControls enableZoom={false} enableRotate enablePan={false} />
 
-// 					{/* Driver Cabin */}
+// 					{/* Cabin */}
 // 					<mesh position={[cabinX, wheelY + cabinHeight / 2 + 0.5, width / 2]}>
 // 						<boxGeometry args={[cabinLength, cabinHeight, width]} />
 // 						<meshStandardMaterial color="#b87333" />
 // 					</mesh>
 
-// 					{/* Cargo area */}
-// 					<mesh position={[cabinLength + length / 2, steelPlateY + (height - steelPlateY) / 2, width / 2]}>
+// 					{/* Transparent Cargo Area */}
+// 					<mesh position={[
+// 						cabinLength + length / 2,
+// 						steelPlateY + (height - steelPlateY) / 2,
+// 						width / 2
+// 					]}>
 // 						<boxGeometry args={[length, height - steelPlateY, width]} />
 // 						<meshStandardMaterial color="white" transparent opacity={0.4} />
 // 					</mesh>
 
-// 					{/* Steel floor */}
+// 					{/* Steel Floor */}
 // 					<mesh position={[cabinLength + length / 2, steelPlateY, width / 2]}>
 // 						<boxGeometry args={[length, 0.05, width]} />
 // 						<meshStandardMaterial color="#222" metalness={1} roughness={0.3} />
@@ -165,30 +103,33 @@
 // 					{/* Wheels */}
 // 					{wheelPositions.map((pos, idx) => (
 // 						<mesh key={idx} position={pos} rotation={[Math.PI / 2, 0, 0]}>
-// 							<cylinderGeometry args={[wheelRadius, wheelRadius, wheelThickness, 32]} />
+// 							<cylinderGeometry args={[wheelRadius, wheelRadius, 0.3, 32]} />
 // 							<meshStandardMaterial color="black" />
 // 						</mesh>
 // 					))}
 
-// 					{/* Package Instances */}
-// 					{packageInstances.map((block, index) => (
-// 						<mesh
-// 	key={index}
-// 	position={[
-// 		cabinLength + block.position[0] + block.dimensions[0] / 2,
-// 		steelPlateY + block.position[1] + block.dimensions[1] / 2,
-// 		block.position[2] + block.dimensions[2] / 2,
-// 	]}
+// 					{/* Correct Box Placements from Backend */}
 
-// >
+// 					{packageBlocks.map((block, index) => (
+// 						<mesh
+// 							key={index}
+// 							position={[
+// 								cabinLength + block.position[0] + block.dimensions[0] / 2, // X = length
+// 								steelPlateY + block.position[1] + block.dimensions[1] / 2, // Y = height
+// 								block.position[2] + block.dimensions[2] / 2                // Z = width
+// 							]}
+
+// 						>
 // 							<boxGeometry args={block.dimensions} />
 // 							<meshStandardMaterial color={block.color} />
 // 						</mesh>
 // 					))}
+
+
 // 				</Canvas>
 // 			</div>
 
-// 			{/* Legend and Details */}
+// 			{/* Truck Info and Color Legend */}
 // 			<div style={{ flex: 1 }}>
 // 				<h3>Truck Details</h3>
 // 				<ul style={{ lineHeight: '1.6' }}>
@@ -197,25 +138,11 @@
 // 					<li><strong>Height:</strong> {height} m</li>
 // 				</ul>
 
-// 				{/* Highlighted Truck Capacity */}
-// 				<div
-// 					style={{
-// 						backgroundColor: '#e0f7fa',
-// 						padding: '12px 16px',
-// 						marginTop: '1.5rem',
-// 						borderLeft: '5px solid #00796b',
-// 						borderRadius: 4,
-// 						boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-// 					}}
-// 				>
+// 				<div style={{ backgroundColor: '#e0f7fa', padding: 12, borderLeft: '5px solid #00796b', borderRadius: 4 }}>
 // 					<h4 style={{ margin: 0, color: '#00796b' }}>Truck Capacity</h4>
-// 					<p style={{ margin: '4px 0 0 0', fontWeight: 'bold' }}>
-// 						{(length * width * height).toFixed(2)} m³
-// 					</p>
+// 					<p style={{ margin: 0, fontWeight: 'bold' }}>{(length * width * height).toFixed(2)} m³</p>
 // 				</div>
 
-// 				{/* Package Color Legend */}
-// 				{/* Package Color Legend */}
 // 				<h3 style={{ marginTop: '1.5rem' }}>Package Color Legend</h3>
 // 				<ul style={{ paddingLeft: 0, listStyle: 'none' }}>
 // 					{Array.from(
@@ -223,28 +150,15 @@
 // 					).map((block, idx) => (
 // 						<li
 // 							key={idx}
-// 							style={{
-// 								display: 'flex',
-// 								alignItems: 'center',
-// 								marginBottom: '0.5rem',
-// 								borderBottom: '1px solid #ddd',
-// 								paddingBottom: 4,
-// 							}}
+// 							style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}
 // 						>
 // 							<div
-// 								style={{
-// 									width: 16,
-// 									height: 16,
-// 									backgroundColor: block.color,
-// 									marginRight: 8,
-// 									border: '1px solid #000',
-// 								}}
+// 								style={{ width: 16, height: 16, backgroundColor: block.color, marginRight: 8, border: '1px solid #000' }}
 // 							/>
 // 							<span>{block.pkg_ID}</span>
 // 						</li>
 // 					))}
 // 				</ul>
-
 // 			</div>
 // 		</div>
 // 	);
@@ -262,31 +176,36 @@ import { OrbitControls } from '@react-three/drei';
 interface PackageBlock {
 	pkg_ID: string;
 	color: string;
-	dimensions: [number, number, number];
-	position: [number, number, number];
+	dimensions: [number, number, number]; // [L, H, W]
+	position: [number, number, number];   // [x, y, z] origin at back-left floor
 	quantity: number;
 }
 
 interface TruckSceneProps {
 	vehicleDimensions: {
-		length: number;
-		width: number;
-		height: number;
+		length: number; // interior cargo length (m)
+		width: number;  // interior cargo width (m)
+		height: number; // interior interior height (m)
 	};
 	packageBlocks: PackageBlock[];
 	truckCapacity?: {
-		allowedLayers: number;
+		allowedLayers: number; // <=1 => no stacking
 		maxLayers: number;
-		maxM3: number;
+		maxM3?: number;
 		oneLayerM3: number;
 		rawM3: number;
 		usableM3: number;
 	};
 }
 
-const TruckScene: React.FC<TruckSceneProps> = ({ vehicleDimensions, packageBlocks }) => {
-	console.log('packageBlocks:', packageBlocks)
+const TruckScene: React.FC<TruckSceneProps> = ({
+	vehicleDimensions,
+	packageBlocks,
+	truckCapacity,
+}) => {
 	const { length, width, height } = vehicleDimensions;
+
+	// Simple truck proportions for render
 	const cabinLength = 1.2;
 	const cabinHeight = height * 0.6;
 	const wheelRadius = 0.5;
@@ -320,6 +239,9 @@ const TruckScene: React.FC<TruckSceneProps> = ({ vehicleDimensions, packageBlock
 
 	const wheelPositions = calculateWheelPositions();
 
+	// ***** KEY FIX: if allowedLayers <= 1, clamp Y to ground *****
+	const singleLayer = (truckCapacity?.allowedLayers ?? 1) <= 1;
+
 	return (
 		<div style={{ display: 'flex', gap: '2rem' }}>
 			<div style={{ flex: 2 }}>
@@ -332,7 +254,15 @@ const TruckScene: React.FC<TruckSceneProps> = ({ vehicleDimensions, packageBlock
 				>
 					<ambientLight intensity={0.8} />
 					<directionalLight position={[10, 10, 5]} intensity={1.2} />
-					<OrbitControls enableZoom={false} enableRotate enablePan={false} />
+					{/* Allow zoom so users can verify it's a single flat layer */}
+					<OrbitControls enableZoom enableRotate enablePan={false} />
+
+					{/* Optional helpers (uncomment when debugging) */}
+					{/* <axesHelper args={[2]} /> */}
+					{/* <gridHelper
+            args={[Math.max(length, width), 20]}
+            position={[cabinLength + length / 2, steelPlateY, width / 2]}
+          /> */}
 
 					{/* Cabin */}
 					<mesh position={[cabinX, wheelY + cabinHeight / 2 + 0.5, width / 2]}>
@@ -341,16 +271,13 @@ const TruckScene: React.FC<TruckSceneProps> = ({ vehicleDimensions, packageBlock
 					</mesh>
 
 					{/* Transparent Cargo Area */}
-					{/* <mesh position={[cabinLength + length / 2, steelPlateY + (height - steelPlateY) / 2, width / 2]}>
-						<boxGeometry args={[length, height - steelPlateY, width]} />
-						<meshStandardMaterial color="white" transparent opacity={0.4} />
-					</mesh> */}
-
-					<mesh position={[
-						cabinLength + length / 2,
-						steelPlateY + (height - steelPlateY) / 2,
-						width / 2
-					]}>
+					<mesh
+						position={[
+							cabinLength + length / 2,
+							steelPlateY + (height - steelPlateY) / 2,
+							width / 2,
+						]}
+					>
 						<boxGeometry args={[length, height - steelPlateY, width]} />
 						<meshStandardMaterial color="white" transparent opacity={0.4} />
 					</mesh>
@@ -369,47 +296,28 @@ const TruckScene: React.FC<TruckSceneProps> = ({ vehicleDimensions, packageBlock
 						</mesh>
 					))}
 
-					{/* Correct Box Placements from Backend */}
-					{/* {packageBlocks.map((block, index) => (
-						<mesh
-							key={index}
-							position={[
-								cabinLength + block.position[0] + block.dimensions[0] / 2,
-								steelPlateY + block.position[1] + block.dimensions[1] / 2,
-								block.position[2] + block.dimensions[2] / 2,
-							]}
-						>
+					{/* Boxes — render exactly where BE says, but clamp Y for single-layer */}
+					{packageBlocks.map((block, index) => {
+						const [L, H, W] = block.dimensions;
+						const [x, y, z] = block.position;
+						const y0 = singleLayer ? 0 : y; // *FIX*
 
-							<boxGeometry args={block.dimensions} />
-							<meshStandardMaterial color={block.color} />
-						</mesh>
-					))} */}
-
-
-					{packageBlocks.map((block, index) => (
-						<mesh
-							key={index}
-							// position={[
-							// 	// X: start at cabinLength, then move by block.position
-							// 	cabinLength + block.position[0] + block.dimensions[2] / 2,
-							// 	// Y: start directly above steel plate
-							// 	steelPlateY + block.position[1] + block.dimensions[2] / 2,
-							// 	// Z: no change (width direction)
-							// 	block.position[2] + block.dimensions[2] / 2,
-							// ]}
-							position={[
-								cabinLength + block.position[0] + block.dimensions[0] / 2, // X = length
-								steelPlateY + block.position[1] + block.dimensions[1] / 2, // Y = height
-								block.position[2] + block.dimensions[2] / 2                // Z = width
-							]}
-
-						>
-							<boxGeometry args={block.dimensions} />
-							<meshStandardMaterial color={block.color} />
-						</mesh>
-					))}
-
-
+						return (
+							<mesh
+								key={`${block.pkg_ID}-${index}`}
+								position={[
+									cabinLength + x + L / 2,       // X (length)
+									steelPlateY + y0 + H / 2,      // Y (height), clamped when single layer
+									z + W / 2,                     // Z (width)
+								]}
+								castShadow
+								receiveShadow
+							>
+								<boxGeometry args={[L, H, W]} />
+								<meshStandardMaterial color={block.color} />
+							</mesh>
+						);
+					})}
 				</Canvas>
 			</div>
 
@@ -422,22 +330,52 @@ const TruckScene: React.FC<TruckSceneProps> = ({ vehicleDimensions, packageBlock
 					<li><strong>Height:</strong> {height} m</li>
 				</ul>
 
-				<div style={{ backgroundColor: '#e0f7fa', padding: 12, borderLeft: '5px solid #00796b', borderRadius: 4 }}>
+				{/* Show interior vs usable (rule-limited) capacity */}
+				<div
+					style={{
+						backgroundColor: '#e0f7fa',
+						padding: 12,
+						borderLeft: '5px solid #00796b',
+						borderRadius: 4,
+					}}
+				>
 					<h4 style={{ margin: 0, color: '#00796b' }}>Truck Capacity</h4>
-					<p style={{ margin: 0, fontWeight: 'bold' }}>{(length * width * height).toFixed(2)} m³</p>
+					<p style={{ margin: 0 }}>
+						<b>Interior:</b> {(length * width * height).toFixed(2)} m³
+					</p>
+					<p style={{ margin: 0 }}>
+						<b>Usable (rules):</b>{' '}
+						{truckCapacity?.usableM3 != null
+							? truckCapacity.usableM3.toFixed(2)
+							: '—'}{' '}
+						m³
+					</p>
+					<p style={{ margin: 0 }}>
+						<b>Layers allowed:</b> {truckCapacity?.allowedLayers ?? 1}
+					</p>
 				</div>
 
 				<h3 style={{ marginTop: '1.5rem' }}>Package Color Legend</h3>
 				<ul style={{ paddingLeft: 0, listStyle: 'none' }}>
 					{Array.from(
-						new Map(packageBlocks.map(block => [block.pkg_ID, block])).values()
+						new Map(packageBlocks.map((block) => [block.pkg_ID, block])).values()
 					).map((block, idx) => (
 						<li
 							key={idx}
-							style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}
+							style={{
+								display: 'flex',
+								alignItems: 'center',
+								marginBottom: '0.5rem',
+							}}
 						>
 							<div
-								style={{ width: 16, height: 16, backgroundColor: block.color, marginRight: 8, border: '1px solid #000' }}
+								style={{
+									width: 16,
+									height: 16,
+									backgroundColor: block.color,
+									marginRight: 8,
+									border: '1px solid #000',
+								}}
 							/>
 							<span>{block.pkg_ID}</span>
 						</li>
