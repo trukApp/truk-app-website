@@ -1056,7 +1056,8 @@ export interface Truck {
   unallocatedPackages: string[];
   vehicle_ID: string;
   totalWeightCapacity: number;
-  leftoverWeight: string | number;
+  // leftoverWeight: string | number;
+  leftoverWeight: string;
   totalVolumeCapacity: number;
   leftoverVolume: number;
   cost: number;
