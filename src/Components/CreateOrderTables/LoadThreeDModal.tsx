@@ -964,7 +964,6 @@
 
 // export default TruckScene;
 
-
 'use client';
 import React, { useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
@@ -1183,7 +1182,7 @@ const TruckScene: React.FC<TruckSceneProps> = ({
 							{!!it.byPackage?.length && (
 								<ul style={{ marginTop: 4, marginBottom: 0 }}>
 									{it.byPackage.map((p) => (
-										<li key={`${it.prod_ID}-${p.pack_ID}`} style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+										<li key={`${it.prod_ID}- ${p.pack_ID}`} style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
 											<span style={{ width: 12, height: 12, background: p.color || it.color, border: '1px solid #000' }} />
 											in <code>{p.pack_ID}</code>: {p.qty}
 										</li>
@@ -1194,7 +1193,7 @@ const TruckScene: React.FC<TruckSceneProps> = ({
 					))}
 				</ul>
 			</div>
-		</div>
+		</div >
 	);
 };
 

@@ -1037,6 +1037,7 @@ export interface ProductLegendItem {
   byPackage: { pack_ID: string; qty: number; color?: string }[]; // per-package swatch
   byStop: { stop: number; qty: number }[];
 }
+
 export interface LoadLeg {
   start: { address: string; latitude: number; longitude: number };
   end: { address: string; latitude: number; longitude: number };
@@ -1045,7 +1046,6 @@ export interface LoadLeg {
   loadAfterStop?: number; // legacy
   onboardAfterStop?: number; // optional (if you adopt the suggestion)
 }
-
 export interface Truck {
   packages: string[];
   occupiedVolume: number;
@@ -1056,7 +1056,6 @@ export interface Truck {
   unallocatedPackages: string[];
   vehicle_ID: string;
   totalWeightCapacity: number;
-  // leftoverWeight: string | number;
   leftoverWeight: string;
   totalVolumeCapacity: number;
   leftoverVolume: number;
@@ -1332,16 +1331,32 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
       {openTruck && (
         <Box sx={{ mt: 4 }}>
           <Box sx={{ height: "90vh", width: "100%", mb: 3 }}>
-            <TruckScene
-              vehicleDimensions={{
-                length: openTruck.vehicleDimensions.interiorLengthM,
-                width: openTruck.vehicleDimensions.interiorWidthM,
-                height: openTruck.vehicleDimensions.interiorHeightM,
-              }}
-              truckCapacity={openTruck.truckCapacity}
-              packageBlocks={normalizeBlocks(openTruck.boxPlacements)}
-              productLegend={openTruck.productLegend}
-            />
+            {(() => {
+              const blocks = normalizeBlocks(openTruck.boxPlacements);
+              const noStack = (openTruck.truckCapacity?.allowedLayers ?? 1) <= 1;
+              const safeBlocks: PackageBlock[] = noStack
+                ? blocks.map(b => ({ ...b, position: [b.position[0], 0, b.position[2]] }))
+                : blocks;
+
+              // Dev safety: warn if any >0 in no-stack
+              if (process.env.NODE_ENV !== "production") {
+                const bad = safeBlocks.find(b => b.position[1] > 0);
+                if (bad) console.error("Invariant: SF<=1 item placed above floor.", bad);
+              }
+
+              return (
+                <TruckScene
+                  vehicleDimensions={{
+                    length: openTruck.vehicleDimensions.interiorLengthM,
+                    width: openTruck.vehicleDimensions.interiorWidthM,
+                    height: openTruck.vehicleDimensions.interiorHeightM,
+                  }}
+                  truckCapacity={openTruck.truckCapacity}
+                  packageBlocks={safeBlocks}
+                  productLegend={openTruck.productLegend}
+                />
+              );
+            })()}
           </Box>
 
           {!!openTruck.loadArrangement?.length && (
