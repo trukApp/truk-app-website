@@ -15,15 +15,15 @@ interface TrucksTableProps {
     setAdditionalDocs: React.Dispatch<React.SetStateAction<{ [key: string]: string }[]>>;
 }
 
-interface PackageDetails {
-    stop: string;
-    location: string;
-    packages: [];
-}
+// interface PackageDetails {
+//     stop: string;
+//     location: string;
+//     packages: [];
+// }
 
 const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks, additionalDocs, setAdditionalDocs }) => {
     const selectedPackages = useAppSelector((state) => state.auth.selectedPackages || []);
-   
+
     const selectedTrucks = trucks
     const { data: locationsData } = useGetLocationMasterQuery({})
     const getAllLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
@@ -64,7 +64,7 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks, additionalDocs,
             field: 'products',
             headerName: 'Product Details',
             width: 400,
-            renderCell: (params: GridCellParams) => { 
+            renderCell: (params: GridCellParams) => {
                 const products = Array.isArray(params.value) ? params.value : [];
 
                 if (!products.length) return <div>No products</div>;
@@ -170,11 +170,17 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks, additionalDocs,
                                 {vehicle.loadArrangement && vehicle.loadArrangement.length > 0 ? (
                                     <Box sx={{ mt: 2, height: 300, backgroundColor: "white", borderRadius: 1, overflow: "hidden" }}>
                                         <DataGrid
-                                            rows={vehicle.loadArrangement.map((item: PackageDetails, i) => ({
+                                            // rows={vehicle.loadArrangement.map((item: PackageDetails, i) => ({
+                                            //     id: item.stop || i + 1,
+                                            //     location: (item.location) || "N/A",
+                                            //     packages: item.packages ? item.packages.join(", ") : "N/A",
+                                            // }))}
+                                            rows={vehicle.loadArrangement.map((item, i) => ({
                                                 id: item.stop || i + 1,
-                                                location: (item.location) || "N/A",
-                                                packages: item.packages ? item.packages.join(", ") : "N/A",
+                                                location: item.location || "N/A",
+                                                packages: item.packages.length ? item.packages.join(", ") : "N/A",
                                             }))}
+
                                             columns={[
                                                 { field: "id", headerName: "Load Arrangement", width: 100 },
                                                 { field: "location", headerName: "Delivery Address", width: 300 },
