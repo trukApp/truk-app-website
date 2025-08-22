@@ -573,7 +573,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                                                     const inputValue = e.target.value;
                                                     const numericValue = Number(inputValue);
 
-                                                    if (numericValue > 0 || inputValue === "") {
+                                                    if (numericValue >= 0 || inputValue === "") {
                                                         handleChange(e);
                                                     }
                                                 }}
@@ -610,7 +610,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                                                     const inputValue = e.target.value;
                                                     const numericValue = Number(inputValue);
 
-                                                    if (numericValue > 0 || inputValue === "") {
+                                                    if (numericValue >= 0 || inputValue === "") {
                                                         handleChange(e);
                                                     }
                                                 }}

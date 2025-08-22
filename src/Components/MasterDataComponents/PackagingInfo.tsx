@@ -154,7 +154,7 @@ const PackagingForm = () => {
   });
 
   useEffect(() => {
-    if (editRow) { 
+    if (editRow) {
       const dimensions = editRow.packagingDimensions.split(" * ")
       formik.setValues({
         id: editRow?.id,
@@ -180,7 +180,7 @@ const PackagingForm = () => {
 
   const handleDelete = async (row: PackageInfo) => {
     const packageId = row?.id;
-    if (!packageId) { 
+    if (!packageId) {
       setSnackbarMessage("Error: Package ID is missing!");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
@@ -348,7 +348,7 @@ const PackagingForm = () => {
                     const inputValue = e.target.value;
                     const numericValue = Number(inputValue);
 
-                    if (numericValue > 0 || inputValue === "") {
+                    if (numericValue >= 0 || inputValue === "") {
                       formik.handleChange(e);
                     }
                   }}
@@ -370,7 +370,7 @@ const PackagingForm = () => {
                     const inputValue = e.target.value;
                     const numericValue = Number(inputValue);
 
-                    if (numericValue > 0 || inputValue === "") {
+                    if (numericValue >= 0 || inputValue === "") {
                       formik.handleChange(e);
                     }
                   }}
@@ -391,7 +391,7 @@ const PackagingForm = () => {
                     const inputValue = e.target.value;
                     const numericValue = Number(inputValue);
 
-                    if (numericValue > 0 || inputValue === "") {
+                    if (numericValue >= 0 || inputValue === "") {
                       formik.handleChange(e);
                     }
                   }}

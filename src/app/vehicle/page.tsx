@@ -72,17 +72,17 @@ const VehicleOnly: React.FC = () => {
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
     const [isEditing, setIsEditing] = useState(false);
     const [editRow, setEditRow] = useState<TruckFormDetails | null>(null);
-    const { data,   isLoading } = useGetSingleVehicleMasterQuery({
+    const { data, isLoading } = useGetSingleVehicleMasterQuery({
         // page: paginationModel.page + 1, limit: paginationModel.pageSize
     });
     const { data: vehiclesData, isLoading: isVehiclesLoading } = useGetVehicleMasterQuery({});
     const [postVehicle, { isLoading: postVehicleLoading }] = usePostSingleVehicleMasterMutation();
     const [editVehicle, { isLoading: editVehicleLoading }] = useEditSingleVehicleMasterMutation();
     const [deleteVehicle, { isLoading: deleteVehicleLoading }] = useDeleteSingleVehicleMasterMutation();
-    
+
     const getAllVehicles = vehiclesData?.vehicles
 
- 
+
     const vehiclesMaster = data?.data;
     // const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
     //     setPaginationModel(newPaginationModel);
@@ -106,7 +106,7 @@ const VehicleOnly: React.FC = () => {
 
     const [initialValues, setInitialValues] = useState(initialFormValues);
     useEffect(() => {
-        if (editRow) { 
+        if (editRow) {
             setInitialValues({
                 id: editRow?.id || "",
                 truckId: editRow?.truckId || "",
@@ -216,11 +216,11 @@ const VehicleOnly: React.FC = () => {
                 }
             }
             if (isEditing && editRow) {
-                const truckId = editRow?.id; 
+                const truckId = editRow?.id;
                 const response = await editVehicle({
                     body: editBody,
                     truckId,
-                }).unwrap(); 
+                }).unwrap();
                 if (response?.updated_record) {
                     setSnackbarMessage(`Vehicle ID ${response?.updated_record} updated successfully!`);
                     setSnackbarSeverity("success");
@@ -228,7 +228,7 @@ const VehicleOnly: React.FC = () => {
                 }
 
             } else {
-                const response = await postVehicle(body).unwrap(); 
+                const response = await postVehicle(body).unwrap();
                 if (response?.created_records) {
                     setSnackbarMessage(`Vehicle ID ${response.created_records[0]} created successfully!`);
                     setSnackbarSeverity("success");
@@ -256,7 +256,7 @@ const VehicleOnly: React.FC = () => {
         setEditRow(row);
     };
     const handleDelete = async (row: TruckDetails) => {
-        const truckId = row?.id; 
+        const truckId = row?.id;
         if (!truckId) {
             setSnackbarMessage("Error: Vehicle ID is missing!");
             setSnackbarSeverity("error");
@@ -433,7 +433,7 @@ const VehicleOnly: React.FC = () => {
                                                         const inputValue = e.target.value;
                                                         const numericValue = Number(inputValue);
 
-                                                        if (numericValue > 0 || inputValue === "") {
+                                                        if (numericValue >= 0 || inputValue === "") {
                                                             handleChange(e);
                                                         }
                                                     }}

@@ -1165,7 +1165,7 @@ const VehicleForm: React.FC = () => {
 																const inputValue = e.target.value;
 																const numericValue = Number(inputValue);
 
-																if (numericValue > 0 || inputValue === "") {
+																if (numericValue >= 0 || inputValue === "") {
 																	setFieldValue(
 																		"individualResources",
 																		inputValue ? numericValue : ""
@@ -1298,7 +1298,7 @@ const VehicleForm: React.FC = () => {
 															const inputValue = e.target.value;
 															const numericValue = Number(inputValue);
 
-															if (numericValue > 0 || inputValue === "") {
+															if (numericValue >= 0 || inputValue === "") {
 																handleChange(e);
 															}
 														}}
@@ -1338,7 +1338,7 @@ const VehicleForm: React.FC = () => {
 															const inputValue = e.target.value;
 															const numericValue = Number(inputValue);
 
-															if (numericValue > 0 || inputValue === "") {
+															if (numericValue >= 0 || inputValue === "") {
 																handleChange(e);
 															}
 														}}
@@ -1378,7 +1378,7 @@ const VehicleForm: React.FC = () => {
 															const inputValue = e.target.value;
 															const numericValue = Number(inputValue);
 
-															if (numericValue > 0 || inputValue === "") {
+															if (numericValue >= 0 || inputValue === "") {
 																handleChange(e);
 															}
 														}}
@@ -1418,7 +1418,7 @@ const VehicleForm: React.FC = () => {
 															const inputValue = e.target.value;
 															const numericValue = Number(inputValue);
 
-															if (numericValue > 0 || inputValue === "") {
+															if (numericValue >= 0 || inputValue === "") {
 																handleChange(e);
 															}
 														}}
@@ -1491,7 +1491,7 @@ const VehicleForm: React.FC = () => {
 															const inputValue = e.target.value;
 															const numericValue = Number(inputValue);
 
-															if (numericValue > 0 || inputValue === "") {
+															if (numericValue >= 0 || inputValue === "") {
 																handleChange(e);
 															}
 														}}
@@ -1531,7 +1531,7 @@ const VehicleForm: React.FC = () => {
 															const inputValue = e.target.value;
 															const numericValue = Number(inputValue);
 
-															if (numericValue > 0 || inputValue === "") {
+															if (numericValue >= 0 || inputValue === "") {
 																handleChange(e);
 															}
 														}}
@@ -1572,7 +1572,7 @@ const VehicleForm: React.FC = () => {
 															const inputValue = e.target.value;
 															const numericValue = Number(inputValue);
 
-															if (numericValue > 0 || inputValue === "") {
+															if (numericValue >= 0 || inputValue === "") {
 																handleChange(e);
 															}
 														}}
@@ -1612,7 +1612,7 @@ const VehicleForm: React.FC = () => {
 															const inputValue = e.target.value;
 															const numericValue = Number(inputValue);
 
-															if (numericValue > 0 || inputValue === "") {
+															if (numericValue >= 0 || inputValue === "") {
 																handleChange(e);
 															}
 														}}
@@ -1652,7 +1652,7 @@ const VehicleForm: React.FC = () => {
 															const inputValue = e.target.value;
 															const numericValue = Number(inputValue);
 
-															if (numericValue > 0 || inputValue === "") {
+															if (numericValue >= 0 || inputValue === "") {
 																handleChange(e);
 															}
 														}}
@@ -1802,7 +1802,7 @@ const VehicleForm: React.FC = () => {
 															const inputValue = e.target.value;
 															const numericValue = Number(inputValue);
 
-															if (numericValue > 0 || inputValue === "") {
+															if (numericValue >= 0 || inputValue === "") {
 																handleChange(e);
 															}
 														}}
