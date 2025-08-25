@@ -155,9 +155,15 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks, additionalDocs,
                                 <Typography>
                                     Total Weight Capacity: <strong>{vehicle?.totalWeightCapacity?.toFixed(2)} kg</strong>
                                 </Typography>
-                                <Typography>
+                                {/* <Typography>
                                     Leftover Weight: <strong>{parseFloat(vehicle?.leftoverWeight)?.toFixed(2)} kg</strong>
+                                </Typography> */}
+
+                                <Typography>
+                                    Leftover Weight:{" "}
+                                    <strong>{Number(vehicle?.leftoverWeight).toFixed(2)} kg</strong>
                                 </Typography>
+
                                 <Typography>
                                     Total Volume Capacity: <strong>{vehicle?.totalVolumeCapacity?.toFixed(2)} m³</strong>
                                 </Typography>

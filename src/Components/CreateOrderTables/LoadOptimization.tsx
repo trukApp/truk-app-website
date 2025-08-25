@@ -81,7 +81,9 @@ const LoadOptimization: React.FC<TrucksTableProps> = ({ trucks }) => {
 							<Typography variant="body1" sx={{ mb: 1 }}>
 								Leftover Weight:{" "}
 								<strong>
-									{parseFloat(vehicle?.leftoverWeight)?.toFixed(2)} kg
+									{/* {parseFloat(vehicle?.leftoverWeight)?.toFixed(2)} kg */}
+									{Number(vehicle?.leftoverWeight).toFixed(2)} kg
+
 								</strong>
 							</Typography>
 
