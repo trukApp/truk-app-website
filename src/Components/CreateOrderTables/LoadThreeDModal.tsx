@@ -968,6 +968,7 @@
 import React, { useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
+import { useGetAllProductsQuery } from '@/api/apiSlice';
 
 interface ProductLegendItem {
 	prod_ID: string;
@@ -1010,7 +1011,9 @@ const TruckScene: React.FC<TruckSceneProps> = ({
 	productLegend,
 }) => {
 	const { length, width, height } = vehicleDimensions;
-
+  const { data: productsData } = useGetAllProductsQuery({});
+  const allProductsData = productsData?.products || [];
+  console.log("all prods:", allProductsData)
 	// Simple truck proportions for render only
 	const cabinLength = 1.2;
 	const cabinHeight = height * 0.6;
@@ -1030,6 +1033,7 @@ const TruckScene: React.FC<TruckSceneProps> = ({
 		return new Map(zs.map((z, i) => [z, i]));
 	}, [packageBlocks]);
 
+	
 	const calculateWheelPositions = () => {
 		const numberOfAxles = length <= 5 ? 2 : length <= 8 ? 3 : 4;
 		const insetZ = 0.3;
@@ -1065,11 +1069,14 @@ const TruckScene: React.FC<TruckSceneProps> = ({
 	const legend = productLegend?.length ? productLegend : fallbackLegend;
 
 	return (
-		<div style={{ display: 'flex', gap: '2rem' }}>
+		<div style={{ display: "flex", gap: "2rem" }}>
 			<div style={{ flex: 2 }}>
 				<Canvas
-					camera={{ position: [cameraDistance, cameraDistance * 0.6, cameraDistance], fov: 45 }}
-					style={{ height: 600, width: '100%' }}
+					camera={{
+						position: [cameraDistance, cameraDistance * 0.6, cameraDistance],
+						fov: 45,
+					}}
+					style={{ height: 600, width: "100%" }}
 				>
 					<ambientLight intensity={0.8} />
 					<directionalLight position={[10, 10, 5]} intensity={1.2} />
@@ -1082,7 +1089,13 @@ const TruckScene: React.FC<TruckSceneProps> = ({
 					</mesh>
 
 					{/* Transparent cargo volume */}
-					<mesh position={[cabinLength + length / 2, steelPlateY + (height - steelPlateY) / 2, width / 2]}>
+					<mesh
+						position={[
+							cabinLength + length / 2,
+							steelPlateY + (height - steelPlateY) / 2,
+							width / 2,
+						]}
+					>
 						<boxGeometry args={[length, height - steelPlateY, width]} />
 						<meshStandardMaterial color="white" transparent opacity={0.35} />
 					</mesh>
@@ -1110,7 +1123,7 @@ const TruckScene: React.FC<TruckSceneProps> = ({
 						const zWithGutter = zBE + zRowIndex * ROW_GUTTER;
 						return (
 							<mesh
-								key={`${block.pkg_ID}-${block.prod_ID ?? 'prod'}-${i}`}
+								key={`${block.pkg_ID}-${block.prod_ID ?? "prod"}-${i}`}
 								position={[
 									cabinLength + xFront + L / 2,
 									steelPlateY + y0 + H / 2,
@@ -1120,7 +1133,11 @@ const TruckScene: React.FC<TruckSceneProps> = ({
 								receiveShadow
 							>
 								<boxGeometry args={[L, H, W]} />
-								<meshStandardMaterial color={block.color} polygonOffset polygonOffsetFactor={1} />
+								<meshStandardMaterial
+									color={block.color}
+									polygonOffset
+									polygonOffsetFactor={1}
+								/>
 							</mesh>
 						);
 					})}
@@ -1130,60 +1147,121 @@ const TruckScene: React.FC<TruckSceneProps> = ({
 			{/* Side panel */}
 			<div style={{ flex: 1 }}>
 				<h3>Truck Details</h3>
-				<ul style={{ lineHeight: '1.6' }}>
-					<li><strong>Length:</strong> {length} m</li>
-					<li><strong>Width:</strong> {width} m</li>
-					<li><strong>Height:</strong> {height} m</li>
+				<ul style={{ lineHeight: "1.6" }}>
+					<li>
+						<strong>Length:</strong> {length} m
+					</li>
+					<li>
+						<strong>Width:</strong> {width} m
+					</li>
+					<li>
+						<strong>Height:</strong> {height} m
+					</li>
 				</ul>
 
 				<div
 					style={{
-						backgroundColor: '#e0f7fa',
+						backgroundColor: "#e0f7fa",
 						padding: 12,
-						borderLeft: '5px solid #00796b',
+						borderLeft: "5px solid #00796b",
 						borderRadius: 4,
 					}}
 				>
-					<h4 style={{ margin: 0, color: '#00796b' }}>Truck Capacity</h4>
-					<p style={{ margin: 0 }}><b>Interior (raw):</b> {truckCapacity?.rawM3?.toFixed(2) ?? '—'} m³</p>
-					<p style={{ margin: 0 }}><b>One layer (est.):</b> {truckCapacity?.oneLayerM3?.toFixed(2) ?? '—'} m³</p>
+					<h4 style={{ margin: 0, color: "#00796b" }}>Truck Capacity</h4>
 					<p style={{ margin: 0 }}>
-						<b>Usable by rules:</b> {truckCapacity?.usableM3 != null ? truckCapacity.usableM3.toFixed(2) : '—'} m³
+						<b>Interior (raw):</b> {truckCapacity?.rawM3?.toFixed(2) ?? "—"} m³
+					</p>
+					<p style={{ margin: 0 }}>
+						<b>One layer (est.):</b>{" "}
+						{truckCapacity?.oneLayerM3?.toFixed(2) ?? "—"} m³
+					</p>
+					<p style={{ margin: 0 }}>
+						<b>Usable by rules:</b>{" "}
+						{truckCapacity?.usableM3 != null
+							? truckCapacity.usableM3.toFixed(2)
+							: "—"}{" "}
+						m³
 					</p>
 					<p style={{ margin: 0 }}>
 						<b>Layers allowed:</b> {truckCapacity?.allowedLayers ?? 1}
 						{truckCapacity?.maxLayersByHeight != null && (
-							<> <small>(height limit: {truckCapacity.maxLayersByHeight})</small></>
+							<>
+								{" "}
+								<small>(height limit: {truckCapacity.maxLayersByHeight})</small>
+							</>
 						)}
 					</p>
 				</div>
 
 				{!!truckCapacity?.perLineLayers?.length && (
 					<>
-						<h4 style={{ marginTop: '1rem' }}>Per-line stacking caps</h4>
+						<h4 style={{ marginTop: "1rem" }}>Per-line stacking caps</h4>
 						<ul style={{ paddingLeft: 16, margin: 0 }}>
 							{truckCapacity.perLineLayers.map((l, idx) => (
 								<li key={`${l.prod_ID}-${l.pac_ID}-${idx}`}>
-									prod <code>{l.prod_ID}</code> → up to <b>{l.allowedLayers}</b> layer(s)
+									{/* prod{" "} */}
+									<code>
+										{allProductsData.find(
+											(singleProd: {
+												product_ID: string;
+												product_name: string;
+											}) => singleProd.product_ID === l.prod_ID
+										)?.product_name ?? l.prod_ID}
+									</code>{" "}
+									({l.prod_ID})→ up to <b>{l.allowedLayers}</b> layer(s)
 								</li>
 							))}
 						</ul>
 					</>
 				)}
 
-				<h3 style={{ marginTop: '1.5rem' }}>Product Color Legend</h3>
-				<ul style={{ paddingLeft: 0, listStyle: 'none' }}>
+				<h3 style={{ marginTop: "1.5rem" }}>Product Color Legend</h3>
+				<ul style={{ paddingLeft: 0, listStyle: "none" }}>
 					{legend.map((it, idx) => (
-						<li key={idx} style={{ marginBottom: '0.75rem' }}>
-							<div style={{ display: 'flex', alignItems: 'center' }}>
-								<div style={{ width: 16, height: 16, backgroundColor: it.color, marginRight: 8, border: '1px solid #000' }} />
-								<span><b>{it.prod_ID}</b> — qty {it.totalQty}</span>
+						<li key={idx} style={{ marginBottom: "0.75rem" }}>
+							<div style={{ display: "flex", alignItems: "center" }}>
+								<div
+									style={{
+										width: 16,
+										height: 16,
+										backgroundColor: it.color,
+										marginRight: 8,
+										border: "1px solid #000",
+									}}
+								/>
+								<span>
+									{" "}
+									<b>
+										{allProductsData.find(
+											(singleProd: {
+												product_ID: string;
+												product_name: string;
+											}) => singleProd.product_ID === it.prod_ID
+										)?.product_name ?? it.prod_ID}
+									</b>{" "}
+									({it.prod_ID})— qty {it.totalQty}
+								</span>
 							</div>
 							{!!it.byPackage?.length && (
 								<ul style={{ marginTop: 4, marginBottom: 0 }}>
 									{it.byPackage.map((p) => (
-										<li key={`${it.prod_ID}- ${p.pack_ID}`} style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-											<span style={{ width: 12, height: 12, background: p.color || it.color, border: '1px solid #000' }} />
+										<li
+											key={`${it.prod_ID}- ${p.pack_ID}`}
+											style={{
+												fontSize: 12,
+												display: "flex",
+												alignItems: "center",
+												gap: 6,
+											}}
+										>
+											<span
+												style={{
+													width: 12,
+													height: 12,
+													background: p.color || it.color,
+													border: "1px solid #000",
+												}}
+											/>
 											in <code>{p.pack_ID}</code>: {p.qty}
 										</li>
 									))}
@@ -1193,7 +1271,7 @@ const TruckScene: React.FC<TruckSceneProps> = ({
 					))}
 				</ul>
 			</div>
-		</div >
+		</div>
 	);
 };
 
