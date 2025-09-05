@@ -90,6 +90,16 @@ const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
     onNext(values);
   };
 
+  const fieldLabels: Record<string, string> = {
+    productName: "Product Name",
+    hsnCode: "HSN Code",
+    "RFID-EPC Code": "RFID-EPC Code",
+    dimensions: "Dimensions",
+    quantity: "Quantity",
+    weight: "Weight",
+    packagingType: "Packaging Type",
+  };
+
   return (
     <Grid>
       <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleFormSubmit}>
@@ -184,7 +194,7 @@ const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
                         />
                       </Grid>
 
-                      {["productName", "hsnCode", "RFID-EPC Code", "dimensions", "quantity", "weight", "packagingType"].map((fieldName) => (
+                      {/* {["productName", "hsnCode", "RFID-EPC Code", "dimensions", "quantity", "weight", "packagingType"].map((fieldName) => (
                         <Grid item xs={12} md={2.4} key={fieldName}>
                           <Field name={`packageDetails.${index}.${fieldName}`}>
                             {({ field, meta }: FieldProps) => (
@@ -215,7 +225,42 @@ const PackageForm: React.FC<PackingDetailsTab> = ({ onNext, onBack }) => {
                             )}
                           </Field>
                         </Grid>
-                      ))}
+                      ))} */}
+
+                      {["productName", "hsnCode", "RFID-EPC Code", "dimensions", "quantity", "weight", "packagingType"].map(
+                        (fieldName) => (
+                          <Grid item xs={12} md={2.4} key={fieldName}>
+                            <Field name={`packageDetails.${index}.${fieldName}`}>
+                              {({ field, meta }: FieldProps) => (
+                                <TextField
+                                  {...field}
+                                  disabled={fieldName !== "RFID-EPC Code" && fieldName !== "quantity"}
+                                  label={fieldLabels[fieldName]}
+                                  placeholder={fieldLabels[fieldName]}
+                                  fullWidth
+                                  size="small"
+                                  type={fieldName === "quantity" ? "number" : "text"}
+                                  error={meta.touched && Boolean(meta.error)}
+                                  helperText={meta.touched && meta.error}
+                                  inputProps={
+                                    fieldName === "quantity"
+                                      ? {
+                                        min: 1,
+                                        onKeyDown: (e) => {
+                                          if (e.key === "-" || e.key === "e") {
+                                            e.preventDefault();
+                                          }
+                                        },
+                                      }
+                                      : {}
+                                  }
+                                />
+                              )}
+                            </Field>
+                          </Grid>
+                        )
+                      )}
+
 
                       {values.packageDetails.length > 1 && (
                         <Grid item xs={12}>
