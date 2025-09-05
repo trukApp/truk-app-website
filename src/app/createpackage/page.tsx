@@ -172,15 +172,9 @@ const CreatePackage = () => {
             catch (error) {
                 console.log("err :", error)
                 if (typeof error === "object" && error !== null) {
-                    const msg =
-                        (error as any).data?.message ||
-                        (error as any).message ||
-                        "";
-
-                    if (
-                        typeof msg === "string" &&
-                        msg.startsWith("All products in a package must have the same stacking factor")
-                    ) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const msg = (error as any).data?.message || (error as any).message || "";
+                    if (typeof msg === "string" && msg.startsWith("All products in a package must have the same stacking factor")) {
                         setSnackbarMessage("Products must have the same stacking factor.");
                     } else {
                         setSnackbarMessage("Something went wrong! Please try again.");
@@ -188,7 +182,6 @@ const CreatePackage = () => {
                 } else {
                     setSnackbarMessage("Something went wrong! Please try again.");
                 }
-
                 setSnackbarSeverity("error");
                 setSnackbarOpen(true);
             }
