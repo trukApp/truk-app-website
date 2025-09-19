@@ -1011,9 +1011,9 @@ const TruckScene: React.FC<TruckSceneProps> = ({
 	productLegend,
 }) => {
 	const { length, width, height } = vehicleDimensions;
-  const { data: productsData } = useGetAllProductsQuery({});
-  const allProductsData = productsData?.products || [];
-  console.log("all prods:", allProductsData)
+	const { data: productsData } = useGetAllProductsQuery({});
+	const allProductsData = productsData?.products || [];
+	console.log("all prods:", allProductsData)
 	// Simple truck proportions for render only
 	const cabinLength = 1.2;
 	const cabinHeight = height * 0.6;
@@ -1033,7 +1033,7 @@ const TruckScene: React.FC<TruckSceneProps> = ({
 		return new Map(zs.map((z, i) => [z, i]));
 	}, [packageBlocks]);
 
-	
+
 	const calculateWheelPositions = () => {
 		const numberOfAxles = length <= 5 ? 2 : length <= 8 ? 3 : 4;
 		const insetZ = 0.3;
@@ -1200,14 +1200,14 @@ const TruckScene: React.FC<TruckSceneProps> = ({
 							{truckCapacity.perLineLayers.map((l, idx) => (
 								<li key={`${l.prod_ID}-${l.pac_ID}-${idx}`}>
 									{/* prod{" "} */}
-									<code>
+									<div>
 										{allProductsData.find(
 											(singleProd: {
 												product_ID: string;
 												product_name: string;
 											}) => singleProd.product_ID === l.prod_ID
 										)?.product_name ?? l.prod_ID}
-									</code>{" "}
+									</div>{" "}
 									({l.prod_ID})→ up to <b>{l.allowedLayers}</b> layer(s)
 								</li>
 							))}
