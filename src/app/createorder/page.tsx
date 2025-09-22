@@ -306,7 +306,7 @@ const CreateOrder: React.FC = () => {
 
                 {activeStep === 3 && (
                     <div>
-                        <LoadOptimization trucks={selectTrucks} />
+                        <LoadOptimization trucks={selectTrucks} selectedPackages={selectedPackages} />
                     </div>
                 )}
 
