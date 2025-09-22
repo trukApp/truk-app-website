@@ -42,7 +42,7 @@ const TruckScene: React.FC<TruckSceneProps> = ({
 	vehicleDimensions,
 	packageBlocks,
 	truckCapacity,
-	productLegend,
+	// productLegend,
 }) => {
 	const { length, width, height } = vehicleDimensions;
 	const { data: productsData } = useGetAllProductsQuery({});
@@ -88,19 +88,19 @@ const TruckScene: React.FC<TruckSceneProps> = ({
 	const wheelPositions = calculateWheelPositions();
 
 	// Fallback legend (by product) if BE didn't send productLegend
-	const fallbackLegend = useMemo(() => {
-		const map = new Map<string, { color: string; count: number }>();
-		for (const b of packageBlocks) {
-			const key = b.prod_ID || b.pkg_ID;
-			const entry = map.get(key);
-			map.set(key, { color: b.color, count: (entry?.count || 0) + 1 });
-		}
-		return Array.from(map.entries()).map(([prod_ID, v]) => ({
-			prod_ID, color: v.color, totalQty: v.count, byPackage: [], byStop: []
-		})) as ProductLegendItem[];
-	}, [packageBlocks]);
+	// const fallbackLegend = useMemo(() => {
+	// 	const map = new Map<string, { color: string; count: number }>();
+	// 	for (const b of packageBlocks) {
+	// 		const key = b.prod_ID || b.pkg_ID;
+	// 		const entry = map.get(key);
+	// 		map.set(key, { color: b.color, count: (entry?.count || 0) + 1 });
+	// 	}
+	// 	return Array.from(map.entries()).map(([prod_ID, v]) => ({
+	// 		prod_ID, color: v.color, totalQty: v.count, byPackage: [], byStop: []
+	// 	})) as ProductLegendItem[];
+	// }, [packageBlocks]);
 
-	const legend = productLegend?.length ? productLegend : fallbackLegend;
+	// const legend = productLegend?.length ? productLegend : fallbackLegend;
 
 	return (
 		<div style={{ display: "flex", gap: "2rem" }}>

@@ -361,23 +361,6 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
                     </Typography>
                   </Box>
 
-                  {/* {!!truck.truckCapacity?.perLineLayers?.length && (
-                    <>
-                      <Divider sx={{ my: 2 }} />
-                      <Typography variant="subtitle2" gutterBottom>
-                        Per-line stacking caps
-                      </Typography>
-                      <ul style={{ margin: 0, paddingLeft: 18 }}>
-                        {truck.truckCapacity.perLineLayers.map((l, idx) => (
-                          <li key={`${l.prod_ID}-${l.pac_ID}-${idx}`}>
-                            prod <code>{l.prod_ID}</code> → up to{" "}
-                            <b>{l.allowedLayers}</b> layer(s)
-                          </li>
-                        ))}
-                      </ul>
-                    </>
-                  )} */}
-
                   <Box mt={2}>
                     <Button
                       variant="contained"
@@ -403,146 +386,6 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
 
       {/* 3D + indexes for the selected card */}
       {openTruck && (
-        // <Box sx={{ mt: 4 }}>
-        //   <Box sx={{ height: "90vh", width: "100%", mb: 3 }}>
-        //     {(() => {
-        //       const blocks = normalizeBlocks(openTruck.boxPlacements);
-        //       const noStack = (openTruck.truckCapacity?.allowedLayers ?? 1) <= 1;
-        //       const safeBlocks: PackageBlock[] = noStack
-        //         ? blocks.map((b) => ({
-        //           ...b,
-        //           position: [b.position[0], 0, b.position[2]],
-        //         }))
-        //         : blocks;
-
-        //       if (process.env.NODE_ENV !== "production") {
-        //         const bad = safeBlocks.find((b) => b.position[1] > 0);
-        //         if (bad)
-        //           console.error("Invariant: SF<=1 item placed above floor.", bad);
-        //       }
-
-        //       return (
-        //         <TruckScene
-        //           vehicleDimensions={{
-        //             length: openTruck.vehicleDimensions.interiorLengthM,
-        //             width: openTruck.vehicleDimensions.interiorWidthM,
-        //             height: openTruck.vehicleDimensions.interiorHeightM,
-        //           }}
-        //           truckCapacity={openTruck.truckCapacity}
-        //           packageBlocks={safeBlocks}
-        //           productLegend={openTruck.productLegend}
-        //         />
-        //       );
-        //     })()}
-        //   </Box>
-
-        //   {!!openTruck.loadArrangement?.length && (
-        //     <>
-        //       <Typography variant="h6" sx={{ mb: 1 }}>
-        //         Route drops (FILO respected)
-        //       </Typography>
-        //       <ol style={{ paddingLeft: 18 }}>
-        //         {openTruck.loadArrangement.map((s) => (
-        //           <li key={s.stop}>
-        //             <Typography variant="body2">
-        //               <b>Stop {s.stop}</b> — {s.location}
-        //             </Typography>
-        //             <Typography variant="caption" color="text.secondary">
-        //               Packages: {s.packages.join(", ")}
-        //             </Typography>
-        //           </li>
-        //         ))}
-        //       </ol>
-        //     </>
-        //   )}
-
-        //   {!!openTruck.productLegend?.length && (
-        //     <>
-        //       <Divider sx={{ my: 2 }} />
-        //       <Typography variant="h6" sx={{ mb: 1 }}>
-        //         Product index (color-coded)
-        //       </Typography>
-        //       <Grid container spacing={2}>
-        //         {openTruck.productLegend.map((p) => (
-        //           <Grid item xs={12} sm={6} md={4} key={p.prod_ID}>
-        //             <Card variant="outlined">
-        //               <CardContent>
-        //                 <Stack
-        //                   direction="row"
-        //                   spacing={1}
-        //                   alignItems="center"
-        //                   sx={{ mb: 1 }}
-        //                 >
-        //                   <span
-        //                     style={{
-        //                       width: 14,
-        //                       height: 14,
-        //                       background: p.color,
-        //                       border: "1px solid #000",
-        //                     }}
-        //                   />
-        //                   <Typography variant="subtitle2">
-        //                     <code>{p.prod_ID}</code> — qty {p.totalQty}
-        //                   </Typography>
-        //                 </Stack>
-        //                 {!!p.byPackage?.length && (
-        //                   <>
-        //                     <Typography variant="caption" sx={{ fontWeight: 600 }}>
-        //                       By package:
-        //                     </Typography>
-        //                     <ul style={{ margin: 0, paddingLeft: 16 }}>
-        //                       {p.byPackage.map((bp) => (
-        //                         <li
-        //                           key={bp.pack_ID}
-        //                           style={{
-        //                             fontSize: 12,
-        //                             display: "flex",
-        //                             alignItems: "center",
-        //                             gap: 6,
-        //                           }}
-        //                         >
-        //                           <span
-        //                             style={{
-        //                               width: 10,
-        //                               height: 10,
-        //                               background: bp.color || p.color,
-        //                               border: "1px solid #000",
-        //                             }}
-        //                           />
-        //                           {bp.pack_ID}: {bp.qty}
-        //                         </li>
-        //                       ))}
-        //                     </ul>
-        //                   </>
-        //                 )}
-        //                 {!!p.byStop?.length && (
-        //                   <>
-        //                     <Typography
-        //                       variant="caption"
-        //                       sx={{ fontWeight: 600, mt: 1, display: "block" }}
-        //                     >
-        //                       By stop:
-        //                     </Typography>
-        //                     <ul style={{ margin: 0, paddingLeft: 16 }}>
-        //                       {p.byStop.map((bs) => (
-        //                         <li
-        //                           key={`${p.prod_ID}-stop-${bs.stop}`}
-        //                           style={{ fontSize: 12 }}
-        //                         >
-        //                           Stop {bs.stop}: {bs.qty}
-        //                         </li>
-        //                       ))}
-        //                     </ul>
-        //                   </>
-        //                 )}
-        //               </CardContent>
-        //             </Card>
-        //           </Grid>
-        //         ))}
-        //       </Grid>
-        //     </>
-        //   )}
-        // </Box>
 
         <Box sx={{ mt: 4 }}>
           <Grid container spacing={3}>
@@ -577,7 +420,7 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
                       }}
                       truckCapacity={openTruck.truckCapacity}
                       packageBlocks={safeBlocks}
-                      productLegend={openTruck.productLegend}
+                    // productLegend={openTruck.productLegend}
                     />
                   );
                 })()}
@@ -634,14 +477,9 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
 
                                 }}
                               />
-                              {/* <Typography style={{ fontWeight: 600, fontSize: 17 }}>
-                                <code>{p.prod_ID}</code> — qty {p.totalQty}
-                              </Typography> */}
-
                               <Typography style={{ fontWeight: 600, fontSize: 17 }}>
                                 {getProductName(p.prod_ID)} ({p.prod_ID}) — {p.totalQty}
                               </Typography>
-
                             </Stack>
 
                             {!!p.byPackage?.length && (
