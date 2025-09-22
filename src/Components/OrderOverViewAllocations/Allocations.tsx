@@ -58,7 +58,7 @@ import Image from "next/image";
 import AdditionalInformation from "@/Components/CreatePackageTabs/AddtionalInformation";
 import { DeviceInfoBE } from "../MasterDataComponents/DeviceMaster";
 import { Location } from "../MasterDataComponents/Locations";
-import { ErrorMessage, Field, Form, Formik } from "formik";
+import { Field, Form, Formik } from "formik";
 import * as Yup from "yup";
 import { VehicleDetails } from "../MasterDataComponents/Vehicles";
 import { TruckFormDetails } from "@/app/vehicle/page";
@@ -81,6 +81,7 @@ interface BiddingModalProps {
 	bid_value: string;
 	bid_timing: string;
 	bid_start_time: string;
+	bid_end_time: string;
 }
 interface RoutePoint {
 	start: {
@@ -628,6 +629,10 @@ const Allocations: React.FC<AllocationsProps> = ({
 		bid_value: Yup.string().required("Bid value is required"),
 		bid_timing: Yup.string().required("Bid timing is required"),
 		bid_start_time: Yup.string().required("Bid start time is required"),
+		bid_end_time: Yup.date()
+			.min(Yup.ref("bid_start_time"), "End time must be after start time")
+			.required("Bid end time is required"),
+
 	});
 	const handleCloseReject = () => {
 		setOpenReject(false);
@@ -679,14 +684,19 @@ const Allocations: React.FC<AllocationsProps> = ({
 	};
 	const handleBidSubmit = async (values: BiddingModalProps) => {
 
-		const formattedDate = new Date(values.bid_start_time)
+		const formattedStartDate = new Date(values.bid_start_time)
+			.toISOString()
+			.slice(0, 19);
+
+		const formattedEndDate = new Date(values.bid_end_time)
 			.toISOString()
 			.slice(0, 19);
 		const body = {
 			order_ID: orderId,
 			bid_value: values.bid_value,
 			bid_timing: values.bid_timing,
-			bid_start_time: formattedDate,
+			bid_start_time: formattedStartDate,
+			bid_end_time: formattedEndDate,
 		};
 		try {
 			const response = await postInitiateBidding(body).unwrap();
@@ -1434,25 +1444,29 @@ const Allocations: React.FC<AllocationsProps> = ({
 										bid_value: "",
 										bid_timing: "",
 										bid_start_time: "",
+										bid_end_time: "",
 									}}
 									validationSchema={validationSchemaBidding}
 									onSubmit={handleBidSubmit}
 								>
-									{({ values, handleChange, handleBlur }) => (
+									{({ values, handleChange, handleBlur, errors, touched }) => (
 										<Form>
+											{/* Bid Value */}
 											<Field
 												name="bid_value"
 												as={TextField}
-												label="Bid Value "
+												label="Bid Value"
 												size="small"
 												value={values.bid_value}
 												onChange={handleChange}
 												onBlur={handleBlur}
 												fullWidth
 												margin="normal"
-												helperText={<ErrorMessage name="bid_value" />}
-												error={Boolean(<ErrorMessage name="bid_value" />)}
+												helperText={touched.bid_value && errors.bid_value}
+												error={touched.bid_value && Boolean(errors.bid_value)}
 											/>
+
+											{/* Bid Timing */}
 											<Field
 												name="bid_timing"
 												as={TextField}
@@ -1463,9 +1477,11 @@ const Allocations: React.FC<AllocationsProps> = ({
 												onBlur={handleBlur}
 												fullWidth
 												margin="normal"
-												helperText={<ErrorMessage name="bid_timing" />}
-												error={Boolean(<ErrorMessage name="bid_timing" />)}
+												helperText={touched.bid_timing && errors.bid_timing}
+												error={touched.bid_timing && Boolean(errors.bid_timing)}
 											/>
+
+											{/* Bid Start Time */}
 											<Field
 												name="bid_start_time"
 												as={TextField}
@@ -1478,18 +1494,33 @@ const Allocations: React.FC<AllocationsProps> = ({
 												InputLabelProps={{ shrink: true }}
 												fullWidth
 												margin="normal"
-												helperText={<ErrorMessage name="bid_start_time" />}
-												error={Boolean(<ErrorMessage name="bid_start_time" />)}
+												helperText={touched.bid_start_time && errors.bid_start_time}
+												error={touched.bid_start_time && Boolean(errors.bid_start_time)}
 											/>
+
+											{/* Bid End Time */}
+											<Field
+												name="bid_end_time"
+												as={TextField}
+												size="small"
+												label="Bid End Time"
+												type="datetime-local"
+												value={values.bid_end_time}
+												onChange={handleChange}
+												onBlur={handleBlur}
+												InputLabelProps={{ shrink: true }}
+												fullWidth
+												margin="normal"
+												inputProps={{
+													min: values.bid_start_time || undefined,
+												}}
+												helperText={touched.bid_end_time && errors.bid_end_time}
+												error={touched.bid_end_time && Boolean(errors.bid_end_time)}
+											/>
+
 											<DialogActions>
-												<Button onClick={() => setBidModal(false)}>
-													Cancel
-												</Button>
-												<Button
-													variant="contained"
-													color="primary"
-													type="submit"
-												>
+												<Button onClick={() => setBidModal(false)}>Cancel</Button>
+												<Button variant="contained" color="primary" type="submit">
 													Submit Bid
 												</Button>
 											</DialogActions>
@@ -1498,6 +1529,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 								</Formik>
 							</DialogContent>
 						</Dialog>
+
 
 						<Paper
 							key={uniqueKey}

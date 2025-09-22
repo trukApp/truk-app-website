@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { useGetOrderByIdQuery } from "@/api/apiSlice";
+import { useGetBidsByOrderIdQuery, useGetCarrierMasterQuery, useGetOrderByIdQuery } from "@/api/apiSlice";
 import {
     Backdrop,
     CircularProgress,
@@ -9,41 +9,27 @@ import {
     Typography,
     Box,
     Dialog,
-    // DialogContent,
-    // DialogActions,
-    // IconButton,
-    // DialogTitle,
 } from "@mui/material";
 import Allocations from "@/Components/OrderOverViewAllocations/Allocations";
 import { useSearchParams } from "next/navigation";
 import moment from "moment";
 import Image from "next/image";
-// import AdditionalDocuments from "@/Components/CreateOrderTables/AdditionalDocuments";
-// import CloseIcon from "@mui/icons-material/Close";
-// import SnackbarAlert from "@/Components/ReusableComponents/SnackbarAlerts";
+import BidsOverview from "@/Components/SpotAuction/BidsOverview";
 
 export interface OrderDoc {
     [key: string]: string;
 }
 
 const OrderDetailedOverview: React.FC = () => {
-    // const [snackbarOpen, setSnackbarOpen] = useState(false);
-    // const [snackbarMessage, setSnackbarMessage] = useState("");
-    // const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
-    // const [editOrder, { isLoading: confirmOrderLoading }] =
-    //     useEditOrderMutation();
     const searchParams = useSearchParams();
     const orderId = searchParams.get("order_ID") || "";
     const from = searchParams.get("from") ?? "";
     const { data: order, isLoading } = useGetOrderByIdQuery({ orderId });
+    const { data: bidsData, isLoading: bidsDataLoading } = useGetBidsByOrderIdQuery({ orderId });
+    const { data: carriersData, isLoading: isCarrierLoading } = useGetCarrierMasterQuery({});
+    const allCarriersData = carriersData?.carriers || [];
     const orderData = order?.order;
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-    // const [openDialog, setOpenDialog] = useState(false);
-    // const [documents, setDocuments] = useState<{ [key: string]: string }[]>([]);
-
-
-    // const handleOpenDialog = () => setOpenDialog(true);
-    // const handleCloseDialog = () => setOpenDialog(false);
     const allocatedPackageDetails = order?.allocated_packages_details;
 
     const [openPreview, setOpenPreview] = useState<{
@@ -53,61 +39,14 @@ const OrderDetailedOverview: React.FC = () => {
         url: "",
         open: false,
     });
+
     const handlePreview = (url: string) => {
         setOpenPreview({ url, open: true });
         setIsGeneratingPDF(false);
     };
 
-
-
-    // const handleUpdateDocuments = async () => {
-    //     // handleCloseDialog()
-    //     const editOrderBody = {
-    //         order_docs: documents,
-    //     };
-    //     try {
-    //         const response = await editOrder({
-    //             body: editOrderBody,
-    //             params: { order_ID: orderId } // Pass as query param
-    //         }).unwrap();
-    //         if (response) {
-    //             setSnackbarMessage(`Order updated successfully!`);
-    //             setSnackbarSeverity("success");
-    //             setSnackbarOpen(true);
-    //         }
-    //     } catch (error: unknown) {
-    //         if (
-    //             typeof error === "object" &&
-    //             error !== null &&
-    //             "data" in error &&
-    //             typeof error.data === "object" &&
-    //             error.data !== null &&
-    //             "message" in error.data &&
-    //             typeof error.data.message === "string"
-    //         ) {
-    //             if (
-    //                 error.data.message ===
-    //                 "Some packages are already confirmed in an existing order."
-    //             ) {
-    //                 setSnackbarMessage(
-    //                     `Some packages are already confirmed in an existing order, Please check`
-    //                 );
-    //                 setSnackbarSeverity("error");
-    //                 setSnackbarOpen(true);
-    //             }
-    //         }
-    //     }
-    // }
-
-
     return (
         <Box sx={{ p: { xs: 0.2, md: 2 } }}>
-            {/* <SnackbarAlert
-                open={snackbarOpen}
-                message={snackbarMessage}
-                severity={snackbarSeverity}
-                onClose={() => setSnackbarOpen(false)}
-            /> */}
             <Dialog
                 open={openPreview.open}
                 onClose={() => setOpenPreview({ url: "", open: false })}
@@ -131,53 +70,16 @@ const OrderDetailedOverview: React.FC = () => {
                 )}
             </Dialog>
 
-            {/* <Dialog
-                open={openDialog}
-                onClose={handleCloseDialog}
-                fullWidth
-                maxWidth="md"
-            >
-                <DialogTitle sx={{ m: 0, p: 2 }}>
-                    <IconButton
-                        aria-label="close"
-                        onClick={handleCloseDialog}
-                        sx={{
-                            position: "absolute",
-                            right: 8,
-                            top: 8,
-                            color: (theme) => theme.palette.grey[500],
-                        }}
-                    >
-                        <CloseIcon />
-                    </IconButton>
-                </DialogTitle>
-                <DialogContent sx={{ padding: "20px" }}>
-                    <AdditionalDocuments
-                        documents={documents}
-                        setDocuments={setDocuments}
-                    />
-                </DialogContent>
-                <DialogActions sx={{ paddingBottom: "20px", paddingRight: "20px" }}>
-                    <Button onClick={handleCloseDialog} variant="outlined">
-                        Cancel
-                    </Button>
-                    <Button onClick={handleUpdateDocuments} variant="contained">
-                        Save
-                    </Button>
-                </DialogActions>
-            </Dialog> */}
             <Backdrop
                 sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-                open={isLoading}
+                open={isLoading || bidsDataLoading || isCarrierLoading}
             >
                 <CircularProgress color="inherit" />
             </Backdrop>
-            <Paper
-            >
+
+            <Paper>
                 {orderData && (
-                    <Paper
-                        sx={{ p: 3, mb: 3 }}
-                    >
+                    <Paper sx={{ p: 3, mb: 3 }}>
                         <Grid
                             sx={{
                                 display: "flex",
@@ -193,39 +95,26 @@ const OrderDetailedOverview: React.FC = () => {
                                 Order Details
                             </Typography>
                         </Grid>
+
                         <Grid container spacing={1}>
                             <Grid item xs={12} md={6}>
-                                <Typography
-                                    variant="body1"
-                                    sx={{ fontSize: { xs: "15px", md: "17px" } }}
-                                >
+                                <Typography variant="body1">
                                     Order ID: <strong>{orderData.order_ID}</strong>
                                 </Typography>
                             </Grid>
                             <Grid item xs={12} md={6}>
-                                <Typography
-                                    variant="body1"
-                                    sx={{ fontSize: { xs: "15px", md: "17px" } }}
-                                >
-                                    Scenario: <strong>{orderData.scenario_label}</strong>{" "}
+                                <Typography variant="body1">
+                                    Scenario: <strong>{orderData.scenario_label}</strong>
                                 </Typography>
                             </Grid>
                             <Grid item xs={12} md={6}>
-                                <Typography
-                                    variant="body1"
-                                    sx={{ fontSize: { xs: "15px", md: "17px" } }}
-                                >
+                                <Typography variant="body1">
                                     Total Cost:{" "}
-                                    <strong>
-                                        ₹{parseFloat(orderData.total_cost).toFixed(2)}
-                                    </strong>
+                                    <strong>₹{parseFloat(orderData.total_cost).toFixed(2)}</strong>
                                 </Typography>
                             </Grid>
                             <Grid item xs={12} md={6}>
-                                <Typography
-                                    variant="body1"
-                                    sx={{ fontSize: { xs: "15px", md: "17px" } }}
-                                >
+                                <Typography variant="body1">
                                     Created at:{" "}
                                     <strong>
                                         {moment(orderData.created_at).format("DD MMM YYYY")}
@@ -234,7 +123,8 @@ const OrderDetailedOverview: React.FC = () => {
                             </Grid>
                         </Grid>
 
-                        <Grid container spacing={2}>
+                        {/* Order Docs */}
+                        <Grid container spacing={2} sx={{ mt: 2 }}>
                             {orderData?.order_docs?.map((doc: OrderDoc, index: number) => {
                                 const key = Object.keys(doc)[0];
                                 const url = doc[key];
@@ -256,8 +146,8 @@ const OrderDetailedOverview: React.FC = () => {
                                                 cursor: "pointer",
                                                 display: "flex",
                                                 flexDirection: "column",
-                                                marginTop: "1px",
-                                                marginLeft: "1px",
+                                                mt: 0.5,
+                                                ml: 0.5,
                                             }}
                                             onClick={() => handlePreview(url)}
                                         >
@@ -290,42 +180,23 @@ const OrderDetailedOverview: React.FC = () => {
                                 );
                             })}
                         </Grid>
-                        {/* <Grid
-                            sx={{
-                                display: "flex",
-                                flexDirection: "row",
-                                justifySelf: "flex-end",
-                                alignSelf: "flex-end",
-                            }}
-                        >
-                            <Button
-                                sx={{ textDecoration: "underline" }}
-                                onClick={handleOpenDialog}
-                            >
-                                Add Documents
-                            </Button>
-                        </Grid> */}
                     </Paper>
                 )}
-
-                {orderData?.allocations && (
-                    <>
-                        <Allocations
-                            isGeneratingPDF={isGeneratingPDF}
-                            allocations={orderData.allocations}
-                            orderId={orderData.order_ID}
-                            allocatedPackageDetails={allocatedPackageDetails}
-                            from={from}
-                        />
-                    </>
+                {bidsData?.data?.length > 0 && (
+                    <BidsOverview bidsData={bidsData.data} carriers={allCarriersData} />
                 )}
-
-
-
+                {orderData?.allocations && (
+                    <Allocations
+                        isGeneratingPDF={isGeneratingPDF}
+                        allocations={orderData.allocations}
+                        orderId={orderData.order_ID}
+                        allocatedPackageDetails={allocatedPackageDetails}
+                        from={from}
+                    />
+                )}
             </Paper>
         </Box>
     );
 };
 
 export default OrderDetailedOverview;
-

@@ -1,5 +1,5 @@
 import { BaseQueryApi, createApi, FetchArgs, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import apiConfig from "../Config/Config"; 
+import apiConfig from "../Config/Config";
 import { getSession } from "next-auth/react";
 
 // Define the base URL
@@ -25,8 +25,8 @@ const baseUrl = apiConfig.develpoment.apiBaseUrl;
 
 const customBaseQuery = async (
   args: string | FetchArgs,
-  api:BaseQueryApi ,
-  extraOptions :Record<string, unknown>
+  api: BaseQueryApi,
+  extraOptions: Record<string, unknown>
 ) => {
   const session = await getSession();
   const token = session?.user?.accessToken;
@@ -51,7 +51,7 @@ interface User {
 
 export const apiSlice = createApi({
   reducerPath: "api",
-  baseQuery:customBaseQuery,
+  baseQuery: customBaseQuery,
   tagTypes: [
     "PARTNERS",
     "DRIVERS",
@@ -308,12 +308,12 @@ export const apiSlice = createApi({
       providesTags: [{ type: "VehicleMaster", id: "LIST" }],
     }),
     getVehicleById: builder.query({
-      query: ({vehicle_ID}) => { 
-        console.log("vehicle_ID:",vehicle_ID)
+      query: ({ vehicle_ID }) => {
+        console.log("vehicle_ID:", vehicle_ID)
         return {
           url: `vehicle/vehicle?vehicle_ID=${vehicle_ID}`,
           method: "GET",
-        
+
         };
       },
       providesTags: [{ type: "VehicleMaster", id: "LIST" }],
@@ -498,7 +498,7 @@ export const apiSlice = createApi({
     }),
 
     // Dock master 
-        getDockMaster: builder.query({
+    getDockMaster: builder.query({
       query: (params) => ({
         url: `masterDock/all-docks`,
         method: "GET",
@@ -648,7 +648,7 @@ export const apiSlice = createApi({
     }),
 
     editOrder: builder.mutation({
-      query: ({body, params}) => {
+      query: ({ body, params }) => {
         return {
           url: "order/edit-order",
           method: "PUT",
@@ -673,7 +673,7 @@ export const apiSlice = createApi({
         method: "GET",
         params: { order_ID: orderId },
       }),
-      providesTags: [{ type: "Orders", id: "LIST" },{type: "Orderss", id: "LIST"}],
+      providesTags: [{ type: "Orders", id: "LIST" }, { type: "Orderss", id: "LIST" }],
     }),
 
     getAllAssignedOrders: builder.query({
@@ -775,7 +775,7 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags :[{type: "Orderss", id: "LIST"}]
+      invalidatesTags: [{ type: "Orderss", id: "LIST" }]
     }),
 
     postAssignCarrierToOrder: builder.mutation({
@@ -784,7 +784,7 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags :[{type: "Orderss", id: "LIST"}]
+      invalidatesTags: [{ type: "Orderss", id: "LIST" }]
     }),
     getCarrierAssignmentReq: builder.query({
       query: (params) => ({
@@ -792,7 +792,7 @@ export const apiSlice = createApi({
         method: "GET",
         params,
       }),
-      providesTags :[{type: "Orderss", id: "LIST"}]
+      providesTags: [{ type: "Orderss", id: "LIST" }]
     }),
     postCarrierRejectigOrder: builder.mutation({
       query: (body) => ({
@@ -800,7 +800,7 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags :[{type: "Orderss", id: "LIST"}]
+      invalidatesTags: [{ type: "Orderss", id: "LIST" }]
     }),
 
     postCarrierAssigningOrderConfirm: builder.mutation({
@@ -809,7 +809,7 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags :[{type: "Orderss", id: "LIST"}]
+      invalidatesTags: [{ type: "Orderss", id: "LIST" }]
     }),
 
     postInitiateBidding: builder.mutation({
@@ -821,40 +821,48 @@ export const apiSlice = createApi({
       invalidatesTags: [{ type: "Orders", id: "LIST" }],
     }),
 
-      getOrderAssignedToCarrier: builder.query({
-        query: (params) => ({
-          url: `carrier-assignment/assigned-order-by-id`,
-          method: "GET",
-          params
-        }),
-        providesTags :[{type: "Orderss", id: "LIST"}]
+    getOrderAssignedToCarrier: builder.query({
+      query: (params) => ({
+        url: `carrier-assignment/assigned-order-by-id`,
+        method: "GET",
+        params
       }),
+      providesTags: [{ type: "Orderss", id: "LIST" }]
+    }),
 
-      getDockRequests: builder.query({
-        query: (params) => ({
-          url: `carrier-assignment/get-dock-reqs`,
-          method: "GET",
-          params
-        }),
-        providesTags :[{type: "DockCarrier", id: "LIST"}]
+    getDockRequests: builder.query({
+      query: (params) => ({
+        url: `carrier-assignment/get-dock-reqs`,
+        method: "GET",
+        params
       }),
-        getDocksByLocationId: builder.query({
-        query: (params) => ({
-          url: `masterDock/dock`,
-          method: "GET",
-          params
-        }),
-        // providesTags :[{type: "Orderss", id: "LIST"}]
+      providesTags: [{ type: "DockCarrier", id: "LIST" }]
+    }),
+    getDocksByLocationId: builder.query({
+      query: (params) => ({
+        url: `masterDock/dock`,
+        method: "GET",
+        params
       }),
-      editAllocateDockToCarrier: builder.mutation({
-        query: ( body ) => ({
-          url: `masterDock/allocate-dock-to-carrier`,
-          method: "PUT",
-          body,
-        }),
-        invalidatesTags: [{ type: "DockCarrier", id: "LIST" }],
+      // providesTags :[{type: "Orderss", id: "LIST"}]
+    }),
+    editAllocateDockToCarrier: builder.mutation({
+      query: (body) => ({
+        url: `masterDock/allocate-dock-to-carrier`,
+        method: "PUT",
+        body,
       }),
-    }), 
+      invalidatesTags: [{ type: "DockCarrier", id: "LIST" }],
+    }),
+    getBidsByOrderId: builder.query({
+      query: ({ orderId }) => ({
+        url: `assignment-bid/bids-order-id`,
+        method: "GET",
+        params: { order_ID: orderId },
+      }),
+      // providesTags: [],
+    }),
+  }),
 
 });
 
@@ -945,4 +953,5 @@ export const {
   useGetDockRequestsQuery,
   useGetDocksByLocationIdQuery,
   useEditAllocateDockToCarrierMutation,
+  useGetBidsByOrderIdQuery
 } = apiSlice;
