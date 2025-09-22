@@ -116,7 +116,40 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
   const { data: productsData } = useGetAllProductsQuery({});
   const allProductsData = productsData?.products || [];
   const [openTruckIndex, setOpenTruckIndex] = useState<number | null>(null);
-  console.log("selectedPackages:", selectedPackages)
+  const [expandedStops, setExpandedStops] = useState<number[]>([]);
+
+  const toggleStop = (stop: number) => {
+    setExpandedStops((prev) =>
+      prev.includes(stop) ? prev.filter((s) => s !== stop) : [...prev, stop]
+    );
+  };
+
+  const getPackageTotalQty = (packID: string): number => {
+    let total = 0;
+    openTruck?.productLegend?.forEach((prod) => {
+      const found = prod.byPackage.find((bp) => bp.pack_ID === packID);
+      if (found) total += found.qty;
+    });
+    return total;
+  };
+  const getPackageDetails = (packID: string) => {
+    return (
+      openTruck?.productLegend
+        ?.map((prod) => {
+          const found = prod.byPackage.find((bp) => bp.pack_ID === packID);
+          if (found) {
+            return {
+              prod_ID: prod.prod_ID,
+              prodName: getProductName(prod.prod_ID),
+              qty: found.qty,
+              color: found.color || prod.color,
+            };
+          }
+          return null;
+        })
+        .filter((x): x is { prod_ID: string; prodName: string; qty: number; color: string } => x !== null) || []
+    );
+  };
 
   const getProductDetails = (productID: string): string => {
     const productInfo = allProductsData.find(
@@ -429,7 +462,6 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
 
             {/* RIGHT: Stops + Product Index */}
             <Grid item xs={12} md={4}>
-              {/* Route stops */}
               {!!openTruck.loadArrangement?.length && (
                 <Box sx={{ mb: 3 }}>
                   <Typography variant="h6" sx={{ mb: 1, fontWeight: 600, fontSize: 18 }}>
@@ -441,112 +473,78 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
                         <Typography variant="body2" style={{ fontWeight: 500, fontSize: 16 }}>
                           <b>Stop {s.stop}</b> — {s.location}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary" style={{ fontSize: 16, marginBottom: 8 }}>
-                          Packages: {s.packages.join(", ")}
+
+                        {/* Show packages with total qty */}
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          style={{ fontSize: 16, marginBottom: 8 }}
+                        >
+                          Packages:{" "}
+                          {s.packages.map((pkgID, i) => (
+                            <span key={pkgID}>
+                              {pkgID} ({getPackageTotalQty(pkgID)})
+                              {i < s.packages.length - 1 ? ", " : ""}
+                            </span>
+                          ))}
                         </Typography>
+
+                        {/* See details toggle */}
+                        <Button
+                          variant="text"
+                          size="small"
+                          onClick={() => toggleStop(s.stop)}
+                          sx={{ ml: 1 }}
+                        >
+                          {expandedStops.includes(s.stop) ? "Hide details" : "See details"}
+                        </Button>
+
+                        {/* Collapsible product breakdown */}
+                        {expandedStops.includes(s.stop) && (
+                          <Box sx={{ pl: 2, mt: 1 }}>
+                            {s.packages.map((pkgID) => {
+                              const details = getPackageDetails(pkgID);
+                              return (
+                                <Card
+                                  key={pkgID}
+                                  variant="outlined"
+                                  sx={{ mb: 1, p: 1 }}
+                                >
+                                  <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                                    {pkgID}
+                                  </Typography>
+                                  <ul style={{ margin: 0, paddingLeft: 16 }}>
+                                    {details.map((prod) => (
+                                      <li
+                                        key={`${pkgID}-${prod.prod_ID}`}
+                                        style={{
+                                          fontSize: 14,
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: 6,
+                                        }}
+                                      >
+                                        <span
+                                          style={{
+                                            width: 12,
+                                            height: 12,
+                                            background: prod.color,
+                                            border: "1px solid #000",
+                                          }}
+                                        />
+                                        {prod.prodName} ({prod.prod_ID}): {prod.qty}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </Card>
+                              );
+                            })}
+                          </Box>
+                        )}
                       </li>
                     ))}
                   </ol>
                 </Box>
-              )}
-
-              {/* Product index */}
-              {!!openTruck.productLegend?.length && (
-                <>
-                  <Divider sx={{ my: 2 }} />
-                  <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
-                    Product index (color-coded)
-                  </Typography>
-                  <Grid container spacing={2}>
-                    {openTruck.productLegend.map((p) => (
-                      <Grid item xs={12} key={p.prod_ID}>
-                        <Card variant="outlined">
-                          <CardContent>
-                            <Stack
-                              direction="row"
-                              spacing={1}
-                              alignItems="center"
-                              sx={{ mb: 1 }}
-                            >
-                              <span
-                                style={{
-                                  width: 14,
-                                  height: 14,
-                                  background: p.color,
-                                  border: "1px solid #000",
-
-                                }}
-                              />
-                              <Typography style={{ fontWeight: 600, fontSize: 17 }}>
-                                {getProductName(p.prod_ID)} ({p.prod_ID}) — {p.totalQty}
-                              </Typography>
-                            </Stack>
-
-                            {!!p.byPackage?.length && (
-                              <>
-                                <Typography
-                                  variant="caption"
-                                  sx={{ fontWeight: 600, fontSize: 16 }}
-                                >
-                                  By package:
-                                </Typography>
-                                <ul style={{ margin: 0, paddingLeft: 16 }}>
-                                  {p.byPackage.map((bp) => (
-                                    <li
-                                      key={bp.pack_ID}
-                                      style={{
-                                        fontSize: 15,
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: 6,
-                                      }}
-                                    >
-                                      <span
-                                        style={{
-                                          width: 10,
-                                          height: 10,
-                                          background: bp.color || p.color,
-                                          border: "1px solid #000",
-                                        }}
-                                      />
-                                      {bp.pack_ID}: {bp.qty}
-                                    </li>
-                                  ))}
-                                </ul>
-                              </>
-                            )}
-
-                            {!!p.byStop?.length && (
-                              <>
-                                <Typography
-                                  variant="caption"
-                                  sx={{
-                                    fontWeight: 600,
-                                    mt: 1,
-                                    display: "block",
-                                    fontSize: 16,
-                                  }}
-                                >
-                                  By stop:
-                                </Typography>
-                                <ul style={{ margin: 0, paddingLeft: 16 }}>
-                                  {p.byStop.map((bs) => (
-                                    <li
-                                      key={`${p.prod_ID}-stop-${bs.stop}`}
-                                      style={{ fontSize: 16 }}
-                                    >
-                                      Stop {bs.stop}: {bs.qty}
-                                    </li>
-                                  ))}
-                                </ul>
-                              </>
-                            )}
-                          </CardContent>
-                        </Card>
-                      </Grid>
-                    ))}
-                  </Grid>
-                </>
               )}
             </Grid>
           </Grid>
