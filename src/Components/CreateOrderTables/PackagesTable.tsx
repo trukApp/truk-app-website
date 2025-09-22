@@ -9,6 +9,7 @@ import { Location } from '../MasterDataComponents/Locations';
 import moment from 'moment';
 
 export interface Product {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     product_name: any;
     prod_ID: string;
     quantity: number;
