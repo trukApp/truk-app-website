@@ -10,7 +10,6 @@ import {
   Typography,
   Button,
   Chip,
-  Divider,
   Stack,
 } from "@mui/material";
 import { useGetAllProductsQuery } from "@/api/apiSlice";
