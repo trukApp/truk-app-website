@@ -91,8 +91,8 @@ const DockForm = () => {
 	// const getAllCarriers =carriersData?.carriers.length > 0 ? carriersData?.carriers : [];
 	const getAllCarriers = carriersData?.carriers?.length
 		? carriersData.carriers.filter(
-				(carrier: CarrierFormBE) => carrier.contract === 1
-		  )
+			(carrier: CarrierFormBE) => carrier.contract === 1
+		)
 		: [];
 	const { data: locationsData } = useGetLocationMasterQuery({});
 	const getAllLocations =
@@ -120,7 +120,7 @@ const DockForm = () => {
 				setToTime(parsedTo);
 			}
 		}
-	}; 
+	};
 	const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
 		setAnchorEl(event.currentTarget);
 		const currentValue = formik.values.dock_timings || "";
@@ -138,7 +138,7 @@ const DockForm = () => {
 		}
 	};
 	const getLocationDetails = (loc_ID: string) => {
-		 
+
 		const location = getAllLocations?.find(
 			(loc: Location) => loc.loc_ID === loc_ID
 		);
@@ -169,7 +169,7 @@ const DockForm = () => {
 					},
 				],
 			};
- 
+
 			if (isEditing && editRow) {
 				const dock_ID = editRow.dock_ID;
 				const editBody = {
@@ -179,7 +179,7 @@ const DockForm = () => {
 					dock_timings: values.dock_timings,
 					dock_availability: values.dock_availability,
 					default_carriers: values.default_carriers,
-				}; 
+				};
 				const response = await editDock({ body: editBody, dock_ID }).unwrap();
 				if (response?.dock_ID) {
 					setSnackbarMessage(`Dock ID ${dock_ID} updated successfully!`);
@@ -257,7 +257,7 @@ const DockForm = () => {
 
 	const handleDelete = async (row: DockFormValues) => {
 		const dockId = row?.dock_ID;
-		if (!dockId) { 
+		if (!dockId) {
 			setSnackbarMessage("Error: Dock ID is missing!");
 			setSnackbarSeverity("error");
 			setSnackbarOpen(true);
@@ -272,7 +272,7 @@ const DockForm = () => {
 		}
 
 		try {
-			const response = await deleteDock(dockId); 
+			const response = await deleteDock(dockId);
 			if (response?.data?.deleted_record) {
 				setSnackbarMessage(
 					`Dock ID ${response?.data.deleted_record} deleted successfully!`
@@ -289,7 +289,7 @@ const DockForm = () => {
 	};
 
 	useEffect(() => {
-		if (editRow) { 
+		if (editRow) {
 			const locId = editRow?.locationId
 				? editRow.locationId.split(", ")[0] ?? ""
 				: "";
@@ -300,7 +300,7 @@ const DockForm = () => {
 				dock_name: editRow.dock_name || "",
 				dock_timings: editRow.dock_timings || "",
 				dock_availability: Boolean(editRow.dock_availability),
-				loc_ID: locId, 
+				loc_ID: locId,
 				default_carriers:
 					typeof editRow.default_carriers === "string"
 						? editRow.default_carriers.split(",").map((id) => id.trim())
@@ -429,7 +429,7 @@ const DockForm = () => {
 								}
 								helperText={
 									formik.touched?.locationId &&
-									typeof formik.errors?.locationId === "string"
+										typeof formik.errors?.locationId === "string"
 										? formik.errors.locationId
 										: ""
 								}
@@ -540,8 +540,8 @@ const DockForm = () => {
 											label="From Time"
 											value={fromTime}
 											onChange={(newValue) => {
-												setFromTime(newValue);
-												updateDockTimings(newValue, toTime);
+												setFromTime(newValue as Dayjs | null);
+												updateDockTimings(newValue as Dayjs | null, toTime);
 											}}
 											ampm
 											slotProps={{
@@ -553,8 +553,8 @@ const DockForm = () => {
 											label="To Time"
 											value={toTime}
 											onChange={(newValue) => {
-												setToTime(newValue);
-												updateDockTimings(fromTime, newValue);
+												setToTime(newValue as Dayjs | null);
+												updateDockTimings(fromTime, newValue as Dayjs | null);
 											}}
 											ampm
 											minutesStep={1}
