@@ -821,6 +821,37 @@ export const apiSlice = createApi({
       invalidatesTags: [{ type: "Orders", id: "LIST" }],
     }),
 
+    editAuctionByOrderID: builder.mutation({
+      query: ({ body, params }) => {
+        return {
+          url: "assignment-bid/edit-bid",
+          method: "PUT",
+          body,
+          params
+        };
+      },
+      invalidatesTags: [{ type: "Orders", id: "LIST" }],
+    }),
+
+    cancelAuction: builder.mutation({
+      query: (params) => ({
+        url: "assignment-bid/cancel-bid",
+        method: "POST",
+        // body,
+        params
+      }),
+      invalidatesTags: [{ type: "Orders", id: "LIST" }],
+    }),
+
+    assignToLowestBid: builder.mutation({
+      query: (body) => ({
+        url: "assignment-bid/close-bid",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "Orders", id: "LIST" }],
+    }),
+
     getOrderAssignedToCarrier: builder.query({
       query: (params) => ({
         url: `carrier-assignment/assigned-order-by-id`,
@@ -860,7 +891,7 @@ export const apiSlice = createApi({
         method: "GET",
         params: { order_ID: orderId },
       }),
-      // providesTags: [],
+      providesTags: [{ type: "Orders", id: "LIST" }],
     }),
   }),
 
@@ -953,5 +984,8 @@ export const {
   useGetDockRequestsQuery,
   useGetDocksByLocationIdQuery,
   useEditAllocateDockToCarrierMutation,
-  useGetBidsByOrderIdQuery
+  useGetBidsByOrderIdQuery,
+  useEditAuctionByOrderIDMutation,
+  useCancelAuctionMutation,
+  useAssignToLowestBidMutation
 } = apiSlice;

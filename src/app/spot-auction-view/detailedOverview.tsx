@@ -183,7 +183,7 @@ const OrderDetailedOverview: React.FC = () => {
                     </Paper>
                 )}
                 {bidsData?.data?.length > 0 && (
-                    <BidsOverview bidsData={bidsData.data} carriers={allCarriersData} />
+                    <BidsOverview bidsData={bidsData.data} carriers={allCarriersData} orderId={orderId} />
                 )}
                 {orderData?.allocations && (
                     <Allocations

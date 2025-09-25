@@ -53,18 +53,20 @@ import {
 } from "@/api/apiSlice";
 import SnackbarAlert from "../ReusableComponents/SnackbarAlerts";
 import { Driver } from "../BusinessPartnersForms/DriverForm";
-import moment from "moment";
+import moment, { Moment } from "moment";
 import Image from "next/image";
 import AdditionalInformation from "@/Components/CreatePackageTabs/AddtionalInformation";
 import { DeviceInfoBE } from "../MasterDataComponents/DeviceMaster";
 import { Location } from "../MasterDataComponents/Locations";
-import { Field, Form, Formik } from "formik";
+import { Field, FieldProps, Form, Formik } from "formik";
 import * as Yup from "yup";
 import { VehicleDetails } from "../MasterDataComponents/Vehicles";
 import { TruckFormDetails } from "@/app/vehicle/page";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 import CloseIcon from "@mui/icons-material/Close";
+import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 
 const style = {
 	position: "absolute",
@@ -79,7 +81,7 @@ const style = {
 };
 interface BiddingModalProps {
 	bid_value: string;
-	bid_timing: string;
+	// bid_timing: string;
 	bid_start_time: string;
 	bid_end_time: string;
 }
@@ -625,15 +627,21 @@ const Allocations: React.FC<AllocationsProps> = ({
 	const handleCreateVehicle = () => {
 		setOpen(true);
 	};
-	const validationSchemaBidding = Yup.object({
-		bid_value: Yup.string().required("Bid value is required"),
-		bid_timing: Yup.string().required("Bid timing is required"),
-		bid_start_time: Yup.string().required("Bid start time is required"),
-		bid_end_time: Yup.date()
-			.min(Yup.ref("bid_start_time"), "End time must be after start time")
-			.required("Bid end time is required"),
 
-	});
+	// const validationSchemaBidding = Yup.object({
+	// 	bid_value: Yup.string().required("Bid value is required"),
+	// 	// bid_timing: Yup.string().required("Bid timing is required"),
+
+	// 	// Start time must be a valid date
+	// 	bid_start_time: Yup.date()
+	// 		.required("Bid start time is required"),
+
+	// 	// End time must be a valid date and >= start time
+	// 	bid_end_time: Yup.date()
+	// 		.required("Bid end time is required")
+	// 		.min(Yup.ref("bid_start_time"), "End time must be after or equal to start time"),
+	// });
+
 	const handleCloseReject = () => {
 		setOpenReject(false);
 	};
@@ -684,19 +692,15 @@ const Allocations: React.FC<AllocationsProps> = ({
 	};
 	const handleBidSubmit = async (values: BiddingModalProps) => {
 
-		const formattedStartDate = new Date(values.bid_start_time)
-			.toISOString()
-			.slice(0, 19);
+		const formattedStartDate = moment(values.bid_start_time).format("YYYY-MM-DDTHH:mm:ss");
+		const formattedEndDate = moment(values.bid_end_time).format("YYYY-MM-DDTHH:mm:ss");
 
-		const formattedEndDate = new Date(values.bid_end_time)
-			.toISOString()
-			.slice(0, 19);
 		const body = {
 			order_ID: orderId,
 			bid_value: values.bid_value,
-			bid_timing: values.bid_timing,
+			// bid_timing: values.bid_timing,
 			bid_start_time: formattedStartDate,
-			bid_end_time: formattedEndDate,
+			bid_closing_time: formattedEndDate,
 		};
 		try {
 			const response = await postInitiateBidding(body).unwrap();
@@ -706,6 +710,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 				setSnackbarSeverity("success");
 				setSnackbarOpen(true);
 				setBidModal(false);
+				setOpenBidding(false);
 			}
 		} catch (err) {
 			setSnackbarMessage(`Unable to sent bid request at this time, ${err}`);
@@ -1436,20 +1441,47 @@ const Allocations: React.FC<AllocationsProps> = ({
 							</DialogActions>
 						</Dialog>
 
-						<Dialog open={bidModal} onClose={() => setBidModal(false)}>
+						<Dialog open={bidModal} onClose={() => setBidModal(false)} fullWidth maxWidth="sm">
 							<DialogTitle>Go for Bidding</DialogTitle>
 							<DialogContent>
 								<Formik
 									initialValues={{
 										bid_value: "",
-										bid_timing: "",
-										bid_start_time: "",
-										bid_end_time: "",
+										bid_start_time: null as Moment | null,
+										bid_end_time: null as Moment | null,
 									}}
-									validationSchema={validationSchemaBidding}
-									onSubmit={handleBidSubmit}
+									validationSchema={Yup.object({
+										bid_value: Yup.string().required("Bid value is required"),
+										bid_start_time: Yup.mixed().required("Bid start time is required"),
+										bid_end_time: Yup.mixed()
+											.required("Bid end time is required")
+											.test(
+												"is-after-start",
+												"End time must be after start time",
+												function (value) {
+													const { bid_start_time } = this.parent;
+													if (!bid_start_time || !value) return false;
+													return moment(value).isSameOrAfter(moment(bid_start_time));
+												}
+											),
+									})}
+									onSubmit={(values, actions) => {
+										// Convert Moment to string for API
+										const payload: BiddingModalProps = {
+											bid_value: values.bid_value,
+											bid_start_time: values.bid_start_time
+												? moment(values.bid_start_time).format("YYYY-MM-DDTHH:mm:ss")
+												: "",
+											bid_end_time: values.bid_end_time
+												? moment(values.bid_end_time).format("YYYY-MM-DDTHH:mm:ss")
+												: "",
+										};
+
+										handleBidSubmit(payload);
+										actions.setSubmitting(false);
+									}}
 								>
-									{({ values, handleChange, handleBlur, errors, touched }) => (
+									{({ values, setFieldValue, errors, touched }) => (
 										<Form>
 											{/* Bid Value */}
 											<Field
@@ -1457,66 +1489,56 @@ const Allocations: React.FC<AllocationsProps> = ({
 												as={TextField}
 												label="Bid Value"
 												size="small"
-												value={values.bid_value}
-												onChange={handleChange}
-												onBlur={handleBlur}
 												fullWidth
 												margin="normal"
 												helperText={touched.bid_value && errors.bid_value}
 												error={touched.bid_value && Boolean(errors.bid_value)}
 											/>
 
-											{/* Bid Timing */}
-											<Field
-												name="bid_timing"
-												as={TextField}
-												size="small"
-												label="Bid Timing"
-												value={values.bid_timing}
-												onChange={handleChange}
-												onBlur={handleBlur}
-												fullWidth
-												margin="normal"
-												helperText={touched.bid_timing && errors.bid_timing}
-												error={touched.bid_timing && Boolean(errors.bid_timing)}
-											/>
+											{/* Date Time Pickers */}
 
-											{/* Bid Start Time */}
-											<Field
-												name="bid_start_time"
-												as={TextField}
-												size="small"
-												label="Bid Start Time"
-												type="datetime-local"
-												value={values.bid_start_time}
-												onChange={handleChange}
-												onBlur={handleBlur}
-												InputLabelProps={{ shrink: true }}
-												fullWidth
-												margin="normal"
-												helperText={touched.bid_start_time && errors.bid_start_time}
-												error={touched.bid_start_time && Boolean(errors.bid_start_time)}
-											/>
+											<LocalizationProvider dateAdapter={AdapterMoment}>
+												{/* Start Time */}
+												<Field name="bid_start_time">
+													{({ field }: FieldProps<Moment | null>) => (
+														<DateTimePicker
+															label="Bid Start Time"
+															value={field.value}
+															onChange={(val) => setFieldValue("bid_start_time", val)}
+															slotProps={{
+																textField: {
+																	size: "small",
+																	fullWidth: true,
+																	margin: "normal",
+																	error: Boolean(touched.bid_start_time && errors.bid_start_time),
+																	helperText: touched.bid_start_time && errors.bid_start_time,
+																},
+															}}
+														/>
+													)}
+												</Field>
 
-											{/* Bid End Time */}
-											<Field
-												name="bid_end_time"
-												as={TextField}
-												size="small"
-												label="Bid End Time"
-												type="datetime-local"
-												value={values.bid_end_time}
-												onChange={handleChange}
-												onBlur={handleBlur}
-												InputLabelProps={{ shrink: true }}
-												fullWidth
-												margin="normal"
-												inputProps={{
-													min: values.bid_start_time || undefined,
-												}}
-												helperText={touched.bid_end_time && errors.bid_end_time}
-												error={touched.bid_end_time && Boolean(errors.bid_end_time)}
-											/>
+												{/* End Time */}
+												<Field name="bid_end_time">
+													{({ field }: FieldProps<Moment | null>) => (
+														<DateTimePicker
+															label="Bid End Time"
+															value={field.value}
+															minDateTime={values.bid_start_time || undefined} // cannot select earlier
+															onChange={(val) => setFieldValue("bid_end_time", val)}
+															slotProps={{
+																textField: {
+																	size: "small",
+																	fullWidth: true,
+																	margin: "normal",
+																	error: Boolean(touched.bid_end_time && errors.bid_end_time),
+																	helperText: touched.bid_end_time && errors.bid_end_time,
+																},
+															}}
+														/>
+													)}
+												</Field>
+											</LocalizationProvider>
 
 											<DialogActions>
 												<Button onClick={() => setBidModal(false)}>Cancel</Button>

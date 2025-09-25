@@ -54,7 +54,7 @@ const SpotAuction: React.FC = () => {
     const ordersData: Order[] = allOrders?.orders || [];
 
     const biddingOrders = ordersData.filter(
-        (eachOrder) => eachOrder?.order_status == 'open bidding'
+        (eachOrder) => eachOrder?.order_status == 'open bidding' || eachOrder?.order_status == "bidding finalised"
     );
 
     const handleViewOrder = (orderId: string) => {
@@ -67,6 +67,7 @@ const SpotAuction: React.FC = () => {
         "carrier assignment": "#2196F3",
         "self assigned": "#4CAF50",
         "open bidding": "#9C27B0",
+        "bidding finalised": "#4CAF50"
     };
 
     const toPascalCase = (str: string) =>
@@ -180,11 +181,6 @@ const SpotAuction: React.FC = () => {
                     <Typography variant="h5" color="primary" sx={{ fontWeight: 600 }}>
                         Spot Auction Orders
                     </Typography>
-                    {/* <Typography variant="body1">
-                        Review and manage all aspects of your order including General Data,
-                        Partner Details, Delivery Information, Attachments, Statuses, and
-                        Flows.
-                    </Typography> */}
                 </Grid>
                 <Grid container justifyContent="flex-end" sx={{ mb: 2, mt: 2 }}>
                     <Grid item xs={12} sm={4} md={3}>
