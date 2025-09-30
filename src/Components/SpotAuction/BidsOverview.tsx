@@ -291,7 +291,7 @@ const BidsOverview: React.FC<BidsOverviewProps> = ({ bidsData, carriers, orderId
             })}
 
             {/* Cancel Dialog */}
-            <Dialog open={cancelDialogOpen} onClose={() => setCancelDialogOpen(false)}>
+            {/* <Dialog open={cancelDialogOpen} onClose={() => setCancelDialogOpen(false)}>
                 <DialogTitle sx={{ m: 0, p: 2, marginBottom: 2 }}>
                     Cancel Auction
                     <IconButton aria-label="close" onClick={() => setCancelDialogOpen(false)} sx={{ position: "absolute", right: 8, top: 8, color: (theme) => theme.palette.grey[500] }}>
@@ -305,9 +305,54 @@ const BidsOverview: React.FC<BidsOverviewProps> = ({ bidsData, carriers, orderId
                     <Button variant="contained" color="success" onClick={handleAssignToLowestBid}>Confirm Lowest Bid</Button>
                     <Button variant="contained" color="error" onClick={handleCancelAuction}>Cancel Auction</Button>
                 </DialogActions>
+            </Dialog> */}
+
+            {/* Cancel Dialog */}
+            <Dialog open={cancelDialogOpen} onClose={() => setCancelDialogOpen(false)}>
+                <DialogTitle sx={{ m: 0, p: 2, marginBottom: 2 }}>
+                    Cancel Auction
+                    <IconButton
+                        aria-label="close"
+                        onClick={() => setCancelDialogOpen(false)}
+                        sx={{
+                            position: "absolute",
+                            right: 8,
+                            top: 8,
+                            color: (theme) => theme.palette.grey[500],
+                        }}
+                    >
+                        <CloseIcon />
+                    </IconButton>
+                </DialogTitle>
+                <DialogContent dividers>
+                    <Typography sx={{ mb: 2 }}>
+                        {selectedBid?.all_bids?.length
+                            ? "Are you sure to cancel the Auction or confirm with lowest bid?"
+                            : "Are you sure to cancel the Auction?"}
+                    </Typography>
+                </DialogContent>
+                <DialogActions sx={{ mt: 2, mb: 2 }}>
+                    {/* Show confirm only if there are bids */}
+                    {(selectedBid?.all_bids?.length ?? 0) > 0 && (
+                        <Button
+                            variant="contained"
+                            color="success"
+                            onClick={handleAssignToLowestBid}
+                        >
+                            Confirm Lowest Bid
+                        </Button>
+                    )}
+
+                    <Button
+                        variant="contained"
+                        color="error"
+                        onClick={handleCancelAuction}
+                    >
+                        Cancel Auction
+                    </Button>
+                </DialogActions>
             </Dialog>
 
-            {/* Edit Dialog */}
             <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} fullWidth maxWidth="sm">
                 <DialogTitle>Edit Bid</DialogTitle>
                 <DialogContent>
