@@ -2,7 +2,7 @@
 import React, { useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
-import { useGetAllProductsQuery } from '@/api/apiSlice';
+// import { useGetAllProductsQuery } from '@/api/apiSlice';
 
 interface ProductLegendItem {
 	prod_ID: string;
@@ -45,8 +45,8 @@ const TruckScene: React.FC<TruckSceneProps> = ({
 	// productLegend,
 }) => {
 	const { length, width, height } = vehicleDimensions;
-	const { data: productsData } = useGetAllProductsQuery({});
-	const allProductsData = productsData?.products || [];
+	// const { data: productsData } = useGetAllProductsQuery({});
+	// const allProductsData = productsData?.products || [];
 	// Simple truck proportions for render only
 	const cabinLength = 1.6;
 	const cabinHeight = height * 0.6;
