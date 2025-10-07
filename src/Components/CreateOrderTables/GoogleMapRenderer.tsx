@@ -169,8 +169,21 @@ import {
     DirectionsRenderer,
 } from '@react-google-maps/api';
 
-interface GoogleMapRendererProps {
+// interface GoogleMapRendererProps {
+//     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+//     selectedVehicleData: any;
+// }
+
+export interface GoogleMapRendererProps {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     selectedVehicleData: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    matchedRoute: any;
+    directionsResults: google.maps.DirectionsResult[];
+    showReturnRoute: boolean;
+    returnRoute: google.maps.DirectionsResult | null;
+    alternateRoutes: google.maps.DirectionsResult[];
+    selectedRouteIndex: number | null;
 }
 
 const COLORS = ['#1A73E8', '#F08C24', '#34A853', '#FBBC05', '#EA4335'];
@@ -293,7 +306,7 @@ const GoogleMapRenderer: React.FC<GoogleMapRendererProps> = ({ selectedVehicleDa
         results.forEach((r, i) => drawResultAsPolyline(r, i));
         if (returnRes) {
             // draw return route using next color index (or use purple)
-            const idxOffset = results.length;
+            // const idxOffset = results.length;
             // prefer purple for return route for clarity
             const route = returnRes.routes[0];
             if (!route) return;
@@ -476,7 +489,7 @@ const GoogleMapRenderer: React.FC<GoogleMapRendererProps> = ({ selectedVehicleDa
                     </>
                 )}
 
-                {selectedVehicleData?.loadArrangement?.map((stop: any, index: number) => {
+                {selectedVehicleData?.loadArrangement?.map((stop: { location: string; packages: string[] }, index: number) => {
                     const directionResult = directionsResults[index];
                     const leg = directionResult?.routes?.[0]?.legs?.[0];
                     if (!leg) return null;

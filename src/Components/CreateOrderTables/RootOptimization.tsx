@@ -1,7 +1,7 @@
 // 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { GoogleMap, Marker, useLoadScript, DirectionsRenderer } from '@react-google-maps/api';
+import { useLoadScript } from '@react-google-maps/api';
 import { Box, Button, FormControl, InputLabel, Typography, Select, MenuItem, Card, CardContent, Grid, } from '@mui/material';
 import Image from 'next/image';
 import GoogleMapRenderer from './GoogleMapRenderer';
