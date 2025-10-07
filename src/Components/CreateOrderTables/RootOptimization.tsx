@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { GoogleMap, Marker, useLoadScript, DirectionsRenderer } from '@react-google-maps/api';
 import { Box, Button, FormControl, InputLabel, Typography, Select, MenuItem, Card, CardContent, Grid, } from '@mui/material';
 import Image from 'next/image';
+import GoogleMapRenderer from './GoogleMapRenderer';
 
 interface RoutePoint {
     address: string;
@@ -43,7 +44,7 @@ export interface RootOptimizationType {
 
 
 const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
-    // console.log('rootOptimization:', rootOptimization);
+    console.log('rootOptimization:', rootOptimization);
     const { isLoaded, loadError } = useLoadScript({ googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '' });
     const [selectedVehicle, setSelectedVehicle] = useState(() =>
         rootOptimization?.[0]
@@ -386,7 +387,7 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
 
                     </Box>
                 </Grid>
-                <Grid item xs={12} md={6} order={{ xs: 2, md: 1 }}>
+                {/* <Grid item xs={12} md={6} order={{ xs: 2, md: 1 }}>
                     <GoogleMap
                         mapContainerStyle={{ width: '100%', height: '600px' }}
                         zoom={6}
@@ -622,6 +623,17 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
                             </>
                         )}
                     </GoogleMap>
+                </Grid> */}
+                <Grid item xs={12} md={6} order={{ xs: 2, md: 1 }}>
+                    <GoogleMapRenderer
+                        selectedVehicleData={selectedVehicleData}
+                        matchedRoute={matchedRoute}
+                        directionsResults={directionsResults}
+                        showReturnRoute={showReturnRoute}
+                        returnRoute={returnRoute}
+                        alternateRoutes={alternateRoutes}
+                        selectedRouteIndex={selectedRouteIndex}
+                    />
                 </Grid>
             </Grid>
         </div >
