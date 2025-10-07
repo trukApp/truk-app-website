@@ -1239,11 +1239,11 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
   const [openTruckIndex, setOpenTruckIndex] = useState<number | null>(null);
   const [expandedStops, setExpandedStops] = useState<number[]>([]);
 
-  const toggleStop = (stop: number) => {
-    setExpandedStops((prev) =>
-      prev.includes(stop) ? prev.filter((s) => s !== stop) : [...prev, stop]
-    );
-  };
+  // const toggleStop = (stop: number) => {
+  //   setExpandedStops((prev) =>
+  //     prev.includes(stop) ? prev.filter((s) => s !== stop) : [...prev, stop]
+  //   );
+  // };
 
   const getProductName = (productID: string): string => {
     const productInfo = allProductsData.find(
@@ -1258,36 +1258,36 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
     return ` ${p.product_name}, Weight: ${p.weight} kg, ID: ${p.product_ID}`;
   };
 
-  const getPackageTotalQty = (packID: string): number => {
-    let total = 0;
-    openTruck?.productLegend?.forEach((prod) => {
-      const found = prod.byPackage.find((bp) => bp.pack_ID === packID);
-      if (found) total += found.qty;
-    });
-    return total;
-  };
+  // const getPackageTotalQty = (packID: string): number => {
+  //   let total = 0;
+  //   openTruck?.productLegend?.forEach((prod) => {
+  //     const found = prod.byPackage.find((bp) => bp.pack_ID === packID);
+  //     if (found) total += found.qty;
+  //   });
+  //   return total;
+  // };
 
-  const getPackageDetails = (packID: string) => {
-    return (
-      openTruck?.productLegend
-        ?.map((prod) => {
-          const found = prod.byPackage.find((bp) => bp.pack_ID === packID);
-          if (found) {
-            return {
-              prod_ID: prod.prod_ID,
-              prodName: getProductName(prod.prod_ID),
-              qty: found.qty,
-              color: found.color || prod.color,
-            };
-          }
-          return null;
-        })
-        .filter(
-          (x): x is { prod_ID: string; prodName: string; qty: number; color: string } =>
-            x !== null
-        ) || []
-    );
-  };
+  // const getPackageDetails = (packID: string) => {
+  //   return (
+  //     openTruck?.productLegend
+  //       ?.map((prod) => {
+  //         const found = prod.byPackage.find((bp) => bp.pack_ID === packID);
+  //         if (found) {
+  //           return {
+  //             prod_ID: prod.prod_ID,
+  //             prodName: getProductName(prod.prod_ID),
+  //             qty: found.qty,
+  //             color: found.color || prod.color,
+  //           };
+  //         }
+  //         return null;
+  //       })
+  //       .filter(
+  //         (x): x is { prod_ID: string; prodName: string; qty: number; color: string } =>
+  //           x !== null
+  //       ) || []
+  //   );
+  // };
 
   const getPercentage = (used: number, total: number): number =>
     total ? Math.round((used / total) * 100) : 0;

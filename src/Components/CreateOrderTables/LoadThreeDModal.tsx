@@ -627,7 +627,7 @@ const TruckScene: React.FC<TruckSceneProps> = ({
 	// cargo origin
 	const cargoBaseY = bodyLiftY;
 	const steelThickness = 0.05;
-	const steelTopY = cargoBaseY + steelThickness;
+	// const steelTopY = cargoBaseY + steelThickness;
 
 	const cameraDistance = Math.max(length, width, height) * 1.6;
 	const singleLayer = (truckCapacity?.allowedLayers ?? 1) <= 1;
