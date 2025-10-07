@@ -1623,20 +1623,20 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
                                     {pkgID}
                                   </Typography>
                                   <ul style={{ margin: 0, paddingLeft: 16 }}>
-                                    {details.map((prod: any) => (
+                                    {details.map((prod) => (
                                       <li
-                                        key={`${pkgID}-${prod.prod_ID}`}
+                                        key={`${pkgID}-${prod?.prod_ID}`}
                                         style={{ fontSize: 14, display: 'flex', alignItems: 'center', gap: 6 }}
                                       >
                                         <span
                                           style={{
                                             width: 12,
                                             height: 12,
-                                            background: prod.color,
+                                            background: prod?.color,
                                             border: '1px solid #000',
                                           }}
                                         />
-                                        {prod.prodName} ({prod.prod_ID}): {prod.qty}
+                                        {prod?.prodName} ({prod?.prod_ID}): {prod?.qty}
                                       </li>
                                     ))}
                                   </ul>
