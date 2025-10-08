@@ -12,10 +12,29 @@ export interface PackageBlock {
 	position: [number, number, number];
 }
 
+export interface TruckCapacity {
+	allowedLayers: number;
+	maxLayers?: number;
+	maxLayersByHeight?: number;
+	allowedByHeight?: number;
+	allowedBySF?: number;
+	layersUsed?: number;
+	oneLayerM3: number;
+	rawM3: number;
+	usableM3: number;
+	perLineLayers?: {
+		prod_ID: string;
+		pac_ID: string;
+		allowedLayers: number;
+	}[];
+}
+
 export interface TruckSceneProps {
 	vehicleDimensions: { length: number; width: number; height: number };
 	packageBlocks: PackageBlock[];
+	truckCapacity: TruckCapacity;
 }
+
 
 const CameraUpdater: React.FC<{ zoom: number }> = ({ zoom }) => {
 	const { camera } = useThree();
