@@ -1340,7 +1340,6 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
           b.dimensions?.[1] ?? 0,
           b.dimensions?.[2] ?? 0,
         ],
-        quantity: 1,
       });
     };
 
