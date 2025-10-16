@@ -185,10 +185,14 @@ const GoogleMapRenderer: React.FC<GoogleMapRendererProps> = ({ selectedVehicleDa
                     distanceValue: leg?.distance?.value ?? 0,
                     durationValue: leg?.duration?.value ?? 0,
                     durationTrafficValue: leg?.duration_in_traffic?.value,
+                    distanceTrafficValue: 0
                 });
             } catch (err) {
                 console.error('Directions request failed for segment', i, err);
-                summaries.push({ distanceValue: 0, durationValue: 0 });
+                summaries.push({
+                    distanceValue: 0, durationValue: 0,
+                    distanceTrafficValue: 0
+                });
             }
         }
 
