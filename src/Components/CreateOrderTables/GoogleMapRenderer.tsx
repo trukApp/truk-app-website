@@ -127,7 +127,7 @@ const GoogleMapRenderer: React.FC<GoogleMapRendererProps> = ({ selectedVehicleDa
         if (!route) return;
 
         route.legs.forEach((leg) => {
-            let path: google.maps.LatLngLiteral[] = [];
+            const path: google.maps.LatLngLiteral[] = [];
             leg.steps.forEach((step) => {
                 step.path.forEach((ll: google.maps.LatLng) => {
                     path.push({ lat: ll.lat(), lng: ll.lng() });
