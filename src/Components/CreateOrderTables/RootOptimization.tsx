@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
@@ -5,6 +6,7 @@ import { useLoadScript } from '@react-google-maps/api';
 import { Box, Button, FormControl, InputLabel, Typography, Select, MenuItem, Card, CardContent, Grid, } from '@mui/material';
 import Image from 'next/image';
 import GoogleMapRenderer from './GoogleMapRenderer';
+
 
 interface RoutePoint {
     address: string;
@@ -58,10 +60,13 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
     const [directionsResults, setDirectionsResults] = useState<google.maps.DirectionsResult[]>([]);
     const [showReturnRoute, setShowReturnRoute] = useState<boolean>(false);
     const [returnRoute, setReturnRoute] = useState<google.maps.DirectionsResult | null>(null);
-    const [selectedStop, setSelectedStop] = useState<string | null>(null);
     const [matchedRoute, setMatchedRoute] = useState<Route | null>(null);
     const [alternateRoutes, setAlternateRoutes] = useState<google.maps.DirectionsResult[]>([]);
     const [selectedRouteIndex, setSelectedRouteIndex] = useState<number | null>(null);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [routeSummary, setRouteSummary] = useState<any>(null);
+    console.log("routeSummary: ", routeSummary)
 
     const fetchDirections = useCallback(async () => {
         if (!isLoaded || typeof google === 'undefined' || !google.maps || !selectedVehicle) return;
@@ -106,82 +111,7 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
         setDirectionsResults(newDirectionsResults);
     }, [isLoaded, selectedVehicle, rootOptimization]);
 
-    const fetchReturnRoute = async () => {
-        if (!isLoaded || typeof google === 'undefined' || !google.maps) return;
 
-        const directionsService = new google.maps.DirectionsService();
-        const lastRoute = selectedVehicleData?.route[selectedVehicleData?.route.length - 1];
-        const firstRoute = selectedVehicleData?.route[0];
-
-        if (lastRoute && firstRoute) {
-            try {
-                const response = await new Promise<google.maps.DirectionsResult | null>((resolve) => {
-                    directionsService.route(
-                        {
-                            origin: { lat: lastRoute?.end?.latitude, lng: lastRoute?.end?.longitude },
-                            destination: { lat: firstRoute?.start?.latitude, lng: firstRoute?.start?.longitude },
-                            travelMode: google.maps.TravelMode.DRIVING,
-                        },
-                        (result, status) => {
-                            if (status === google.maps.DirectionsStatus.OK && result) {
-                                resolve(result);
-                            } else {
-                                console.warn('Failed to fetch return route:', status);
-                                resolve(null);
-                            }
-                        }
-                    );
-                });
-
-                setReturnRoute(response);
-                setShowReturnRoute(true);
-            } catch (error) {
-                console.log('Error fetching return route:', error);
-            }
-        }
-    };
-
-    const fetchAlternateRoutes = useCallback(async (matchedRoute: Route) => {
-        if (!isLoaded || typeof google === 'undefined' || !google.maps) return;
-
-        const directionsService = new google.maps.DirectionsService();
-
-        try {
-            const response = await new Promise<google.maps.DirectionsResult | null>((resolve) => {
-                directionsService.route(
-                    {
-                        origin: { lat: matchedRoute.start.latitude, lng: matchedRoute.start.longitude },
-                        destination: { lat: matchedRoute.end.latitude, lng: matchedRoute.end.longitude },
-                        travelMode: google.maps.TravelMode.DRIVING,
-                        // provideRouteAlternatives: true,
-                    },
-                    (result, status) => {
-                        if (status === google.maps.DirectionsStatus.OK && result) {
-                            resolve(result);
-                        } else {
-                            console.warn('Failed to fetch alternate routes:', status);
-                            resolve(null);
-                        }
-                    }
-                );
-            });
-            if (response && response.routes) {
-                const wrappedResults = response.routes.map((route) => ({
-                    routes: [route],
-                    request: response.request,
-                } as google.maps.DirectionsResult));
-                setAlternateRoutes(wrappedResults);
-            }
-
-        } catch (error) {
-            console.log('Error fetching alternate routes:', error);
-        }
-    }, [isLoaded]);
-
-    const clearReturnRoute = () => {
-        setReturnRoute(null);
-        setShowReturnRoute(false);
-    };
 
     useEffect(() => {
         fetchDirections();
@@ -193,25 +123,6 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
             vehicle.route?.[0]?.start?.address === selectedVehicle?.startAddress &&
             vehicle.route?.[0]?.end?.address === selectedVehicle?.endAddress
     );
-
-    const handleStopClick = (location: string) => {
-        if (selectedStop === location) {
-            setSelectedStop(null);
-            setMatchedRoute(null);
-            setAlternateRoutes([]);
-            setSelectedRouteIndex(null);
-        } else {
-            setSelectedStop(location);
-            const matchedRoute = selectedVehicleData?.route.find(
-                (route) => route?.start?.address === location || route?.end?.address === location
-            );
-            setMatchedRoute(matchedRoute || null);
-            setMatchedRoute(matchedRoute || null);
-            if (matchedRoute) {
-                fetchAlternateRoutes(matchedRoute);
-            }
-        }
-    };
 
     if (loadError) {
         return <p>Error loading maps: {loadError.message}</p>;
@@ -225,416 +136,260 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
         // console.warn('Google Maps API not available');
         return null;
     }
-    const handleRouteSelection = (index: number) => {
-        setSelectedRouteIndex(index);
-    };
     const handleVehicleSelection = (vehicle_ID: string, startAddress: string, endAddress: string) => {
         setSelectedVehicle({ vehicle_ID, startAddress, endAddress });
         setAlternateRoutes([]);
         setSelectedRouteIndex(null);
     };
+    // Format distance in meters → km/m
+    const formatDistance = (meters: number | undefined | null): string => {
+        if (meters == null || Number.isNaN(meters)) return '—';
+        if (meters >= 1000) return `${(meters / 1000).toFixed(1)} km`;
+        return `${meters} m`;
+    };
+
+    // Format duration in seconds → hr min
+    const formatDurationSeconds = (totalSeconds: number | undefined | null): string => {
+        if (totalSeconds == null || Number.isNaN(totalSeconds)) return '—';
+
+        let secs = Math.max(0, Math.floor(totalSeconds));
+
+        const days = Math.floor(secs / 86400);
+        secs -= days * 86400;
+
+        const hours = Math.floor(secs / 3600);
+        secs -= hours * 3600;
+
+        const minutes = Math.round(secs / 60);
+
+        const parts: string[] = [];
+        if (days > 0) parts.push(`${days} day${days > 1 ? 's' : ''}`);
+        if (hours > 0) parts.push(`${hours} hr`);
+        if (minutes > 0) parts.push(`${minutes} min`);
+        if (parts.length === 0) parts.push('0 min');
+
+        return parts.join(' ');
+    };
+
+
+
     return (
         <div>
-            <Grid container spacing={2}>
-                <Grid item xs={12} md={6} order={{ xs: 2, md: 1 }}>
-                    <Box sx={{ display: 'flex', gap: 1, marginBottom: 2 }}>
-                        {rootOptimization?.map((vehicle, index) => (
-                            <Button
-                                key={`${vehicle.vehicle_ID}_${index}`}
-                                variant={
-                                    selectedVehicle?.vehicle_ID === vehicle.vehicle_ID &&
-                                        selectedVehicle?.startAddress === vehicle?.route?.[0]?.start?.address &&
-                                        selectedVehicle?.endAddress === vehicle?.route?.[0]?.end?.address
-                                        ? 'contained'
-                                        : 'outlined'
-                                }
-                                onClick={() =>
-                                    handleVehicleSelection(
-                                        vehicle.vehicle_ID,
-                                        vehicle?.route?.[0]?.start?.address,
-                                        vehicle?.route?.[0]?.end?.address
-                                    )
-                                }
-                            >
-                                {vehicle?.vehicle_ID}
-                            </Button>
-                        ))}
-                    </Box>
-
-                    {selectedVehicleData && (
-                        <Box sx={{ marginBottom: 2, }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', padding: 1, border: '1px solid #ccc', marginBottom: 1, gap: '10px' }}>
-                                <Image
-                                    src="/start.svg"
-                                    alt="Start"
-                                    width={25}
-                                    height={25}
-                                    unoptimized
-                                />
-                                <Typography variant="h6">Start: {selectedVehicleData?.route[0]?.start.address}</Typography>
-                            </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', padding: 1, border: '1px solid #ccc', marginBottom: 1, gap: '10px' }}>
-                                <Image
-                                    src="/drop.svg"
-                                    alt="Start"
-                                    width={25}
-                                    height={25}
-                                    unoptimized
-                                />
-                                <Typography variant="h6">End: {selectedVehicleData?.route[selectedVehicleData?.route.length - 1]?.end.address}</Typography>
-                            </Box>
-                        </Box>
-                    )}
-                    <h1 style={{ color: '#F08C24', fontSize: '24px', fontWeight: 'bold', textDecorationLine: 'underline' }}>LoadArrangement</h1>
-                    {[...(selectedVehicleData?.loadArrangement || [])].reverse().map((stop, index) => (
-                        <Box
-                            key={index}
-                            sx={{
-                                padding: 1,
-                                border: '1px solid #ccc',
-                                marginBottom: 1,
-                                backgroundColor: selectedStop === stop.location ? '#F08C24' : 'transparent',
-                                color: selectedStop === stop.location ? '#fff' : '#000',
-                                cursor: 'pointer'
-                            }}
-                            onClick={() => handleStopClick(stop.location)}
-                        >
-                            <strong>Stop {index + 1}</strong>: {stop.location}
-                        </Box>
-                    ))}
+            <Grid container>
+                <Grid item xs={12} md={12}>
                     <Box
-                        display="flex"
-                        flexWrap="wrap"
-                        alignItems="center"
-                        gap={2}
-                        mb={2}
-                    >
-                        <Button
-                            variant="contained"
-                            onClick={showReturnRoute ? clearReturnRoute : fetchReturnRoute}
-                        >
-                            {showReturnRoute ? 'Show All Routes' : 'Show Return Route to Starting Point'}
-                        </Button>
-
-                        {alternateRoutes.length > 0 && (
-                            <FormControl sx={{ minWidth: 300 }} size="medium">
-                                <InputLabel>Select a Route</InputLabel>
-                                <Select
-                                    value={selectedRouteIndex ?? ''}
-                                    onChange={(e) => handleRouteSelection(Number(e.target.value))}
-                                    displayEmpty
-                                >
-                                    <MenuItem value="" disabled>
-                                        Select a Route
-                                    </MenuItem>
-                                    {alternateRoutes.map((result, index) => {
-                                        const route = result.routes[0];
-                                        const distance = route?.legs?.[0]?.distance?.text || 'N/A';
-                                        const duration = route?.legs?.[0]?.duration?.text || 'N/A';
-                                        return (
-                                            <MenuItem key={index} value={index}>
-                                                Route {index + 1}: {distance} - {duration}
-                                            </MenuItem>
-                                        );
-                                    })}
-                                </Select>
-                            </FormControl>
-                        )}
-
-                        {alternateRoutes.length === 0 && (() => {
-                            const totalDistance = selectedVehicleData?.route?.reduce((acc, route) => {
-                                const distanceValue = parseFloat(route?.distance?.replace(/[^\d.]/g, '') || '0');
-                                return acc + distanceValue;
-                            }, 0) ?? 0;
-
-                            const totalDurationMinutes = selectedVehicleData?.route?.reduce((acc, route) => {
-                                const durationText = route?.duration || '';
-
-                                let totalMinutes = 0;
-
-                                const dayMatch = durationText.match(/(\d+)\s*day/);
-                                const hourMatch = durationText.match(/(\d+)\s*hour/);
-                                const minuteMatch = durationText.match(/(\d+)\s*min/);
-
-                                if (dayMatch) totalMinutes += parseInt(dayMatch[1], 10) * 24 * 60;
-                                if (hourMatch) totalMinutes += parseInt(hourMatch[1], 10) * 60;
-                                if (minuteMatch) totalMinutes += parseInt(minuteMatch[1], 10);
-
-                                return acc + totalMinutes;
-                            }, 0) ?? 0;
-
-                            const days = Math.floor(totalDurationMinutes / (24 * 60));
-                            const remainingAfterDays = totalDurationMinutes % (24 * 60);
-                            const hours = Math.floor(remainingAfterDays / 60);
-                            const minutes = remainingAfterDays % 60;
-
-                            const durationParts = [];
-                            if (days > 0) durationParts.push(`${days} day${days > 1 ? 's' : ''}`);
-                            if (hours > 0) durationParts.push(`${hours} hour${hours > 1 ? 's' : ''}`);
-                            if (minutes > 0) durationParts.push(`${minutes} min${minutes > 1 ? 's' : ''}`);
-
-                            const finalDurationString = durationParts.join(' ');
-
-                            return (
-                                <Card variant="outlined" sx={{ minWidth: 200 }}>
-                                    <CardContent>
-                                        <Typography variant="subtitle1">Duration: {finalDurationString}</Typography>
-                                        <Typography variant="subtitle1">Distance: {totalDistance} km</Typography>
-                                    </CardContent>
-                                </Card>
-                            );
-                        })()}
-
-                    </Box>
-                </Grid>
-                {/* <Grid item xs={12} md={6} order={{ xs: 2, md: 1 }}>
-                    <GoogleMap
-                        mapContainerStyle={{ width: '100%', height: '600px' }}
-                        zoom={6}
-                        center={{
-                            lat: matchedRoute?.start?.latitude || selectedVehicleData?.route?.[0]?.start?.latitude || 16.5,
-                            lng: matchedRoute?.start?.longitude || selectedVehicleData?.route?.[0]?.start?.longitude || 80.6,
+                        sx={{
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: 1.5,
+                            mb: 3,
                         }}
                     >
-                        {showReturnRoute && returnRoute ? (
-                            <>
-                                <Marker
-                                    position={{
-                                        lat: selectedVehicleData?.route[selectedVehicleData?.route.length - 1]?.end.latitude || 0,
-                                        lng: selectedVehicleData?.route[selectedVehicleData?.route.length - 1]?.end.longitude || 0,
+                        {rootOptimization?.map((vehicle, index) => {
+                            const isSelected =
+                                selectedVehicle?.vehicle_ID === vehicle.vehicle_ID &&
+                                selectedVehicle?.startAddress === vehicle?.route?.[0]?.start?.address &&
+                                selectedVehicle?.endAddress === vehicle?.route?.[0]?.end?.address;
+
+                            return (
+                                <Button
+                                    key={`${vehicle.vehicle_ID}_${index}`}
+                                    variant={isSelected ? 'contained' : 'outlined'}
+                                    color={isSelected ? 'primary' : 'inherit'}
+                                    onClick={() =>
+                                        handleVehicleSelection(
+                                            vehicle.vehicle_ID,
+                                            vehicle?.route?.[0]?.start?.address,
+                                            vehicle?.route?.[0]?.end?.address
+                                        )
+                                    }
+                                    sx={{
+                                        textTransform: 'none',
+                                        px: 3,
+                                        py: 1,
+                                        fontWeight: 'bold',
+                                        borderRadius: 2,
+                                        boxShadow: isSelected ? '0 2px 8px rgba(0,0,0,0.2)' : 'none',
                                     }}
-                                    icon={{
-                                        url: '/start.svg',
-                                        scaledSize: new window.google.maps.Size(40, 40),
+                                >
+                                    🚚 {vehicle?.vehicle_ID}
+                                </Button>
+                            );
+                        })}
+                    </Box>
+
+                    {/* Route Details */}
+                    {selectedVehicleData && (
+                        <Grid container spacing={3} sx={{ mb: 3 }}>
+                            {/* Start & End */}
+                            <Grid item xs={12} md={6}>
+                                <Card
+                                    sx={{
+                                        p: 2,
+                                        borderRadius: 3,
+                                        boxShadow: '0 4px 10px rgba(0,0,0,0.08)',
+                                        background: 'linear-gradient(135deg, #fff 60%, #f9f9f9)',
                                     }}
-                                />
-                                <Marker
-                                    position={{
-                                        lat: selectedVehicleData?.route[0]?.start.latitude || 0,
-                                        lng: selectedVehicleData?.route[0]?.start.longitude || 0,
-                                    }}
-                                    icon={{
-                                        url: '/drop.svg',
-                                        scaledSize: new window.google.maps.Size(40, 40),
-                                    }}
-                                />
-                                <DirectionsRenderer
-                                    directions={returnRoute}
-                                    options={{
-                                        polylineOptions: {
-                                            strokeColor: 'purple',
-                                            strokeWeight: 5,
-                                        },
-                                        suppressMarkers: true,
-                                    }}
-                                />
-                            </>
-                        ) : selectedRouteIndex !== null ? (
-                            <>
-                                <Marker
-                                    position={{
-                                        lat: alternateRoutes[selectedRouteIndex]?.routes[0]?.legs[0]?.start_location?.lat() || 0,
-                                        lng: alternateRoutes[selectedRouteIndex]?.routes[0]?.legs[0]?.start_location?.lng() || 0,
-                                    }}
-                                    icon={{
-                                        url: '/start.svg',
-                                        scaledSize: new window.google.maps.Size(40, 40),
-                                    }}
-                                />
-                                <Marker
-                                    position={{
-                                        lat: alternateRoutes[selectedRouteIndex]?.routes[0]?.legs[0]?.end_location?.lat() || 0,
-                                        lng: alternateRoutes[selectedRouteIndex]?.routes[0]?.legs[0]?.end_location?.lng() || 0,
-                                    }}
-                                    icon={{
-                                        url: '/drop.svg',
-                                        scaledSize: new window.google.maps.Size(40, 40),
-                                    }}
-                                />
-                                <DirectionsRenderer
-                                    directions={alternateRoutes[selectedRouteIndex]}
-                                    options={{
-                                        polylineOptions: {
-                                            strokeColor: '#1A73E8',
-                                            strokeWeight: 6,
-                                        },
-                                        suppressMarkers: true,
-                                    }}
-                                />
-                            </>
-                        ) : alternateRoutes.length > 0 ? (
-                            <>
-                                {alternateRoutes.map((routeResult, index) => {
-                                    const firstLeg = routeResult?.routes?.[0]?.legs?.[0];
-                                    const isShortest = index === 0;
-                                    return (
-                                        <React.Fragment key={index}>
-                                            <Marker
-                                                position={{
-                                                    lat: firstLeg?.start_location?.lat() || 0,
-                                                    lng: firstLeg?.start_location?.lng() || 0,
-                                                }}
-                                                icon={{
-                                                    url: '/start.svg',
-                                                    scaledSize: new window.google.maps.Size(40, 40),
-                                                }}
-                                            />
-                                            <Marker
-                                                position={{
-                                                    lat: firstLeg?.end_location?.lat() || 0,
-                                                    lng: firstLeg?.end_location?.lng() || 0,
-                                                }}
-                                                icon={{
-                                                    url: '/drop.svg',
-                                                    scaledSize: new window.google.maps.Size(40, 40),
-                                                }}
-                                            />
-                                            <DirectionsRenderer
-                                                directions={routeResult}
-                                                options={{
-                                                    polylineOptions: {
-                                                        strokeColor: isShortest ? 'blue' : '#1A73E8',
-                                                        strokeWeight: isShortest ? 6 : 4,
-                                                    },
-                                                    suppressMarkers: true,
-                                                }}
-                                            />
-                                        </React.Fragment>
-                                    );
-                                })}
-                            </>
-                        ) : matchedRoute ? (
-                            <>
-                                <Marker
-                                    position={{ lat: matchedRoute?.start?.latitude, lng: matchedRoute?.start?.longitude }}
-                                    icon={{
-                                        url: '/start.svg',
-                                        scaledSize: new window.google.maps.Size(40, 40),
-                                    }}
-                                />
-                                <Marker
-                                    position={{ lat: matchedRoute?.end?.latitude, lng: matchedRoute?.end?.longitude }}
-                                    icon={{
-                                        url: '/drop.svg',
-                                        scaledSize: new window.google.maps.Size(40, 40),
-                                    }}
-                                />
-                                {matchedRoute && (
-                                    <div
-                                        style={{
-                                            position: 'absolute',
-                                            top: '50%',
-                                            left: '50%',
-                                            transform: 'translate(-50%, -50%)',
-                                            backgroundColor: '#fff',
-                                            padding: '8px',
-                                            borderRadius: '8px',
-                                            border: '1px solid #ccc',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                                            fontSize: '12px',
-                                            fontWeight: '500',
+                                >
+                                    <Typography
+                                        variant="h6"
+                                        sx={{
+                                            fontWeight: 'bold',
+                                            color: '#333',
+                                            mb: 2,
                                         }}
                                     >
-                                        <div>
-                                            <div>🕒 {matchedRoute?.duration}</div>
-                                            <div>{matchedRoute?.distance}</div>
-                                        </div>
-                                    </div>
-                                )}
-                                {directionsResults
-                                    .filter((_, index) => index === selectedVehicleData?.route?.findIndex(route =>
-                                        route?.start?.latitude === matchedRoute?.start?.latitude &&
-                                        route?.start?.longitude === matchedRoute?.start?.longitude &&
-                                        route?.end?.latitude === matchedRoute?.end?.latitude &&
-                                        route?.end?.longitude === matchedRoute?.end?.longitude
-                                    ))
-                                    .map((result, index) => (
-                                        <DirectionsRenderer
-                                            key={index}
-                                            directions={result}
-                                            options={{
-                                                polylineOptions: {
-                                                    strokeColor: 'blue',
-                                                    strokeWeight: 5,
-                                                },
-                                                suppressMarkers: true,
-                                            }}
-                                        />
-                                    ))}
-                            </>
-                        ) : (
-                            <>
-                                {selectedVehicleData?.route[0] && (
-                                    <Marker
-                                        position={{
-                                            lat: selectedVehicleData?.route[0]?.start?.latitude,
-                                            lng: selectedVehicleData?.route[0]?.start?.longitude,
-                                        }}
-                                        icon={{
-                                            url: '/start.svg',
-                                            scaledSize: new window.google.maps.Size(40, 40),
-                                        }}
-                                    />
-                                )}
-                                {selectedVehicleData?.route[selectedVehicleData?.route?.length - 1] && (
-                                    <Marker
-                                        position={{
-                                            lat: selectedVehicleData?.route[selectedVehicleData?.route?.length - 1].end?.latitude,
-                                            lng: selectedVehicleData?.route[selectedVehicleData?.route?.length - 1].end?.longitude,
-                                        }}
-                                        icon={{
-                                            url: '/drop.svg',
-                                            scaledSize: new window.google.maps.Size(40, 40),
-                                        }}
-                                    />
-                                )}
-                                {selectedVehicleData?.route?.slice(0, -1).map((route, index) => (
-                                    <Marker
-                                        key={index}
-                                        position={{ lat: route?.end?.latitude, lng: route?.end?.longitude }}
-                                        label={{
-                                            text: `P${index + 1}`,
-                                            color: 'white',
-                                            fontSize: '14px',
-                                            fontWeight: 'bold',
-                                        }}
-                                    // icon={{
-                                    //     url: '/midpoint.svg',
-                                    //     scaledSize: new window.google.maps.Size(40, 40),
-                                    // }}
-                                    />
-                                ))}
-                                {directionsResults?.map((result, index) => (
-                                    <DirectionsRenderer
-                                        key={index}
-                                        directions={result}
-                                        options={{
-                                            polylineOptions: {
-                                                strokeColor: 'blue',
-                                                strokeWeight: 5,
-                                            },
-                                            suppressMarkers: true,
-                                        }}
+                                        Route Details
+                                    </Typography>
 
-                                    />
-                                ))}
-                            </>
-                        )}
-                    </GoogleMap>
-                </Grid> */}
-                <Grid item xs={12} md={6} order={{ xs: 2, md: 1 }}>
-                    <GoogleMapRenderer
-                        selectedVehicleData={selectedVehicleData}
-                        matchedRoute={matchedRoute}
-                        directionsResults={directionsResults}
-                        showReturnRoute={showReturnRoute}
-                        returnRoute={returnRoute}
-                        alternateRoutes={alternateRoutes}
-                        selectedRouteIndex={selectedRouteIndex}
-                    />
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            p: 1.2,
+                                            borderRadius: 2,
+                                            backgroundColor: '#f4f6f8',
+                                            mb: 1.5,
+                                            gap: 1,
+                                        }}
+                                    >
+                                        <Image src="/start.svg" alt="Start" width={24} height={24} unoptimized />
+                                        <Typography sx={{ fontSize: 15, fontWeight: 500 }}>
+                                            <b>Start:</b> {selectedVehicleData?.route[0]?.start.address}
+                                        </Typography>
+                                    </Box>
+
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            p: 1.2,
+                                            borderRadius: 2,
+                                            backgroundColor: '#f4f6f8',
+                                            gap: 1,
+                                        }}
+                                    >
+                                        <Image src="/drop.svg" alt="End" width={24} height={24} unoptimized />
+                                        <Typography sx={{ fontSize: 15, fontWeight: 500 }}>
+                                            <b>End:</b>{' '}
+                                            {selectedVehicleData?.route[selectedVehicleData?.route.length - 1]?.end.address}
+                                        </Typography>
+                                    </Box>
+                                </Card>
+                                {/* {routeSummary && (
+                                    <Card sx={{ mt: 2, p: 2 }}>
+                                        <Typography variant="h6" sx={{ mb: 1 }}>
+                                            Route Summary
+                                        </Typography>
+
+                                        <Typography variant="body1">
+                                            Suggested Route Distance: {formatDistance(routeSummary.totalDistanceActual)},
+                                            Suggested Time to reach: {formatDurationSeconds(routeSummary.totalDurationActual)}
+                                        </Typography>
+
+                                        {routeSummary.showReoptimized && (
+                                            <>
+                                                <Typography variant="body1">
+                                                    Re-optimized Route Distance: {formatDistance(routeSummary.totalDistanceReroute)},
+                                                    Suggested Time to reach: {formatDurationSeconds(routeSummary.totalDurationReroute)}
+                                                </Typography>
+
+                                                <Typography variant="body2" sx={{ mt: 1 }}>
+                                                    Difference: <br />
+                                                    Distance: {routeSummary.distanceDiff !== 0 ? `+${formatDistance(routeSummary.distanceDiff)}` : '—'} <br />
+                                                    Time: {routeSummary.durationDiff !== 0 ? `+${formatDurationSeconds(routeSummary.durationDiff)}` : '—'}
+                                                </Typography>
+                                            </>
+                                        )}
+
+                                    </Card>
+                                )} */}
+
+
+
+
+                            </Grid>
+
+
+                            {/* Drop Points */}
+                            <Grid item xs={12} md={6}>
+                                <Card
+                                    sx={{
+                                        p: 2,
+                                        borderRadius: 3,
+                                        boxShadow: '0 4px 10px rgba(0,0,0,0.08)',
+                                        background: 'linear-gradient(135deg, #fff 60%, #f9f9f9)',
+                                        height: '100%',
+                                    }}
+                                >
+                                    <Typography
+                                        variant="h6"
+                                        sx={{
+                                            fontWeight: 'bold',
+                                            color: '#F08C24',
+                                            mb: 2,
+                                            textDecoration: 'underline',
+                                        }}
+                                    >
+                                        Drop Points
+                                    </Typography>
+
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: 1,
+                                            maxHeight: 200,
+                                            overflowY: 'auto',
+                                            pr: 1,
+                                        }}
+                                    >
+                                        {[...(selectedVehicleData?.loadArrangement || [])].map((stop, index) => (
+                                            <Box
+                                                key={index}
+                                                sx={{
+                                                    p: 1.2,
+                                                    border: '1px solid #ddd',
+                                                    borderRadius: 2,
+                                                    backgroundColor: '#fff',
+                                                    '&:hover': {
+                                                        backgroundColor: '#f5f5f5',
+                                                        cursor: 'pointer',
+                                                    },
+                                                }}
+                                            >
+                                                <Typography sx={{ fontSize: 14 }}>
+                                                    <strong>Stop {index + 1}:</strong> {stop.location}
+                                                </Typography>
+                                            </Box>
+                                        ))}
+                                    </Box>
+                                </Card>
+                            </Grid>
+                        </Grid>
+                    )}
+
+                    {/* Map Section */}
+                    <Card
+                        sx={{
+                            borderRadius: 3,
+                            overflow: 'hidden',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                        }}
+                    >
+                        <GoogleMapRenderer
+                            selectedVehicleData={selectedVehicleData}
+                            matchedRoute={matchedRoute}
+                            directionsResults={directionsResults}
+                            showReturnRoute={showReturnRoute}
+                            returnRoute={returnRoute}
+                            alternateRoutes={alternateRoutes}
+                            selectedRouteIndex={selectedRouteIndex}
+                            onRouteSummaryChange={setRouteSummary}
+                        />
+                    </Card>
                 </Grid>
+
             </Grid>
         </div >
     );
