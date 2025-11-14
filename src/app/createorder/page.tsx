@@ -15,13 +15,27 @@ import { CustomButtonFilled, CustomButtonOutlined } from '@/Components/ReusableC
 import { setSelectedPackages, setSelectedTrucks } from '@/store/authSlice';
 import { useMediaQuery, useTheme } from '@mui/material';
 
+// interface ConfirmPayload {
+//     message?: string;
+//     totalCost?: number;
+//     allocations?: [];
+//     unallocatedPackages?: [];
+// }
+
+
+interface AllocationType {
+    vehicle_ID: string;
+    sampledRoutePoints?: { lat: number; lng: number }[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any; // keep flexible for backend fields
+}
+type RoutePointsMap = Record<string, { lat: number; lng: number }[]>;
 interface ConfirmPayload {
     message?: string;
     totalCost?: number;
-    allocations?: [];
-    unallocatedPackages?: [];
+    allocations: AllocationType[];
+    unallocatedPackages: [];
 }
-
 const CreateOrder: React.FC = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -36,13 +50,21 @@ const CreateOrder: React.FC = () => {
     const [createOrder, { isLoading: confirmOrderLoading }] = useConfomOrderMutation();
     const [selectTrucks, setSelectTrucks] = useState<Truck[]>([]);
     const [unAllocatedPackages, setUnAllocatedPackages] = useState<[]>([]);
-    const [conformOrderPayload, setConformOrderPayload] = useState<ConfirmPayload>({});
+    // const [conformOrderPayload, setConformOrderPayload] = useState<ConfirmPayload>({});
+    const [conformOrderPayload, setConformOrderPayload] = useState<ConfirmPayload>({
+        message: "",
+        totalCost: 0,
+        allocations: [],
+        unallocatedPackages: []
+    });
+
     const [modalOpen, setModalOpen] = useState(false);
     const [noVechilePopup, setNoVechilePopup] = useState(false);
     const filters = useAppSelector((state) => state.auth.filters);
     const [additionalDocs, setAdditionalDocs] = useState<{ [key: string]: string }[]>([]);
-
-
+    // const [updatedRoutePointsByVehicle, setUpdatedRoutePointsByVehicle] = useState({});
+    const [updatedRoutePointsByVehicle, setUpdatedRoutePointsByVehicle] = useState<RoutePointsMap>({});
+    console.log("updatedRoutePointsByVehicle:", updatedRoutePointsByVehicle);
     useEffect(() => {
         if (packageSelectErr) {
             if ("data" in packageSelectErr && packageSelectErr.data && typeof packageSelectErr.data === "object") {
@@ -91,14 +113,26 @@ const CreateOrder: React.FC = () => {
 
 
     const handleCreateOrder = async () => {
+        // const createOrderBody = {
+        //     scenario_label: conformOrderPayload?.message,
+        //     total_cost: conformOrderPayload?.totalCost,
+        //     allocations: conformOrderPayload?.allocations,
+        //     unallocated_packages: conformOrderPayload?.unallocatedPackages,
+        //     created_at: new Date().toISOString().split("T")[0],
+        //     order_docs: additionalDocs
+        // }
         const createOrderBody = {
             scenario_label: conformOrderPayload?.message,
             total_cost: conformOrderPayload?.totalCost,
-            allocations: conformOrderPayload?.allocations,
+            allocations: conformOrderPayload?.allocations.map(vehicle => ({
+                ...vehicle,
+                sampledRoutePoints: updatedRoutePointsByVehicle[vehicle.vehicle_ID] || vehicle.sampledRoutePoints || []
+            })),
             unallocated_packages: conformOrderPayload?.unallocatedPackages,
             created_at: new Date().toISOString().split("T")[0],
             order_docs: additionalDocs
-        }
+        };
+
         setModalOpen(false);
         try {
             const response = await createOrder(createOrderBody).unwrap();
@@ -300,7 +334,17 @@ const CreateOrder: React.FC = () => {
 
                 {activeStep === 2 && (
                     <div>
-                        <RootOptimization rootOptimization={selectTrucks as unknown as RootOptimizationType[]} />
+                        {/* <RootOptimization rootOptimization={selectTrucks as unknown as RootOptimizationType[]} /> */}
+                        <RootOptimization
+                            rootOptimization={selectTrucks as unknown as RootOptimizationType[]}
+                            onUpdateSampledPoints={(vehicle_ID, points) => {
+                                setUpdatedRoutePointsByVehicle(prev => ({
+                                    ...prev,
+                                    [vehicle_ID]: points
+                                }));
+                            }}
+                        />
+
                     </div>
                 )}
 

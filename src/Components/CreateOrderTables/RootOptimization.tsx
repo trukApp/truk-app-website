@@ -34,8 +34,13 @@ interface VehicleData {
     loadArrangement: LoadArrangement[];
 }
 
+// interface Props {
+//     rootOptimization: VehicleData[];
+// }
+
 interface Props {
     rootOptimization: VehicleData[];
+    onUpdateSampledPoints: (vehicle_ID: string, points: { lat: number, lng: number }[]) => void;
 }
 
 export interface RootOptimizationType {
@@ -45,7 +50,7 @@ export interface RootOptimizationType {
 }
 
 
-const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
+const RootOptimization: React.FC<Props> = ({ rootOptimization, onUpdateSampledPoints }) => {
     console.log('rootOptimization:', rootOptimization);
     const { isLoaded, loadError } = useLoadScript({ googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '' });
     const [selectedVehicle, setSelectedVehicle] = useState(() =>
@@ -276,41 +281,38 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
                                         </Typography>
                                     </Box>
                                 </Card>
-                                {/* {routeSummary && (
+                                {routeSummary && (
                                     <Card sx={{ mt: 2, p: 2 }}>
                                         <Typography variant="h6" sx={{ mb: 1 }}>
                                             Route Summary
                                         </Typography>
 
                                         <Typography variant="body1">
-                                            Suggested Route Distance: {formatDistance(routeSummary.totalDistanceActual)},
-                                            Suggested Time to reach: {formatDurationSeconds(routeSummary.totalDurationActual)}
+                                            <b>Suggested Route:</b><br />
+                                            Distance: {formatDistance(routeSummary.totalDistanceActual)}<br />
+                                            Duration: {formatDurationSeconds(routeSummary.totalDurationActual)}
                                         </Typography>
 
                                         {routeSummary.showReoptimized && (
                                             <>
-                                                <Typography variant="body1">
-                                                    Re-optimized Route Distance: {formatDistance(routeSummary.totalDistanceReroute)},
-                                                    Suggested Time to reach: {formatDurationSeconds(routeSummary.totalDurationReroute)}
+                                                <Typography variant="body1" sx={{ mt: 1 }}>
+                                                    <b>Re-Optimized Route:</b><br />
+                                                    Distance: {formatDistance(routeSummary.totalDistanceReroute)}<br />
+                                                    Duration: {formatDurationSeconds(routeSummary.totalDurationReroute)}
                                                 </Typography>
 
                                                 <Typography variant="body2" sx={{ mt: 1 }}>
-                                                    Difference: <br />
-                                                    Distance: {routeSummary.distanceDiff !== 0 ? `+${formatDistance(routeSummary.distanceDiff)}` : '—'} <br />
-                                                    Time: {routeSummary.durationDiff !== 0 ? `+${formatDurationSeconds(routeSummary.durationDiff)}` : '—'}
+                                                    <b>Difference:</b><br />
+                                                    Distance: {routeSummary.distanceDiff > 0 ? '+' : ''}
+                                                    {formatDistance(routeSummary.distanceDiff)}<br />
+                                                    Duration: {routeSummary.durationDiff > 0 ? '+' : ''}
+                                                    {formatDurationSeconds(routeSummary.durationDiff)}
                                                 </Typography>
                                             </>
                                         )}
-
                                     </Card>
-                                )} */}
-
-
-
-
+                                )}
                             </Grid>
-
-
                             {/* Drop Points */}
                             <Grid item xs={12} md={6}>
                                 <Card
@@ -386,6 +388,18 @@ const RootOptimization: React.FC<Props> = ({ rootOptimization }) => {
                             alternateRoutes={alternateRoutes}
                             selectedRouteIndex={selectedRouteIndex}
                             onRouteSummaryChange={setRouteSummary}
+                            // onSampledRoutePointsChange={(points) => {
+                            //     console.log('✅ Received sampled route points:', points.length);
+                            //     console.log(points); // preview first few
+                            // }}
+
+                            onSampledRoutePointsChange={(vehliceId, points) => {
+                                console.log("Received sampled route points:", points);
+                                if (selectedVehicleData?.vehicle_ID) {
+                                    onUpdateSampledPoints(vehliceId, points);
+                                }
+                            }}
+
                         />
                     </Card>
                 </Grid>

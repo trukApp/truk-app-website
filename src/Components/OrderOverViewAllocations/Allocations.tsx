@@ -1595,6 +1595,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 													paddingTop: 0.7,
 													paddingBottom: 0.3,
 													borderRadius: 1.5,
+													textTransform: "capitalize",
 												}}
 											>
 												{order?.order?.order_status}

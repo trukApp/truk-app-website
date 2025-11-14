@@ -1,3 +1,5 @@
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -37,7 +39,19 @@ export interface GoogleMapRendererProps {
             durationText: string;
             delayText?: string;
         }[];
+        alternateRoute?: {
+            distance: number;
+            duration: number;
+            distanceDiff: number;
+            durationDiff: number;
+        };
     }) => void;
+    // onSampledRoutePointsChange?: (points: { lat: number; lng: number }[]) => void; // ✅ NEW
+    onSampledRoutePointsChange?: (
+        vehicle_ID: string,
+        points: { lat: number; lng: number }[]
+    ) => void;
+
 }
 
 
@@ -83,15 +97,18 @@ const formatDistance = (meters: number | undefined | null): string => {
     return `${meters} m`;
 };
 
-const GoogleMapRenderer: React.FC<GoogleMapRendererProps> = ({ selectedVehicleData, onRouteSummaryChange }) => {
+const GoogleMapRenderer: React.FC<GoogleMapRendererProps> = ({ selectedVehicleData, onRouteSummaryChange, onSampledRoutePointsChange }) => {
+    console.log("Rendering GoogleMapRenderer with selectedVehicleData:", selectedVehicleData);
     const defaultCenter = {
         lat: selectedVehicleData?.route?.[0]?.start?.latitude || 16.5,
         lng: selectedVehicleData?.route?.[0]?.start?.longitude || 80.6,
     };
-    const [suggestedRouteSummary, setSuggestedRouteSummary] = useState<{
-        totalDistance: number;
-        totalDuration: number;
-    } | null>(null);
+    // const [suggestedRouteSummary, setSuggestedRouteSummary] = useState<{
+    //     totalDistance: number;
+    //     totalDuration: number;
+    // } | null>(null);
+
+    const suggestedRouteRef = useRef<{ totalDistance: number; totalDuration: number } | null>(null);
 
     const { isLoaded } = useJsApiLoader({
         googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '',
@@ -100,6 +117,7 @@ const GoogleMapRenderer: React.FC<GoogleMapRendererProps> = ({ selectedVehicleDa
     const mapRef = useRef<google.maps.Map | null>(null);
     const polylinesRef = useRef<google.maps.Polyline[]>([]);
     const [directionsResults, setDirectionsResults] = useState<google.maps.DirectionsResult[]>([]);
+    const [alternateRoutes, setAlternateRoutes] = useState<google.maps.DirectionsRoute[]>([]);
     const [activeMarker, setActiveMarker] = useState<number | null>(null);
     const [showTraffic, setShowTraffic] = useState(false);
     const [avoidTolls, setAvoidTolls] = useState(false);
@@ -158,10 +176,14 @@ const GoogleMapRenderer: React.FC<GoogleMapRendererProps> = ({ selectedVehicleDa
 
     const calculateRoutes = async () => {
         if (!isLoaded || !window.google || !selectedVehicleData?.route?.length) return;
+
         const directionsService = new window.google.maps.DirectionsService();
         const newResults: google.maps.DirectionsResult[] = [];
         const summaries: {
-            distanceTrafficValue: number; distanceValue: number; durationValue: number; durationTrafficValue?: number
+            distanceTrafficValue: number;
+            distanceValue: number;
+            durationValue: number;
+            durationTrafficValue?: number;
         }[] = [];
 
         for (let i = 0; i < selectedVehicleData.route.length; i++) {
@@ -171,6 +193,7 @@ const GoogleMapRenderer: React.FC<GoogleMapRendererProps> = ({ selectedVehicleDa
                     origin: { lat: segment.start.latitude, lng: segment.start.longitude },
                     destination: { lat: segment.end.latitude, lng: segment.end.longitude },
                     travelMode: window.google.maps.TravelMode.DRIVING,
+                    provideRouteAlternatives: true,
                     drivingOptions: {
                         departureTime: new Date(),
                         trafficModel: window.google.maps.TrafficModel.BEST_GUESS,
@@ -180,18 +203,24 @@ const GoogleMapRenderer: React.FC<GoogleMapRendererProps> = ({ selectedVehicleDa
                 });
 
                 newResults.push(result);
+
                 const leg = result.routes[0]?.legs?.[0];
                 summaries.push({
                     distanceValue: leg?.distance?.value ?? 0,
                     durationValue: leg?.duration?.value ?? 0,
                     durationTrafficValue: leg?.duration_in_traffic?.value,
-                    distanceTrafficValue: 0
+                    distanceTrafficValue: 0,
                 });
+
+                if (result?.routes?.length > 1) {
+                    setAlternateRoutes(result.routes.slice(1));
+                }
             } catch (err) {
-                console.error('Directions request failed for segment', i, err);
+                console.error("Directions request failed for segment", i, err);
                 summaries.push({
-                    distanceValue: 0, durationValue: 0,
-                    distanceTrafficValue: 0
+                    distanceValue: 0,
+                    durationValue: 0,
+                    distanceTrafficValue: 0,
                 });
             }
         }
@@ -199,95 +228,154 @@ const GoogleMapRenderer: React.FC<GoogleMapRendererProps> = ({ selectedVehicleDa
         setDirectionsResults(newResults);
         setSummaryByLeg(summaries);
 
+        // -------------------------------------------------------------------
+        // ✅ Gather and sample route points (same logic as backend)
+        // -------------------------------------------------------------------
+        const allCoords: { lat: number; lng: number }[] = [];
+        newResults.forEach(result => {
+            result.routes[0]?.legs.forEach(leg => {
+                leg.steps.forEach(step => {
+                    step.path.forEach((p: google.maps.LatLng) => {
+                        allCoords.push({ lat: p.lat(), lng: p.lng() });
+                    });
+                });
+            });
+        });
 
-        // if (onRouteSummaryChange) {
-        //     const totalDistanceActual = summaries.reduce((acc, s) => acc + (s.distanceValue ?? 0), 0);
-        //     const totalDistanceReroute = summaries.reduce(
-        //         (acc, s) => acc + (s.distanceTrafficValue ?? s.distanceValue ?? 0),
-        //         0
-        //     );
-        //     const totalDurationActual = summaries.reduce((acc, s) => acc + (s.durationValue ?? 0), 0);
-        //     const totalDurationReroute = summaries.reduce(
-        //         (acc, s) => acc + (s.durationTrafficValue ?? s.durationValue ?? 0),
-        //         0
-        //     );
+        // Helper: haversine distance (in km)
+        const distanceBetweenCoords = (
+            lat1: number, lng1: number, lat2: number, lng2: number
+        ) => {
+            const R = 6371; // Earth radius in km
+            const toRad = (deg: number) => (deg * Math.PI) / 180;
+            const dLat = toRad(lat2 - lat1);
+            const dLng = toRad(lng2 - lng1);
+            const a =
+                Math.sin(dLat / 2) ** 2 +
+                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+            return 2 * R * Math.asin(Math.sqrt(a));
+        };
 
-        //     onRouteSummaryChange({
-        //         totalDistanceActual: formatDistance(totalDistanceActual),
-        //         totalDistanceReroute: formatDistance(totalDistanceReroute),
-        //         totalDurationActual: formatDurationSeconds(totalDurationActual),
-        //         totalDurationReroute: formatDurationSeconds(totalDurationReroute),
-        //         distanceDiff: totalDistanceReroute - totalDistanceActual,
-        //         durationDiff: totalDurationReroute - totalDurationActual,
-        //         showReoptimized: avoidHighways || avoidTolls || showTraffic, // show reoptimized only if any condition is active
-        //     });
+        const sampleRoutePoints = (
+            coords: { lat: number; lng: number }[],
+            intervalKm = 20,
+            maxPoints = 30
+        ) => {
+            if (!coords.length) return [];
+            const out = [coords[0]];
+            let last = coords[0];
+            let acc = 0;
+
+            for (let i = 1; i < coords.length; i++) {
+                acc += distanceBetweenCoords(last.lat, last.lng, coords[i].lat, coords[i].lng);
+                if (acc >= intervalKm) {
+                    out.push(coords[i]);
+                    last = coords[i];
+                    acc = 0;
+                    if (out.length >= maxPoints) break;
+                }
+            }
+
+            if (out[out.length - 1] !== coords[coords.length - 1] && out.length < maxPoints)
+                out.push(coords[coords.length - 1]);
+
+            return out;
+        };
+
+        // 🧮 Sample every 20km (matches backend default)
+        const sampledRoutePoints = sampleRoutePoints(allCoords, 20, 30);
+
+
+        console.log(`📍 Total raw points: ${allCoords.length}`);
+        console.log(`✅ Sampled every 20km: ${sampledRoutePoints.length}`);
+        console.log("🔹 First 10 sampled:", sampledRoutePoints.slice(0, 10));
+
+        // if (onSampledRoutePointsChange) {
+        //     onSampledRoutePointsChange(sampledRoutePoints);
         // }
-        // if (onRouteSummaryChange) {
-        //     const totalDistanceActual = summaries.reduce((acc, s) => acc + (s.distanceValue ?? 0), 0);
-        //     const totalDistanceReroute = summaries.reduce(
-        //         (acc, s) => acc + (s.distanceTrafficValue ?? s.distanceValue ?? 0),
-        //         0
-        //     );
-        //     const totalDurationActual = summaries.reduce((acc, s) => acc + (s.durationValue ?? 0), 0);
-        //     const totalDurationReroute = summaries.reduce(
-        //         (acc, s) => acc + (s.durationTrafficValue ?? s.durationValue ?? 0),
-        //         0
-        //     );
 
-        //     onRouteSummaryChange({
-        //         // send raw values for calculation
-        //         totalDistanceActual,
-        //         totalDistanceReroute,
-        //         totalDurationActual,
-        //         totalDurationReroute,
-        //         distanceDiff: totalDistanceReroute - totalDistanceActual,
-        //         durationDiff: totalDurationReroute - totalDurationActual,
-        //         showReoptimized: avoidHighways || avoidTolls || showTraffic,
-        //     });
-        // }
-        if (onRouteSummaryChange && suggestedRouteSummary) {
-            const totalDistanceReroute = summaries.reduce(
-                (acc, s) => acc + (s.distanceValue ?? 0), // or traffic distance if you want
-                0
-            );
-            const totalDurationReroute = summaries.reduce(
-                (acc, s) => acc + (s.durationTrafficValue ?? s.durationValue ?? 0),
-                0
-            );
+        if (onSampledRoutePointsChange && selectedVehicleData?.vehicle_ID) {
+            onSampledRoutePointsChange(selectedVehicleData.vehicle_ID, sampledRoutePoints);
+        }
 
-            const legs = summaries.map((s, idx) => ({
-                stop: selectedVehicleData.route[idx]?.end?.location || `Stop ${idx + 1}`,
-                distanceText: formatDistance(s.distanceValue),
-                durationText: formatDurationSeconds(s.durationValue),
-                delayText: s.durationTrafficValue
-                    ? formatDurationSeconds(s.durationTrafficValue - s.durationValue)
-                    : undefined,
-            }));
+        // -------------------------------------------------------------------
+        // 🧭 Compute total distance + summary (same as before)
+        // -------------------------------------------------------------------
+        const totalDistance = summaries.reduce((sum, s) => sum + (s.distanceValue ?? 0), 0);
+        const totalDuration = summaries.reduce((sum, s) => sum + (s.durationValue ?? 0), 0);
 
+        if (!suggestedRouteRef.current) {
+            suggestedRouteRef.current = { totalDistance, totalDuration };
+        }
+
+        const baseDistance = suggestedRouteRef.current.totalDistance;
+        const baseDuration = suggestedRouteRef.current.totalDuration;
+
+        let altDistance = 0;
+        let altDuration = 0;
+        if (alternateRoutes.length > 0) {
+            const altLegs = alternateRoutes[0]?.legs || [];
+            altDistance = altLegs.reduce((sum, l) => sum + (l.distance?.value ?? 0), 0);
+            altDuration = altLegs.reduce((sum, l) => sum + (l.duration?.value ?? 0), 0);
+        }
+
+        const legs = summaries.map((s, idx) => ({
+            stop: selectedVehicleData.route[idx]?.end?.location || `Stop ${idx + 1}`,
+            distanceText: formatDistance(s.distanceValue),
+            durationText: formatDurationSeconds(s.durationValue),
+            delayText: s.durationTrafficValue
+                ? formatDurationSeconds(s.durationTrafficValue - s.durationValue)
+                : undefined,
+        }));
+
+        if (onRouteSummaryChange) {
             onRouteSummaryChange({
-                totalDistanceActual: suggestedRouteSummary.totalDistance,
-                totalDistanceReroute: totalDistanceReroute,
-                totalDurationActual: suggestedRouteSummary.totalDuration,
-                totalDurationReroute: totalDurationReroute,
-                distanceDiff: totalDistanceReroute - suggestedRouteSummary.totalDistance,
-                durationDiff: totalDurationReroute - suggestedRouteSummary.totalDuration,
-                totalDistance: formatDistance(suggestedRouteSummary.totalDistance),
-                totalDuration: formatDurationSeconds(suggestedRouteSummary.totalDuration),
+                totalDistanceActual: baseDistance,
+                totalDurationActual: baseDuration,
+                totalDistanceReroute: totalDistance,
+                totalDurationReroute: totalDuration,
+                distanceDiff: totalDistance - baseDistance,
+                durationDiff: totalDuration - baseDuration,
+                totalDistance: formatDistance(baseDistance),
+                totalDuration: formatDurationSeconds(baseDuration),
                 showReoptimized: avoidHighways || avoidTolls || showTraffic,
                 legs,
+                alternateRoute:
+                    altDistance > 0
+                        ? {
+                            distance: altDistance,
+                            duration: altDuration,
+                            distanceDiff: altDistance - baseDistance,
+                            durationDiff: altDuration - baseDuration,
+                        }
+                        : undefined,
             });
         }
 
+        // -------------------------------------------------------------------
+        // 🗺 Fit bounds + draw route
+        // -------------------------------------------------------------------
+        if (mapRef.current && newResults.length > 0) {
+            const bounds = new window.google.maps.LatLngBounds();
+            newResults.forEach(result => {
+                result.routes[0]?.legs.forEach(leg => {
+                    bounds.extend(leg.start_location);
+                    bounds.extend(leg.end_location);
+                });
+            });
+            setTimeout(() => {
+                mapRef.current?.fitBounds(bounds);
+            }, 300);
+        }
 
         setTimeout(() => {
             clearPolylines();
             newResults.forEach((r, i) => drawResultAsPolyline(r, i));
         }, 100);
-
-
     };
 
-    // 🌦 Fetch weather
+
+
     const fetchWeather = async (lat: number, lon: number) => {
         const apiKey = "9a970c97a2e4fb9b5a58541f3003fea3";
         const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
@@ -321,6 +409,28 @@ const GoogleMapRenderer: React.FC<GoogleMapRendererProps> = ({ selectedVehicleDa
             calculateRoutes();
         }
     }, [isLoaded, selectedVehicleData, avoidTolls, avoidHighways, showTraffic]);
+
+    // ✅ Whenever directionsResults updates (including reroutes), extract all route points
+    // useEffect(() => {
+    //     if (!directionsResults.length || !onSampledRoutePointsChange) return;
+
+    //     const allSampledPoints: { lat: number; lng: number }[] = [];
+
+    //     directionsResults.forEach(result => {
+    //         result.routes[0]?.legs.forEach(leg => {
+    //             leg.steps.forEach(step => {
+    //                 step.path.forEach((ll: google.maps.LatLng) => {
+    //                     allSampledPoints.push({ lat: ll.lat(), lng: ll.lng() });
+    //                 });
+    //             });
+    //         });
+    //     });
+
+    //     console.log("📍 Sending sampled route points to parent:", allSampledPoints.length);
+    //     onSampledRoutePointsChange(allSampledPoints);
+
+    // }, [directionsResults]);
+
 
     useEffect(() => {
         if (showWeather) {
@@ -559,3 +669,5 @@ const GoogleMapRenderer: React.FC<GoogleMapRendererProps> = ({ selectedVehicleDa
 };
 
 export default GoogleMapRenderer;
+
+
