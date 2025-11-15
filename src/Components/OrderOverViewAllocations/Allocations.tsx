@@ -244,6 +244,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 		useGetVehicleMasterQuery({});
 	const { data: carrierAssignedOrder, isLoading: carrierAssignedLoading } =
 		useGetOrderAssignedToCarrierQuery({ order_ID: orderId });
+
 	const getAllVehicles = vehiclesTrucksData?.vehicles;
 	const [searchKeyVehicle, setSearchKeyVehicle] = useState("");
 	const [showSuggestionsVehicle, setShowSuggestionsVehicle] = useState(false);
@@ -460,6 +461,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 		}
 	}, [carrierAssignedOrder?.data, order?.order?.order_status]);
 	const handleCarrierAssign = async () => {
+		console.log("Assigning carrier for order:", orderId)
 		try {
 			const body = {
 				order_ID: orderId,
@@ -467,9 +469,10 @@ const Allocations: React.FC<AllocationsProps> = ({
 			};
 
 			const response = await postAssignCarrier(body).unwrap();
+			console.log("Carrier assignment response:", response);
 			if (
 				response.message ===
-				"Multiple valid contracted carriers found. Choose one for assignment."
+				"Multiple valid carriers found; select one to finalize."
 			) {
 				setMultipleCarriers(true);
 				setCarrierOptions(response?.carrier_options);
@@ -499,21 +502,19 @@ const Allocations: React.FC<AllocationsProps> = ({
 
 
 		try {
-			const response = await postAssignCarrierToOrder(body).unwrap();
+			await postAssignCarrierToOrder(body).unwrap();
+			setSnackbarMessage(
+				`Carrier assignment sent to carrier ${carrierId} successfully!`
+			);
+			setSnackbarSeverity("success");
+			setSnackbarOpen(true);
+			setAssignModal(false);
+			setMultipleCarriers(false);
+			handleCloseAssignModal();
+			// if (
+			// 	response.message ==="Carrier assignment sent to selected carrier successfully.") {
 
-			if (
-				response.message ===
-				"Carrier assignment sent to selected carrier successfully."
-			) {
-				setSnackbarMessage(
-					`Carrier assignment sent to carrier ${carrierId} successfully!`
-				);
-				setSnackbarSeverity("success");
-				setSnackbarOpen(true);
-				setAssignModal(false);
-				setMultipleCarriers(false);
-				handleCloseAssignModal();
-			}
+			// }
 		} catch (error) {
 			console.error("Error assigning carrier:", error);
 			setSnackbarMessage("Failed to assign carrier, try after sometime.");
