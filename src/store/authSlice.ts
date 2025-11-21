@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import { AdditionalInfo } from "@/Components/CreatePackageTabs/AddtionalInformation";
-import { FormValues } from "@/Components/CreatePackageTabs/PickUpAndDropOffDetails";
+// import { AdditionalInfo } from "@/Components/CreatePackageTabs/AddtionalInformation";
+// import { FormValues } from "@/Components/CreatePackageTabs/PickUpAndDropOffDetails";
 import { Truck } from "@/Components/CreateOrderTables/TrucksTable";
 import { Package } from "@/Components/CreateOrderTables/PackagesTable";
 
@@ -119,8 +119,8 @@ export interface IAuthState {
   packageShipTo: IShipTo | null;
   packagesDetails: Array<IProductDetail>;
   packageBillTo: IShipFrom | null;
-  packageAdditionalInfo: AdditionalInfo | null;
-  packagePickAndDropTimings: FormValues | null;
+  // packageAdditionalInfo: AdditionalInfo | null;
+  // packagePickAndDropTimings: FormValues | null;
   packageTax: IPackageTax | null;
   completedState: boolean[];
   filters: ConfigFilters;
@@ -147,8 +147,8 @@ const initialState: IAuthState = {
   packageShipTo: null,
   packagesDetails: [],
   packageBillTo: null,
-  packageAdditionalInfo: null,
-  packagePickAndDropTimings: null,
+  // packageAdditionalInfo: null,
+  // packagePickAndDropTimings: null,
   packageTax: null,
   completedState: [],
   selectedRoutes: [],
@@ -205,18 +205,18 @@ export const authSlice = createSlice({
     setPackageBillTo: (state, action: PayloadAction<IShipFrom | null>) => {
       state.packageBillTo = action.payload;
     },
-    setPackageAddtionalInfo: (
-      state,
-      action: PayloadAction<AdditionalInfo | null>
-    ) => {
-      state.packageAdditionalInfo = action.payload;
-    },
-    setPackagePickAndDropTimings: (
-      state,
-      action: PayloadAction<FormValues | null>
-    ) => {
-      state.packagePickAndDropTimings = action.payload;
-    },
+    // setPackageAddtionalInfo: (
+    //   state,
+    //   action: PayloadAction<AdditionalInfo | null>
+    // ) => {
+    //   state.packageAdditionalInfo = action.payload;
+    // },
+    // setPackagePickAndDropTimings: (
+    //   state,
+    //   action: PayloadAction<FormValues | null>
+    // ) => {
+    //   state.packagePickAndDropTimings = action.payload;
+    // },
     setPackageTax: (state, action: PayloadAction<IPackageTax | null>) => {
       state.packageTax = action.payload;
     },
@@ -252,8 +252,8 @@ export const {
   setPackageShipTo,
   setProductsList,
   setPackageBillTo,
-  setPackageAddtionalInfo,
-  setPackagePickAndDropTimings,
+  // setPackageAddtionalInfo,
+  // setPackagePickAndDropTimings,
   setPackageTax,
   setCompletedState,
   resetCompletedSteps,
