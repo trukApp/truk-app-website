@@ -1,194 +1,286 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { Stepper, Step, StepLabel, Grid, useMediaQuery, useTheme, Box, Typography, Dialog, DialogTitle, DialogActions, Button, DialogContent, Backdrop, CircularProgress } from '@mui/material';
+interface PackageDetailsItem {
+    productId: string;
+    productName: string;
+    hsnCode: string;
+    rfid: string;
+    dimensions: string;
+    quantity: string;
+    weight: string;
+    packagingType: string;
+}
+
+export interface AdditionalInfo {
+    eWayBillFile: string;
+    referenceId: string;       // Order Reference Number (optional)
+    invoiceNumber: string;     // Mandatory
+    poNumber: string;
+    salesOrderNumber: string;
+    department: string;
+    deliveryType: string;      // Mandatory: master data delivery types
+    deliveryMode: string;      // Mandatory: Road/Rail/Air/Sea/Multi Modal
+    stnDoNumber?: string;      // Optional
+    valueOfGoods: number;      // Mandatory
+    eWayBillNumber?: string;   // Mandatory if valueOfGoods >= 50000, optional otherwise
+    returnLabel: boolean;
+    file: File | string | null;
+}
+
+
+interface PickupDropoff {
+    pickupDateTime: string;
+    dropoffDateTime: string;
+    notes: string;
+}
+
+interface LocationInfo {
+    locationId: string;
+    locationDescription: string;
+    contactPerson: string;
+    phoneNumber: string;
+    email: string;
+    addressLine1: string;
+    addressLine2: string;
+    city: string;
+    state: string;
+    country: string;
+    pincode: string;
+    saveAsNewLocationId: boolean;
+    saveAsDefaultShipFromLocation: boolean;
+    latitude: string;
+    longitude: string;
+    timeZone: string;
+    locationType: string;
+    glnCode: string;
+    iataCode: string;
+}
+
+export interface CreatePackageFormValues {
+    shipFrom: LocationInfo;
+    shipTo: LocationInfo & { destination_radius: string; destination_radius_unit: string };
+    billTo: LocationInfo;
+    packageDetails: PackageDetailsItem[];
+    additionalInfo: AdditionalInfo;
+    pickupDropoff: PickupDropoff;
+}
+
+
+import React, { useState } from 'react';
+import { useMediaQuery, useTheme, Box, Typography, Dialog, DialogTitle, DialogActions, Button, DialogContent, Backdrop, CircularProgress, Grid } from '@mui/material';
 import ShipFrom from '@/Components/CreatePackageTabs/CreatePackageShipFrom';
 import ShipTo from '@/Components/CreatePackageTabs/CreatePackageShipTo';
 import AdditionalInformation from '@/Components/CreatePackageTabs/AddtionalInformation';
-import TaxInfo from '@/Components/CreatePackageTabs/CreatePackageTax';
+// import TaxInfo from '@/Components/CreatePackageTabs/CreatePackageTax';
 import PickupDropoff from '@/Components/CreatePackageTabs/PickUpAndDropOffDetails';
 import PackageDetails from '@/Components/CreatePackageTabs/PackageDetailsTab';
 import BillTo from '@/Components/CreatePackageTabs/CreatePackageBillTo';
 import SnackbarAlert from '@/Components/ReusableComponents/SnackbarAlerts';
-import { RootState, useAppSelector } from '@/store';
-import { resetCompletedSteps, setCompletedState, setPackageAddtionalInfo, setPackageBillTo, setPackagePickAndDropTimings, setPackageShipFrom, setPackageShipTo, setPackageTax, setProductsList } from '@/store/authSlice';
 import { useRouter } from "next/navigation";
 import { useCreatePackageForOrderMutation } from '@/api/apiSlice';
-import { StepIconProps } from "@mui/material/StepIcon";
 import { withAuthComponent } from '@/Components/WithAuthComponent';
-
-const steps = ['Ship From', 'Ship To', 'Package Details', 'Bill To', 'Additional Info', 'Pickup/Drop off', 'Tax Info'];
+import { Form, Formik, FormikHelpers } from 'formik';
+import { createPackageValidationSchema } from '@/Components/CreatePackageTabs/ValidationSchema';
 
 const CreatePackage = () => {
-    const dispatch = useDispatch()
     const router = useRouter();
     const [modalOpen, setModalOpen] = useState(false);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-    const completedSteps = useSelector((state: RootState) => state.auth.completedState);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error' | 'warning' | 'info'>("success");
-    const [activeStep, setActiveStep] = useState(0);
-    const packageTaxFromRedux = useAppSelector((state) => state.auth.packageTax)
-    const packageAddtionalInfoFromRedux = useAppSelector((state) => state.auth.packageAdditionalInfo);
-    const billToReduxValues = useAppSelector((state) => state.auth.packageBillTo);
-    const shipFromReduxValues = useAppSelector((state) => state.auth.packageShipFrom);
-    const shipToReduxValues = useAppSelector((state) => state.auth.packageShipTo);
-    const productListFromRedux = useAppSelector((state) => state.auth.packagesDetails);
-    const packagePickUpAndDropTimingsFromRedux = useAppSelector((state) => state.auth.packagePickAndDropTimings);
     const [createPackageOrder, { isLoading: isPackageCreating }] = useCreatePackageForOrderMutation()
 
-    const CustomStepIcon = (props: StepIconProps) => {
-        const { active, completed, icon } = props;
-        return (
-            <Box
-                sx={{
-                    width: 25,
-                    height: 25,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    borderRadius: "50%",
-                    backgroundColor: completed
-                        ? "#F08C24"
-                        : active
-                            ? "#F08C24"
-                            : "#ccc",
-                    color: 'white',
-                    fontWeight: "bold",
-                }}
-            >
-                {completed ? (
-                    <Typography variant="body2" sx={{ fontSize: 15, fontWeight: "bold" }}>
-                        ✔
-                    </Typography>
-                ) : (
-                    <Typography variant="body2">{icon}</Typography>
-                )}
-            </Box>
-        );
-    };
-    const handleNext = () => {
-        dispatch(setCompletedState(activeStep));
-        const nextStep = completedSteps.findIndex(step => !step);
-        setActiveStep(nextStep !== -1 ? nextStep : activeStep + 1);
-    };
-
-    const handleBack = () => setActiveStep((prevStep) => prevStep - 1);
-
-    const handleStepClick = (stepIndex: number) => {
-        setActiveStep(stepIndex);
-    };
-
     const handleCreateAnother = () => {
-        setModalOpen(false);
-        setActiveStep(0)
+        router.push("/createpackage");
     };
     const handleGoToOrder = () => {
         setModalOpen(false);
-        setActiveStep(0)
         router.push("/createorder");
     };
-    useEffect(() => {
-        if (completedSteps.length > 0 && completedSteps.length <= 6) {
-            const firstUnfilledIndex = completedSteps.findIndex(step => !step);
-            setActiveStep(firstUnfilledIndex !== -1 ? firstUnfilledIndex : completedSteps.length);
-            if (firstUnfilledIndex !== -1) {
-                setSnackbarMessage("Some Steps are Unfilled! Navigating to First Unfilled Step...");
-                setSnackbarSeverity("warning");
+
+
+    const handleSubmit = async (values: CreatePackageFormValues, formikHelpers: FormikHelpers<CreatePackageFormValues>) => {
+        console.log("Form Values on Submit: ")
+        const errors = await formikHelpers.validateForm();
+        console.log('Validation errors before submit:', errors);
+
+        // If errors exist, optionally prevent submission
+        if (Object.keys(errors).length > 0) {
+            console.warn('Form validation failed. Fix errors before submitting.');
+            return;
+        }
+        try {
+            const shipFromLocationId = values?.shipFrom?.locationId.split(",")[0]
+            const shipToLocationId = values?.shipTo?.locationId.split(",")[0]
+            const billToLocationId = values?.billTo?.locationId.split(",")[0]
+            const createPackageBody = {
+                packages: [
+                    {
+                        ship_from: shipFromLocationId,
+                        ship_to: shipToLocationId,
+                        destination_radius: `${values?.shipTo?.destination_radius}${values?.shipTo?.destination_radius_unit}`,
+                        product_ID: values?.packageDetails?.map((product) => ({
+                            prod_ID: product.productId,
+                            quantity: product.quantity,
+                            package_info: product?.packagingType
+                        })),
+                        package_info: values?.packageDetails[0].packagingType,
+                        bill_to: billToLocationId,
+                        return_label: values.additionalInfo?.returnLabel ? 1 : 0,
+                        additional_info: {
+                            reference_id: values.additionalInfo?.referenceId,
+                            invoice: values.additionalInfo?.invoiceNumber,
+                            department: values.additionalInfo?.department,
+                            attachment: values.additionalInfo?.file,
+                            po_number: values.additionalInfo?.poNumber,
+                            sales_order_number: values.additionalInfo?.salesOrderNumber,
+                            return_label: values.additionalInfo?.returnLabel,
+                            delivery_type: values?.additionalInfo?.deliveryType,        // Add this default as empty string
+                            delivery_mode: values?.additionalInfo?.deliveryMode,
+                            value_of_goods: values?.additionalInfo?.valueOfGoods,
+                            eWay_bill_file: values?.additionalInfo?.eWayBillNumber,
+                            stn_Do_number: values?.additionalInfo?.stnDoNumber,
+                        },
+                        pickup_date_time: values.pickupDropoff?.pickupDateTime,
+                        dropoff_date_time: values.pickupDropoff?.dropoffDateTime,
+                    },
+                ],
+
+            }
+            console.log("createPackageBody: ", createPackageBody)
+            const response = await createPackageOrder(createPackageBody).unwrap();
+            if (response) {
+                setModalOpen(true)
+                setSnackbarMessage(`Package ID ${response?.created_records[0]} created successfully!`);
+                setSnackbarSeverity("success");
                 setSnackbarOpen(true);
-                setActiveStep(firstUnfilledIndex);
-                return;
             }
         }
-    }, [completedSteps]);
-
-    const handleSubmit = async () => {
-        const firstUnfilledIndex = completedSteps.findIndex((step) => !step);
-        if (firstUnfilledIndex !== -1) {
-            setSnackbarMessage("Some Steps are Unfilled! Navigating to First Unfilled Step...");
-            setSnackbarSeverity("warning");
-            setSnackbarOpen(true);
-            setActiveStep(firstUnfilledIndex);
-            return;
-        } else {
-            try {
-                const shipFromLocationId = shipFromReduxValues?.locationId.split(",")[0]
-                const shipToLocationId = shipToReduxValues?.locationId.split(",")[0]
-                const billToLocationId = billToReduxValues?.locationId.split(",")[0]
-                const createPackageBody = {
-                    packages: [
-                        {
-                            ship_from: shipFromLocationId,
-                            ship_to: shipToLocationId,
-                            destination_radius: `${shipToReduxValues?.destination_radius}${shipToReduxValues?.destination_radius_unit}`,
-                            product_ID: productListFromRedux.map((product) => ({
-                                prod_ID: product.productId,
-                                quantity: product.quantity,
-                                package_info: product?.packagingType
-                            })),
-                            package_info: productListFromRedux[0]?.packagingType,
-                            bill_to: billToLocationId,
-                            return_label: packageAddtionalInfoFromRedux?.returnLabel ? 1 : 0,
-                            additional_info: {
-                                reference_id: packageAddtionalInfoFromRedux?.referenceId,
-                                invoice: packageAddtionalInfoFromRedux?.invoiceNumber,
-                                department: packageAddtionalInfoFromRedux?.department,
-                                attachment: packageAddtionalInfoFromRedux?.file,
-                                po_number: packageAddtionalInfoFromRedux?.poNumber,
-                                sales_order_number: packageAddtionalInfoFromRedux?.salesOrderNumber,
-                            },
-                            pickup_date_time: packagePickUpAndDropTimingsFromRedux?.pickupDateTime,
-                            dropoff_date_time: packagePickUpAndDropTimingsFromRedux?.dropoffDateTime,
-                            tax_info: {
-                                tax_rate: packageTaxFromRedux?.taxRate,
-                                sender_gst: packageTaxFromRedux?.senderGSTN,
-                                receiver_gst: packageTaxFromRedux?.receiverGSTN,
-                                carrier_gst: packageTaxFromRedux?.carrierGSTN,
-                                self_transport: packageTaxFromRedux?.isSelfTransport,
-                            },
-                        },
-                    ],
-
-                }
-                const response = await createPackageOrder(createPackageBody).unwrap();
-                if (response) {
-                    dispatch(resetCompletedSteps())
-                    setModalOpen(true)
-                    setSnackbarMessage(`Package ID ${response?.created_records[0]} created successfully!`);
-                    setSnackbarSeverity("success");
-                    setSnackbarOpen(true);
-                    dispatch(setPackageShipFrom(null));
-                    dispatch(setPackageShipTo(null));
-                    dispatch(setPackageBillTo(null));
-                    dispatch(setPackageTax(null))
-                    dispatch(setPackageAddtionalInfo(null));
-                    dispatch(setProductsList([]));
-                    dispatch(setPackagePickAndDropTimings(null))
-                    setActiveStep(0)
-                }
-            }
-            catch (error) {
-                console.log("err :", error)
-                if (typeof error === "object" && error !== null) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const msg = (error as any).data?.message || (error as any).message || "";
-                    if (typeof msg === "string" && msg.startsWith("All products in a package must have the same stacking factor")) {
-                        setSnackbarMessage("Products must have the same stacking factor.");
-                    } else {
-                        setSnackbarMessage("Something went wrong! Please try again.");
-                    }
+        catch (error) {
+            console.log("err :", error)
+            if (typeof error === "object" && error !== null) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const msg = (error as any).data?.message || (error as any).message || "";
+                if (typeof msg === "string" && msg.startsWith("All products in a package must have the same stacking factor")) {
+                    setSnackbarMessage("Products must have the same stacking factor.");
                 } else {
                     setSnackbarMessage("Something went wrong! Please try again.");
                 }
-                setSnackbarSeverity("error");
-                setSnackbarOpen(true);
+            } else {
+                setSnackbarMessage("Something went wrong! Please try again.");
             }
+            setSnackbarSeverity("error");
+            setSnackbarOpen(true);
         }
 
 
     };
+
+
+    const shipFromInitialValues = {
+        locationId: '',
+        locationDescription: '',
+        contactPerson: '',
+        phoneNumber: '',
+        email: '',
+        addressLine1: '',
+        addressLine2: '',
+        city: '',
+        state: '',
+        country: '',
+        pincode: '',
+        saveAsNewLocationId: false,
+        saveAsDefaultShipFromLocation: false,
+        latitude: '',
+        longitude: '',
+        timeZone: '',
+        glnCode: '',
+        iataCode: '',
+        locationType: ''
+    }
+
+    const shipToInitialValues = {
+        locationId: '',
+        locationDescription: '',
+        contactPerson: '',
+        phoneNumber: '',
+        email: '',
+        addressLine1: '',
+        addressLine2: '',
+        city: '',
+        state: '',
+        country: '',
+        pincode: '',
+        saveAsNewLocationId: false,
+        saveAsDefaultShipFromLocation: false,
+        latitude: '',
+        longitude: '',
+        timeZone: '',
+        glnCode: '',
+        iataCode: '',
+        locationType: '',
+        destination_radius: '0',
+        destination_radius_unit: 'm',
+    }
+
+    const shipBillToInitialValues = {
+        locationId: '',
+        locationDescription: '',
+        contactPerson: '',
+        phoneNumber: '',
+        email: '',
+        addressLine1: '',
+        addressLine2: '',
+        city: '',
+        state: '',
+        country: '',
+        pincode: '',
+        saveAsNewLocationId: false,
+        saveAsDefaultShipFromLocation: false,
+        latitude: '',
+        longitude: '',
+        timeZone: '',
+        glnCode: '',
+        iataCode: '',
+        locationType: ''
+    }
+
+    const packageDetailsInitialValues = [
+        {
+            productId: "",
+            productName: "",
+            hsnCode: "",
+            rfid: "",
+            dimensions: "",
+            quantity: "",
+            weight: "",
+            packagingType: "",
+        },
+    ];
+
+    const additionalInfoInitialValues = {
+        referenceId: '',
+        invoiceNumber: '',
+        poNumber: '',
+        salesOrderNumber: '',
+        department: '',
+        returnLabel: false,
+        file: null,
+        deliveryType: '',        // Add this default as empty string
+        deliveryMode: '',
+        valueOfGoods: 0,
+        eWayBillFile: null,
+        stnDoNumber: '',
+    }
+
+    const pickupDropofInitialValues = {
+        pickupDateTime: '',
+        dropoffDateTime: '',
+        notes: '',
+    }
+
+
 
     return (
         <div>
@@ -232,38 +324,50 @@ const CreatePackage = () => {
                 </Typography>
             </Box>
 
-            <Box sx={{ overflowX: isMobile ? "auto" : "visible", padding: "10px" }}>
-                <Stepper
-                    activeStep={activeStep}
-                    alternativeLabel sx={{
-                        flexWrap: "nowrap",
-                        '& .MuiStepConnector-line': {
-                            borderWidth: '1px'
-                        },
-                    }}
-                >
-                    {steps.map((label, index) => (
-                        <Step key={index} completed={!!completedSteps[index]}>
-                            <StepLabel StepIconComponent={CustomStepIcon} onClick={() => handleStepClick(index)} sx={{ cursor: "pointer" }}>
-                                <Typography sx={{ fontSize: "14px", color: activeStep === index ? "#F08C24" : "#333", fontWeight: activeStep === index ? "bold" : "400", whiteSpace: "nowrap" }}>
-                                    {label}
-                                </Typography>
-                            </StepLabel>
-                        </Step>
-                    ))}
-                </Stepper>
-            </Box>
 
             {/* Form Content */}
-            <Grid container spacing={2} sx={{ padding: isMobile ? '10px' : '20px' }}>
-                {activeStep === 0 && <ShipFrom onNext={() => handleNext()} />}
-                {activeStep === 1 && <ShipTo onNext={() => handleNext()} onBack={handleBack} />}
-                {activeStep === 2 && <PackageDetails onNext={() => handleNext()} onBack={handleBack} />}
-                {activeStep === 3 && <BillTo onNext={() => handleNext()} onBack={handleBack} />}
-                {activeStep === 4 && <AdditionalInformation onNext={() => handleNext()} onBack={handleBack} />}
-                {activeStep === 5 && <PickupDropoff onNext={() => handleNext()} onBack={handleBack} />}
-                {activeStep === 6 && <TaxInfo onSubmit={handleSubmit} onBack={handleBack} />}
-            </Grid>
+            <Formik<CreatePackageFormValues>
+                initialValues={{
+                    shipFrom: shipFromInitialValues,
+                    shipTo: shipToInitialValues,
+                    packageDetails: packageDetailsInitialValues,
+                    billTo: shipBillToInitialValues,
+                    additionalInfo: additionalInfoInitialValues,
+                    pickupDropoff: pickupDropofInitialValues,
+                }}
+                onSubmit={handleSubmit}
+                validationSchema={createPackageValidationSchema}
+            >
+                <Form>
+                    <ShipFrom />
+                    <ShipTo />
+                    <BillTo />
+                    <PackageDetails />
+                    <AdditionalInformation />
+                    <PickupDropoff />
+                    {/* <button type="submit">Submit Package</button> */}
+                    <Grid item sx={{ textAlign: 'center', mb: 4, mt: 5 }}>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            sx={{
+                                margin: '10px',
+                                backgroundColor: "#F08C24",
+                                color: "#fff",
+                                "&:hover": {
+                                    backgroundColor: "#fff",
+                                    color: "#F08C24",
+                                },
+                                padding: '10px 20px',
+                                fontSize: '16px',
+                            }}
+                        >
+                            Create Package
+                        </Button>
+                    </Grid>
+                </Form>
+            </Formik>
+
         </div>
     );
 };

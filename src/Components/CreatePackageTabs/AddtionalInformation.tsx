@@ -1,256 +1,370 @@
-'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
-import { Formik, Form, Field, FormikHelpers } from 'formik';
-import { Grid, TextField, Checkbox, FormControlLabel, Button, Typography } from '@mui/material';
-import * as Yup from 'yup';
-import styles from './CreatePackage.module.css';
-import { useAppDispatch, useAppSelector } from '@/store';
+import { useFormikContext, Field } from 'formik';
 import {
-    setPackageAddtionalInfo
-} from '@/store/authSlice';
-import { CustomButtonFilled, CustomButtonOutlined } from '../ReusableComponents/ButtonsComponent';
+    Grid,
+    TextField,
+    Checkbox,
+    FormControlLabel,
+    Button,
+    Typography,
+    MenuItem,
+} from '@mui/material';
 import { useImageUploadingMutation } from '@/api/apiSlice';
 
-export interface AdditionalInfo {
+interface AdditionalInfo {
     referenceId: string;
     invoiceNumber: string;
     poNumber: string;
     salesOrderNumber: string;
     department: string;
+    deliveryType: string;
+    deliveryMode: string;
+    stnDoNumber?: string;
+    valueOfGoods: number | '';
+    eWayBillFile?: File | null;
+    eWayBillNumber?: string; // to store uploaded file url or name
     returnLabel: boolean;
-    file: File | null;
+    file: File | string | null;
 }
 
 interface FormValues {
     additionalInfo: AdditionalInfo;
 }
 
-interface AdditionalInformationProps {
-    onNext: (values: FormValues) => void;
-    onBack: () => void;
-}
 
-// Validation Schema
-const validationSchema = Yup.object().shape({
-    additionalInfo: Yup.object().shape({
-        referenceId: Yup.string().required('Reference ID is required'),
-        invoiceNumber: Yup.string(),
-        poNumber: Yup.string(),
-        salesOrderNumber: Yup.string(),
-    }).test(
-        "at-least-one-required",
-        "At least one of Invoice #, PO #, or Sales Order # is required",
-        function (values) {
-            return !!(values?.invoiceNumber || values?.poNumber || values?.salesOrderNumber);
-        }
-    ),
-});
+const AdditionalInformation: React.FC = () => {
+    const { values, touched, errors, setFieldValue } = useFormikContext<FormValues>();
+    console.log("Additional Information values: ", values)
 
+    const [selectedFileName, setSelectedFileName] = useState<string>(
+        typeof values.additionalInfo.file === 'string'
+            ? values.additionalInfo.file.split('/').pop() || ''
+            : values.additionalInfo.file?.name || ''
+    );
 
+    const [selectedEWayFileName, setSelectedEWayFileName] = useState<string>(
+        values.additionalInfo.eWayBillNumber || ''
+    );
 
-const AdditionalInformation: React.FC<AdditionalInformationProps> = ({ onNext, onBack }) => {
-    const dispatch = useAppDispatch();
-    const packageAddtionalInfoFromRedux = useAppSelector((state) => state.auth.packageAdditionalInfo);
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [imageUpload] = useImageUploadingMutation()
+    const [imageUpload] = useImageUploadingMutation();
 
-    const initialValues: FormValues = {
-        additionalInfo: packageAddtionalInfoFromRedux ? packageAddtionalInfoFromRedux : {
-            referenceId: '',
-            invoiceNumber: '',
-            poNumber: '',
-            salesOrderNumber: '',
-            department: '',
-            returnLabel: false,
-            file: null,
-        },
-    };
-
-    const handleFileChange = async (
-        event: React.ChangeEvent<HTMLInputElement>,
-        setFieldValue: (field: string, value: File | string | null) => void
+    const uploadFile = async (
+        file: File | null,
+        setFieldFn: (value: any) => void,
+        fieldName: keyof AdditionalInfo,
+        setFileNameFn: (name: string) => void
     ) => {
-        const file = event.target.files?.[0] || null;
-        setSelectedFile(file);
-        setFieldValue("additionalInfo.file", file);
+        if (!file) return;
+        try {
+            const formData = new FormData();
+            formData.append('image', file);
 
-        if (file) {
-            try {
-                const formData = new FormData();
-                formData.append("image", file);
-                for (const [key, value] of formData.entries()) {
-                    console.log("FormData entry:", key, value);
-                }
-
-                const response = await imageUpload(formData).unwrap();
-                if (response?.imageUrl) {
-                    setFieldValue("additionalInfo.file", response.imageUrl);
-                }
-            } catch (error) {
-                console.error("File upload failed:", error);
+            const response = await imageUpload(formData).unwrap();
+            if (response?.imageUrl) {
+                setFieldFn(response.imageUrl);
+                setFileNameFn(response.imageUrl.split('/').pop() || '');
             }
+        } catch (error) {
+            console.error('File upload failed:', error);
         }
     };
 
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0] || null;
+        setSelectedFileName(file?.name || '');
+        setFieldValue('additionalInfo.file', file);
 
-
-    const handleFormSubmit = (values: FormValues, actions: FormikHelpers<FormValues>) => {
-        const updatedAdditionalInfo = {
-            ...values.additionalInfo,
-            fileUrl: values.additionalInfo.file || "",
-        };
-        dispatch(setPackageAddtionalInfo(updatedAdditionalInfo));
-        onNext(values);
-        actions.setSubmitting(false);
+        uploadFile(file, (val) => setFieldValue('additionalInfo.file', val), 'file', setSelectedFileName);
     };
 
+    const handleEWayFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0] || null;
+        setSelectedEWayFileName(file?.name || '');
+        setFieldValue('additionalInfo.eWayBillFile', file);
 
+        uploadFile(file, (val) => setFieldValue('additionalInfo.eWayBillFile', val), 'eWayBillFile', setSelectedEWayFileName);
+    };
 
     return (
-        <Formik
-            initialValues={initialValues}
-            validationSchema={validationSchema}
-            onSubmit={handleFormSubmit}
-        >
-            {({ touched, errors, setFieldValue, setFieldTouched }) => (
-                <Form>
-                    <Typography variant="h6" sx={{ fontWeight: 'bold', marginLeft: "15px" , marginTop: 3 }}>Additional Details</Typography>
-                    <Grid className={styles.formsBgContainer}>
-                        <Typography variant='h6' sx={{ fontWeight: 600 }}>Additional information</Typography>
-                        <Grid container spacing={2}>
-                            <Grid item xs={12} md={2.4}>
-                                <Field
-                                    as={TextField}
-                                    name="additionalInfo.referenceId"
-                                    label="Reference ID*"
-                                    fullWidth
-                                    size="small"
-                                    error={touched.additionalInfo?.referenceId && Boolean(errors.additionalInfo?.referenceId)}
-                                    helperText={touched.additionalInfo?.referenceId && errors.additionalInfo?.referenceId}
-                                />
-                            </Grid>
+        <Grid className="formsBgContainer" sx={{ padding: 2 }}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold', marginLeft: 1, marginTop: 3 }}>
+                Shipment Details
+            </Typography>
 
-                            <Grid item xs={12} md={2.4}>
-                                <Field
-                                    as={TextField}
-                                    name="additionalInfo.invoiceNumber"
-                                    label="Invoice *"
-                                    fullWidth
-                                    size="small"
-                                    error={touched.additionalInfo?.invoiceNumber && Boolean(errors.additionalInfo?.invoiceNumber)}
-                                    helperText={touched.additionalInfo?.invoiceNumber && errors.additionalInfo?.invoiceNumber}
-                                />
-                            </Grid>
+            <Grid container spacing={2}>
 
-                            <Grid item xs={12} md={2.4}>
-                                <Field
-                                    as={TextField}
-                                    name="additionalInfo.poNumber"
-                                    label="PO #"
-                                    fullWidth
-                                    size="small"
-                                />
-                            </Grid>
+                {/* Reference ID - optional */}
+                <Grid item xs={12} md={2.4}>
+                    <Field name="additionalInfo.referenceId">
+                        {({ field }: any) => (
+                            <TextField
+                                {...field}
+                                label="Order Reference Number"
+                                fullWidth
+                                size="small"
+                                error={touched.additionalInfo?.referenceId && Boolean(errors.additionalInfo?.referenceId)}
+                                helperText={touched.additionalInfo?.referenceId && errors.additionalInfo?.referenceId}
+                            />
+                        )}
+                    </Field>
+                </Grid>
 
-                            <Grid item xs={12} md={2.4}>
-                                <Field
-                                    as={TextField}
-                                    name="additionalInfo.salesOrderNumber"
-                                    label="Sales Order #"
-                                    fullWidth
-                                    size="small"
-                                />
-                            </Grid>
+                {/* Invoice Number - mandatory */}
+                <Grid item xs={12} md={2.4}>
+                    <Field name="additionalInfo.invoiceNumber">
+                        {({ field }: any) => (
+                            <TextField
+                                {...field}
+                                label="Invoice Number *"
+                                fullWidth
+                                size="small"
+                                error={touched.additionalInfo?.invoiceNumber && Boolean(errors.additionalInfo?.invoiceNumber)}
+                                helperText={touched.additionalInfo?.invoiceNumber && errors.additionalInfo?.invoiceNumber}
+                            />
+                        )}
+                    </Field>
+                </Grid>
 
-                            <Grid item xs={12} md={2.4}>
-                                <Field
-                                    as={TextField}
-                                    name="additionalInfo.department"
-                                    label="Department"
-                                    fullWidth
-                                    size="small"
-                                />
-                            </Grid>
+                {/* PO Number - mandatory */}
+                <Grid item xs={12} md={2.4}>
+                    <Field name="additionalInfo.poNumber">
+                        {({ field }: any) => (
+                            <TextField
+                                {...field}
+                                label="PO Number *"
+                                fullWidth
+                                size="small"
+                                error={touched.additionalInfo?.poNumber && Boolean(errors.additionalInfo?.poNumber)}
+                                helperText={touched.additionalInfo?.poNumber && errors.additionalInfo?.poNumber}
+                            />
+                        )}
+                    </Field>
+                </Grid>
 
-                            <Grid item xs={12} md={4.8}>
-                                <label>Upload File (Image/PDF)</label>
-                                <Field name="additionalInfo.file">
-                                    {() => (
-                                        <>
-                                            <TextField
-                                                fullWidth
-                                                size="small"
-                                                variant="outlined"
-                                                value={selectedFile ? selectedFile.name : ''}
-                                                placeholder="Choose a file"
-                                                InputProps={{
-                                                    readOnly: true,
-                                                    endAdornment: (
-                                                        <Button
-                                                            variant="contained"
-                                                            component="label"
-                                                            sx={{
-                                                                minWidth: "auto",
-                                                                margin: 0,
-                                                                marginRight:'-12px',
-                                                                height: '100%',
-                                                                color:'#fff'
-                                                            }}
-                                                        >
-                                                            Browse
-                                                            <input
-                                                                type="file"
-                                                                hidden
-                                                                accept="image/*, application/pdf"
-                                                                onChange={(event) => handleFileChange(event, setFieldValue)}
-                                                            />
-                                                        </Button>
-                                                    ),
-                                                }}
-                                            />
-                                        </>
-                                    )}
-                                </Field>
-                            </Grid>
-                            <Grid item xs={12} md={2.4} sx={{ marginTop: '20px' }}>
-                                <Field name="additionalInfo.returnLabel">
-                                    {({ field }: { field: { value: boolean; onChange: () => void; onBlur: () => void } }) => (
-                                        <FormControlLabel
-                                            control={<Checkbox {...field} checked={field.value} />}
-                                            label="Return Label"
-                                            labelPlacement="end"
-                                        />
-                                    )}
-                                </Field>
-                            </Grid>
+                {/* Sales Order Number - mandatory */}
+                <Grid item xs={12} md={2.4}>
+                    <Field name="additionalInfo.salesOrderNumber">
+                        {({ field }: any) => (
+                            <TextField
+                                {...field}
+                                label="Sales Order Number *"
+                                fullWidth
+                                size="small"
+                                error={touched.additionalInfo?.salesOrderNumber && Boolean(errors.additionalInfo?.salesOrderNumber)}
+                                helperText={touched.additionalInfo?.salesOrderNumber && errors.additionalInfo?.salesOrderNumber}
+                            />
+                        )}
+                    </Field>
+                </Grid>
 
-                            <Grid item xs={12} sx={{ textAlign: 'center', marginTop: '15px' }}>
-                                {errors.additionalInfo && typeof errors.additionalInfo === "string" && (
-                                    <Typography color="error" sx={{ fontSize: '13px' }}>{errors.additionalInfo}</Typography>
-                                )}
-                            </Grid>
-                            {/* Navigation Buttons */}
-                            <Grid container spacing={2} justifyContent="center" >
-                                <Grid item>
-                                    <CustomButtonOutlined onClick={onBack}>Back</CustomButtonOutlined>
-                                </Grid>
-                                <Grid item>
-                                    <CustomButtonFilled
-                                        onClick={() => {
-                                            setFieldTouched("additionalInfo.invoiceNumber", true);
-                                            setFieldTouched("additionalInfo.poNumber", true);
-                                            setFieldTouched("additionalInfo.salesOrderNumber", true);
-                                        }}
-                                    >
-                                        Next
-                                    </CustomButtonFilled>
-                                </Grid>
-                            </Grid>
-                        </Grid>
-                    </Grid>
-                </Form>
-            )}
-        </Formik>
+                {/* Department - mandatory */}
+                <Grid item xs={12} md={2.4}>
+                    <Field name="additionalInfo.department">
+                        {({ field }: any) => (
+                            <TextField
+                                {...field}
+                                label="Department *"
+                                fullWidth
+                                size="small"
+                                error={touched.additionalInfo?.department && Boolean(errors.additionalInfo?.department)}
+                                helperText={touched.additionalInfo?.department && errors.additionalInfo?.department}
+                            />
+                        )}
+                    </Field>
+                </Grid>
+
+                {/* Delivery Type - mandatory select */}
+                <Grid item xs={12} md={2.4}>
+                    <Field name="additionalInfo.deliveryType">
+                        {({ field }: any) => (
+                            <TextField
+                                {...field}
+                                select
+                                label="Delivery Type *"
+                                fullWidth
+                                size="small"
+                                error={touched.additionalInfo?.deliveryType && Boolean(errors.additionalInfo?.deliveryType)}
+                                helperText={touched.additionalInfo?.deliveryType && errors.additionalInfo?.deliveryType}
+                            >
+                                <MenuItem value="">Select Delivery Type</MenuItem>
+                                {['Standard', 'Express', 'Overnight'].map((type) => (
+                                    <MenuItem key={type} value={type}>
+                                        {type}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                        )}
+                    </Field>
+                </Grid>
+
+                {/* Delivery Mode - mandatory select */}
+                <Grid item xs={12} md={2.4}>
+                    <Field name="additionalInfo.deliveryMode">
+                        {({ field }: any) => (
+                            <TextField
+                                {...field}
+                                select
+                                label="Delivery Mode *"
+                                fullWidth
+                                size="small"
+                                error={touched.additionalInfo?.deliveryMode && Boolean(errors.additionalInfo?.deliveryMode)}
+                                helperText={touched.additionalInfo?.deliveryMode && errors.additionalInfo?.deliveryMode}
+                            >
+                                <MenuItem value="">Select Delivery Mode</MenuItem>
+                                {['Road', 'Rail', 'Air', 'Sea', 'Multi Modal'].map((mode) => (
+                                    <MenuItem key={mode} value={mode}>
+                                        {mode}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                        )}
+                    </Field>
+                </Grid>
+
+                {/* STN / DO Number - optional */}
+                <Grid item xs={12} md={2.4}>
+                    <Field name="additionalInfo.stnDoNumber">
+                        {({ field }: any) => (
+                            <TextField
+                                {...field}
+                                label="STN / DO Number"
+                                fullWidth
+                                size="small"
+                                error={touched.additionalInfo?.stnDoNumber && Boolean(errors.additionalInfo?.stnDoNumber)}
+                                helperText={touched.additionalInfo?.stnDoNumber && errors.additionalInfo?.stnDoNumber}
+                            />
+                        )}
+                    </Field>
+                </Grid>
+
+                {/* Value of Goods - mandatory */}
+                <Grid item xs={12} md={2.4}>
+                    <Field name="additionalInfo.valueOfGoods">
+                        {({ field }: any) => (
+                            <TextField
+                                {...field}
+                                label="Value of Goods *"
+                                type="number"
+                                fullWidth
+                                size="small"
+                                error={touched.additionalInfo?.valueOfGoods && Boolean(errors.additionalInfo?.valueOfGoods)}
+                                helperText={touched.additionalInfo?.valueOfGoods && errors.additionalInfo?.valueOfGoods}
+                            />
+                        )}
+                    </Field>
+                </Grid>
+
+                {/* E-Way Bill Number upload (file) */}
+                {/* <Grid item xs={12} md={2.4}>
+                    <Typography sx={{ mb: 1 }}>E-Way Bill Document (If Applicable)</Typography>
+                    <TextField
+                        fullWidth
+                        size="small"
+                        variant="outlined"
+                        placeholder="Choose E-Way Bill file"
+                        value={selectedEWayFileName}
+                        InputProps={{
+                            readOnly: true,
+                            endAdornment: (
+                                <Button
+                                    variant="contained"
+                                    component="label"
+                                    sx={{ minWidth: 'auto', margin: 0, marginRight: '-12px', height: '100%', color: '#fff' }}
+                                >
+                                    Browse
+                                    <input
+                                        type="file"
+                                        hidden
+                                        accept="image/*,application/pdf"
+                                        onChange={handleEWayFileChange}
+                                    />
+                                </Button>
+                            ),
+                        }}
+                        error={touched.additionalInfo?.eWayBillNumber && Boolean(errors.additionalInfo?.eWayBillNumber)}
+                        helperText={touched.additionalInfo?.eWayBillNumber && errors.additionalInfo?.eWayBillNumber}
+                    />
+                </Grid> */}
+
+                <Grid item xs={12} md={4.8}>
+                    <Typography sx={{ mb: 1 }}>Attachment File (Image/PDF) *</Typography>
+                    <TextField
+                        fullWidth
+                        size="small"
+                        variant="outlined"
+                        placeholder="Choose attachment file"
+                        value={selectedFileName}
+                        InputProps={{
+                            readOnly: true,
+                            endAdornment: (
+                                <Button
+                                    variant="contained"
+                                    component="label"
+                                    sx={{ minWidth: 'auto', margin: 0, marginRight: '-12px', height: '100%', color: '#fff' }}
+                                >
+                                    Browse
+                                    <input
+                                        type="file"
+                                        hidden
+                                        accept="image/*,application/pdf"
+                                        onChange={handleFileChange}
+                                    />
+                                </Button>
+                            ),
+                        }}
+                        error={touched.additionalInfo?.file && Boolean(errors.additionalInfo?.file)}
+                        helperText={touched.additionalInfo?.file && errors.additionalInfo?.file}
+                    />
+                </Grid>
+
+                {/* E-Way Bill Document upload */}
+                <Grid item xs={12} md={4.8}>
+                    <Typography sx={{ mb: 1 }}>E-Way Bill Document (If Applicable)</Typography>
+                    <TextField
+                        fullWidth
+                        size="small"
+                        variant="outlined"
+                        placeholder="Choose E-Way Bill file"
+                        value={selectedEWayFileName}
+                        InputProps={{
+                            readOnly: true,
+                            endAdornment: (
+                                <Button
+                                    variant="contained"
+                                    component="label"
+                                    sx={{ minWidth: 'auto', margin: 0, marginRight: '-12px', height: '100%', color: '#fff' }}
+                                >
+                                    Browse
+                                    <input
+                                        type="file"
+                                        hidden
+                                        accept="image/*,application/pdf"
+                                        onChange={handleEWayFileChange}
+                                    />
+                                </Button>
+                            ),
+                        }}
+                        error={touched.additionalInfo?.eWayBillFile && Boolean(errors.additionalInfo?.eWayBillFile)}
+                        helperText={touched.additionalInfo?.eWayBillFile && errors.additionalInfo?.eWayBillFile}
+                    />
+                </Grid>
+
+                {/* Return Label checkbox */}
+                <Grid item xs={12} md={2.4} sx={{ marginTop: '20px' }}>
+                    <Field name="additionalInfo.returnLabel">
+                        {({ field }: { field: { value: boolean; onChange: () => void; onBlur: () => void } }) => (
+                            <FormControlLabel
+                                control={<Checkbox {...field} checked={field.value} />}
+                                label="Return Label"
+                                labelPlacement="end"
+                            />
+                        )}
+                    </Field>
+                </Grid>
+
+            </Grid>
+        </Grid>
     );
 };
 

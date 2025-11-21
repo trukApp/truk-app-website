@@ -1,22 +1,15 @@
 'use client';
-import React, { useState } from 'react';
-import { Formik, Form, Field, FormikProps } from 'formik';
-import * as Yup from 'yup';
-import { Checkbox, FormControlLabel, Grid, TextField, Backdrop, CircularProgress, Typography, Paper, List, ListItem, MenuItem } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Field, FormikProps, useFormikContext } from 'formik';
+import { Checkbox, FormControlLabel, Grid, TextField, Backdrop, CircularProgress, Typography, Paper, List, ListItem, Collapse } from '@mui/material';
 import styles from './CreatePackage.module.css';
-import { useAppDispatch, useAppSelector } from '@/store';
-import {
-    clearPackageShipFrom,
-    setPackageShipFrom
-} from '@/store/authSlice';
-import { useGetFilteredLocationsQuery, useGetLocationMasterQuery, usePostLocationMasterMutation, useUpdateShipFromDefaultLocationIdMutation } from '@/api/apiSlice';
+import { useGetFilteredLocationsQuery, useGetLocationMasterQuery, useUpdateShipFromDefaultLocationIdMutation } from '@/api/apiSlice';
 import { Location } from '../MasterDataComponents/Locations';
-import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
-import { CustomButtonFilled } from '../ReusableComponents/ButtonsComponent';
 
-interface ShipFromProps {
-    onNext: (values: IShipFrom) => void;
-}
+// interface ShipFromProps {
+//     onNext: (values: IShipFrom) => void;
+//     onBack: () => void;
+// }
 export interface IShipFrom {
     addressLine1: string;
     addressLine2: string;
@@ -39,162 +32,115 @@ export interface IShipFrom {
     saveAsDefaultShipFromLocation: boolean,
 }
 
-const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
+interface CreatePackageFormValues {
+    shipFrom: IShipFrom;
+}
+
+
+
+const ShipFrom: React.FC = () => {
+    const { values, setFieldValue, touched, errors, handleBlur } = useFormikContext<CreatePackageFormValues>();
     const { data: locationsData, isLoading: isLocationLoading } = useGetLocationMasterQuery([])
+    const [updateDefulatFromLocation, { isLoading: defaultLocationLoading }] = useUpdateShipFromDefaultLocationIdMutation();
     const allLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
-    const shipFromReduxValues = useAppSelector((state) => state.auth.packageShipFrom)
+    // const billToReduxValues = useAppSelector((state) => state.auth.packageBillTo)
     const defaultLocationData = allLocations?.find((eachLocation: Location) => eachLocation?.def_ship_from === 1)
     const defaultLocationDataInputText = defaultLocationData
         ? `${defaultLocationData.loc_ID},${defaultLocationData.loc_desc}, ${defaultLocationData.city}, ${defaultLocationData.state}, ${defaultLocationData.pincode}`
         : '';
 
-    const [searchKey, setSearchKey] = useState(shipFromReduxValues?.locationId || defaultLocationDataInputText || '');
+    const [searchKey, setSearchKey] = useState(values.shipFrom?.locationId || defaultLocationDataInputText || '');
     const [showSuggestions, setShowSuggestions] = useState(false);
     const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
+
     const displayLocations = searchKey ? filteredLocations?.results || [] : allLocations;
-    const [snackbarOpen, setSnackbarOpen] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState("");
-    const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
-    const [postLocation, { isLoading: postLocationLoading }] = usePostLocationMasterMutation({})
-    const [updateDefulatFromLocation, { isLoading: defaultLocationLoading }] = useUpdateShipFromDefaultLocationIdMutation();
-    const dispatch = useAppDispatch()
 
-    const shipToReduxValues = useAppSelector((state) => state.auth.packageShipTo)
-    const billToReduxValues = useAppSelector((state) => state.auth.packageBillTo)
+    const [showMore, setShowMore] = useState(false);
+    const shipFromLocationIdData = values?.shipFrom.locationId
+    const shipFromLocationId = shipFromLocationIdData?.split(',')[0] ?? '';
+    const getAllLocations = displayLocations.filter(
+        (location: Location) => location.loc_ID !== shipFromLocationId
+    );
 
-    const locationTypeOptions = [
-        'Production Plant',
-        'Distribution Center',
-        'Shipping Point',
-        'Customer',
-        'Vendor',
-        'Terminal',
-        'Port',
-        'Airport',
-        'Railway Station',
-        'Container Freight Station',
-        'Hub',
-        'Gateway',
-        'Container Yard',
-        'Warehouse',
-        'Carrier Warehouse',
-        'Rail Junction',
-        'Border Crossing Point',
-    ];
 
-    const shipFromInitialValues = {
-        locationId: shipFromReduxValues?.locationId || defaultLocationDataInputText || '',
-        locationDescription: shipFromReduxValues?.locationDescription || defaultLocationData?.loc_desc || '',
-        contactPerson: shipFromReduxValues?.contactPerson || defaultLocationData?.contact_name || '',
-        phoneNumber: shipFromReduxValues?.phoneNumber || defaultLocationData?.contact_phone_number || '',
-        email: shipFromReduxValues?.email || defaultLocationData?.contact_email || '',
-        addressLine1: shipFromReduxValues?.addressLine1 || defaultLocationData?.address_1 || '',
-        addressLine2: shipFromReduxValues?.addressLine2 || defaultLocationData?.address_2 || '',
-        city: shipFromReduxValues?.city || defaultLocationData?.city || '',
-        state: shipFromReduxValues?.state || defaultLocationData?.state || '',
-        country: shipFromReduxValues?.country || defaultLocationData?.country || '',
-        pincode: shipFromReduxValues?.pincode || defaultLocationData?.pincode || '',
-        saveAsNewLocationId: false,
-        saveAsDefaultShipFromLocation: defaultLocationData?.def_ship_from || false,
-        latitude: shipFromReduxValues?.latitude || defaultLocationData?.latitude || '',
-        longitude: shipFromReduxValues?.longitude || defaultLocationData?.longitude || '',
-        timeZone: shipFromReduxValues?.timeZone || defaultLocationData?.time_zone || '',
-        glnCode: shipFromReduxValues?.glnCode || defaultLocationData?.gln_code || '',
-        iataCode: shipFromReduxValues?.iataCode || defaultLocationData?.iata_code || '',
-        locationType: shipFromReduxValues?.locationType || defaultLocationData?.loc_type || ''
-    }
-
-    const getAllLocations = displayLocations.filter((location: Location) => {
-        if (shipToReduxValues?.locationId && billToReduxValues?.locationId) {
-            return (
-                location.loc_ID !== shipToReduxValues.locationId &&
-                location.loc_ID !== billToReduxValues.locationId
-            );
-        } else if (shipToReduxValues?.locationId) {
-            return location.loc_ID !== shipToReduxValues.locationId;
-        } else if (billToReduxValues?.locationId) {
-            return location.loc_ID !== billToReduxValues.locationId;
+    useEffect(() => {
+        if (defaultLocationData) {
+            setFieldValue("shipFrom.locationId", defaultLocationData.loc_ID || "");
+            setFieldValue("shipFrom.locationDescription", defaultLocationData.loc_desc || "");
+            setFieldValue("shipFrom.addressLine1", defaultLocationData.address_1 || "");
+            setFieldValue("shipFrom.addressLine2", defaultLocationData.address_2 || "");
+            setFieldValue("shipFrom.city", defaultLocationData.city || "");
+            setFieldValue("shipFrom.state", defaultLocationData.state || "");
+            setFieldValue("shipFrom.country", defaultLocationData.country || "");
+            setFieldValue("shipFrom.pincode", defaultLocationData.pincode || "");
+            setFieldValue("shipFrom.latitude", defaultLocationData.latitude || "");
+            setFieldValue("shipFrom.longitude", defaultLocationData.longitude || "");
+            setFieldValue("shipFrom.timeZone", defaultLocationData.time_zone || "");
+            setFieldValue("shipFrom.locationType", defaultLocationData.loc_type || "");
+            setFieldValue("shipFrom.glnCode", defaultLocationData.gln_code || "");
+            setFieldValue("shipFrom.iataCode", defaultLocationData.iata_code || "");
+            setFieldValue("shipFrom.contactPerson", defaultLocationData.contact_name || "");
+            setFieldValue("shipFrom.phoneNumber", defaultLocationData.contact_phone_number || "");
+            setFieldValue("shipFrom.email", defaultLocationData.contact_email || "");
+            setFieldValue("shipFrom.saveAsDefaultShipFromLocation", defaultLocationData.def_ship_from || false);
         }
-        return true;
-    });
-
-    const validationSchema = Yup.object({
-        locationId: Yup.string().when("saveAsNewLocationId", {
-            is: (value: boolean) => value === false,
-            then: (schema) => schema.required("Location ID is required"),
-        }),
-        locationDescription: Yup.string().required('Location Description is required'),
-        addressLine1: Yup.string().required('Address Line 1 is required'),
-        contactPerson: Yup.string().required('Contact person is required'),
-        phoneNumber: Yup.string()
-            .matches(/^\d{10}$/, 'Phone number must be 10 digits')
-            .required('Phone number is required'),
-        email: Yup.string()
-            .email('Enter a valid email address')
-            .required('Email is required'),
-        city: Yup.string().required('City is required'),
-        state: Yup.string().required('State is required'),
-        country: Yup.string().required('Country is required'),
-        pincode: Yup.string().matches(/^\d{6}$/, 'Invalid pincode').required('Pincode is required'),
-        latitude: Yup.string().required('Latitude is required'),
-        longitude: Yup.string().required('Longitude is required'),
-        locationType: Yup.string().required('Location type is required'),
-    });
+    }, [defaultLocationData, setFieldValue])
 
     const handleLocationChange = (
         selectedLocationId: string,
-        setFieldValue: FormikProps<IShipFrom>['setFieldValue']
+        setFieldValue: FormikProps<CreatePackageFormValues>['setFieldValue']
     ) => {
-        setFieldValue("locationId", selectedLocationId);
+        setFieldValue("shipFrom.locationId", selectedLocationId);
 
         const selectedLocation = getAllLocations.find(
             (loc: Location) => loc?.loc_ID === selectedLocationId
         );
 
         if (selectedLocation) {
-            setFieldValue("locationDescription", selectedLocation.loc_desc || "");
-            setFieldValue("addressLine1", selectedLocation.address_1 || "");
-            setFieldValue("addressLine2", selectedLocation.address_2 || "");
-            setFieldValue("city", selectedLocation.city || "");
-            setFieldValue("state", selectedLocation.state || "");
-            setFieldValue("country", selectedLocation.country || "");
-            setFieldValue("pincode", selectedLocation.pincode || "");
-            setFieldValue("latitude", selectedLocation.latitude || "");
-            setFieldValue("longitude", selectedLocation.longitude || "");
-            setFieldValue("timeZone", selectedLocation.time_zone || "");
-            setFieldValue("locationType", selectedLocation.loc_type || "");
-            setFieldValue("glnCode", selectedLocation.gln_code || "");
-            setFieldValue("iataCode", selectedLocation.iata_code || "");
-            setFieldValue("contactPerson", selectedLocation.contact_name || "");
-            setFieldValue("phoneNumber", selectedLocation.contact_phone_number || "");
-            setFieldValue("email", selectedLocation.contact_email || "");
-            setFieldValue("saveAsDefaultShipFromLocation", selectedLocation.def_ship_from || false);
+            setFieldValue("shipFrom.locationDescription", selectedLocation.loc_desc || "");
+            setFieldValue("shipFrom.addressLine1", selectedLocation.address_1 || "");
+            setFieldValue("shipFrom.addressLine2", selectedLocation.address_2 || "");
+            setFieldValue("shipFrom.city", selectedLocation.city || "");
+            setFieldValue("shipFrom.state", selectedLocation.state || "");
+            setFieldValue("shipFrom.country", selectedLocation.country || "");
+            setFieldValue("shipFrom.pincode", selectedLocation.pincode || "");
+            setFieldValue("shipFrom.latitude", selectedLocation.latitude || "");
+            setFieldValue("shipFrom.longitude", selectedLocation.longitude || "");
+            setFieldValue("shipFrom.timeZone", selectedLocation.time_zone || "");
+            setFieldValue("shipFrom.locationType", selectedLocation.loc_type || "");
+            setFieldValue("shipFrom.glnCode", selectedLocation.gln_code || "");
+            setFieldValue("shipFrom.iataCode", selectedLocation.iata_code || "");
+            setFieldValue("shipFrom.contactPerson", selectedLocation.contact_name || "");
+            setFieldValue("shipFrom.phoneNumber", selectedLocation.contact_phone_number || "");
+            setFieldValue("shipFrom.email", selectedLocation.contact_email || "");
+            setFieldValue("shipFrom.saveAsDefaultShipFromLocation", selectedLocation.def_ship_from || false);
         } else {
-            setFieldValue("locationId", "");
-            setFieldValue("locationDescription", "");
-            setFieldValue("addressLine1", "");
-            setFieldValue("addressLine2", "");
-            setFieldValue("city", "");
-            setFieldValue("state", "");
-            setFieldValue("country", "");
-            setFieldValue("pincode", "");
-            setFieldValue("latitude", "");
-            setFieldValue("longitude", "");
-            setFieldValue("timeZone", "");
-            setFieldValue("locationType", "");
-            setFieldValue("glnCode", "");
-            setFieldValue("iataCode", "");
-            setFieldValue("contactPerson", "");
-            setFieldValue("phoneNumber", "");
-            setFieldValue("email", "");
+            // Reset values if location is not found
+            setFieldValue("shipFrom.locationId", "");
+            setFieldValue("shipFrom.locationDescription", "");
+            setFieldValue("shipFrom.addressLine1", "");
+            setFieldValue("shipFrom.addressLine2", "");
+            setFieldValue("shipFrom.city", "");
+            setFieldValue("shipFrom.state", "");
+            setFieldValue("shipFrom.country", "");
+            setFieldValue("shipFrom.pincode", "");
+            setFieldValue("shipFrom.latitude", "");
+            setFieldValue("shipFrom.longitude", "");
+            setFieldValue("shipFrom.timeZone", "");
+            setFieldValue("shipFrom.locationType", "");
+            setFieldValue("shipFrom.glnCode", "");
+            setFieldValue("shipFrom.iataCode", "");
+            setFieldValue("shipFrom.contactPerson", "");
+            setFieldValue("shipFrom.phoneNumber", "");
+            setFieldValue("shipFrom.email", "");
         }
     };
 
     const handleDefaultLocationChange = async (locId: string, defaultValue: number | boolean) => {
         try {
             const updatedLocationId = locId?.split(',')[0] ?? '';
-            await updateDefulatFromLocation({ locId: updatedLocationId, defShipFrom: defaultValue ? 1 : 0 }).unwrap();
-
+            const response = await updateDefulatFromLocation({ locId: updatedLocationId, defShipFrom: defaultValue ? 1 : 0 }).unwrap();
+            console.log("response: ", response)
         } catch (error) {
             console.log("Getting error while changing default value: ", error)
         }
@@ -202,433 +148,334 @@ const ShipFrom: React.FC<ShipFromProps> = ({ onNext }) => {
 
     return (
         <Grid>
-            <SnackbarAlert
-                open={snackbarOpen}
-                message={snackbarMessage}
-                severity={snackbarSeverity}
-                onClose={() => setSnackbarOpen(false)}
-            />
-            {isLocationLoading ? (
-                <Backdrop
-                    sx={{
-                        color: "#ffffff",
-                        zIndex: (theme) => theme.zIndex.drawer + 1,
-                    }}
-                    open={postLocationLoading || isLocationLoading || defaultLocationLoading}
-                >
-                    <CircularProgress color="inherit" />
-                </Backdrop>
-            ) : (
-                <Formik
-                    initialValues={shipFromInitialValues}
-                    validationSchema={validationSchema}
-                    onSubmit={async (values: IShipFrom, { setFieldValue }) => {
-                        const { saveAsNewLocationId, saveAsDefaultShipFromLocation, ...shipFromData } = values;
-                        console.log(saveAsNewLocationId, saveAsDefaultShipFromLocation)
-                        dispatch(setPackageShipFrom(shipFromData))
-                        if (values.saveAsNewLocationId) {
-                            try {
-                                const body = {
-                                    locations: [
-                                        {
-                                            loc_desc: values.locationDescription,
-                                            longitude: values.longitude,
-                                            latitude: values.latitude,
-                                            time_zone: values.timeZone,
-                                            address_1: values.addressLine1,
-                                            address_2: values.addressLine2,
-                                            city: values.city,
-                                            state: values.state,
-                                            country: values.country,
-                                            pincode: values.pincode,
-                                            loc_type: values.locationType,
-                                            gln_code: values.glnCode,
-                                            iata_code: values.iataCode,
-                                            contact_name: values.contactPerson,
-                                            contact_phone_number: values.phoneNumber,
-                                            contact_email: values.email,
+            <Backdrop
+                sx={{
+                    color: "#ffffff",
+                    zIndex: (theme) => theme.zIndex.drawer + 1,
+                }}
+                open={isLocationLoading || defaultLocationLoading}
+            >
+                <CircularProgress color="inherit" />
+            </Backdrop>
+            <Grid container spacing={2} className={styles.formsBgContainer}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', marginTop: 3, marginLeft: "15px" }}>Ship From Details</Typography>
+                <Grid item xs={12} sx={{ display: 'flex', flexDirection: { md: "row", xs: "column" }, gap: { md: '20px', xs: '2px' } }}>
+                    {values?.shipFrom?.saveAsNewLocationId ? null : (
+                        <FormControlLabel
+                            control={<Field name="shipFrom.saveAsDefaultShipFromLocation" type="checkbox" as={Checkbox} />}
+                            label="Save as Default Ship From Location"
+                            onChange={() => {
+                                setFieldValue('shipFrom.saveAsDefaultShipFromLocation', !values.shipFrom?.saveAsDefaultShipFromLocation);
+                                setFieldValue('shipFrom.saveAsNewLocationId', false);
+                                if (values.shipFrom?.locationId) {
+                                    console.log("values.locationId change: ")
+                                    handleDefaultLocationChange(values?.shipFrom.locationId, !values.shipFrom.saveAsDefaultShipFromLocation)
+                                }
+                            }}
+                        />
+                    )}
+                </Grid>
+                <Grid container spacing={2} className={styles.formsBgContainer}>
+                    <h3 className={styles.mainHeading}>Location Details</h3>
+                    <Grid container spacing={2}>
+                        {!values.shipFrom?.saveAsNewLocationId && (
+                            <Grid item xs={12} sm={6} md={2.4}>
+                                <TextField
+                                    fullWidth
+                                    name="shipFrom.locationId"
+                                    size="small"
+                                    label="Search Location"
+                                    onFocus={() => {
+                                        if (!searchKey) {
+                                            setSearchKey(values?.shipFrom.locationId || "");
+                                            setShowSuggestions(true);
                                         }
-                                    ]
-                                }
-                                const response = await postLocation(body).unwrap();
-                                if (response) {
-                                    setFieldValue("locationId", response.created_records[0]);
-                                }
-                                setSnackbarMessage("Locations created successfully!");
-                                setSnackbarSeverity("success");
-                                setSnackbarOpen(true);
-                            } catch (error) {
-                                console.error('API Error:', error);
-                                setSnackbarMessage("Something went wrong! please try again");
-                                setSnackbarSeverity("error");
-                                setSnackbarOpen(true);
-                            }
-                        }
-                        onNext(values);
-
-                    }}
-                >
-                    {({ values, touched, errors, handleSubmit, setFieldValue, handleChange, handleBlur }) => (
-                        <Form >
-                            <Typography variant="h6" sx={{ fontWeight: 'bold', marginTop: 3, marginLeft: "15px" }}>Ship From Details</Typography>
-                            <Grid item xs={12} sx={{ display: 'flex', flexDirection: { md: "row", xs: "column" }, gap: { md: '20px', xs: '2px' }, marginLeft: "15px" }}>
-                                {values?.saveAsNewLocationId ? (null) : (
-                                    <FormControlLabel
-                                        control={<Field name="saveAsDefaultShipFromLocation" type="checkbox" as={Checkbox} />}
-                                        label="Save as Default Ship From Location"
-                                        onChange={() => {
-                                            setFieldValue('saveAsDefaultShipFromLocation', !values.saveAsDefaultShipFromLocation);
-                                            setFieldValue('saveAsNewLocationId', false);
-                                            if (values.locationId) {
-                                                handleDefaultLocationChange(values?.locationId, !values.saveAsDefaultShipFromLocation)
-                                            }
-                                        }}
-                                    />
-                                )}
-                                <FormControlLabel
-                                    control={<Field name="saveAsNewLocationId" type="checkbox" as={Checkbox} />}
-                                    label="Save as New Location ID"
-                                    onChange={() => {
-                                        setFieldValue('saveAsNewLocationId', !values.saveAsNewLocationId);
-                                        setFieldValue('saveAsDefaultShipFromLocation', false);
-                                        dispatch(clearPackageShipFrom())
-                                        setFieldValue('locationDescription', '')
-                                        setFieldValue('addressLine1', '');
-                                        setFieldValue('addressLine2', '');
-                                        setFieldValue('locationId', '');
-                                        setFieldValue('city', '');
-                                        setFieldValue('state', '');
-                                        setFieldValue('country', '');
-                                        setFieldValue('pincode', '');
-                                        setFieldValue('latitude', '');
-                                        setFieldValue('longitude', '');
-                                        setFieldValue('timeZone', '');
-                                        setFieldValue('locationType', '');
-                                        setFieldValue('glnCode', '');
-                                        setFieldValue('iataCode', '');
-                                        setFieldValue('contactPerson', '');
-                                        setFieldValue('phoneNumber', '');
-                                        setFieldValue('email', '');
-
+                                    }}
+                                    onChange={(e) => {
+                                        setSearchKey(e.target.value)
+                                        setShowSuggestions(true)
+                                        setFieldValue("shipFrom.locationDescription", "");
+                                        setFieldValue("shipFrom.addressLine1", "");
+                                        setFieldValue("shipFrom.addressLine2", "");
+                                        setFieldValue("shipFrom.city", "");
+                                        setFieldValue("shipFrom.state", "");
+                                        setFieldValue("shipFrom.country", "");
+                                        setFieldValue("shipFrom.pincode", "");
+                                        setFieldValue("shipFrom.latitude", "");
+                                        setFieldValue("shipFrom.longitude", "");
+                                        setFieldValue("shipFrom.timeZone", "");
+                                        setFieldValue("shipFrom.locationType", "");
+                                        setFieldValue("shipFrom.glnCode", "");
+                                        setFieldValue("shipFrom.iataCode", "");
+                                        setFieldValue("shipFrom.contactPerson", "");
+                                        setFieldValue("shipFrom.phoneNumber", "");
+                                        setFieldValue("shipFrom.email", "");
+                                    }
+                                    }
+                                    onBlur={handleBlur}
+                                    value={searchKey} // Display the selected location ID
+                                    error={touched?.shipFrom?.locationId && Boolean(errors?.shipFrom?.locationId)}
+                                    helperText={
+                                        touched?.shipFrom?.locationId && typeof errors?.shipFrom?.locationId === "string"
+                                            ? errors.shipFrom?.locationId
+                                            : ""
+                                    }
+                                    InputProps={{
+                                        endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
                                     }}
                                 />
+                                {showSuggestions && (
+                                    <Paper
+                                        style={{
+                                            maxHeight: 200,
+                                            overflowY: "auto",
+                                            position: "absolute",
+                                            zIndex: 10,
+                                            width: "18%",
+                                            padding: "8px",
+                                            textAlign: "center",
+                                        }}
+                                    >
+                                        {getAllLocations.length > 0 ? (
+                                            <List>
+                                                {getAllLocations.map((location: Location) => (
+                                                    <ListItem
+                                                        key={location.loc_ID}
+                                                        component="li"
+                                                        onClick={() => {
+                                                            setShowSuggestions(false);
+                                                            const selectedDisplay = `${location.loc_ID},${location?.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
+                                                            setSearchKey(selectedDisplay);
+                                                            // setSearchKey(location.loc_ID);
+                                                            handleLocationChange(location.loc_ID, setFieldValue);
+                                                            setFieldValue("locationId", selectedDisplay);
+                                                        }}
+                                                        sx={{ cursor: "pointer" }}
+                                                    >
+                                                        <span style={{ fontSize: "14px" }}>
+                                                            {location.loc_ID}, {location?.loc_desc}, {location.city}, {location.state}, {location.country}, {location.pincode}
+                                                        </span>
+                                                    </ListItem>
+                                                ))}
+                                            </List>
+                                        ) : (
+                                            <Typography variant="body2" color="textSecondary">
+                                                No Results Found
+                                            </Typography>
+                                        )}
+                                    </Paper>
+                                )}
+
                             </Grid>
-                            <Grid container spacing={2} className={styles.formsBgContainer}>
-                                <h3 className={styles.mainHeading}>Location Details</h3>
-                                <Grid container spacing={2}>
-                                    {!values.saveAsNewLocationId && (
-                                        <Grid item xs={12} sm={6} md={2.4}>
-                                            <TextField
-                                                fullWidth
-                                                name="locationId"
-                                                size="small"
-                                                label="Search Location"
-                                                onFocus={() => {
-                                                    if (!searchKey) {
-                                                        setSearchKey(values?.locationId || "");
-                                                        setShowSuggestions(true);
-                                                    }
-                                                }}
-                                                onChange={(e) => {
-                                                    setSearchKey(e.target.value)
-                                                    setShowSuggestions(true)
-                                                    setFieldValue("locationDescription", "");
-                                                    setFieldValue("addressLine1", "");
-                                                    setFieldValue("addressLine2", "");
-                                                    setFieldValue("city", "");
-                                                    setFieldValue("state", "");
-                                                    setFieldValue("country", "");
-                                                    setFieldValue("pincode", "");
-                                                    setFieldValue("latitude", "");
-                                                    setFieldValue("longitude", "");
-                                                    setFieldValue("timeZone", "");
-                                                    setFieldValue("locationType", "");
-                                                    setFieldValue("glnCode", "");
-                                                    setFieldValue("iataCode", "");
-                                                    setFieldValue("contactPerson", "");
-                                                    setFieldValue("phoneNumber", "");
-                                                    setFieldValue("email", "");
-                                                }
-                                                }
-                                                value={searchKey}
-                                                error={touched?.locationId && Boolean(errors?.locationId)}
-                                                helperText={
-                                                    touched?.locationId && typeof errors?.locationId === "string"
-                                                        ? errors.locationId
-                                                        : ""
-                                                }
-                                                InputProps={{
-                                                    endAdornment: filteredLocationLoading ? <CircularProgress size={20} /> : null,
-                                                }}
-                                            />
-                                            {showSuggestions && (
-                                                <Paper
-                                                    style={{
-                                                        maxHeight: 200,
-                                                        overflowY: "auto",
-                                                        position: "absolute",
-                                                        zIndex: 10,
-                                                        width: "18%",
-                                                        padding: "8px",
-                                                        textAlign: "center",
-                                                    }}
-                                                >
-                                                    {getAllLocations.length > 0 ? (
-                                                        <List>
-                                                            {getAllLocations.map((location: Location) => (
-                                                                <ListItem
-                                                                    key={location.loc_ID}
-                                                                    component="li"
-                                                                    onClick={() => {
-                                                                        setShowSuggestions(false);
-                                                                        const selectedDisplay = `${location.loc_ID},${location?.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
-                                                                        setSearchKey(selectedDisplay);
-                                                                        // setSearchKey(location.loc_ID);
-                                                                        handleLocationChange(location.loc_ID, setFieldValue);
-                                                                        setFieldValue("locationId", selectedDisplay);
-                                                                    }}
-                                                                    sx={{ cursor: "pointer" }}
-                                                                >
-                                                                    <span style={{ fontSize: "14px" }}>
-                                                                        {location.loc_ID}, {location?.loc_desc}, {location.city}, {location.state}, {location.country}, {location.pincode}
-                                                                    </span>
-                                                                </ListItem>
-                                                            ))}
-                                                        </List>
-                                                    ) : (
-                                                        <Typography variant="body2" color="textSecondary">
-                                                            No Results Found
-                                                        </Typography>
-                                                    )}
-                                                </Paper>
-                                            )}
+                        )}
 
-                                        </Grid>
-                                    )}
+                        <Grid item xs={12} md={2.4}>
+                            <Field
+                                name="shipFrom.locationDescription"
+                                as={TextField}
+                                disabled={!values.shipFrom?.saveAsNewLocationId}
+                                label="Location Description*"
+                                InputLabelProps={{ shrink: true }} size='small' fullWidth
+                                error={touched?.shipFrom?.locationDescription && Boolean(errors?.shipFrom?.locationDescription)}
+                                helperText={touched?.shipFrom?.locationDescription && errors?.shipFrom?.locationDescription}
+                            />
+                        </Grid>
+                        <Grid item xs={12} md={2.4} sx={{ textAlign: "center", marginTop: "10px", marginLeft: "-50px" }}>
+                            <Typography
+                                sx={{
+                                    cursor: "pointer",
+                                    fontWeight: "bold"
+                                }}
+                                onClick={() => setShowMore(!showMore)}
+                            >
+                                {showMore ? "Hide Details ↑" : "More Details ↓"}
+                            </Typography>
+                        </Grid>
+                    </Grid>
 
-                                    <Grid item xs={12} md={2.4}>
-                                        <Field
-                                            name="locationDescription"
-                                            as={TextField}
-                                            disabled={!values.saveAsNewLocationId}
-                                            label="Location Description*"
-                                            InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                            error={touched?.locationDescription && Boolean(errors?.locationDescription)}
-                                            helperText={touched?.locationDescription && errors?.locationDescription}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={2.4}>
-                                        <Field
-                                            name="latitude"
-                                            as={TextField}
-                                            disabled={!values.saveAsNewLocationId}
-                                            label="Latitude*"
-                                            InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                            error={touched?.latitude && Boolean(errors?.latitude)}
-                                            helperText={touched?.latitude && errors?.latitude}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={2.4}>
-                                        <Field
-                                            name="longitude"
-                                            as={TextField}
-                                            disabled={!values.saveAsNewLocationId}
-                                            label="Longitude*"
-                                            InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                            error={touched?.longitude && Boolean(errors?.longitude)}
-                                            helperText={touched?.longitude && errors?.longitude}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={2.4}>
-                                        <Field
-                                            name="timeZone"
-                                            as={TextField}
-                                            disabled={!values.saveAsNewLocationId}
-                                            label="Time Zone"
-                                            InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={2.4}>
-                                        <TextField
-                                            fullWidth
-                                            size="small"
-                                            select
-                                            label="Location Type"
-                                            name="locationType"
-                                            value={values.locationType}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            error={touched?.locationType && Boolean(errors?.locationType)}
-                                            // helperText={touched?.locationType && errors?.locationType}
-                                            helperText={
-                                                touched?.locationType && typeof errors?.locationType === 'string'
-                                                    ? errors.locationType
-                                                    : ''
-                                            }
-                                        >
-                                            {locationTypeOptions.map((option) => (
-                                                <MenuItem key={option} value={option}>
-                                                    {option}
-                                                </MenuItem>
-                                            ))}
-                                        </TextField>
-                                    </Grid>
-                                    <Grid item xs={12} md={2.4}>
-                                        <Field
-                                            name="glnCode"
-                                            as={TextField}
-                                            label="GLN Code"
-                                            disabled={!values.saveAsNewLocationId}
-                                            InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                            error={touched?.glnCode && Boolean(errors?.glnCode)}
-                                            helperText={touched?.glnCode && errors?.glnCode}
-                                        />
-                                    </Grid>
-
-                                    <Grid item xs={12} md={2.4}>
-                                        <Field
-                                            name="iataCode"
-                                            as={TextField}
-                                            disabled={!values.saveAsNewLocationId}
-                                            label="IATA Code"
-                                            InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                            error={touched?.iataCode && Boolean(errors?.iataCode)}
-                                            helperText={touched?.iataCode && errors?.iataCode}
-                                        />
-                                    </Grid>
-                                </Grid>
-
-                                <h3 className={styles.mainHeading}>Address Information</h3>
-                                <Grid container spacing={2}>
-                                    <Grid item xs={12} md={2.4}>
-                                        <Field
-                                            name="addressLine1"
-                                            as={TextField}
-                                            disabled={!values.saveAsNewLocationId}
-                                            label="Address Line 1 *"
-                                            InputLabelProps={{ shrink: true }} size='small' fullWidth
-
-                                            error={touched?.addressLine1 && Boolean(errors?.addressLine1)}
-                                            helperText={touched?.addressLine1 && errors?.addressLine1}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={2.4}>
-                                        <Field
-                                            name="addressLine2"
-                                            disabled={!values.saveAsNewLocationId}
-                                            as={TextField}
-                                            label="Address Line 2"
-                                            InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={2.4}>
-                                        <Field
-                                            name="city"
-                                            as={TextField}
-                                            disabled={!values.saveAsNewLocationId}
-                                            label="City*"
-                                            InputLabelProps={{ shrink: true }} size='small' fullWidth
-
-                                            error={touched?.city && Boolean(errors?.city)}
-                                            helperText={touched?.city && errors?.city}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={2.4}>
-                                        <Field
-                                            name="state"
-                                            disabled={!values.saveAsNewLocationId}
-                                            as={TextField}
-                                            label="State*"
-                                            InputLabelProps={{ shrink: true }} size='small' fullWidth
-
-                                            error={touched?.state && Boolean(errors?.state)}
-                                            helperText={touched?.state && errors?.state}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={2.4}>
-                                        <Field
-                                            name="country"
-                                            disabled={!values.saveAsNewLocationId}
-                                            as={TextField}
-                                            label="Country*"
-                                            InputLabelProps={{ shrink: true }} size='small' fullWidth
-
-                                            error={touched?.country && Boolean(errors?.country)}
-                                            helperText={touched?.country && errors?.country}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={2.4}>
-                                        <Field
-                                            name="pincode"
-                                            disabled={!values.saveAsNewLocationId}
-                                            as={TextField}
-                                            label="Pincode*"
-                                            InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                            error={touched?.pincode && Boolean(errors?.pincode)}
-                                            helperText={touched?.pincode && errors?.pincode}
-                                        />
-                                    </Grid>
-                                </Grid>
-                                <h3 className={styles.mainHeading}>Contact Information</h3>
-                                <Grid container spacing={2}>
-                                    <Grid item xs={12} md={2.4}>
-                                        <Field
-                                            name="contactPerson"
-                                            disabled={!values.saveAsNewLocationId}
-                                            as={TextField}
-                                            label="Contact Person*"
-                                            InputLabelProps={{ shrink: true }} size='small' fullWidth
-
-                                            error={touched?.contactPerson && Boolean(errors?.contactPerson)}
-                                            helperText={touched?.contactPerson && errors?.contactPerson}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={2.4}>
-                                        <Field
-                                            name="phoneNumber"
-                                            disabled={!values.saveAsNewLocationId}
-                                            as={TextField}
-                                            label="Phone Number*"
-                                            inputProps={{
-                                                maxLength: 10,
-                                                pattern: "[0-9]*",
-                                            }}
-                                            InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                            type='number'
-                                            error={touched?.phoneNumber && Boolean(errors?.phoneNumber)}
-                                            helperText={touched?.phoneNumber && errors?.phoneNumber}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={2.4}>
-                                        <Field
-                                            name="email"
-                                            disabled={!values.saveAsNewLocationId}
-                                            as={TextField}
-                                            label="Email Address*"
-                                            InputLabelProps={{ shrink: true }} size='small' fullWidth
-
-                                            error={touched?.email && Boolean(errors?.email)}
-                                            helperText={touched?.email && errors?.email}
-                                        />
-                                    </Grid>
-                                </Grid>
-                                <Grid container spacing={2} justifyContent="center" marginTop={2}>
-                                    <Grid item>
-                                        <CustomButtonFilled onSubmit={() => handleSubmit()}>Next</CustomButtonFilled>
-                                    </Grid>
-                                </Grid>
+                    <Collapse in={showMore}>
+                        <Grid spacing={2} container marginTop={5}>
+                            <Grid item xs={12} md={2.4}>
+                                <Field
+                                    name="shipFrom.latitude"
+                                    as={TextField}
+                                    disabled={!values.shipFrom?.saveAsNewLocationId}
+                                    label="Latitude*"
+                                    InputLabelProps={{ shrink: true }} size='small' fullWidth
+                                    error={touched?.shipFrom?.latitude && Boolean(errors?.shipFrom?.latitude)}
+                                    helperText={touched?.shipFrom?.latitude && errors?.shipFrom?.latitude}
+                                />
                             </Grid>
-                        </Form>
-                    )}
-                </Formik>
-            )}
+                            <Grid item xs={12} md={2.4}>
+                                <Field
+                                    name="shipFrom.longitude"
+                                    as={TextField}
+                                    disabled={!values.shipFrom?.saveAsNewLocationId}
+                                    label="Longitude*"
+                                    InputLabelProps={{ shrink: true }} size='small' fullWidth
+                                    error={touched?.shipFrom?.longitude && Boolean(errors?.shipFrom?.longitude)}
+                                    helperText={touched?.shipFrom?.longitude && errors?.shipFrom?.longitude}
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={2.4}>
+                                <Field
+                                    name="shipFrom.timeZone"
+                                    disabled={!values.shipFrom?.saveAsNewLocationId}
+                                    as={TextField}
+                                    label="Time Zone"
+                                    InputLabelProps={{ shrink: true }} size='small' fullWidth
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={2.4}>
+                                <Field
+                                    name="shipFrom.locationType"
+                                    as={TextField}
+                                    label="Location Type"
+                                    InputLabelProps={{ shrink: true }} size='small' fullWidth
+                                    error={touched?.shipFrom?.locationType && Boolean(errors?.shipFrom?.locationType)}
+                                    helperText={touched?.shipFrom?.locationType && errors?.shipFrom?.locationType}
+                                    disabled={!values.shipFrom?.saveAsNewLocationId}
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={2.4}>
+                                <Field
+                                    name="shipFrom.glnCode"
+                                    as={TextField}
+                                    label="GLN Code"
+                                    InputLabelProps={{ shrink: true }} size='small' fullWidth
+                                    error={touched?.shipFrom?.glnCode && Boolean(errors?.shipFrom?.glnCode)}
+                                    helperText={touched?.shipFrom?.glnCode && errors?.shipFrom?.glnCode}
+                                    disabled={!values.shipFrom?.saveAsNewLocationId}
+                                />
+                            </Grid>
 
+                            <Grid item xs={12} md={2.4}>
+                                <Field
+                                    name="shipFrom.iataCode"
+                                    as={TextField}
+                                    label="IATA Code"
+                                    InputLabelProps={{ shrink: true }} size='small' fullWidth
+                                    error={touched?.shipFrom?.iataCode && Boolean(errors?.shipFrom?.iataCode)}
+                                    helperText={touched?.shipFrom?.iataCode && errors?.shipFrom?.iataCode}
+                                    disabled={!values.shipFrom?.saveAsNewLocationId}
+                                />
+                            </Grid>
 
+                        </Grid>
+                        <h3 className={styles.mainHeading}>Address Information</h3>
+                        <Grid container spacing={2} marginTop={1}>
+                            <Grid item xs={12} md={2.4}>
+                                <Field
+                                    name="shipFrom.addressLine1"
+                                    as={TextField}
+                                    disabled={!values.shipFrom?.saveAsNewLocationId}
+                                    label="Address Line 1*"
+                                    InputLabelProps={{ shrink: true }} size='small' fullWidth
+
+                                    error={touched?.shipFrom?.addressLine1 && Boolean(errors?.shipFrom?.addressLine1)}
+                                    helperText={touched?.shipFrom?.addressLine1 && errors?.shipFrom?.addressLine1}
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={2.4}>
+                                <Field
+                                    name="shipFrom.addressLine2"
+                                    as={TextField}
+                                    label="Address Line 2"
+                                    InputLabelProps={{ shrink: true }} size='small' fullWidth
+                                    disabled={!values.shipFrom?.saveAsNewLocationId}
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={2.4}>
+                                <Field
+                                    name="shipFrom.city"
+                                    as={TextField}
+                                    label="City*"
+                                    disabled={!values.shipFrom?.saveAsNewLocationId}
+                                    InputLabelProps={{ shrink: true }} size='small' fullWidth
+
+                                    error={touched?.shipFrom?.city && Boolean(errors?.shipFrom?.city)}
+                                    helperText={touched?.shipFrom?.city && errors?.shipFrom?.city}
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={2.4}>
+                                <Field
+                                    name="shipFrom.state"
+                                    as={TextField}
+                                    disabled={!values.shipFrom?.saveAsNewLocationId}
+                                    label="State*"
+                                    InputLabelProps={{ shrink: true }} size='small' fullWidth
+
+                                    error={touched?.shipFrom?.state && Boolean(errors?.shipFrom?.state)}
+                                    helperText={touched?.shipFrom?.state && errors?.shipFrom?.state}
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={2.4}>
+                                <Field
+                                    name="shipFrom.country"
+                                    disabled={!values.shipFrom?.saveAsNewLocationId}
+                                    as={TextField}
+                                    label="Country*"
+                                    InputLabelProps={{ shrink: true }} size='small' fullWidth
+                                    error={touched?.shipFrom?.country && Boolean(errors?.shipFrom?.country)}
+                                    helperText={touched?.shipFrom?.country && errors?.shipFrom?.country}
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={2.4}>
+                                <Field
+                                    name="shipFrom.pincode"
+                                    disabled={!values.shipFrom?.saveAsNewLocationId}
+                                    as={TextField}
+                                    label="Pincode*"
+                                    InputLabelProps={{ shrink: true }} size='small' fullWidth
+                                    error={touched?.shipFrom?.pincode && Boolean(errors?.shipFrom?.pincode)}
+                                    helperText={touched?.shipFrom?.pincode && errors?.shipFrom?.pincode}
+                                />
+                            </Grid>
+                        </Grid>
+                        <h3 className={styles.mainHeading}>Contact Information</h3>
+                        <Grid container spacing={2} marginTop={1}>
+                            <Grid item xs={12} md={2.4}>
+                                <Field
+                                    name="shipFrom.contactPerson"
+                                    disabled={!values.shipFrom?.saveAsNewLocationId}
+                                    as={TextField}
+                                    label="Contact Person*"
+                                    InputLabelProps={{ shrink: true }} size='small' fullWidth
+                                    error={touched?.shipFrom?.contactPerson && Boolean(errors?.shipFrom?.contactPerson)}
+                                    helperText={touched?.shipFrom?.contactPerson && errors?.shipFrom?.contactPerson}
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={2.4}>
+                                <Field
+                                    name="shipFrom.phoneNumber"
+                                    disabled={!values.shipFrom?.saveAsNewLocationId}
+                                    as={TextField}
+                                    label="Phone Number*"
+                                    InputLabelProps={{ shrink: true }} size='small' fullWidth
+                                    type='number'
+                                    error={touched?.shipFrom?.phoneNumber && Boolean(errors?.shipFrom?.phoneNumber)}
+                                    helperText={touched?.shipFrom?.phoneNumber && errors?.shipFrom?.phoneNumber}
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={2.4}>
+                                <Field
+                                    name="shipFrom.email"
+                                    disabled={!values.shipFrom?.saveAsNewLocationId}
+                                    as={TextField}
+                                    label="Email Address*"
+                                    InputLabelProps={{ shrink: true }} size='small' fullWidth
+
+                                    error={touched?.shipFrom?.email && Boolean(errors?.shipFrom?.email)}
+                                    helperText={touched?.shipFrom?.email && errors?.shipFrom?.email}
+                                />
+                            </Grid>
+                        </Grid>
+                    </Collapse>
+                </Grid>
+            </Grid>
         </Grid>
 
     );
 };
 
 export default ShipFrom;
-
-

@@ -58,6 +58,7 @@ export interface Location {
   def_bill_to: number | boolean;
   locationId: string;
   gst: string;
+  def_ship_to: number | boolean;
 }
 
 // Define the type for each row in the DataGrid

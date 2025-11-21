@@ -95,6 +95,8 @@ export interface Product {
     quantity: number;
     destination: string;
     volume_uom: string;
+    chargeable_weight: string;
+    chargeable_weight_uom: string;
 }
 
 interface ProductMasterProps {
@@ -133,6 +135,8 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
         weightUnit: unitsofMeasurement[0],
         volumeUnit: 'm^3',
         temperatureControl: false,
+        chargeableWeight: '',
+        chargeableWeightUnit: unitsofMeasurement[0]
     };
     const [updateRecord, setUpdateRecord] = useState(false);
     const [formInitialValues, setFormInitialValues] = useState(productFormInitialValues);
@@ -182,6 +186,8 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
         locationId: Yup.string().required("Location id is required"),
         packagingType: Yup.string().required("packaging type is required"),
         hsncode: Yup.string().required("Hsn code is required"),
+        chargeableWeight: Yup.string().required("Chargeable weight is required"),
+        chargeabkeWeightUnit: Yup.string().required("Chargeable weight unit is required"),
     });
 
     const getLocationDetails = (loc_ID: string) => {
@@ -237,6 +243,8 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                 weightUnit: weightUnit[1],
                 volumeUnit: volumeUnit[1],
                 temperatureControl: selectedProduct?.tempControl || false,
+                chargeableWeight: selectedProduct?.chargeable_weight || '',
+                chargeableWeightUnit: selectedProduct?.chargeable_weight_uom || ''
             });
     }
 
@@ -272,6 +280,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
         { field: 'productName', headerName: 'Product Name', width: 150 },
         { field: 'product_desc', headerName: 'Product Description', width: 200 },
         { field: 'weight', headerName: 'Weight', width: 150 },
+        { field: 'chargeable_weight', headerName: 'Chargeable Weight', width: 150 },
         { field: 'volume', headerName: 'Volume', width: 150 },
         { field: 'expiration', headerName: 'Expiration Date', width: 150 },
         { field: 'best_before', headerName: 'Best Before Date', width: 150 },
@@ -327,11 +336,13 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
         tempControl: product.temp_controlled,
         productName: product?.product_name,
         packingLabel: product?.packing_label,
-        hazardous: product?.hazardous
-
+        hazardous: product?.hazardous,
+        chargeable_weight: `${product?.chargeable_weight} ${product?.chargeable_weight_uom}`,
+        chargeable_weight_uom: product?.chargeable_weight_uom,
     }));
 
     const handleSubmit = async (values: typeof productFormInitialValues, { resetForm }: { resetForm: () => void }) => {
+        console.log("Submitted values :", values)
         try {
             const createProductBody = {
                 products: [
@@ -396,8 +407,12 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                 fragile_goods: values?.fragileGoods,
                 dangerous_goods: values?.dangerousGoods,
                 hazardous: values?.hazardousStorage,
-                temp_controlled: values?.temperatureControl
+                temp_controlled: values?.temperatureControl,
+                chargeable_weight: values?.chargeableWeight,
+                chargeable_weight_uom: values?.chargeableWeightUnit
             }
+            console.log("editProductBody :", editProductBody)
+            console.log("updateRecord", updateRecord)
 
             if (updateRecord) {
                 const response = await updateProductDetails({ body: editProductBody, productId: updateRecordId }).unwrap();
@@ -589,6 +604,46 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                                                 label="Weight Unit"
                                                 name="weightUnit"
                                                 value={values.weightUnit}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                            >
+                                                {unitsofMeasurement.map((unit) => (
+                                                    <MenuItem key={unit} value={unit}>
+                                                        {unit}
+                                                    </MenuItem>
+                                                ))}
+                                            </TextField>
+                                        </Grid>
+
+                                        <Grid item xs={12} sm={6} md={2.4}   >
+                                            <TextField
+                                                fullWidth size='small'
+                                                type='number'
+                                                label="Chargeable Weight"
+                                                name="chargeableWeight"
+                                                value={values.chargeableWeight}
+                                                // onChange={handleChange}
+                                                onChange={(e) => {
+                                                    console.log("e.target.value :", e.target.value)
+                                                    const inputValue = e.target.value;
+                                                    const numericValue = Number(inputValue);
+
+                                                    if (numericValue >= 0 || inputValue === "") {
+                                                        handleChange(e);
+                                                    }
+                                                }}
+                                                onBlur={handleBlur}
+                                                error={touched.chargeableWeight && Boolean(errors.chargeableWeight)}
+                                                helperText={touched.chargeableWeight && errors.chargeableWeight}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} sm={6} md={2.4}   >
+                                            <TextField
+                                                fullWidth size='small'
+                                                select
+                                                label="Chargeable Weight Unit"
+                                                name="chargeableWeightUnit"
+                                                value={values.chargeableWeightUnit}
                                                 onChange={handleChange}
                                                 onBlur={handleBlur}
                                             >
