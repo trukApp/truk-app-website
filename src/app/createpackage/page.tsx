@@ -11,7 +11,7 @@ interface PackageDetailsItem {
 }
 
 export interface AdditionalInfo {
-    eWayBillFile: string;
+    eWayBillFile: File | string | null;
     referenceId: string;       // Order Reference Number (optional)
     invoiceNumber: string;     // Mandatory
     poNumber: string;
