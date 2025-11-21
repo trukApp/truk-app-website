@@ -364,9 +364,9 @@ const ShipTo: React.FC = () => {
                                     as={TextField}
                                     label="Location Type"
                                     InputLabelProps={{ shrink: true }} size='small' fullWidth
-                                    error={touched?.locationType && Boolean(errors?.locationType)}
-                                    helperText={touched?.locationType && errors?.locationType}
-                                    disabled={!values.saveAsNewLocationId}
+                                    error={touched?.shipTo?.locationType && Boolean(errors?.shipTo?.locationType)}
+                                    helperText={touched?.shipTo?.locationType && errors?.shipTo?.locationType}
+                                    disabled={!values.shipTo?.saveAsNewLocationId}
                                 />
                             </Grid>
                             <Grid item xs={12} md={2.4}>
