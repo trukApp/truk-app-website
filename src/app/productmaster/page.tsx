@@ -49,6 +49,9 @@ export interface PackagingType {
     location: string;
 }
 export interface Product {
+    gstSlab: string;
+    chargeableWeight: string;
+    chargeablwWeightUom: string;
     locationId: string;
     weight_uom: string;
     productID: string;
@@ -97,6 +100,7 @@ export interface Product {
     volume_uom: string;
     chargeable_weight: string;
     chargeable_weight_uom: string;
+    gst_slab: string;
 }
 
 interface ProductMasterProps {
@@ -136,7 +140,8 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
         volumeUnit: 'm^3',
         temperatureControl: false,
         chargeableWeight: '',
-        chargeableWeightUnit: unitsofMeasurement[0]
+        chargeableWeightUnit: unitsofMeasurement[0],
+        gstSlab: '',
     };
     const [updateRecord, setUpdateRecord] = useState(false);
     const [formInitialValues, setFormInitialValues] = useState(productFormInitialValues);
@@ -156,7 +161,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
     const displayLocations = searchKey ? filteredLocations?.results || [] : getAllLocations;
     const getAllPackages = packagesData?.packages.length > 0 ? packagesData?.packages : []
     const allProductsData = productsData?.products || [];
-
+    console.log("allProductsData :", allProductsData[0])
     const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
         setPaginationModel(newPaginationModel);
     };
@@ -187,7 +192,8 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
         packagingType: Yup.string().required("packaging type is required"),
         hsncode: Yup.string().required("Hsn code is required"),
         chargeableWeight: Yup.string().required("Chargeable weight is required"),
-        chargeabkeWeightUnit: Yup.string().required("Chargeable weight unit is required"),
+        chargeableWeightUnit: Yup.string().required("Chargeable weight unit is required"),
+        gstSlab: Yup.string().required("GST slab is required"),
     });
 
     const getLocationDetails = (loc_ID: string) => {
@@ -210,7 +216,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
             ? `${packageData.packaging_type_name}, ${packageData.pac_ID}`
             : "NA";
     };
-
+    // console.log("selectedProduct :", selectedProduct)
     const mapRowToInitialValues = (selectedProduct: Product) => {
         const locId = selectedProduct?.locationId ? selectedProduct?.locationId.split(", ")[0] ?? "" : "";
         const packIdd = selectedProduct?.packagingType ? selectedProduct?.packagingType.split(", ").at(-1) ?? "" : "";
@@ -243,12 +249,15 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                 weightUnit: weightUnit[1],
                 volumeUnit: volumeUnit[1],
                 temperatureControl: selectedProduct?.tempControl || false,
-                chargeableWeight: selectedProduct?.chargeable_weight || '',
-                chargeableWeightUnit: selectedProduct?.chargeable_weight_uom || ''
+                chargeableWeight: selectedProduct?.chargeableWeight || '',
+                chargeableWeightUnit: selectedProduct?.chargeablwWeightUom || '',
+                gstSlab: selectedProduct?.gstSlab || ''
             });
     }
+    console.log("mapRowToInitialValues :", mapRowToInitialValues)
 
     const handleEdit = async (rowData: Product) => {
+        console.log("updatedInitialValues :", rowData)
         setShowForm(true)
         setUpdateRecord(true)
         const updatedInitialValues = await mapRowToInitialValues(rowData);
@@ -280,7 +289,8 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
         { field: 'productName', headerName: 'Product Name', width: 150 },
         { field: 'product_desc', headerName: 'Product Description', width: 200 },
         { field: 'weight', headerName: 'Weight', width: 150 },
-        { field: 'chargeable_weight', headerName: 'Chargeable Weight', width: 150 },
+        { field: 'chargeableWeight', headerName: 'Chargeable Weight', width: 150 },
+        { field: "chargeablwWeightUom", headerName: "Chargeable Weight Unit", width: 150 },
         { field: 'volume', headerName: 'Volume', width: 150 },
         { field: 'expiration', headerName: 'Expiration Date', width: 150 },
         { field: 'best_before', headerName: 'Best Before Date', width: 150 },
@@ -290,6 +300,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
         { field: 'sku_num', headerName: 'SKU Number', width: 150 },
         { field: 'fragile_goods', headerName: 'Fragile Goods', width: 150, valueFormatter: (params: GridCellParams) => params.value ? 'Yes' : 'No' },
         { field: 'dangerous_goods', headerName: 'Dangerous Goods', width: 150, valueFormatter: (params: GridCellParams) => params.value ? 'Yes' : 'No' },
+        { field: 'gst_slab', headerName: 'GST Slab', width: 150 },
         {
             field: 'actions',
             headerName: 'Actions',
@@ -337,8 +348,9 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
         productName: product?.product_name,
         packingLabel: product?.packing_label,
         hazardous: product?.hazardous,
-        chargeable_weight: `${product?.chargeable_weight} ${product?.chargeable_weight_uom}`,
-        chargeable_weight_uom: product?.chargeable_weight_uom,
+        chargeableWeight: `${product?.chargeable_weight}`,
+        chargeablwWeightUom: product?.chargeable_weight_uom,
+        gstSlab: product?.gst_slab
     }));
 
     const handleSubmit = async (values: typeof productFormInitialValues, { resetForm }: { resetForm: () => void }) => {
@@ -373,8 +385,10 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                         fragile_goods: values?.fragileGoods,
                         dangerous_goods: values?.dangerousGoods,
                         hazardous: values?.hazardousStorage,
-                        temp_controlled: values?.temperatureControl
-
+                        temp_controlled: values?.temperatureControl,
+                        chargeable_weight: values?.chargeableWeight,
+                        chargeable_weight_uom: values?.chargeableWeightUnit,
+                        gst_slab: values?.gstSlab
                     }
                 ]
             }
@@ -409,7 +423,8 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                 hazardous: values?.hazardousStorage,
                 temp_controlled: values?.temperatureControl,
                 chargeable_weight: values?.chargeableWeight,
-                chargeable_weight_uom: values?.chargeableWeightUnit
+                chargeable_weight_uom: values?.chargeableWeightUnit,
+                gst_slab: values?.gstSlab
             }
             console.log("editProductBody :", editProductBody)
             console.log("updateRecord", updateRecord)
@@ -690,6 +705,17 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                                                     </MenuItem>
                                                 ))}
                                             </TextField>
+                                        </Grid>
+                                        <Grid item xs={12} sm={6} md={2.4}>
+                                            <TextField
+                                                fullWidth
+                                                size="small"
+                                                label="GST Slab*"
+                                                name="gstSlab"
+                                                value={values.gstSlab}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                            />
                                         </Grid>
                                     </Grid>
 

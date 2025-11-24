@@ -59,6 +59,7 @@ export interface Location {
   locationId: string;
   gst: string;
   def_ship_to: number | boolean;
+  gst_number: string;
 }
 
 // Define the type for each row in the DataGrid
@@ -83,6 +84,7 @@ interface DataGridRow {
   locationContactName: string;
   locationContactNumber: string;
   locationContactEmail: string;
+  gstNumber: string;
 }
 
 
@@ -151,7 +153,8 @@ const Locations: React.FC = () => {
             iata_code: values.iataCode,
             contact_name: values?.locationContactName,
             contact_phone_number: values?.locationContactNumber,
-            contact_email: values?.locationContactEmail
+            contact_email: values?.locationContactEmail,
+            gst_number: values?.gstNumber
 
           }
         ]
@@ -172,7 +175,8 @@ const Locations: React.FC = () => {
         iata_code: values.iataCode,
         contact_name: values?.locationContactName,
         contact_phone_number: values?.locationContactNumber,
-        contact_email: values?.locationContactEmail
+        contact_email: values?.locationContactEmail,
+        gst_number: values?.gstNumber
       }
       if (isEditing && editRow) {
         const locationId = editRow.id
@@ -264,7 +268,8 @@ const Locations: React.FC = () => {
       vehiclesNearBy: [],
       locationContactName: '',
       locationContactNumber: '',
-      locationContactEmail: ''
+      locationContactEmail: '',
+      gstNumber: ''
     },
     validationSchema,
     onSubmit: handleFormSubmit
@@ -293,6 +298,7 @@ const Locations: React.FC = () => {
         locationContactName: editRow.locationContactName,
         locationContactNumber: editRow.locationContactNumber,
         locationContactEmail: editRow.locationContactEmail,
+        gstNumber: editRow.gstNumber
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -319,6 +325,7 @@ const Locations: React.FC = () => {
     locationContactName: location.contact_name,
     locationContactNumber: location.contact_phone_number,
     locationContactEmail: location.contact_email,
+    gstNumber: location.gst_number,
   })) || [];
 
   const columns: GridColDef[] = [
@@ -543,6 +550,17 @@ const Locations: React.FC = () => {
                       label="Time Zone*"
                       name="timeZone"
                       value={values.timeZone}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      label="GST Number*"
+                      name="gstNumber"
+                      value={values.gstNumber}
                       onChange={handleChange}
                       onBlur={handleBlur}
                     />
