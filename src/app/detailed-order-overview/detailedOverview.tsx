@@ -23,6 +23,7 @@ import AdditionalDocuments from "@/Components/CreateOrderTables/AdditionalDocume
 import CloseIcon from "@mui/icons-material/Close";
 import SnackbarAlert from "@/Components/ReusableComponents/SnackbarAlerts";
 import BillOfLading from "@/Components/OrderOverViewAllocations/BillOfLading";
+import LOR from "@/Components/OrderOverViewAllocations/LOR";
 
 export interface OrderDoc {
 	[key: string]: string;
@@ -42,6 +43,9 @@ const OrderDetailedOverview: React.FC = () => {
 	const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 	const [openDialog, setOpenDialog] = useState(false);
 	const [documents, setDocuments] = useState<{ [key: string]: string }[]>([]);
+	const lrInvoices = order?.lr_invoices || [];
+
+	console.log("Lr invoices:", lrInvoices);
 
 
 	const handleOpenDialog = () => setOpenDialog(true);
@@ -319,7 +323,7 @@ const OrderDetailedOverview: React.FC = () => {
 							allocatedPackageDetails={allocatedPackageDetails}
 							from={from}
 						/>
-						{orderData?.order_status === null || orderData?.order_status === "assignment pending" ? null : (
+						{orderData?.order_status === null || orderData?.order_status === "assignment pending" ? (
 							<BillOfLading
 								allocations={orderData.allocations}
 								orderId={orderData.order_ID}
@@ -328,7 +332,17 @@ const OrderDetailedOverview: React.FC = () => {
 								from={from}
 								orderStatus={orderData.order_status}
 							/>
-						)}
+
+						) : null}
+						<LOR
+							allocations={orderData.allocations}
+							orderId={orderData.order_ID}
+							allocatedPackageDetails={allocatedPackageDetails}
+							order={orderData}
+							from={from}
+							orderStatus={orderData.order_status}
+							lrInvoices={lrInvoices}
+						/>
 					</>
 				)}
 

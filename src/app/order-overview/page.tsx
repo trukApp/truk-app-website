@@ -75,7 +75,6 @@ const OrdersGrid: React.FC = () => {
 	// eslint-disable-next-line react-hooks/rules-of-hooks
 	const filteredOrders = useMemo(() => {
 		if (dateFilter === "All") return ordersData;
-
 		const now = moment();
 		return ordersData.filter((order) => {
 			const createdAt = moment(order.created_at);

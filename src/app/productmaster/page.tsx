@@ -595,7 +595,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                                             <TextField
                                                 fullWidth size='small'
                                                 type='number'
-                                                label="Weight"
+                                                label="Dead Weight "
                                                 name="weightUoM"
                                                 value={values.weightUoM}
                                                 // onChange={handleChange}
@@ -616,7 +616,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({ productsFromServer })
                                             <TextField
                                                 fullWidth size='small'
                                                 select
-                                                label="Weight Unit"
+                                                label="Dead Weight Unit"
                                                 name="weightUnit"
                                                 value={values.weightUnit}
                                                 onChange={handleChange}

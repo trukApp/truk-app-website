@@ -92,7 +92,9 @@ const CreatePackage = () => {
     const [createPackageOrder, { isLoading: isPackageCreating }] = useCreatePackageForOrderMutation()
 
     const handleCreateAnother = () => {
-        router.push("/createpackage");
+        setModalOpen(false);
+        // router.push("/createpackage");
+        router.refresh();
     };
     const handleGoToOrder = () => {
         setModalOpen(false);
@@ -101,7 +103,9 @@ const CreatePackage = () => {
 
 
     const handleSubmit = async (values: CreatePackageFormValues, formikHelpers: FormikHelpers<CreatePackageFormValues>) => {
-        console.log("Form Values on Submit: ")
+        console.log("Submitting eWayBillFile field:", values.additionalInfo.eWayBillFile);
+        console.log("Submitting file field:", values.additionalInfo.file);
+
         const errors = await formikHelpers.validateForm();
         console.log('Validation errors before submit:', errors);
 
@@ -136,10 +140,10 @@ const CreatePackage = () => {
                             po_number: values.additionalInfo?.poNumber,
                             sales_order_number: values.additionalInfo?.salesOrderNumber,
                             return_label: values.additionalInfo?.returnLabel,
-                            delivery_type: values?.additionalInfo?.deliveryType,        // Add this default as empty string
+                            delivery_type: values?.additionalInfo?.deliveryType,
                             delivery_mode: values?.additionalInfo?.deliveryMode,
                             value_of_goods: values?.additionalInfo?.valueOfGoods,
-                            eWay_bill_file: values?.additionalInfo?.eWayBillNumber,
+                            eWay_bill_file: values?.additionalInfo?.eWayBillFile,
                             stn_Do_number: values?.additionalInfo?.stnDoNumber,
                         },
                         pickup_date_time: values.pickupDropoff?.pickupDateTime,
