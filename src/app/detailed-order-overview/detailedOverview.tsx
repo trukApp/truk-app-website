@@ -24,6 +24,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import SnackbarAlert from "@/Components/ReusableComponents/SnackbarAlerts";
 import BillOfLading from "@/Components/OrderOverViewAllocations/BillOfLading";
 import LOR from "@/Components/OrderOverViewAllocations/LOR";
+// import LOR 
 
 export interface OrderDoc {
 	[key: string]: string;
