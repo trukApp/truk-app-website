@@ -31,6 +31,8 @@ interface LORProps {
 			e_way?: string;
 		}>;
 	}>;
+	from?: string;           // ✅ Add this
+	orderStatus?: string;
 }
 
 interface Location {
