@@ -7,6 +7,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { useGetAllPackagesForOrderQuery, useGetAllProductsQuery, useGetLocationMasterQuery } from "@/api/apiSlice";
 import JsBarcode from "jsbarcode";
+import Image from "next/image";
 
 
 interface LORProps {
@@ -296,6 +297,7 @@ const LOR = ({ allocations, orderId, allocatedPackageDetails, order, lrInvoices 
 								)
 							) || {};
 
+						console.log("lrData: ", lrData)
 						// Use LR's ship_from/ship_to for addresses, LR number for invoice
 						const consignorLoc = lrData.ship_from ?? "";
 						const consigneeLoc = lrData.ship_to ?? "";
@@ -343,30 +345,6 @@ const LOR = ({ allocations, orderId, allocatedPackageDetails, order, lrInvoices 
 						// 		displayValue: true,
 						// 	});
 						// }, [shipperPkg?.pac_id, consignorLoc, consigneeLoc, getAllLocations]);
-
-
-
-
-
-						// const productRows = (lrData?.packages_in_data || []).map(
-						// 	(pkg, idx) => {
-						// 		const pkgInfo = getProductsInPackageDetails(pkg?.pack_ID);
-
-						// 		return {
-						// 			slNo: idx + 1,
-						// 			invoice: pkg.invoice,
-						// 			ewb: pkg.e_way ?? "-",
-						// 			details: pkgInfo?.details,
-						// 			count: pkgInfo?.quantity,
-						// 			deedWeight:
-						// 				shipperPkg?.package_weight ??
-						// 				allocation?.occupiedWeight ??
-						// 				"-",
-						// 			chargeableWeight: allocation?.chargeableWeight ?? "-",
-						// 			// value: "10000",
-						// 		};
-						// 	}
-						// );
 
 						const productRows = (lrData?.packages_in_data || []).map(
 							(pkg: { pack_ID: string; invoice?: string; e_way?: string }, idx: number) => {
@@ -440,20 +418,6 @@ const LOR = ({ allocations, orderId, allocatedPackageDetails, order, lrInvoices 
 
 						return (
 							<Box key={`${allocIndex}-${index}`} mt={2}>
-								{/* <Box textAlign="center" mb={1}>
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    onClick={() => pdfRefs.current[shipToId] && handlePDFDownload(pdfRefs.current[shipToId], `LOR-${orderId}-${shipToId}.pdf`)}
-                                    sx={{ mx: 1, px: 4, bgcolor: "#334eaf", fontWeight: 700 }}
-                                >
-                                    PRINT PDF
-                                </Button>
-                                <Button variant="outlined" sx={{ mx: 1, px: 4 }} onClick={() => window.close()}>
-                                    CLOSE
-                                </Button>
-                            </Box> */}
-
 								<Paper
 									ref={(el) => {
 										pdfRefs.current[shipToId] = el;
@@ -471,10 +435,12 @@ const LOR = ({ allocations, orderId, allocatedPackageDetails, order, lrInvoices 
 									{/* Header */}
 									<Grid container>
 										<Grid item xs={2.5}>
-											<img
-												alt="logo"
-												src="https://shadowfax.in/wp-content/uploads/2023/07/shadowfax-logo.svg"
-												style={{ height: 32 }}
+											<Image
+												src="/TrukAppLogo.png"
+												alt="Logo"
+												width={150}
+												height={50}
+												unoptimized
 											/>
 										</Grid>
 										<Grid item xs={7} sx={{ textAlign: "center" }}>
@@ -497,12 +463,12 @@ const LOR = ({ allocations, orderId, allocatedPackageDetails, order, lrInvoices 
 												Booking Date:{" "}
 												<b>{order?.created_at?.split("T")[0] || "-"}</b>
 											</Typography>
-											<Typography fontWeight={700} fontSize="12px">
+											{/* <Typography fontWeight={700} fontSize="12px">
 												LOR NO.
-											</Typography>
+											</Typography> */}
 											<svg id={`barcode-${shipperPkg?.pac_id}`}></svg>
 
-											<Typography>{shipperPkg?.pac_id}</Typography>
+											<Typography>{lrData?.lr_num}</Typography>
 										</Grid>
 									</Grid>
 									{/* Top info table */}
