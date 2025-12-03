@@ -63,12 +63,15 @@ interface Package {
 	pac_id?: any;
 	package_weight?: number;
 	pack_ID: string;
-	product_ID?: PackageProduct[]; // Array of products in this package
+	pickup_date_time?: string;
+	product_ID?: PackageProduct[];
+	 
 }
 
 interface ProductDetails {
 	details: string;
 	quantity: number;
+	pickup_date_time : string | null;
 }
 
 interface CellProps {
@@ -155,17 +158,37 @@ const LOR = ({ allocations, orderId, allocatedPackageDetails, order, lrInvoices 
 	const handleCancel = () => {
 		setOpenPopup(false);
 	};
+	console.log("all pcakages:", allPackagesData)
+	 
 	const getProductsInPackageDetails = (packId: string): ProductDetails => {
-		// Step 1: get all product entries under this package
+		// Step 1: Find the package entry to get pickup date
+		const packageEntry = allPackagesData.find((pkg) => pkg.pack_ID === packId);
+		const pickupDate = packageEntry?.pickup_date_time || null;
+
+			let pickupDateFormatted: string | null = null;
+
+			if (pickupDate) {
+				const dateOnly = pickupDate.split("T")[0];
+				const [year, month, day] = dateOnly.split("-");
+
+				pickupDateFormatted = `${day}-${month}-${year}`;  
+			}
+		// Step 2: get all product entries under this package
 		const packProducts = allPackagesData
 			.filter((pkg) => pkg.pack_ID === packId)
 			.flatMap((pkg) => pkg.product_ID || []);
-		// product_ID is itself an array like [{prod_ID, quantity, package_info}]
 
-		// If no products found, return a consistent ProductDetails shape
-		if (!packProducts.length) return { details: "No products found", quantity: 0 };
+		// If no products found, return consistent ProductDetails shape
+		if (!packProducts.length) {
+			return {
+				details: "No products found",
+				quantity: 0,
+				pickup_date_time: pickupDateFormatted,
+			};
+		}
 
 		let totalQuantity = 0;
+
 		const details = packProducts.map((prod: PackageProduct) => {
 			const productInfo = allProductsData.find(
 				(p) => p.product_ID === prod.prod_ID
@@ -174,16 +197,17 @@ const LOR = ({ allocations, orderId, allocatedPackageDetails, order, lrInvoices 
 			if (!productInfo) {
 				return `Unknown Product (${prod.prod_ID})`;
 			}
+
 			totalQuantity += Number(prod.quantity || 0);
+
 			return `${productInfo.product_name}, quantity: ${prod.quantity}`;
 		});
 
-
-		// return
-		//  details.join(" || ");
-		return { details: details.join(" || "), quantity: totalQuantity };
-
-
+		return {
+			details: details.join(" || "),
+			quantity: totalQuantity,
+			pickup_date_time: pickupDateFormatted ,
+		};
 	};
 
 	const handlePDFDownload = async (
@@ -263,7 +287,10 @@ const LOR = ({ allocations, orderId, allocatedPackageDetails, order, lrInvoices 
 						Cancel
 					</Button>
 				</DialogActions>
-			</Dialog>
+			</Dialog> <div id="labels-container" style={{ position: "absolute", left: "-9999px", top: 0 }}>
+
+</div>
+
 
 			<Backdrop
 				sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
@@ -302,7 +329,6 @@ const LOR = ({ allocations, orderId, allocatedPackageDetails, order, lrInvoices 
 						const consignorLoc = lrData.ship_from ?? "";
 						const consigneeLoc = lrData.ship_to ?? "";
 						// const lrNum = lrData.lr_num || "-";
-
 						// Rows for goods table
 						// const productRows = (shipperPkg?.product_lines || []).map(
 						// 	(pl, idx) => ({
@@ -348,14 +374,14 @@ const LOR = ({ allocations, orderId, allocatedPackageDetails, order, lrInvoices 
 
 						const productRows = (lrData?.packages_in_data || []).map(
 							(pkg: { pack_ID: string; invoice?: string; e_way?: string }, idx: number) => {
-								const pkgInfo = getProductsInPackageDetails(pkg?.pack_ID || ""); // Always ProductDetails
+								const pkgInfo = getProductsInPackageDetails(pkg?.pack_ID || ""); 
 
 								return {
 									slNo: idx + 1,
 									invoice: pkg.invoice || "-",
 									ewb: pkg.e_way ?? "-",
-									details: pkgInfo.details,  // ✅ Safe - always exists
-									count: pkgInfo.quantity,   // ✅ Safe - always exists
+									details: pkgInfo.details,
+									count: pkgInfo.quantity,
 									deedWeight: shipperPkg?.package_weight ?? allocation?.occupiedWeight ?? "-",
 									chargeableWeight: allocation?.chargeableWeight ?? "-",
 									value: 0,
@@ -415,9 +441,203 @@ const LOR = ({ allocations, orderId, allocatedPackageDetails, order, lrInvoices 
 								displayValue: false,
 							});
 						}, [shipperPkg.pac_id, consignorLoc, consigneeLoc, lrData?.packages_in_data]);
+const handlePrintLabels = async () => {
+	const jsPDF = (await import("jspdf")).default;
+	const html2canvas = (await import("html2canvas")).default;
+
+	for (const pkg of lrData?.packages_in_data ?? []) {
+		const element = document.getElementById(`label-${pkg.pack_ID}`);
+
+		if (!element) continue;
+
+		const canvas = await html2canvas(element, { scale: 3 });
+		const imgData = canvas.toDataURL("image/jpeg", 1.0);
+
+		const pdf = new jsPDF({
+			orientation: "portrait",
+			unit: "mm",
+			format: [70, 110],
+		});
+
+		// Fit label into PDF page
+		const pdfWidth = pdf.internal.pageSize.getWidth();
+		const imgProps = pdf.getImageProperties(imgData);
+		const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+		pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, imgHeight);
+
+		// Save file with invoice name
+		pdf.save(`${pkg?.invoice}.pdf`);
+	}
+};
 
 						return (
 							<Box key={`${allocIndex}-${index}`} mt={2}>
+								<div
+									id="hidden-labels"
+									style={{
+										position: "absolute",
+										top: "-99999px",
+										left: "-99999px",
+										pointerEvents: "none",
+										opacity: 0,
+									}}
+								>
+									{lrData?.packages_in_data?.map((pkg) => {
+										const pkgInfo = getProductsInPackageDetails(pkg.pack_ID);
+										const fromShort =
+											getLocationCode(consignorLoc)?.toUpperCase();
+										const toShort =
+											getLocationCode(consigneeLoc)?.toUpperCase();
+
+										return (
+											<div
+												key={pkg.pack_ID}
+												id={`label-${pkg.pack_ID}`}
+												style={{
+													width: "350px",
+													padding: "18px",
+													border: "2px solid #000",
+													background: "#fff",
+													fontFamily: "Arial, sans-serif",
+													marginBottom: "40px",
+												}}
+											>
+												{/* HEADER */}
+												<div
+													style={{
+														display: "flex",
+														justifyContent: "space-between",
+													}}
+												>
+													<Grid item xs={2}>
+														<Image
+															src="/TrukAppLogo.png"
+															alt="Logo"
+															width={90}
+															height={30}
+															unoptimized
+														/>
+													</Grid>
+
+													<div style={{ textAlign: "right", fontSize: "12px" }}>
+														<p style={{ margin: 0 }}>
+															Date: {pkgInfo?.pickup_date_time}
+														</p>
+														<p style={{ margin: 0 }}>
+															Invoice No: <b>{pkg?.invoice}</b>
+														</p>
+													</div>
+												</div>
+
+												<hr />
+
+												<p
+													style={{
+														fontSize: "12px",
+														textAlign: "center",
+														marginTop: "-4px",
+													}}
+												>
+													Package ID : <b>{pkg.pack_ID}</b>
+												</p>
+
+												<hr />
+
+												{/* CENTER GRID WITH VERTICAL LINES */}
+												<div
+													style={{
+														display: "flex",
+														textAlign: "center",
+														marginTop: "10px",
+													}}
+												>
+													{/* BOX 1 */}
+													<div style={{ width: "38%", padding: "6px" }}>
+														<p style={{ margin: 0, fontSize: "12px" }}>
+															Destination
+														</p>
+														<h4 style={{ margin: 0 }}>{toShort}</h4>
+													</div>
+
+													{/* VERTICAL LINE */}
+													<div
+														style={{
+															width: "1px",
+															background: "#000",
+															margin: "0 4px",
+														}}
+													/>
+
+													{/* BOX 2 */}
+													<div style={{ width: "33%", padding: "6px" }}>
+														<p style={{ margin: 0, fontSize: "12px" }}>
+															Facility Code
+														</p>
+														<h4 style={{ margin: 0 }}>{consigneeLoc}</h4>
+													</div>
+
+													{/* VERTICAL LINE */}
+													<div
+														style={{
+															width: "1px",
+															background: "#000",
+															margin: "0 4px",
+														}}
+													/>
+
+													{/* BOX 3 */}
+													<div style={{ width: "28%", padding: "6px" }}>
+														<p style={{ margin: 0, fontSize: "12px" }}>
+															Item Count
+														</p>
+														<h4 style={{ margin: 0 }}>{pkgInfo?.quantity}</h4>
+													</div>
+												</div>
+
+												<hr />
+
+												{/* ORIGIN + DELIVERY TYPE */}
+												<div
+													style={{
+														display: "flex",
+														justifyContent: "space-between",
+													}}
+												>
+													<div>
+														<p style={{ margin: 0, fontSize: "12px" }}>
+															Origin
+														</p>
+														<h4 style={{ margin: 0 }}>{fromShort}</h4>
+													</div>
+
+													<div style={{ textAlign: "right" }}>
+														<p style={{ margin: 0, fontSize: "12px" }}>
+															Delivery Type
+														</p>
+														<h4 style={{ margin: 0 }}>Standard</h4>
+													</div>
+												</div>
+
+												<hr />
+
+												<svg id={`barcode-${shipperPkg?.pac_id}`}></svg>
+												<Typography>{lrData?.lr_num}</Typography>
+											</div>
+										);
+									})}
+								</div>
+
+								<Box display="flex" alignItems="center" justifyContent="center">
+									<Typography>
+										{" "}
+										Generate and Download labels for packages :{" "}
+									</Typography>
+									<Button variant="contained" onClick={handlePrintLabels}>
+										Download
+									</Button>
+								</Box>
+
 								<Paper
 									ref={(el) => {
 										pdfRefs.current[shipToId] = el;
@@ -443,6 +663,7 @@ const LOR = ({ allocations, orderId, allocatedPackageDetails, order, lrInvoices 
 												unoptimized
 											/>
 										</Grid>
+
 										<Grid item xs={7} sx={{ textAlign: "center" }}>
 											<Typography fontWeight={700} fontSize="15px">
 												Shadowfax Technologies Pvt. Ltd.
@@ -609,7 +830,6 @@ const LOR = ({ allocations, orderId, allocatedPackageDetails, order, lrInvoices 
 										</Cell>
 									</Grid>
 								</Paper>
-
 								<Box textAlign="center" mb={10} mt={2}>
 									<Button
 										variant="contained"

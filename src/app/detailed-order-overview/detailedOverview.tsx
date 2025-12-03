@@ -22,7 +22,7 @@ import Image from "next/image";
 import AdditionalDocuments from "@/Components/CreateOrderTables/AdditionalDocuments";
 import CloseIcon from "@mui/icons-material/Close";
 import SnackbarAlert from "@/Components/ReusableComponents/SnackbarAlerts";
-import BillOfLading from "@/Components/OrderOverViewAllocations/BillOfLading";
+// import BillOfLading from "@/Components/OrderOverViewAllocations/BillOfLading";
 import LOR from "@/Components/OrderOverViewAllocations/LOR";
 // import LOR 
 
@@ -324,7 +324,7 @@ const OrderDetailedOverview: React.FC = () => {
 							allocatedPackageDetails={allocatedPackageDetails}
 							from={from}
 						/>
-						{orderData?.order_status === null || orderData?.order_status === "assignment pending" ? (
+						{/* {orderData?.order_status === null || orderData?.order_status === "assignment pending" ? (
 							<BillOfLading
 								allocations={orderData.allocations}
 								orderId={orderData.order_ID}
@@ -334,7 +334,7 @@ const OrderDetailedOverview: React.FC = () => {
 								orderStatus={orderData.order_status}
 							/>
 
-						) : null}
+						) : null} */}
 						<LOR
 							allocations={orderData.allocations}
 							orderId={orderData.order_ID}
