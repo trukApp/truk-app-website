@@ -31,10 +31,11 @@ const Home = () => {
 			}}
 		>
 			<TransportManagement />
-			<TransportPlanning />
+			{/* <TransportPlanning /> */}
 			<TransportExecution />
+			{/* 
 			<RatingsAndReviews />
-			<SettingsComponent />
+			<SettingsComponent /> */}
 		</Grid>
 	);
 };

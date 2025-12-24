@@ -30,24 +30,24 @@ const TransportExecution = () => {
 			),
 			onClick: () => handleNavigation("/order-overview"),
 		},
-		{
-			title: "Dock Management",
-			icon: <Warehouse sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
-			onClick: () => handleNavigation("/dock-management"),
-		},
-		{
-			title: "Operations",
-			icon: (
-				<EngineeringIcon
-					sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }}
-				/>
-			),
-		},
-		{
-			title: "Tracking",
-			icon: <Route sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
-			onClick: () => handleNavigation("/tracking"),
-		},
+		// {
+		// 	title: "Dock Management",
+		// 	icon: <Warehouse sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
+		// 	onClick: () => handleNavigation("/dock-management"),
+		// },
+		// {
+		// 	title: "Operations",
+		// 	icon: (
+		// 		<EngineeringIcon
+		// 			sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }}
+		// 		/>
+		// 	),
+		// },
+		// {
+		// 	title: "Tracking",
+		// 	icon: <Route sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
+		// 	onClick: () => handleNavigation("/tracking"),
+		// },
 		// {
 		//   title: 'Order bidding',
 		//   icon: <LocalShipping sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,

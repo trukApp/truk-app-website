@@ -20,11 +20,11 @@ const TransportManagement = () => {
   };
 
   const tiles = [
-    {
-      title: 'Transport Package Creation',
-      icon: <InventoryIcon sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
-      onClick: () => handleNavigation('/createpackage'),
-    },
+    // {
+    //   title: 'Transport Package Creation',
+    //   icon: <InventoryIcon sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
+    //   onClick: () => handleNavigation('/createpackage'),
+    // },
     {
       title: 'Product Master',
       icon: <StorefrontIcon sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
@@ -43,12 +43,12 @@ const TransportManagement = () => {
       // onClick: () => router.push('/masterdata'),
       onClick: () => handleNavigation('/masterdata'),
     },
-    {
-      title: 'Vehicle',
-      icon: <LocalShippingIcon sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
-      // onClick: () => router.push('/vehicle'),
-      onClick: () => handleNavigation('/vehicle'),
-    },
+    // {
+    //   title: 'Vehicle',
+    //   icon: <LocalShippingIcon sx={{ fontSize: { xs: 40, sm: 50, md: 60, lg: 70 } }} />,
+    //   // onClick: () => router.push('/vehicle'),
+    //   onClick: () => handleNavigation('/vehicle'),
+    // },
   ];
 
   return (

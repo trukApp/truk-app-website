@@ -19,20 +19,20 @@ const MasterData: React.FC = () => {
 
 	const renderComponent = () => {
 		switch (selectedTab) {
-			case "Vehicles":
-				return <Vehicles />;
-			case "Device master":
-				return <DeviceMaster />;
-			case "Lanes":
-				return <Lanes />;
+			// case "Vehicles":
+			// 	return <Vehicles />;
+			// case "Device master":
+			// 	return <DeviceMaster />;
+			// case "Lanes":
+			// 	return <Lanes />;
 			case "Locations":
 				return <Locations />;
 			case "Packaging Info":
 				return <PackagingInfo />;
 			case "Uom":
 				return <UnitsOfMeasurement />;
-			case "Dock":
-				return <DockForm />;
+			// case "Dock":
+			// 	return <DockForm />;
 			default:
 				return null;
 		}
@@ -64,22 +64,21 @@ const MasterData: React.FC = () => {
 					},
 				}}
 			>
-				<Tab
+				{/* <Tab
 					value="Vehicles"
 					sx={{ textTransform: "capitalize", fontSize: "16px" }}
 					label="Resources"
-				/>
-				{/* <Tab value="Vehicle group" sx={{textTransform:'capitalize',fontSize:'16px'}} label="Vehicle Group" /> */}
-				<Tab
+				/> */}
+				{/* <Tab
 					value="Device master"
 					sx={{ textTransform: "capitalize", fontSize: "16px" }}
 					label="Device Master"
-				/>
-				<Tab
+				/> */}
+				{/* <Tab
 					value="Lanes"
 					sx={{ textTransform: "capitalize", fontSize: "16px" }}
 					label="Lanes"
-				/>
+				/> */}
 				<Tab
 					value="Locations"
 					sx={{ textTransform: "capitalize", fontSize: "16px" }}
@@ -95,11 +94,11 @@ const MasterData: React.FC = () => {
 					sx={{ textTransform: "capitalize", fontSize: "16px" }}
 					label="Units of Measurement"
 				/>
-				<Tab
+				{/* <Tab
 					value="Dock"
 					sx={{ textTransform: "capitalize", fontSize: "16px" }}
 					label="Dock"
-				/>
+				/> */}
 			</Tabs>
 
 			{/* Render Selected Component */}
