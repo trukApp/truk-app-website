@@ -1,141 +1,376 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // 'use client';
-// import React, { useState } from 'react';
-// import { useRouter } from 'next/navigation';
-// import { GridColDef, DataGrid, GridRenderCellParams } from '@mui/x-data-grid';
-// import { Box, Typography, IconButton, Backdrop, CircularProgress } from '@mui/material';
-// import { Visibility } from '@mui/icons-material';
-// import { useGetAllOrdersQuery } from '@/api/apiSlice';
-// import moment from 'moment';
 
-// interface Route {
-//     start: { address: string; latitude: number; longitude: number };
-//     end: { address: string; latitude: number; longitude: number };
-//     distance: string;
-//     duration: string;
+// import React, { useMemo, useRef, useState } from 'react';
+// import { useRouter } from 'next/navigation';
+// import {
+//     Box,
+//     Typography,
+//     Card,
+//     CardContent,
+//     Divider,
+//     IconButton,
+//     Stack,
+//     LinearProgress,
+//     TextField,
+//     InputAdornment,
+//     Backdrop,
+//     CircularProgress,
+//     Chip,
+//     Avatar,
+//     Tooltip,
+// } from '@mui/material';
+// import {
+//     Visibility,
+//     Search,
+//     Phone,
+//     Person,
+//     AccessTime,
+// } from '@mui/icons-material';
+// import { motion } from 'framer-motion';
+// import {
+//     GoogleMap,
+//     Polyline,
+//     Marker,
+//     useJsApiLoader,
+// } from '@react-google-maps/api';
+// import { useGetAllAssignedOrdersDataQuery } from '@/api/apiSlice';
+
+// /* ---------------- TYPES ---------------- */
+
+// type RoutePoint = { lat: number; lng: number };
+
+// interface Driver {
+//     driver_name?: string;
+//     logged_in?: number;
+//     driver_availability?: number;
+//     driver_correspondence?: { phone?: string };
+// }
+
+// interface VehicleAssignment {
+//     self_vehicle_num?: string;
+//     driver?: Driver;
+// }
+
+// interface Assignment {
+//     vehicles?: VehicleAssignment[];
+// }
+
+// interface RouteLeg {
+//     start: { address: string };
+//     end: { address: string };
+//     distance?: string;
+//     duration?: string;
 // }
 
 // interface Allocation {
-//     vehicle_ID: string;
-//     route: Route[];
-//     leftoverVolume: number;
-//     leftoverWeight: number;
-//     occupiedVolume: number;
-//     occupiedWeight: number;
-//     totalVolumeCapacity: number;
-//     totalWeightCapacity: number;
+//     sampledRoutePoints?: RoutePoint[];
+//     occupiedPercentUsable?: number;
+//     route?: RouteLeg[];
 // }
 
-// export interface Order {
-//     updated_at: string;
-//     created_at: string;
-//     unallocated_packages: string[];
-//     ord_id: number;
+// interface Order {
 //     order_ID: string;
-//     scenario_label: string;
-//     total_cost: string;
-//     allocations: Allocation[];
-//     order_status: string
+//     allocations?: Allocation[];
+//     assignments?: Assignment[];
 // }
 
+// /* ---------------- CONSTANTS ---------------- */
 
-// const TrackingOrder: React.FC = () => {
-//     const [loading, setLoading] = useState(false)
-//     const { data: allOrders, error, isLoading } = useGetAllOrdersQuery({});
+// const COLORS = [
+//     '#2E7D32',
+//     '#1565C0',
+//     '#D84315',
+//     '#6A1B9A',
+//     '#00897B',
+//     '#C2185B',
+// ];
+
+// const DEFAULT_CENTER = { lat: 16.0, lng: 80.6 };
+// const mapContainerStyle = { width: '100%', height: '100%' };
+// const GOOGLE_MAP_LIBRARIES: ('places')[] = ['places'];
+
+// /* ---------------- HELPERS ---------------- */
+
+// const parseDurationToMs = (duration?: string) => {
+//     if (!duration) return 0;
+//     const h = duration.match(/(\d+)\s*hour/)?.[1];
+//     const m = duration.match(/(\d+)\s*min/)?.[1];
+//     return ((h ? +h : 0) * 60 + (m ? +m : 0)) * 60_000;
+// };
+
+// const formatTime = (date: number) =>
+//     new Date(date).toLocaleTimeString([], {
+//         hour: '2-digit',
+//         minute: '2-digit',
+//     });
+
+// /* ---------------- COMPONENT ---------------- */
+
+// const TrackingPage: React.FC = () => {
 //     const router = useRouter();
-//     const ordersData = allOrders?.orders || [];
-//     const getAllTrackingOrders = ordersData.filter((eachOrder: Order) => {
-//         return eachOrder?.order_status === 'self assigned'
-//     })
-//     console.log("Tracking Orders:", getAllTrackingOrders);
+//     const mapRef = useRef<google.maps.Map | null>(null);
+//     const [searchText, setSearchText] = useState('');
+//     const [focusedKey, setFocusedKey] = useState<string | null>(null);
 
-//     if (error) {
-//         return <Typography color="error">Failed to load data. Try after sometime.</Typography>;
+//     const { data, isLoading } =
+//         useGetAllAssignedOrdersDataQuery({});
+
+//     const { isLoaded } = useJsApiLoader({
+//         googleMapsApiKey:
+//             process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+//         libraries: GOOGLE_MAP_LIBRARIES,
+//     });
+
+//     const orders: Order[] = data?.orders ?? [];
+
+//     /* ---------------- FLATTEN DATA ---------------- */
+
+//     const allocationList = useMemo(() => {
+//         const now = Date.now();
+//         const list: any[] = [];
+
+//         orders.forEach((order, oIdx) => {
+//             const vehicleData = order.assignments?.[0]?.vehicles?.[0];
+//             const driver = vehicleData?.driver;
+
+//             order.allocations?.forEach((alloc, aIdx) => {
+//                 if (!alloc.sampledRoutePoints?.length) return;
+
+//                 const firstLeg = alloc.route?.[0];
+//                 const durationMs = parseDurationToMs(firstLeg?.duration);
+
+//                 const etaTime = now + durationMs;
+//                 const delayed = Date.now() > etaTime;
+
+//                 list.push({
+//                     key: `${order.order_ID}-${aIdx}`,
+//                     orderID: order.order_ID,
+//                     vehicle: vehicleData?.self_vehicle_num ?? 'Vehicle',
+//                     driverName: driver?.driver_name ?? 'Unassigned',
+//                     driverPhone: driver?.driver_correspondence?.phone ?? '',
+//                     online:
+//                         driver?.logged_in === 1 &&
+//                         driver?.driver_availability === 1,
+//                     color: COLORS[(oIdx + aIdx) % COLORS.length],
+//                     progress: alloc.occupiedPercentUsable ?? 0,
+//                     startAddress: firstLeg?.start?.address ?? '—',
+//                     endAddress:
+//                         alloc.route?.[alloc.route.length - 1]?.end?.address ?? '—',
+//                     distance: firstLeg?.distance ?? 'N/A',
+//                     duration: firstLeg?.duration ?? 'N/A',
+//                     etaTime,
+//                     delayed,
+//                     points: alloc.sampledRoutePoints,
+//                 });
+//             });
+//         });
+
+//         return list;
+//     }, [orders]);
+
+//     const filteredList = useMemo(() => {
+//         if (!searchText) return allocationList;
+//         const s = searchText.toLowerCase();
+//         return allocationList.filter(
+//             a =>
+//                 a.vehicle.toLowerCase().includes(s) ||
+//                 a.driverName.toLowerCase().includes(s) ||
+//                 a.orderID.toLowerCase().includes(s)
+//         );
+//     }, [searchText, allocationList]);
+
+//     if (!isLoaded || isLoading) {
+//         return (
+//             <Backdrop open>
+//                 <CircularProgress />
+//             </Backdrop>
+//         );
 //     }
 
-
-
-//     const handleViewOrder = (orderId: string) => {
-//         setLoading(true)
-//         router.push(`/detailed-order-overview?order_ID=${orderId}&from=tracking`);
-//     };
-
-//     const ordersColumns: GridColDef[] = [
-//         { field: 'order_ID', headerName: 'Order ID', width: 150 },
-//         { field: 'scenario_label', headerName: 'Scenario', width: 150 },
-//         { field: 'total_cost', headerName: 'Total Cost', width: 150 },
-//         { field: 'unallocated_packages', headerName: 'Unallocated Packages', width: 250 },
-//         { field: 'created_at', headerName: 'Created At', width: 200 },
-//         { field: 'order_status', headerName: 'Order status', width: 200 },
-//         {
-//             field: 'view',
-//             headerName: 'View',
-//             width: 100,
-//             sortable: false,
-//             renderCell: (params: GridRenderCellParams) => (
-//                 <IconButton onClick={() => handleViewOrder(params.row.order_ID)} sx={{ color: "#F08C24" }}>
-//                     <Visibility />
-//                 </IconButton>
-//             ),
-//         },
-//     ];
+//     /* ---------------- UI ---------------- */
 
 //     return (
-//         <Box sx={{ width: '100%', marginTop: 2 }}>
-//             <Backdrop
-//                 open={loading || isLoading}
-//                 sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
-//             >
-//                 <CircularProgress color="inherit" />
-//             </Backdrop>
-//             {/* <Typography variant="h5" sx={{ marginBottom: 2, textAlign: 'center', fontWeight: 600 }}>
-//                 Orders List
-//             </Typography> */}
+//         <Box sx={{ height: '100vh', p: 2 }}>
 //             <Typography
 //                 variant="h6"
-//                 color="primary"
-//                 sx={{ fontWeight: 'bold', mb: 1 }}
-//             >
-//                 Tracking Orders
-//             </Typography>
-
-//             <Typography
-//                 variant="body1"
-//                 sx={{ mb: 3, color: 'text.secondary' }}
-//             >
-//                 View and manage all self-assigned and completed orders. Click the eye icon to see detailed information for each order.
-//             </Typography>
-//             <DataGrid
-//                 rows={getAllTrackingOrders.map((order: Order) => ({
-//                     id: order.ord_id,
-//                     order_ID: order?.order_ID,
-//                     scenario_label: order?.scenario_label,
-//                     total_cost: order?.total_cost,
-//                     unallocated_packages: order?.unallocated_packages?.join(', ') || 'None',
-//                     order_status: order?.order_status,
-//                     created_at: moment(new Date(order?.created_at).toLocaleString()).format("DD MMM YYYY, hh:mm A"),
-
-
-//                 }))}
-//                 columns={ordersColumns}
-//                 autoHeight
-//                 disableRowSelectionOnClick
-//                 pageSizeOptions={[10, 20, 30]}
-//                 initialState={{
-//                     pagination: { paginationModel: { pageSize: 10 } },
+//                 fontWeight="bold"
+//                 sx={{
+//                     mb: 1,
+//                     p: 1.5,
+//                     borderRadius: 2,
+//                     background:
+//                         'linear-gradient(90deg,#1e3c72,#2a5298)',
+//                     color: '#fff',
 //                 }}
-//             />
+//             >
+//                 🚚 Fleet Tracking Dashboard
+//             </Typography>
+
+//             <Box sx={{ display: 'grid', gridTemplateColumns: '420px 1fr', gap: 2, height: 'calc(100% - 64px)' }}>
+//                 {/* SIDEBAR */}
+//                 <Box sx={{ overflowY: 'auto' }}>
+//                     <TextField
+//                         size="small"
+//                         fullWidth
+//                         placeholder="Search vehicle / driver / order"
+//                         value={searchText}
+//                         onChange={(e) => setSearchText(e.target.value)}
+//                         InputProps={{
+//                             startAdornment: (
+//                                 <InputAdornment position="start">
+//                                     <Search />
+//                                 </InputAdornment>
+//                             ),
+//                         }}
+//                     />
+
+//                     {filteredList.map(a => (
+//                         <motion.div key={a.key} whileHover={{ scale: 1.02 }}>
+//                             <Card
+//                                 sx={{
+//                                     mt: 1,
+//                                     cursor: 'pointer',
+//                                     borderLeft: `6px solid ${a.color}`,
+//                                     boxShadow:
+//                                         focusedKey === a.key
+//                                             ? `0 0 0 2px ${a.color}`
+//                                             : undefined,
+//                                 }}
+//                                 onClick={() => {
+//                                     setFocusedKey(a.key);
+//                                     mapRef.current?.panTo(
+//                                         a.points[Math.floor(a.points.length / 2)]
+//                                     );
+//                                     mapRef.current?.setZoom(8);
+//                                 }}
+//                             >
+//                                 <CardContent>
+//                                     {/* HEADER */}
+//                                     <Stack direction="row" justifyContent="space-between">
+//                                         <Typography fontWeight={700}>{a.vehicle}</Typography>
+//                                         <IconButton
+//                                             onClick={(e) => {
+//                                                 e.stopPropagation();
+//                                                 router.push(
+//                                                     `/detailed-order-overview?order_ID=${a.orderID}&from=tracking`
+//                                                 );
+//                                             }}
+//                                         >
+//                                             <Visibility />
+//                                         </IconButton>
+//                                     </Stack>
+
+//                                     {/* DRIVER */}
+//                                     <Stack direction="row" spacing={1} alignItems="center" mt={1}>
+//                                         <Avatar
+//                                             sx={{
+//                                                 bgcolor: a.online ? 'success.main' : 'grey.400',
+//                                                 width: 28,
+//                                                 height: 28,
+//                                             }}
+//                                         >
+//                                             <Person fontSize="small" />
+//                                         </Avatar>
+
+//                                         <Box>
+//                                             <Typography variant="body2">{a.driverName}</Typography>
+//                                             {a.driverPhone && (
+//                                                 <Tooltip title="Call driver">
+//                                                     <IconButton
+//                                                         size="small"
+//                                                         component="a"
+//                                                         href={`tel:${a.driverPhone}`}
+//                                                     >
+//                                                         <Phone fontSize="small" />
+//                                                     </IconButton>
+//                                                 </Tooltip>
+//                                             )}
+//                                         </Box>
+
+//                                         <Chip
+//                                             size="small"
+//                                             label={a.online ? 'Online' : 'Offline'}
+//                                             color={a.online ? 'success' : 'default'}
+//                                         />
+//                                     </Stack>
+
+//                                     <Divider sx={{ my: 1 }} />
+
+//                                     {/* ROUTE */}
+//                                     <Typography variant="caption">
+//                                         {a.startAddress} → {a.endAddress}
+//                                     </Typography>
+
+//                                     {/* ETA */}
+//                                     <Stack direction="row" spacing={1} alignItems="center" mt={1}>
+//                                         <AccessTime fontSize="small" />
+//                                         <Typography fontWeight={600}>
+//                                             ETA: {formatTime(a.etaTime)}
+//                                         </Typography>
+//                                         <Chip
+//                                             size="small"
+//                                             color={a.delayed ? 'error' : 'success'}
+//                                             label={a.delayed ? 'Delayed' : 'On Time'}
+//                                         />
+//                                     </Stack>
+
+//                                     <Stack direction="row" spacing={1} mt={1}>
+//                                         <Chip size="small" label={`🛣 ${a.distance}`} />
+//                                         <Chip size="small" label={`⏱ ${a.duration}`} />
+//                                     </Stack>
+
+//                                     <LinearProgress
+//                                         sx={{ mt: 1 }}
+//                                         value={a.progress}
+//                                         variant="determinate"
+//                                     />
+//                                 </CardContent>
+//                             </Card>
+//                         </motion.div>
+//                     ))}
+//                 </Box>
+
+//                 {/* MAP */}
+//                 <GoogleMap
+//                     mapContainerStyle={mapContainerStyle}
+//                     center={DEFAULT_CENTER}
+//                     zoom={6}
+//                     onLoad={(map) => (mapRef.current = map)}
+//                 >
+//                     {allocationList.map(a => (
+//                         <Polyline
+//                             key={a.key}
+//                             path={a.points}
+//                             options={{
+//                                 strokeColor: a.color,
+//                                 strokeWeight: focusedKey === a.key ? 6 : 3,
+//                                 strokeOpacity: focusedKey === a.key ? 0.9 : 0.3,
+//                             }}
+//                         />
+//                     ))}
+
+//                     {focusedKey &&
+//                         allocationList
+//                             .filter(a => a.key === focusedKey)
+//                             .map(a => (
+//                                 <Marker
+//                                     key={`${a.key}-marker`}
+//                                     position={a.points[a.points.length - 1]}
+//                                 />
+//                             ))}
+//                 </GoogleMap>
+//             </Box>
 //         </Box>
 //     );
 // };
 
-// export default TrackingOrder;
-
+// export default TrackingPage;
 
 
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     Box,
@@ -143,383 +378,364 @@ import {
     Card,
     CardContent,
     Divider,
-    // List,
-    // ListItem,
-    // ListItemText,
     IconButton,
-    // Chip,
     Stack,
-    Button,
     LinearProgress,
     TextField,
     InputAdornment,
     Backdrop,
     CircularProgress,
+    Chip,
+    Avatar,
 } from '@mui/material';
-import { Visibility, DirectionsCar, Search } from '@mui/icons-material';
-import { useGetAllOrdersQuery } from '@/api/apiSlice';
-// import moment from 'moment';
-
+import {
+    Visibility,
+    Search,
+    Phone,
+    Person,
+    AccessTime,
+} from '@mui/icons-material';
+import { motion } from 'framer-motion';
 import {
     GoogleMap,
-    useJsApiLoader,
     Polyline,
     Marker,
+    useJsApiLoader,
 } from '@react-google-maps/api';
+import { useGetAllAssignedOrdersDataQuery } from '@/api/apiSlice';
 
-import { motion } from 'framer-motion';
+/* ---------------- TYPES ---------------- */
 
-/* ---------- Types ---------- */
 type RoutePoint = { lat: number; lng: number };
 
-interface Route {
-    start: { address: string; latitude: number; longitude: number };
-    end: { address: string; latitude: number; longitude: number };
-    distance?: string | number;
-    duration?: string | number;
+interface Driver {
+    driver_name?: string;
+    logged_in?: number;
+    driver_availability?: number;
+    driver_correspondence?: { phone?: string };
+}
+
+interface VehicleAssignment {
+    self_vehicle_num?: string;
+    driver?: Driver;
+}
+
+interface Assignment {
+    vehicles?: VehicleAssignment[];
+}
+
+interface RouteLeg {
+    start: { address: string };
+    end: { address: string };
+    distance?: string;
+    duration?: string;
 }
 
 interface Allocation {
-    vehicle_ID?: string;
-    route?: Route[];
-    leftoverVolume?: number;
-    leftoverWeight?: number;
-    occupiedVolume?: number;
-    occupiedWeight?: number;
-    totalVolumeCapacity?: number;
-    totalWeightCapacity?: number;
     sampledRoutePoints?: RoutePoint[];
-    truckCapacity?: { usableM3?: number };
-    bill_of_lading?: { self_bill_url?: string }[];
-    vehicleDimensions?: {
-        interiorWidthM?: number;
-        interiorHeightM?: number;
-        interiorLengthM?: number;
-    };
-    occupiedPercent?: number;
+    occupiedPercentUsable?: number;
+    route?: RouteLeg[];
 }
 
-export interface Order {
-    updated_at?: string;
-    created_at?: string;
-    unallocated_packages?: string[];
-    ord_id: number;
+interface Order {
     order_ID: string;
-    scenario_label?: string;
-    total_cost?: string;
     allocations?: Allocation[];
-    order_status?: string;
-    total_distance?: string;
-    total_weight?: string;
-    bill_of_lading?: any[];
+    assignments?: Assignment[];
 }
 
-/* ---------- Constants ---------- */
+/* ---------------- CONSTANTS ---------------- */
+
 const COLORS = [
     '#2E7D32',
     '#1565C0',
     '#D84315',
     '#6A1B9A',
-    '#FDD835',
     '#00897B',
-    '#6D4C41',
-    '#1E88E5',
     '#C2185B',
-    '#FF8A65',
 ];
 
-const mapContainerStyle = {
-    width: '100%',
-    height: '100%',
+const DEFAULT_CENTER = { lat: 16.0, lng: 80.6 };
+const mapContainerStyle = { width: '100%', height: '100%' };
+const GOOGLE_MAP_LIBRARIES: ('places')[] = ['places'];
+
+/* ---------------- HELPERS ---------------- */
+
+const parseDurationToMs = (duration?: string) => {
+    if (!duration) return 0;
+    const h = duration.match(/(\d+)\s*hour/)?.[1];
+    const m = duration.match(/(\d+)\s*min/)?.[1];
+    return ((h ? +h : 0) * 60 + (m ? +m : 0)) * 60_000;
 };
 
-const DEFAULT_CENTER = {
-    lat: 12.9716,
-    lng: 77.5946,
-};
-
-const libraries: ('places' | 'drawing' | 'geometry')[] = ['places'];
-
-/* ---------- Main Component ---------- */
-const TrackingPage: React.FC = () => {
-    const router = useRouter();
-    const { data: allOrders, error, isLoading } = useGetAllOrdersQuery({});
-    const [loadingAction, setLoadingAction] = useState(false);
-    const [searchText, setSearchText] = useState('');
-    const [selectedAlloc, setSelectedAlloc] = useState<{ orderID: string; allocIndex: number } | null>(null);
-    const [focusedAlloc, setFocusedAlloc] = useState<{ orderID: string; allocIndex: number } | null>(null);
-
-    const { isLoaded: mapsLoaded } = useJsApiLoader({
-        googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
-        libraries,
+const formatTime = (date: number) =>
+    new Date(date).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
     });
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const ordersData: Order[] = allOrders?.orders || [];
-    const trackingOrders = useMemo(() => {
-        return ordersData.filter((o) => o.order_status === 'self assigned' || o.order_status === 'assigned');
-    }, [ordersData]);
+/* ---------------- COMPONENT ---------------- */
 
-    console.log('Tracking Orders:', trackingOrders);
+const TrackingPage: React.FC = () => {
+    const router = useRouter();
+    const mapRef = useRef<google.maps.Map | null>(null);
+    const [searchText, setSearchText] = useState('');
+    const [focusedKey, setFocusedKey] = useState<string | null>(null);
+
+    const { data, isLoading } =
+        useGetAllAssignedOrdersDataQuery({});
+
+    const { isLoaded } = useJsApiLoader({
+        googleMapsApiKey:
+            process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+        libraries: GOOGLE_MAP_LIBRARIES,
+    });
+
+    const orders: Order[] = data?.orders ?? [];
+
+    /* ---------------- FLATTEN DATA ---------------- */
 
     const allocationList = useMemo(() => {
-        const list: {
-            orderID: string;
-            ord_id: number;
-            allocIndex: number;
-            allocation: Allocation;
-            color: string;
-            summary?: string;
-        }[] = [];
-        trackingOrders.forEach((order, oIdx) => {
-            (order.allocations || []).forEach((alloc, aIdx) => {
-                const color = COLORS[(oIdx + aIdx) % COLORS.length];
-                const routeStart = alloc.route?.[0]?.start?.address;
-                const routeEnd = alloc.route?.[alloc.route.length - 1]?.end?.address;
-                const summary = routeStart && routeEnd ? `${routeStart} → ${routeEnd}` : undefined;
+        const now = Date.now();
+        const list: any[] = [];
+
+        orders.forEach((order, oIdx) => {
+            const vehicleData = order.assignments?.[0]?.vehicles?.[0];
+            const driver = vehicleData?.driver;
+
+            order.allocations?.forEach((alloc, aIdx) => {
+                if (!alloc.sampledRoutePoints?.length) return;
+
+                const firstLeg = alloc.route?.[0];
+                const durationMs = parseDurationToMs(firstLeg?.duration);
+                const etaTime = now + durationMs;
+                const delayed = Date.now() > etaTime;
+
                 list.push({
+                    key: `${order.order_ID}-${aIdx}`,
                     orderID: order.order_ID,
-                    ord_id: order.ord_id,
-                    allocIndex: aIdx,
-                    allocation: alloc,
-                    color,
-                    summary,
+                    vehicle: vehicleData?.self_vehicle_num ?? 'Vehicle',
+                    driverName: driver?.driver_name ?? 'Unassigned',
+                    driverPhone: driver?.driver_correspondence?.phone ?? '',
+                    online:
+                        driver?.logged_in === 1 &&
+                        driver?.driver_availability === 1,
+                    color: COLORS[(oIdx + aIdx) % COLORS.length],
+                    progress: alloc.occupiedPercentUsable ?? 0,
+                    startAddress: firstLeg?.start?.address ?? '—',
+                    endAddress:
+                        alloc.route?.[alloc.route.length - 1]?.end?.address ?? '—',
+                    distance: firstLeg?.distance ?? 'N/A',
+                    duration: firstLeg?.duration ?? 'N/A',
+                    etaTime,
+                    delayed,
+                    points: alloc.sampledRoutePoints,
                 });
             });
         });
+
         return list;
-    }, [trackingOrders]);
+    }, [orders]);
 
     const filteredList = useMemo(() => {
         if (!searchText) return allocationList;
         const s = searchText.toLowerCase();
-        return allocationList.filter((a) =>
-            a.orderID.toLowerCase().includes(s) ||
-            (a.allocation.vehicle_ID ?? '').toLowerCase().includes(s) ||
-            (a.summary ?? '').toLowerCase().includes(s)
+        return allocationList.filter(
+            a =>
+                a.vehicle.toLowerCase().includes(s) ||
+                a.driverName.toLowerCase().includes(s) ||
+                a.orderID.toLowerCase().includes(s)
         );
     }, [searchText, allocationList]);
 
-    const handleFocus = (pts?: RoutePoint[]) => {
-        if (!pts || pts.length === 0) return;
-        const mid = pts[Math.floor(pts.length / 2)];
-        const zoom = 10;
-        // Use window.google.maps
-        window.google.maps.Map.prototype.panTo({ lat: mid.lat, lng: mid.lng });
-        window.google.maps.Map.prototype.setZoom(zoom);
-    };
-
-    const handleViewOrder = (orderID: string) => {
-        setLoadingAction(true);
-        router.push(`/detailed-order-overview?order_ID=${orderID}&from=tracking`);
-    };
-
-    if (error) {
-        return <Typography color="error">Failed to load data. Please try again later.</Typography>;
+    if (!isLoaded || isLoading) {
+        return (
+            <Backdrop open>
+                <CircularProgress />
+            </Backdrop>
+        );
     }
 
+    /* ---------------- UI ---------------- */
+
     return (
-        <Box sx={{ width: '100%', height: '100vh', p: 2 }}>
-            <Backdrop open={loadingAction || isLoading || !mapsLoaded} sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}>
-                <CircularProgress color="inherit" />
-            </Backdrop>
-
-            <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold', mb: 1 }}>
-                Tracking Orders
+        <Box sx={{ height: '100vh', p: 2 }}>
+            <Typography
+                variant="h6"
+                fontWeight="bold"
+                sx={{
+                    mb: 1,
+                    p: 1.5,
+                    borderRadius: 2,
+                    background:
+                        'linear-gradient(90deg,#1e3c72,#2a5298)',
+                    color: '#fff',
+                }}
+            >
+                🚚 Fleet Tracking Dashboard
             </Typography>
 
-            <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
-                Hover over a vehicle card or click a route to highlight and focus.
-            </Typography>
+            <Box sx={{ display: 'grid', gridTemplateColumns: '420px 1fr', gap: 2, height: 'calc(100% - 64px)' }}>
+                {/* SIDEBAR */}
+                <Box sx={{ overflowY: 'auto' }}>
+                    <TextField
+                        size="small"
+                        fullWidth
+                        placeholder="Search vehicle / driver / order"
+                        value={searchText}
+                        onChange={(e) => setSearchText(e.target.value)}
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <Search />
+                                </InputAdornment>
+                            ),
+                        }}
+                    />
 
-            <Box sx={{ display: 'grid', gridTemplateColumns: '420px 1fr', gap: 2, height: 'calc(100% - 48px)' }}>
-                {/* Sidebar */}
-                <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                    <Card variant="outlined">
-                        <CardContent sx={{ p: 1 }}>
-                            <TextField
-                                size="small"
-                                placeholder="Search vehicle / order / address..."
-                                fullWidth
-                                value={searchText}
-                                onChange={(e) => setSearchText(e.target.value)}
-                                InputProps={{
-                                    startAdornment: (
-                                        <InputAdornment position="start">
-                                            <Search />
-                                        </InputAdornment>
-                                    ),
+                    {filteredList.map(a => (
+                        <motion.div key={a.key} whileHover={{ scale: 1.02 }}>
+                            <Card
+                                sx={{
+                                    mt: 1,
+                                    cursor: 'pointer',
+                                    borderLeft: `6px solid ${a.color}`,
+                                    boxShadow:
+                                        focusedKey === a.key
+                                            ? `0 0 0 2px ${a.color}`
+                                            : undefined,
                                 }}
-                            />
-                        </CardContent>
-                    </Card>
+                                onClick={() => {
+                                    setFocusedKey(a.key);
+                                    mapRef.current?.panTo(
+                                        a.points[Math.floor(a.points.length / 2)]
+                                    );
+                                    mapRef.current?.setZoom(8);
+                                }}
+                            >
+                                <CardContent>
+                                    {/* HEADER */}
+                                    <Stack direction="row" justifyContent="space-between">
+                                        <Typography fontWeight={700}>{a.vehicle}</Typography>
+                                        <IconButton
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                router.push(
+                                                    `/detailed-order-overview?order_ID=${a.orderID}&from=tracking`
+                                                );
+                                            }}
+                                        >
+                                            <Visibility />
+                                        </IconButton>
+                                    </Stack>
 
-                    <Box sx={{ flex: 1, mt: 1, overflowY: 'auto' }}>
-                        {filteredList.map((a, idx) => {
-                            const pts = a.allocation.sampledRoutePoints || [];
-                            const first = pts[0];
-                            const last = pts[pts.length - 1];
-                            const occupiedVol = a.allocation.occupiedVolume ?? 0;
-                            const totalVol = a.allocation.totalVolumeCapacity ?? a.allocation.truckCapacity?.usableM3 ?? 0;
-                            const progress = totalVol ? Math.min(100, Math.round((occupiedVol / totalVol) * 100)) : 0;
-                            const bolUrl = a.allocation.bill_of_lading?.[0]?.self_bill_url;
+                                    {/* DRIVER */}
+                                    <Stack direction="row" spacing={1.5} alignItems="center" mt={1}>
+                                        <Avatar
+                                            sx={{
+                                                bgcolor: a.online ? 'success.main' : 'grey.400',
+                                                width: 28,
+                                                height: 28,
+                                            }}
+                                        >
+                                            <Person fontSize="small" />
+                                        </Avatar>
 
-                            return (
-                                <motion.div key={`${a.orderID}-${a.allocIndex}-${idx}`} whileHover={{ scale: 1.02 }}>
-                                    <Card
-                                        variant="outlined"
-                                        sx={{
-                                            mb: 1,
-                                            cursor: 'pointer',
-                                            borderLeft: `5px solid ${a.color}`,
-                                            boxShadow:
-                                                selectedAlloc?.orderID === a.orderID && selectedAlloc.allocIndex === a.allocIndex
-                                                    ? `0 0 0 2px ${a.color}`
-                                                    : undefined,
-                                        }}
-                                        onClick={() => {
-                                            setSelectedAlloc({ orderID: a.orderID, allocIndex: a.allocIndex });
-                                            setFocusedAlloc({ orderID: a.orderID, allocIndex: a.allocIndex });
-                                            handleFocus(pts);
-                                        }}
-                                    >
-                                        <CardContent sx={{ p: 1 }}>
-                                            <Stack direction="row" justifyContent="space-between" alignItems="center">
-                                                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                                                    {a.allocation.vehicle_ID ?? 'Vehicle'}
-                                                </Typography>
-                                                <Box sx={{ width: 12, height: 12, bgcolor: a.color, borderRadius: '50%' }} />
-                                            </Stack>
-                                            <Typography variant="caption" color="text.secondary">
-                                                {a.orderID} • {a.summary || '–'}
+                                        <Box>
+                                            <Typography variant="body2">
+                                                {a.driverName}
                                             </Typography>
 
-                                            <Divider sx={{ my: 0.5 }} />
+                                            {a.driverPhone && (
+                                                <Stack direction="row" spacing={0.5} alignItems="center">
+                                                    <Phone fontSize="small" color="primary" />
+                                                    <Typography
+                                                        variant="caption"
+                                                        component="a"
+                                                        href={`tel:${a.driverPhone}`}
+                                                        sx={{
+                                                            textDecoration: 'none',
+                                                            color: 'primary.main',
+                                                            fontWeight: 600,
+                                                        }}
+                                                    >
+                                                        {a.driverPhone}
+                                                    </Typography>
+                                                </Stack>
+                                            )}
+                                        </Box>
 
-                                            <Typography variant="body2" sx={{ mt: 0.5 }}>
-                                                {first && last
-                                                    ? `${first.lat.toFixed(2)},${first.lng.toFixed(2)} → ${last.lat.toFixed(2)},${last.lng.toFixed(2)}`
-                                                    : 'Location data unavailable'}
-                                            </Typography>
+                                        <Chip
+                                            size="small"
+                                            label={a.online ? 'Online' : 'Offline'}
+                                            color={a.online ? 'success' : 'default'}
+                                        />
+                                    </Stack>
 
-                                            <LinearProgress
-                                                variant="determinate"
-                                                value={progress}
-                                                sx={{ mt: 1, height: 6, borderRadius: 2 }}
-                                            />
+                                    <Divider sx={{ my: 1 }} />
 
-                                            <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
-                                                <Button
-                                                    size="small"
-                                                    variant="outlined"
-                                                    startIcon={<DirectionsCar />}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setFocusedAlloc({ orderID: a.orderID, allocIndex: a.allocIndex });
-                                                        handleFocus(pts);
-                                                    }}
-                                                >
-                                                    Focus
-                                                </Button>
+                                    {/* ROUTE */}
+                                    <Typography variant="caption">
+                                        {a.startAddress} → {a.endAddress}
+                                    </Typography>
 
-                                                <Button
-                                                    size="small"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setSelectedAlloc({ orderID: a.orderID, allocIndex: a.allocIndex });
-                                                    }}
-                                                >
-                                                    Details
-                                                </Button>
+                                    {/* ETA */}
+                                    <Stack direction="row" spacing={1} alignItems="center" mt={1}>
+                                        <AccessTime fontSize="small" />
+                                        <Typography fontWeight={600}>
+                                            ETA: {formatTime(a.etaTime)}
+                                        </Typography>
+                                        <Chip
+                                            size="small"
+                                            color={a.delayed ? 'error' : 'success'}
+                                            label={a.delayed ? 'Delayed' : 'On Time'}
+                                        />
+                                    </Stack>
 
-                                                <IconButton
-                                                    size="small"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleViewOrder(a.orderID);
-                                                    }}
-                                                    title="View Order"
-                                                >
-                                                    <Visibility />
-                                                </IconButton>
+                                    <Stack direction="row" spacing={1} mt={1}>
+                                        <Chip size="small" label={`🛣 ${a.distance}`} />
+                                        <Chip size="small" label={`⏱ ${a.duration}`} />
+                                    </Stack>
 
-                                                <Button
-                                                    size="small"
-                                                    disabled={!bolUrl}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        if (bolUrl) window.open(bolUrl, '_blank');
-                                                    }}
-                                                >
-                                                    {bolUrl ? 'BOL' : 'No BOL'}
-                                                </Button>
-                                            </Stack>
-                                        </CardContent>
-                                    </Card>
-                                </motion.div>
-                            );
-                        })}
-                    </Box>
+                                    <LinearProgress
+                                        sx={{ mt: 1 }}
+                                        value={a.progress}
+                                        variant="determinate"
+                                    />
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    ))}
                 </Box>
 
-                {/* Map Panel */}
-                <Box sx={{ position: 'relative', width: '100%', height: '100%' }}>
-                    {mapsLoaded && (
-                        <GoogleMap
-                            mapContainerStyle={mapContainerStyle}
-                            center={DEFAULT_CENTER}
-                            zoom={6}
-                        >
-                            {allocationList.map((a) => {
-                                const pts = a.allocation.sampledRoutePoints || [];
-                                if (pts.length < 2) return null;
-                                const path = pts.map((p) => ({ lat: p.lat, lng: p.lng }));
-                                const isFocused =
-                                    focusedAlloc?.orderID === a.orderID && focusedAlloc.allocIndex === a.allocIndex;
+                {/* MAP */}
+                <GoogleMap
+                    mapContainerStyle={mapContainerStyle}
+                    center={DEFAULT_CENTER}
+                    zoom={6}
+                    onLoad={(map) => (mapRef.current = map)}
+                >
+                    {allocationList.map(a => (
+                        <Polyline
+                            key={a.key}
+                            path={a.points}
+                            options={{
+                                strokeColor: a.color,
+                                strokeWeight: focusedKey === a.key ? 6 : 3,
+                                strokeOpacity: focusedKey === a.key ? 0.9 : 0.3,
+                            }}
+                        />
+                    ))}
 
-                                return (
-                                    <React.Fragment key={`${a.orderID}-${a.allocIndex}`}>
-                                        <Polyline
-                                            path={path}
-                                            options={{
-                                                strokeColor: a.color,
-                                                strokeWeight: isFocused ? 6 : 3,
-                                                strokeOpacity: isFocused ? 0.9 : 0.5,
-                                            }}
-                                            onClick={() => {
-                                                setSelectedAlloc({ orderID: a.orderID, allocIndex: a.allocIndex });
-                                                setFocusedAlloc({ orderID: a.orderID, allocIndex: a.allocIndex });
-                                                handleFocus(pts);
-                                            }}
-                                        />
-                                        <Marker
-                                            position={path[0]}
-                                            icon={{
-                                                path: google.maps.SymbolPath.CIRCLE,
-                                                scale: 8,
-                                                fillColor: a.color,
-                                                fillOpacity: 1,
-                                                strokeColor: '#ffffff',
-                                                strokeWeight: 1.5,
-                                            }}
-                                        />
-                                        <Marker
-                                            position={path[path.length - 1]}
-                                            icon={{
-                                                path: google.maps.SymbolPath.CIRCLE,
-                                                scale: 8,
-                                                fillColor: a.color,
-                                                fillOpacity: 1,
-                                                strokeColor: '#ffffff',
-                                                strokeWeight: 1.5,
-                                            }}
-                                        />
-                                    </React.Fragment>
-                                );
-                            })}
-                        </GoogleMap>
-                    )}
-                </Box>
+                    {focusedKey &&
+                        allocationList
+                            .filter(a => a.key === focusedKey)
+                            .map(a => (
+                                <Marker
+                                    key={`${a.key}-marker`}
+                                    position={a.points[a.points.length - 1]}
+                                />
+                            ))}
+                </GoogleMap>
             </Box>
         </Box>
     );
