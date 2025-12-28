@@ -712,7 +712,11 @@ const TrackingPage: React.FC = () => {
                     mapContainerStyle={mapContainerStyle}
                     center={DEFAULT_CENTER}
                     zoom={6}
-                    onLoad={(map) => (mapRef.current = map)}
+                    // onLoad={(map) => (mapRef.current = map)}
+                    onLoad={(map) => {
+                        mapRef.current = map;
+                    }}
+
                 >
                     {allocationList.map(a => (
                         <Polyline
