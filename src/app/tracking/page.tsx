@@ -18,7 +18,6 @@
 //     CircularProgress,
 //     Chip,
 //     Avatar,
-//     Tooltip,
 // } from '@mui/material';
 // import {
 //     Visibility,
@@ -26,6 +25,9 @@
 //     Phone,
 //     Person,
 //     AccessTime,
+//     LocationOn,
+//     CheckCircle,
+//     HourglassBottom,
 // } from '@mui/icons-material';
 // import { motion } from 'framer-motion';
 // import {
@@ -42,8 +44,6 @@
 
 // interface Driver {
 //     driver_name?: string;
-//     logged_in?: number;
-//     driver_availability?: number;
 //     driver_correspondence?: { phone?: string };
 // }
 
@@ -52,7 +52,15 @@
 //     driver?: Driver;
 // }
 
+// interface PODStop {
+//     stopIndex: number;
+//     status: string;
+//     location: string;
+// }
+
 // interface Assignment {
+//     a_order_status?: string;
+//     pod?: { stops?: PODStop[] };
 //     vehicles?: VehicleAssignment[];
 // }
 
@@ -113,12 +121,10 @@
 //     const [searchText, setSearchText] = useState('');
 //     const [focusedKey, setFocusedKey] = useState<string | null>(null);
 
-//     const { data, isLoading } =
-//         useGetAllAssignedOrdersDataQuery({});
+//     const { data, isLoading } = useGetAllAssignedOrdersDataQuery({});
 
 //     const { isLoaded } = useJsApiLoader({
-//         googleMapsApiKey:
-//             process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+//         googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
 //         libraries: GOOGLE_MAP_LIBRARIES,
 //     });
 
@@ -131,7 +137,8 @@
 //         const list: any[] = [];
 
 //         orders.forEach((order, oIdx) => {
-//             const vehicleData = order.assignments?.[0]?.vehicles?.[0];
+//             const assignment = order.assignments?.[0];
+//             const vehicleData = assignment?.vehicles?.[0];
 //             const driver = vehicleData?.driver;
 
 //             order.allocations?.forEach((alloc, aIdx) => {
@@ -139,29 +146,37 @@
 
 //                 const firstLeg = alloc.route?.[0];
 //                 const durationMs = parseDurationToMs(firstLeg?.duration);
-
 //                 const etaTime = now + durationMs;
 //                 const delayed = Date.now() > etaTime;
+
+//                 const podStops = assignment?.pod?.stops ?? [];
+
+//                 const stops =
+//                     alloc.route?.map((leg, idx) => {
+//                         const pod = podStops.find(s => s.stopIndex === idx);
+//                         return {
+//                             index: idx,
+//                             address: leg.end.address,
+//                             delivered: pod?.status === 'completed',
+//                         };
+//                     }) ?? [];
 
 //                 list.push({
 //                     key: `${order.order_ID}-${aIdx}`,
 //                     orderID: order.order_ID,
 //                     vehicle: vehicleData?.self_vehicle_num ?? 'Vehicle',
-//                     driverName: driver?.driver_name ?? 'Unassigned',
+//                     driverName: driver?.driver_name ?? 'Not assigned',
 //                     driverPhone: driver?.driver_correspondence?.phone ?? '',
-//                     online:
-//                         driver?.logged_in === 1 &&
-//                         driver?.driver_availability === 1,
+//                     orderStatus: assignment?.a_order_status ?? 'Not Yet Started',
 //                     color: COLORS[(oIdx + aIdx) % COLORS.length],
 //                     progress: alloc.occupiedPercentUsable ?? 0,
 //                     startAddress: firstLeg?.start?.address ?? '—',
-//                     endAddress:
-//                         alloc.route?.[alloc.route.length - 1]?.end?.address ?? '—',
 //                     distance: firstLeg?.distance ?? 'N/A',
 //                     duration: firstLeg?.duration ?? 'N/A',
 //                     etaTime,
 //                     delayed,
 //                     points: alloc.sampledRoutePoints,
+//                     stops,
 //                 });
 //             });
 //         });
@@ -199,15 +214,21 @@
 //                     mb: 1,
 //                     p: 1.5,
 //                     borderRadius: 2,
-//                     background:
-//                         'linear-gradient(90deg,#1e3c72,#2a5298)',
+//                     background: 'linear-gradient(90deg,#1e3c72,#2a5298)',
 //                     color: '#fff',
 //                 }}
 //             >
 //                 🚚 Fleet Tracking Dashboard
 //             </Typography>
 
-//             <Box sx={{ display: 'grid', gridTemplateColumns: '420px 1fr', gap: 2, height: 'calc(100% - 64px)' }}>
+//             <Box
+//                 sx={{
+//                     display: 'grid',
+//                     gridTemplateColumns: '420px 1fr',
+//                     gap: 2,
+//                     height: 'calc(100% - 64px)',
+//                 }}
+//             >
 //                 {/* SIDEBAR */}
 //                 <Box sx={{ overflowY: 'auto' }}>
 //                     <TextField
@@ -261,46 +282,74 @@
 //                                         </IconButton>
 //                                     </Stack>
 
+//                                     {/* ORDER STATUS */}
+//                                     <Chip
+//                                         size="small"
+//                                         sx={{ mt: 0.5 }}
+//                                         color={
+//                                             a.orderStatus === 'In-transit'
+//                                                 ? 'info'
+//                                                 : 'success'
+//                                         }
+//                                         label={a.orderStatus}
+//                                     />
+
 //                                     {/* DRIVER */}
-//                                     <Stack direction="row" spacing={1} alignItems="center" mt={1}>
-//                                         <Avatar
-//                                             sx={{
-//                                                 bgcolor: a.online ? 'success.main' : 'grey.400',
-//                                                 width: 28,
-//                                                 height: 28,
-//                                             }}
-//                                         >
+//                                     <Stack direction="row" spacing={1.5} alignItems="center" mt={1}>
+//                                         <Avatar sx={{ width: 28, height: 28 }}>
 //                                             <Person fontSize="small" />
 //                                         </Avatar>
 
 //                                         <Box>
-//                                             <Typography variant="body2">{a.driverName}</Typography>
+//                                             <Typography variant="body2">
+//                                                 {a.driverName}
+//                                             </Typography>
+
 //                                             {a.driverPhone && (
-//                                                 <Tooltip title="Call driver">
-//                                                     <IconButton
-//                                                         size="small"
+//                                                 <Stack direction="row" spacing={0.5} alignItems="center">
+//                                                     <Phone fontSize="small" color="primary" />
+//                                                     <Typography
+//                                                         variant="caption"
 //                                                         component="a"
 //                                                         href={`tel:${a.driverPhone}`}
+//                                                         sx={{
+//                                                             textDecoration: 'none',
+//                                                             color: 'primary.main',
+//                                                             fontWeight: 600,
+//                                                         }}
 //                                                     >
-//                                                         <Phone fontSize="small" />
-//                                                     </IconButton>
-//                                                 </Tooltip>
+//                                                         {a.driverPhone}
+//                                                     </Typography>
+//                                                 </Stack>
 //                                             )}
 //                                         </Box>
-
-//                                         <Chip
-//                                             size="small"
-//                                             label={a.online ? 'Online' : 'Offline'}
-//                                             color={a.online ? 'success' : 'default'}
-//                                         />
 //                                     </Stack>
 
 //                                     <Divider sx={{ my: 1 }} />
 
-//                                     {/* ROUTE */}
-//                                     <Typography variant="caption">
-//                                         {a.startAddress} → {a.endAddress}
+//                                     {/* STOPS */}
+//                                     <Typography variant="caption" fontWeight={600}>
+//                                         Stops
 //                                     </Typography>
+
+//                                     {a.stops.map((s: any) => (
+//                                         <Stack
+//                                             key={s.index}
+//                                             direction="row"
+//                                             spacing={1}
+//                                             alignItems="center"
+//                                         >
+//                                             <LocationOn fontSize="small" />
+//                                             <Typography variant="caption" sx={{ flex: 1 }}>
+//                                                 {s.address}
+//                                             </Typography>
+//                                             {s.delivered ? (
+//                                                 <CheckCircle fontSize="small" color="success" />
+//                                             ) : (
+//                                                 <HourglassBottom fontSize="small" color="warning" />
+//                                             )}
+//                                         </Stack>
+//                                     ))}
 
 //                                     {/* ETA */}
 //                                     <Stack direction="row" spacing={1} alignItems="center" mt={1}>
@@ -336,7 +385,9 @@
 //                     mapContainerStyle={mapContainerStyle}
 //                     center={DEFAULT_CENTER}
 //                     zoom={6}
-//                     onLoad={(map) => (mapRef.current = map)}
+//                     onLoad={(map) => {
+//                         mapRef.current = map;
+//                     }}
 //                 >
 //                     {allocationList.map(a => (
 //                         <Polyline
@@ -368,6 +419,7 @@
 // export default TrackingPage;
 
 
+
 'use client';
 
 import React, { useMemo, useRef, useState } from 'react';
@@ -394,6 +446,9 @@ import {
     Phone,
     Person,
     AccessTime,
+    LocationOn,
+    CheckCircle,
+    HourglassBottom,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import {
@@ -410,8 +465,6 @@ type RoutePoint = { lat: number; lng: number };
 
 interface Driver {
     driver_name?: string;
-    logged_in?: number;
-    driver_availability?: number;
     driver_correspondence?: { phone?: string };
 }
 
@@ -420,7 +473,15 @@ interface VehicleAssignment {
     driver?: Driver;
 }
 
+interface PODStop {
+    stopIndex: number;
+    status: string;
+    location: string;
+}
+
 interface Assignment {
+    a_order_status?: string;
+    pod?: { stops?: PODStop[] };
     vehicles?: VehicleAssignment[];
 }
 
@@ -481,12 +542,10 @@ const TrackingPage: React.FC = () => {
     const [searchText, setSearchText] = useState('');
     const [focusedKey, setFocusedKey] = useState<string | null>(null);
 
-    const { data, isLoading } =
-        useGetAllAssignedOrdersDataQuery({});
+    const { data, isLoading } = useGetAllAssignedOrdersDataQuery({});
 
     const { isLoaded } = useJsApiLoader({
-        googleMapsApiKey:
-            process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+        googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
         libraries: GOOGLE_MAP_LIBRARIES,
     });
 
@@ -499,7 +558,8 @@ const TrackingPage: React.FC = () => {
         const list: any[] = [];
 
         orders.forEach((order, oIdx) => {
-            const vehicleData = order.assignments?.[0]?.vehicles?.[0];
+            const assignment = order.assignments?.[0];
+            const vehicleData = assignment?.vehicles?.[0];
             const driver = vehicleData?.driver;
 
             order.allocations?.forEach((alloc, aIdx) => {
@@ -510,25 +570,34 @@ const TrackingPage: React.FC = () => {
                 const etaTime = now + durationMs;
                 const delayed = Date.now() > etaTime;
 
+                const podStops = assignment?.pod?.stops ?? [];
+
+                const stops =
+                    alloc.route?.map((leg, idx) => {
+                        const pod = podStops.find(s => s.stopIndex === idx);
+                        return {
+                            index: idx,
+                            address: leg.end.address,
+                            delivered: pod?.status === 'completed',
+                        };
+                    }) ?? [];
+
                 list.push({
                     key: `${order.order_ID}-${aIdx}`,
                     orderID: order.order_ID,
                     vehicle: vehicleData?.self_vehicle_num ?? 'Vehicle',
-                    driverName: driver?.driver_name ?? 'Unassigned',
+                    driverName: driver?.driver_name ?? 'Not assigned',
                     driverPhone: driver?.driver_correspondence?.phone ?? '',
-                    online:
-                        driver?.logged_in === 1 &&
-                        driver?.driver_availability === 1,
+                    orderStatus: assignment?.a_order_status ?? 'Not Yet Started',
                     color: COLORS[(oIdx + aIdx) % COLORS.length],
                     progress: alloc.occupiedPercentUsable ?? 0,
                     startAddress: firstLeg?.start?.address ?? '—',
-                    endAddress:
-                        alloc.route?.[alloc.route.length - 1]?.end?.address ?? '—',
                     distance: firstLeg?.distance ?? 'N/A',
                     duration: firstLeg?.duration ?? 'N/A',
                     etaTime,
                     delayed,
                     points: alloc.sampledRoutePoints,
+                    stops,
                 });
             });
         });
@@ -566,15 +635,21 @@ const TrackingPage: React.FC = () => {
                     mb: 1,
                     p: 1.5,
                     borderRadius: 2,
-                    background:
-                        'linear-gradient(90deg,#1e3c72,#2a5298)',
+                    background: 'linear-gradient(90deg,#1e3c72,#2a5298)',
                     color: '#fff',
                 }}
             >
                 🚚 Fleet Tracking Dashboard
             </Typography>
 
-            <Box sx={{ display: 'grid', gridTemplateColumns: '420px 1fr', gap: 2, height: 'calc(100% - 64px)' }}>
+            <Box
+                sx={{
+                    display: 'grid',
+                    gridTemplateColumns: '420px 1fr',
+                    gap: 2,
+                    height: 'calc(100% - 64px)',
+                }}
+            >
                 {/* SIDEBAR */}
                 <Box sx={{ overflowY: 'auto' }}>
                     <TextField
@@ -628,15 +703,21 @@ const TrackingPage: React.FC = () => {
                                         </IconButton>
                                     </Stack>
 
+                                    {/* ORDER STATUS */}
+                                    <Chip
+                                        size="small"
+                                        sx={{ mt: 0.5 }}
+                                        color={
+                                            a.orderStatus === 'In-transit'
+                                                ? 'info'
+                                                : 'success'
+                                        }
+                                        label={a.orderStatus}
+                                    />
+
                                     {/* DRIVER */}
                                     <Stack direction="row" spacing={1.5} alignItems="center" mt={1}>
-                                        <Avatar
-                                            sx={{
-                                                bgcolor: a.online ? 'success.main' : 'grey.400',
-                                                width: 28,
-                                                height: 28,
-                                            }}
-                                        >
+                                        <Avatar sx={{ width: 28, height: 28 }}>
                                             <Person fontSize="small" />
                                         </Avatar>
 
@@ -663,20 +744,33 @@ const TrackingPage: React.FC = () => {
                                                 </Stack>
                                             )}
                                         </Box>
-
-                                        <Chip
-                                            size="small"
-                                            label={a.online ? 'Online' : 'Offline'}
-                                            color={a.online ? 'success' : 'default'}
-                                        />
                                     </Stack>
 
                                     <Divider sx={{ my: 1 }} />
 
-                                    {/* ROUTE */}
-                                    <Typography variant="caption">
-                                        {a.startAddress} → {a.endAddress}
+                                    {/* STOPS */}
+                                    <Typography variant="caption" fontWeight={600}>
+                                        Stops
                                     </Typography>
+
+                                    {a.stops.map((s: any) => (
+                                        <Stack
+                                            key={s.index}
+                                            direction="row"
+                                            spacing={1}
+                                            alignItems="center"
+                                        >
+                                            <LocationOn fontSize="small" />
+                                            <Typography variant="caption" sx={{ flex: 1 }}>
+                                                {s.address}
+                                            </Typography>
+                                            {s.delivered ? (
+                                                <CheckCircle fontSize="small" color="success" />
+                                            ) : (
+                                                <HourglassBottom fontSize="small" color="warning" />
+                                            )}
+                                        </Stack>
+                                    ))}
 
                                     {/* ETA */}
                                     <Stack direction="row" spacing={1} alignItems="center" mt={1}>
@@ -712,11 +806,9 @@ const TrackingPage: React.FC = () => {
                     mapContainerStyle={mapContainerStyle}
                     center={DEFAULT_CENTER}
                     zoom={6}
-                    // onLoad={(map) => (mapRef.current = map)}
                     onLoad={(map) => {
                         mapRef.current = map;
                     }}
-
                 >
                     {allocationList.map(a => (
                         <Polyline
