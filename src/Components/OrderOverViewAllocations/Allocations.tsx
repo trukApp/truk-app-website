@@ -203,7 +203,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 		usePostSingleVehicleMasterMutation();
 	const { refetch: refetchOrderById } = useGetOrderByIdQuery(
 		{ orderId },
-		{ skip: true }
+		{ skip: !orderId }
 	);
 	const wrapperRef = useRef<HTMLDivElement>(null);
 	const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -628,20 +628,6 @@ const Allocations: React.FC<AllocationsProps> = ({
 	const handleCreateVehicle = () => {
 		setOpen(true);
 	};
-
-	// const validationSchemaBidding = Yup.object({
-	// 	bid_value: Yup.string().required("Bid value is required"),
-	// 	// bid_timing: Yup.string().required("Bid timing is required"),
-
-	// 	// Start time must be a valid date
-	// 	bid_start_time: Yup.date()
-	// 		.required("Bid start time is required"),
-
-	// 	// End time must be a valid date and >= start time
-	// 	bid_end_time: Yup.date()
-	// 		.required("Bid end time is required")
-	// 		.min(Yup.ref("bid_start_time"), "End time must be after or equal to start time"),
-	// });
 
 	const handleCloseReject = () => {
 		setOpenReject(false);
@@ -1093,182 +1079,83 @@ const Allocations: React.FC<AllocationsProps> = ({
 								setSelectedAllocation(null);
 							}}
 						>
-							<>
+							<Box
+								sx={{
+									position: "absolute",
+									top: "50%",
+									left: "50%",
+									transform: "translate(-50%, -50%)",
+									bgcolor: "white",
+									boxShadow: 24,
+									p: 3,
+									borderRadius: 2,
+									width: { xs: "100%", md: "30%" },
+								}}
+							// onClick={(e) => e.stopPropagation()}
+							>
 								<Box
 									sx={{
-										position: "absolute",
-										top: "50%",
-										left: "50%",
-										transform: "translate(-50%, -50%)",
-										bgcolor: "white",
-										boxShadow: 24,
-										p: 3,
-										borderRadius: 2,
-										width: { xs: "100%", md: "30%" },
+										display: "flex",
+										justifyContent: "space-between",
+										alignItems: "center",
+										mb: 2,
 									}}
-									onClick={(e) => e.stopPropagation()}
 								>
-									<Box
-										sx={{
-											display: "flex",
-											justifyContent: "space-between",
-											alignItems: "center",
-											mb: 2,
+									<Typography sx={{ fontSize: "16px" }} gutterBottom>
+										Assign Order ({orderId}) to self transport
+									</Typography>
+									<IconButton
+										onClick={() => {
+											setAssignModal(false);
+											setFormData({
+												truckId: "",
+												driverId: "",
+												deviceId: "",
+											});
+											setSelectedAllocation(null);
 										}}
+										sx={{ color: "grey.600" }}
 									>
-										<Typography sx={{ fontSize: "16px" }} gutterBottom>
-											Assign Order ({orderId}) to self transport
-										</Typography>
-										<IconButton
-											onClick={() => {
-												setAssignModal(false);
-												setFormData({
-													truckId: "",
-													driverId: "",
-													deviceId: "",
-												});
-												setSelectedAllocation(null);
-											}}
-											sx={{ color: "grey.600" }}
-										>
-											<CloseIcon />
-										</IconButton>
-									</Box>
-									<Box
-										sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+										<CloseIcon />
+									</IconButton>
+								</Box>
+								<Box
+									sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+								>
+									<Grid
+										item
+										xs={12}
+										sm={6}
+										md={2.4}
+										style={{ display: "flex", flexDirection: "row", gap: 4 }}
 									>
-										<Grid
-											item
-											xs={12}
-											sm={6}
-											md={2.4}
-											style={{ display: "flex", flexDirection: "row", gap: 4 }}
-										>
-											<Grid>
-												<TextField
-													fullWidth
-													name="truckId"
-													size="small"
-													label="Search truck... "
-													onFocus={() => {
-														if (!searchKey) {
-															setSearchKey(formData.truckId || "");
-															setShowSuggestionsVehicle(true);
-														}
-													}}
-													onChange={(e) => {
-														setSearchKeyVehicle(e.target.value);
-														setShowSuggestionsVehicle(true);
-													}}
-													error={Boolean(errors.truckId)}
-													helperText={errors.truckId}
-													value={searchKeyVehicle}
-													InputProps={
-														{
-															// endAdornment: filteredVehicleLoading ? <CircularProgress size={20} /> : null,
-														}
-													}
-												/>
-												<div style={{ position: "relative" }}>
-													{showSuggestionsVehicle && (
-														<Paper
-															style={{
-																maxHeight: 200,
-																overflowY: "auto",
-																position: "absolute",
-																zIndex: 10,
-																width: "100%",
-															}}
-														>
-															<List>
-																{filteredVehicleLoading ? (
-																	<ListItem>
-																		<CircularProgress size={20} />
-																	</ListItem>
-																) : displayVehicles.length === 0 ? (
-																	<ListItem component="li">
-																		<Typography
-																			variant="body2"
-																			sx={{
-																				color: "gray",
-																				textAlign: "center",
-																				width: "100%",
-																			}}
-																		>
-																			No Results Found
-																		</Typography>
-																	</ListItem>
-																) : (
-																	displayVehicles.map(
-																		(truck: {
-																			strk_ID: string;
-																			self_vehicle_num: string;
-																		}) => (
-																			<ListItem
-																				key={truck?.strk_ID}
-																				component="li"
-																				onClick={() => {
-																					setShowSuggestionsVehicle(false);
-																					setSearchKeyVehicle(
-																						`${truck?.self_vehicle_num}, ${truck?.strk_ID}`
-																					);
-																					setFormData({
-																						...formData,
-																						truckId: `${truck?.self_vehicle_num}, ${truck?.strk_ID}`,
-																					});
-																				}}
-																				sx={{ cursor: "pointer" }}
-																			>
-																				<span style={{ fontSize: "13px" }}>
-																					{truck?.self_vehicle_num},{" "}
-																					{truck?.strk_ID}
-																				</span>
-																			</ListItem>
-																		)
-																	)
-																)}
-															</List>
-														</Paper>
-													)}
-												</div>
-											</Grid>
-											<Typography> OR </Typography>
-											<Grid>
-												<Typography
-													onClick={handleCreateVehicle}
-													sx={{
-														textDecoration: "underline",
-														cursor: "pointer",
-														marginLeft: 2,
-													}}
-												>
-													Create new Truck
-												</Typography>
-											</Grid>
-										</Grid>
-
-										<Grid item xs={12} sm={6} md={2.4}>
+										<Grid>
 											<TextField
 												fullWidth
-												name="driverId"
+												name="truckId"
 												size="small"
-												label="Search drivers... "
+												label="Search truck... "
 												onFocus={() => {
 													if (!searchKey) {
-														setSearchKey(formData.driverId || "");
-														setShowSuggestions(true);
+														setSearchKey(formData.truckId || "");
+														setShowSuggestionsVehicle(true);
 													}
 												}}
 												onChange={(e) => {
-													setSearchKey(e.target.value);
-													setShowSuggestions(true);
+													setSearchKeyVehicle(e.target.value);
+													setShowSuggestionsVehicle(true);
 												}}
-												error={Boolean(errors.driverId)}
-												helperText={errors.driverId}
-												value={searchKey}
+												error={Boolean(errors.truckId)}
+												helperText={errors.truckId}
+												value={searchKeyVehicle}
+												InputProps={
+													{
+														// endAdornment: filteredVehicleLoading ? <CircularProgress size={20} /> : null,
+													}
+												}
 											/>
-											<div ref={wrapperRef} style={{ position: "relative" }}>
-												{showSuggestions && (
+											<div style={{ position: "relative" }}>
+												{showSuggestionsVehicle && (
 													<Paper
 														style={{
 															maxHeight: 200,
@@ -1279,11 +1166,11 @@ const Allocations: React.FC<AllocationsProps> = ({
 														}}
 													>
 														<List>
-															{filteredDriversLoading ? (
+															{filteredVehicleLoading ? (
 																<ListItem>
 																	<CircularProgress size={20} />
 																</ListItem>
-															) : displayDrivers.length === 0 ? (
+															) : displayVehicles.length === 0 ? (
 																<ListItem component="li">
 																	<Typography
 																		variant="body2"
@@ -1297,61 +1184,158 @@ const Allocations: React.FC<AllocationsProps> = ({
 																	</Typography>
 																</ListItem>
 															) : (
-																displayDrivers.map((driver: Driver) => (
-																	<ListItem
-																		key={driver?.dri_ID}
-																		component="li"
-																		onClick={() => {
-																			const selected = `${driver?.dri_ID}, ${driver?.driver_name}, ${driver?.driver_correspondence?.phone}`;
-																			setShowSuggestions(false);
-																			setSearchKey(selected);
-																			setFormData({
-																				...formData,
-																				driverId: driver?.dri_ID,
-																			});
-																		}}
-																		sx={{ cursor: "pointer" }}
-																	>
-																		<span style={{ fontSize: "13px" }}>
-																			{driver?.dri_ID}, {driver?.driver_name},{" "}
-																			{driver?.driver_correspondence?.phone}
-																		</span>
-																	</ListItem>
-																))
+																displayVehicles.map(
+																	(truck: {
+																		strk_ID: string;
+																		self_vehicle_num: string;
+																	}) => (
+																		<ListItem
+																			key={truck?.strk_ID}
+																			component="li"
+																			onClick={() => {
+																				setShowSuggestionsVehicle(false);
+																				setSearchKeyVehicle(
+																					`${truck?.self_vehicle_num}, ${truck?.strk_ID}`
+																				);
+																				setFormData({
+																					...formData,
+																					truckId: `${truck?.self_vehicle_num}, ${truck?.strk_ID}`,
+																				});
+																			}}
+																			sx={{ cursor: "pointer" }}
+																		>
+																			<span style={{ fontSize: "13px" }}>
+																				{truck?.self_vehicle_num},{" "}
+																				{truck?.strk_ID}
+																			</span>
+																		</ListItem>
+																	)
+																)
 															)}
 														</List>
 													</Paper>
 												)}
 											</div>
 										</Grid>
+										<Typography> OR </Typography>
+										<Grid>
+											<Typography
+												onClick={handleCreateVehicle}
+												sx={{
+													textDecoration: "underline",
+													cursor: "pointer",
+													marginLeft: 2,
+												}}
+											>
+												Create new Truck
+											</Typography>
+										</Grid>
+									</Grid>
+
+									<Grid item xs={12} sm={6} md={2.4}>
 										<TextField
-											label="Device ID"
-											name="deviceId"
-											select
-											value={formData.deviceId}
-											onChange={handleChange}
-											variant="outlined"
-											size="small"
 											fullWidth
-											error={Boolean(errors.deviceId)}
-											helperText={errors.deviceId}
-										>
-											{devicesData?.map((device: DeviceInfoBE) => (
-												<MenuItem key={device?.device_id} value={device.dev_ID}>
-													{device.dev_ID}
-												</MenuItem>
-											))}
-										</TextField>
-										<Button
-											variant="contained"
-											color="primary"
-											onClick={handleSubmit}
-										>
-											Submit
-										</Button>
-									</Box>
+											name="driverId"
+											size="small"
+											label="Search drivers... "
+											onFocus={() => {
+												if (!searchKey) {
+													setSearchKey(formData.driverId || "");
+													setShowSuggestions(true);
+												}
+											}}
+											onChange={(e) => {
+												setSearchKey(e.target.value);
+												setShowSuggestions(true);
+											}}
+											error={Boolean(errors.driverId)}
+											helperText={errors.driverId}
+											value={searchKey}
+										/>
+										<div ref={wrapperRef} style={{ position: "relative" }}>
+											{showSuggestions && (
+												<Paper
+													style={{
+														maxHeight: 200,
+														overflowY: "auto",
+														position: "absolute",
+														zIndex: 10,
+														width: "100%",
+													}}
+												>
+													<List>
+														{filteredDriversLoading ? (
+															<ListItem>
+																<CircularProgress size={20} />
+															</ListItem>
+														) : displayDrivers.length === 0 ? (
+															<ListItem component="li">
+																<Typography
+																	variant="body2"
+																	sx={{
+																		color: "gray",
+																		textAlign: "center",
+																		width: "100%",
+																	}}
+																>
+																	No Results Found
+																</Typography>
+															</ListItem>
+														) : (
+															displayDrivers.map((driver: Driver) => (
+																<ListItem
+																	key={driver?.dri_ID}
+																	component="li"
+																	onClick={() => {
+																		const selected = `${driver?.dri_ID}, ${driver?.driver_name}, ${driver?.driver_correspondence?.phone}`;
+																		setShowSuggestions(false);
+																		setSearchKey(selected);
+																		setFormData({
+																			...formData,
+																			driverId: driver?.dri_ID,
+																		});
+																	}}
+																	sx={{ cursor: "pointer" }}
+																>
+																	<span style={{ fontSize: "13px" }}>
+																		{driver?.dri_ID}, {driver?.driver_name},{" "}
+																		{driver?.driver_correspondence?.phone}
+																	</span>
+																</ListItem>
+															))
+														)}
+													</List>
+												</Paper>
+											)}
+										</div>
+									</Grid>
+									<TextField
+										label="Device ID"
+										name="deviceId"
+										select
+										value={formData.deviceId}
+										onChange={handleChange}
+										variant="outlined"
+										size="small"
+										fullWidth
+										error={Boolean(errors.deviceId)}
+										helperText={errors.deviceId}
+									>
+										{devicesData?.map((device: DeviceInfoBE) => (
+											<MenuItem key={device?.device_id} value={device.dev_ID}>
+												{device.dev_ID}
+											</MenuItem>
+										))}
+									</TextField>
+									<Button
+										variant="contained"
+										color="primary"
+										onClick={handleSubmit}
+									>
+										Submit
+									</Button>
 								</Box>
-							</>
+							</Box>
 						</Modal>
 
 						<Modal

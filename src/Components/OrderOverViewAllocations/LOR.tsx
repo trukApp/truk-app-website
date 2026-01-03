@@ -65,13 +65,13 @@ interface Package {
 	pack_ID: string;
 	pickup_date_time?: string;
 	product_ID?: PackageProduct[];
-	 
+
 }
 
 interface ProductDetails {
 	details: string;
 	quantity: number;
-	pickup_date_time : string | null;
+	pickup_date_time: string | null;
 }
 
 interface CellProps {
@@ -158,21 +158,20 @@ const LOR = ({ allocations, orderId, allocatedPackageDetails, order, lrInvoices 
 	const handleCancel = () => {
 		setOpenPopup(false);
 	};
-	console.log("all pcakages:", allPackagesData)
-	 
+
 	const getProductsInPackageDetails = (packId: string): ProductDetails => {
 		// Step 1: Find the package entry to get pickup date
 		const packageEntry = allPackagesData.find((pkg) => pkg.pack_ID === packId);
 		const pickupDate = packageEntry?.pickup_date_time || null;
 
-			let pickupDateFormatted: string | null = null;
+		let pickupDateFormatted: string | null = null;
 
-			if (pickupDate) {
-				const dateOnly = pickupDate.split("T")[0];
-				const [year, month, day] = dateOnly.split("-");
+		if (pickupDate) {
+			const dateOnly = pickupDate.split("T")[0];
+			const [year, month, day] = dateOnly.split("-");
 
-				pickupDateFormatted = `${day}-${month}-${year}`;  
-			}
+			pickupDateFormatted = `${day}-${month}-${year}`;
+		}
 		// Step 2: get all product entries under this package
 		const packProducts = allPackagesData
 			.filter((pkg) => pkg.pack_ID === packId)
@@ -206,7 +205,7 @@ const LOR = ({ allocations, orderId, allocatedPackageDetails, order, lrInvoices 
 		return {
 			details: details.join(" || "),
 			quantity: totalQuantity,
-			pickup_date_time: pickupDateFormatted ,
+			pickup_date_time: pickupDateFormatted,
 		};
 	};
 
@@ -289,7 +288,7 @@ const LOR = ({ allocations, orderId, allocatedPackageDetails, order, lrInvoices 
 				</DialogActions>
 			</Dialog> <div id="labels-container" style={{ position: "absolute", left: "-9999px", top: 0 }}>
 
-</div>
+			</div>
 
 
 			<Backdrop
@@ -324,57 +323,11 @@ const LOR = ({ allocations, orderId, allocatedPackageDetails, order, lrInvoices 
 								)
 							) || {};
 
-						console.log("lrData: ", lrData)
-						// Use LR's ship_from/ship_to for addresses, LR number for invoice
 						const consignorLoc = lrData.ship_from ?? "";
 						const consigneeLoc = lrData.ship_to ?? "";
-						// const lrNum = lrData.lr_num || "-";
-						// Rows for goods table
-						// const productRows = (shipperPkg?.product_lines || []).map(
-						// 	(pl, idx) => ({
-						// 		slNo: idx + 1,
-						// 		invoice: lrNum,
-						// 		ewb: lrData.e_way ?? "",
-						// 		details: pl.package_info ?? "-",
-						// 		count: pl.quantity ?? "-",
-						// 		deedWeight:
-						// 			shipperPkg?.package_weight ??
-						// 			allocation?.occupiedWeight ??
-						// 			"-",
-						// 		chargeableWeight: allocation?.chargeableWeight ?? "-",
-						// 		value: "10000", // Replace with value from data if needed
-						// 	})
-						// );
-						// useEffect(() => {
-						// 	if (!shipperPkg?.pac_id || !consignorLoc || !consigneeLoc) return;
-						// 	if (!getAllLocations || getAllLocations.length === 0) return;
-
-						// 	const from = getLocationCode(consignorLoc);
-						// 	const to = getLocationCode(consigneeLoc);
-						//     const pkgInfo = getProductsInPackageDetails(shipperPkg?.pac_id);
-						// 	const count = pkgInfo.quantity
-						// 	console.log("count ", pkgInfo);
-						// 	if (!from || !to) return;
-						//     if (!pkgInfo) return
-
-						// 	const fromCode = from.slice(0, 3).toUpperCase();
-						// 	const toCode = to.slice(0, 3).toUpperCase();
-
-						// 	const barcodeData = `${shipperPkg.pac_id}|${fromCode}|${toCode}|${count}`;
-
-						// 	console.log("Barcode VALUE:", barcodeData);
-
-						// 	JsBarcode(`#barcode-${shipperPkg.pac_id}`, barcodeData, {
-						// 		format: "CODE128",
-						// 		width: 1,
-						// 		height: 40,
-						// 		displayValue: true,
-						// 	});
-						// }, [shipperPkg?.pac_id, consignorLoc, consigneeLoc, getAllLocations]);
-
 						const productRows = (lrData?.packages_in_data || []).map(
 							(pkg: { pack_ID: string; invoice?: string; e_way?: string }, idx: number) => {
-								const pkgInfo = getProductsInPackageDetails(pkg?.pack_ID || ""); 
+								const pkgInfo = getProductsInPackageDetails(pkg?.pack_ID || "");
 
 								return {
 									slNo: idx + 1,
@@ -394,7 +347,6 @@ const LOR = ({ allocations, orderId, allocatedPackageDetails, order, lrInvoices 
 							(a, b) => a + Number(b.count || 0),
 							0
 						);
-						console.log("total count ", totalCount)
 						const totalDeedWeight = productRows.reduce(
 							(a, b) => a + Number(b.deedWeight || 0),
 							0
@@ -423,8 +375,6 @@ const LOR = ({ allocations, orderId, allocatedPackageDetails, order, lrInvoices 
 								return sum + (pkgInfo?.quantity || 0);
 							}, 0);
 
-							console.log("TOTAL COUNT:", totalCount);
-
 							// Short codes
 							const fromCode = from.slice(0, 3).toUpperCase();
 							const toCode = to.slice(0, 3).toUpperCase();
@@ -441,35 +391,35 @@ const LOR = ({ allocations, orderId, allocatedPackageDetails, order, lrInvoices 
 								displayValue: false,
 							});
 						}, [shipperPkg.pac_id, consignorLoc, consigneeLoc, lrData?.packages_in_data]);
-const handlePrintLabels = async () => {
-	const jsPDF = (await import("jspdf")).default;
-	const html2canvas = (await import("html2canvas")).default;
+						const handlePrintLabels = async () => {
+							const jsPDF = (await import("jspdf")).default;
+							const html2canvas = (await import("html2canvas")).default;
 
-	for (const pkg of lrData?.packages_in_data ?? []) {
-		const element = document.getElementById(`label-${pkg.pack_ID}`);
+							for (const pkg of lrData?.packages_in_data ?? []) {
+								const element = document.getElementById(`label-${pkg.pack_ID}`);
 
-		if (!element) continue;
+								if (!element) continue;
 
-		const canvas = await html2canvas(element, { scale: 3 });
-		const imgData = canvas.toDataURL("image/jpeg", 1.0);
+								const canvas = await html2canvas(element, { scale: 3 });
+								const imgData = canvas.toDataURL("image/jpeg", 1.0);
 
-		const pdf = new jsPDF({
-			orientation: "portrait",
-			unit: "mm",
-			format: [70, 110],
-		});
+								const pdf = new jsPDF({
+									orientation: "portrait",
+									unit: "mm",
+									format: [70, 110],
+								});
 
-		// Fit label into PDF page
-		const pdfWidth = pdf.internal.pageSize.getWidth();
-		const imgProps = pdf.getImageProperties(imgData);
-		const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+								// Fit label into PDF page
+								const pdfWidth = pdf.internal.pageSize.getWidth();
+								const imgProps = pdf.getImageProperties(imgData);
+								const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
-		pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, imgHeight);
+								pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, imgHeight);
 
-		// Save file with invoice name
-		pdf.save(`${pkg?.invoice}.pdf`);
-	}
-};
+								// Save file with invoice name
+								pdf.save(`${pkg?.invoice}.pdf`);
+							}
+						};
 
 						return (
 							<Box key={`${allocIndex}-${index}`} mt={2}>
