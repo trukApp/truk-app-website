@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, {useState } from "react";
 import { useEditOrderMutation, useGetOrderByIdQuery } from "@/api/apiSlice";
 import {
 	Backdrop,
@@ -51,12 +51,12 @@ const OrderDetailedOverview: React.FC = () => {
 
 	const [openDialog, setOpenDialog] = useState(false);
 	const [documents, setDocuments] = useState<OrderDocMap[]>([]);
+ 
 
 	const [openPreview, setOpenPreview] = useState<{ url: string; open: boolean }>({
 		url: "",
 		open: false,
 	});
-
 	const handlePreview = (url: string) => {
 		setOpenPreview({ url, open: true });
 	};
@@ -80,7 +80,6 @@ const OrderDetailedOverview: React.FC = () => {
 			setSnackbarOpen(true);
 		}
 	};
-
 	const orderDocsEntries: [string, string][] =
 		orderData?.order_docs ? Object.entries(orderData.order_docs) : [];
 
@@ -99,23 +98,39 @@ const OrderDetailedOverview: React.FC = () => {
 				maxWidth="md"
 			>
 				{openPreview.url.endsWith(".pdf") ? (
-					<embed src={openPreview.url} type="application/pdf" width="100%" height="600px" />
+					<embed
+						src={openPreview.url}
+						type="application/pdf"
+						width="100%"
+						height="600px"
+					/>
 				) : (
 					<Image src={openPreview.url} alt="Preview" width={900} height={600} />
 				)}
 			</Dialog>
 
 			{/* ADD DOCUMENTS */}
-			<Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth maxWidth="md">
+			<Dialog
+				open={openDialog}
+				onClose={() => setOpenDialog(false)}
+				fullWidth
+				maxWidth="md"
+			>
 				<DialogTitle>
 					Add Documents
-					<IconButton onClick={() => setOpenDialog(false)} sx={{ position: "absolute", right: 8, top: 8 }}>
+					<IconButton
+						onClick={() => setOpenDialog(false)}
+						sx={{ position: "absolute", right: 8, top: 8 }}
+					>
 						<CloseIcon />
 					</IconButton>
 				</DialogTitle>
 
 				<DialogContent>
-					<AdditionalDocuments documents={documents} setDocuments={setDocuments} />
+					<AdditionalDocuments
+						documents={documents}
+						setDocuments={setDocuments}
+					/>
 				</DialogContent>
 
 				<DialogActions>
@@ -131,30 +146,72 @@ const OrderDetailedOverview: React.FC = () => {
 			</Backdrop>
 
 			{orderData && (
-				<Paper sx={{ p: 3, mb: 3 }}>
-					<Typography variant="h6" sx={{ color: "#F08C24", fontWeight: "bold" }}>
+				<Paper sx={{ p: 2, mb: 2 }}>
+					<Typography
+						variant="h6"
+						sx={{ color: "#F08C24", fontWeight: "bold", fontSize:'18px' }}
+					>
 						Order Details
 					</Typography>
 
-					<Grid container spacing={1} mt={1}>
-						<Grid item xs={12} md={6}>Order ID: <strong>{orderData.order_ID}</strong></Grid>
-						<Grid item xs={12} md={6}>Scenario: <strong>{orderData.scenario_label}</strong></Grid>
-						<Grid item xs={12} md={6}>Total Cost: <strong>₹{Number(orderData.total_cost).toFixed(2)}</strong></Grid>
-						<Grid item xs={12} md={6}>
-							Created At: <strong>{moment(orderData.created_at).format("DD MMM YYYY")}</strong>
+					<Grid container spacing={1} >
+						{/* COLUMN 1 */}
+						<Grid item xs={12} md={4}>
+							<Typography>
+								Order ID: <strong>{orderData.order_ID}</strong>
+							</Typography>
+							<Typography>
+								Total Cost:{" "}
+								<strong>₹{Number(orderData.total_cost).toFixed(2)}</strong>
+							</Typography>
+						</Grid>
+
+						{/* COLUMN 2 */}
+						<Grid item xs={12} md={4}>
+							<Typography>
+								Scenario: <strong>{orderData.scenario_label}</strong>
+							</Typography>
+							<Typography>
+								Created At:{" "}
+								<strong>
+									{moment(orderData.created_at).format("DD MMM YYYY")}
+								</strong>
+							</Typography>
+						</Grid>
+
+						{/* COLUMN 3   */}
+						<Grid item xs={12} md={3}>
+							<LOR
+								allocations={orderData?.allocations}
+								orderId={orderData?.order_ID}
+								allocatedPackageDetails={allocatedPackageDetails}
+								order={orderData}
+								from={from}
+								orderStatus={orderData?.order_status}
+								lrInvoices={lrInvoices}
+							/>
 						</Grid>
 					</Grid>
 
-					<Grid container spacing={2} mt={2}>
+					<Grid container spacing={2}  >
 						{orderDocsEntries.map(([docKey, url]) => (
 							<Grid item xs={12} md={3} key={`${orderData.order_ID}-${docKey}`}>
 								<Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
 									{docKey.replace(/_/g, " ")}
 								</Typography>
 
-								<Box sx={{ cursor: "pointer", mt: 1 }} onClick={() => handlePreview(url)}>
+								<Box
+									sx={{ cursor: "pointer", mt: 1 }}
+									onClick={() => handlePreview(url)}
+								>
 									{url.endsWith(".pdf") ? (
-										<embed src={url} type="application/pdf" width="100%" height="80px" />
+										<embed
+											src={url}
+											style={{ pointerEvents: "none" }}
+											type="application/pdf"
+											width="45%"
+											height="65px"
+										/>
 									) : (
 										<Image src={url} alt={docKey} width={150} height={80} />
 									)}
@@ -163,7 +220,7 @@ const OrderDetailedOverview: React.FC = () => {
 						))}
 					</Grid>
 
-					<Button sx={{ mt: 2 }} onClick={() => setOpenDialog(true)}>
+					<Button sx={{ mt: 2 }} variant="outlined" onClick={() => setOpenDialog(true)}>
 						Add Documents
 					</Button>
 				</Paper>
@@ -176,16 +233,6 @@ const OrderDetailedOverview: React.FC = () => {
 						allocatedPackageDetails={allocatedPackageDetails}
 						from={from}
 						isGeneratingPDF={false}
-					/>
-
-					<LOR
-						allocations={orderData.allocations}
-						orderId={orderData.order_ID}
-						allocatedPackageDetails={allocatedPackageDetails}
-						order={orderData}
-						from={from}
-						orderStatus={orderData.order_status}
-						lrInvoices={lrInvoices}
 					/>
 				</>
 			)}

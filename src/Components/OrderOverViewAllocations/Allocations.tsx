@@ -739,22 +739,98 @@ const Allocations: React.FC<AllocationsProps> = ({
 				onClose={() => setSnackbarOpen(false)}
 			/>
 
-			<Typography
-				variant="h6"
-				gutterBottom
-				color="#F08C24"
-				style={{
-					fontWeight: "bold",
-					marginLeft: isGeneratingPDF ? "40px" : "4px",
-				}}
-			>
-				Allocations
-			</Typography>
+			
 
 			{allocations.map((allocation) => {
 				const uniqueKey = `${allocation?.vehicle_ID}_${allocation.route[0]?.end.address}`;
 				return (
 					<>
+						<Box
+							sx={{
+								display: "flex",
+								flexDirection: "row",
+								justifyContent: "space-between",
+								marginRight: "20px",
+							}}
+						>
+							<>
+								{" "}
+								<Typography
+									variant="h6"
+									gutterBottom
+									color="#F08C24"
+									style={{
+										fontWeight: "bold",
+										marginLeft: isGeneratingPDF ? "40px" : "4px",
+									}}
+								>
+									Allocations
+								</Typography>{" "}
+							</>
+<>		{!isGeneratingPDF && (
+								<Box
+									sx={{
+										display: "flex",
+										justifyContent: isMobile ? "center" : "flex-end",
+										mt: 3,
+										gap: 3,
+									}}
+								>
+									{!assignedOrder?.data[0]?.allocated_vehicles?.some(
+										(vehicle: string) => vehicle === allocation.vehicle_ID
+									) && (
+										<>
+											{order?.order?.order_status === "assignment pending" && (
+												<>
+													<Button
+														variant="contained"
+														color="primary"
+														onClick={handleDialogOpenBidding}
+													>
+														Go for bidding
+													</Button>
+													<Button
+														variant="contained"
+														color="primary"
+														onClick={() => handleOpenAssignModal(allocation)}
+													>
+														Assign
+													</Button>
+												</>
+											)}
+										</>
+									)}
+
+									{assignedOrder?.data[0]?.allocated_vehicles?.some(
+										(vehicle: string) => vehicle === allocation.vehicle_ID
+									) && (
+										<>
+											{order?.order?.order_status === "finished" ? (
+												<Button
+													variant="contained"
+													color="primary"
+													onClick={() =>
+														handleRouteReply(allocation.vehicle_ID)
+													}
+												>
+													Route Reply
+												</Button>
+											) : order?.order?.order_status !==
+											  "carrier assignment" ? (
+												<Button sx={{marginTop:'-23px'}}
+													variant="contained"
+													color="primary"
+													onClick={() => handleTrack(allocation)}
+												>
+													View Track
+												</Button>
+											) : null}
+										</>
+									)}
+								</Box>
+							)}</>
+					
+						</Box>
 						<Dialog open={openAssignModal} onClose={handleCloseAssignModal}>
 							<DialogTitle sx={{ m: 0, p: 2, position: "relative" }}>
 								Choose Assignment Type
@@ -798,7 +874,6 @@ const Allocations: React.FC<AllocationsProps> = ({
 								</Box>
 							</DialogContent>
 						</Dialog>
-
 						<Modal open={open} onClose={handleClose}>
 							<Box sx={{ ...style, position: "relative", p: 3 }}>
 								<Box
@@ -1039,7 +1114,6 @@ const Allocations: React.FC<AllocationsProps> = ({
 								</Formik>
 							</Box>
 						</Modal>
-
 						<Dialog open={openReject} onClose={handleCloseReject}>
 							<DialogTitle sx={{ m: 0, p: 2, position: "relative" }}>
 								Confirm Rejection
@@ -1070,7 +1144,6 @@ const Allocations: React.FC<AllocationsProps> = ({
 								</Button>
 							</DialogActions>
 						</Dialog>
-
 						<Modal
 							open={assignModal}
 							onClose={() => {
@@ -1091,7 +1164,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 									borderRadius: 2,
 									width: { xs: "100%", md: "30%" },
 								}}
-							// onClick={(e) => e.stopPropagation()}
+								// onClick={(e) => e.stopPropagation()}
 							>
 								<Box
 									sx={{
@@ -1119,9 +1192,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 										<CloseIcon />
 									</IconButton>
 								</Box>
-								<Box
-									sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-								>
+								<Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
 									<Grid
 										item
 										xs={12}
@@ -1337,7 +1408,6 @@ const Allocations: React.FC<AllocationsProps> = ({
 								</Box>
 							</Box>
 						</Modal>
-
 						<Modal
 							open={multipleCarriers}
 							onClose={() => {
@@ -1404,7 +1474,6 @@ const Allocations: React.FC<AllocationsProps> = ({
 								</Box>
 							}
 						</Modal>
-
 						<Dialog open={openBidding} onClose={handleDialogCloseBidding}>
 							<DialogTitle>Confirm Bidding</DialogTitle>
 							<DialogContent>
@@ -1425,8 +1494,12 @@ const Allocations: React.FC<AllocationsProps> = ({
 								</Button>
 							</DialogActions>
 						</Dialog>
-
-						<Dialog open={bidModal} onClose={() => setBidModal(false)} fullWidth maxWidth="sm">
+						<Dialog
+							open={bidModal}
+							onClose={() => setBidModal(false)}
+							fullWidth
+							maxWidth="sm"
+						>
 							<DialogTitle>Go for Bidding</DialogTitle>
 							<DialogContent>
 								<Formik
@@ -1437,7 +1510,9 @@ const Allocations: React.FC<AllocationsProps> = ({
 									}}
 									validationSchema={Yup.object({
 										bid_value: Yup.string().required("Bid value is required"),
-										bid_start_time: Yup.mixed().required("Bid start time is required"),
+										bid_start_time: Yup.mixed().required(
+											"Bid start time is required"
+										),
 										bid_end_time: Yup.mixed()
 											.required("Bid end time is required")
 											.test(
@@ -1446,7 +1521,9 @@ const Allocations: React.FC<AllocationsProps> = ({
 												function (value) {
 													const { bid_start_time } = this.parent;
 													if (!bid_start_time || !value) return false;
-													return moment(value).isSameOrAfter(moment(bid_start_time));
+													return moment(value).isSameOrAfter(
+														moment(bid_start_time)
+													);
 												}
 											),
 									})}
@@ -1455,10 +1532,14 @@ const Allocations: React.FC<AllocationsProps> = ({
 										const payload: BiddingModalProps = {
 											bid_value: values.bid_value,
 											bid_start_time: values.bid_start_time
-												? moment(values.bid_start_time).format("YYYY-MM-DDTHH:mm:ss")
+												? moment(values.bid_start_time).format(
+														"YYYY-MM-DDTHH:mm:ss"
+												  )
 												: "",
 											bid_end_time: values.bid_end_time
-												? moment(values.bid_end_time).format("YYYY-MM-DDTHH:mm:ss")
+												? moment(values.bid_end_time).format(
+														"YYYY-MM-DDTHH:mm:ss"
+												  )
 												: "",
 										};
 
@@ -1489,14 +1570,21 @@ const Allocations: React.FC<AllocationsProps> = ({
 														<DateTimePicker
 															label="Bid Start Time"
 															value={field.value}
-															onChange={(val) => setFieldValue("bid_start_time", val)}
+															onChange={(val) =>
+																setFieldValue("bid_start_time", val)
+															}
 															slotProps={{
 																textField: {
 																	size: "small",
 																	fullWidth: true,
 																	margin: "normal",
-																	error: Boolean(touched.bid_start_time && errors.bid_start_time),
-																	helperText: touched.bid_start_time && errors.bid_start_time,
+																	error: Boolean(
+																		touched.bid_start_time &&
+																			errors.bid_start_time
+																	),
+																	helperText:
+																		touched.bid_start_time &&
+																		errors.bid_start_time,
 																},
 															}}
 														/>
@@ -1510,14 +1598,19 @@ const Allocations: React.FC<AllocationsProps> = ({
 															label="Bid End Time"
 															value={field.value}
 															minDateTime={values.bid_start_time || undefined} // cannot select earlier
-															onChange={(val) => setFieldValue("bid_end_time", val)}
+															onChange={(val) =>
+																setFieldValue("bid_end_time", val)
+															}
 															slotProps={{
 																textField: {
 																	size: "small",
 																	fullWidth: true,
 																	margin: "normal",
-																	error: Boolean(touched.bid_end_time && errors.bid_end_time),
-																	helperText: touched.bid_end_time && errors.bid_end_time,
+																	error: Boolean(
+																		touched.bid_end_time && errors.bid_end_time
+																	),
+																	helperText:
+																		touched.bid_end_time && errors.bid_end_time,
 																},
 															}}
 														/>
@@ -1526,8 +1619,14 @@ const Allocations: React.FC<AllocationsProps> = ({
 											</LocalizationProvider>
 
 											<DialogActions>
-												<Button onClick={() => setBidModal(false)}>Cancel</Button>
-												<Button variant="contained" color="primary" type="submit">
+												<Button onClick={() => setBidModal(false)}>
+													Cancel
+												</Button>
+												<Button
+													variant="contained"
+													color="primary"
+													type="submit"
+												>
 													Submit Bid
 												</Button>
 											</DialogActions>
@@ -1536,11 +1635,14 @@ const Allocations: React.FC<AllocationsProps> = ({
 								</Formik>
 							</DialogContent>
 						</Dialog>
-
-
 						<Paper
 							key={uniqueKey}
-							sx={{ p: 2, mb: 2, marginLeft: isGeneratingPDF ? "30px" : "2px" }}
+							sx={{
+								p: 2,
+								mb: 2,
+								marginLeft: isGeneratingPDF ? "30px" : "2px",
+								 
+							}}
 						>
 							<Grid
 								container
@@ -1565,8 +1667,8 @@ const Allocations: React.FC<AllocationsProps> = ({
 											Vehicle: {allocation.vehicle_ID}
 											{(from === "order-overview" ||
 												from === "order-bidding") && (
-													<> | Cost: ₹{allocation?.cost?.toFixed(2)}</>
-												)}
+												<> | Cost: ₹{allocation?.cost?.toFixed(2)}</>
+											)}
 										</Typography>
 										{!isGeneratingPDF && (
 											<Typography
@@ -1653,7 +1755,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 								</Grid>
 								<Grid item sx={{ width: "2.5%" }}>
 									<IconButton onClick={() => handleToggle(uniqueKey)}>
-										{expanded[uniqueKey] ? (
+										{!expanded[uniqueKey] ? (
 											<ExpandLessIcon />
 										) : (
 											<ExpandMoreIcon />
@@ -1663,7 +1765,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 							</Grid>
 
 							<Collapse
-								in={isGeneratingPDF || expanded[uniqueKey]}
+								in={isGeneratingPDF || !expanded[uniqueKey]}
 								timeout="auto"
 								unmountOnExit
 							>
@@ -2039,7 +2141,7 @@ const Allocations: React.FC<AllocationsProps> = ({
 												</Grid>
 											</Box>
 										))}
-									{!isGeneratingPDF && (
+									{/* {!isGeneratingPDF && (
 										<Box
 											sx={{
 												display: "flex",
@@ -2051,59 +2153,59 @@ const Allocations: React.FC<AllocationsProps> = ({
 											{!assignedOrder?.data[0]?.allocated_vehicles?.some(
 												(vehicle: string) => vehicle === allocation.vehicle_ID
 											) && (
-													<>
-														{order?.order?.order_status ===
-															"assignment pending" && (
-																<>
-																	<Button
-																		variant="contained"
-																		color="primary"
-																		onClick={handleDialogOpenBidding}
-																	>
-																		Go for bidding
-																	</Button>
-																	<Button
-																		variant="contained"
-																		color="primary"
-																		onClick={() =>
-																			handleOpenAssignModal(allocation)
-																		}
-																	>
-																		Assign
-																	</Button>
-																</>
-															)}
-													</>
-												)}
-
-											{assignedOrder?.data[0]?.allocated_vehicles?.some(
-												(vehicle: string) => vehicle === allocation.vehicle_ID
-											) && (
-													<>
-														{order?.order?.order_status === "finished" ? (
+												<>
+													{order?.order?.order_status ===
+														"assignment pending" && (
+														<>
+															<Button
+																variant="contained"
+																color="primary"
+																onClick={handleDialogOpenBidding}
+															>
+																Go for bidding
+															</Button>
 															<Button
 																variant="contained"
 																color="primary"
 																onClick={() =>
-																	handleRouteReply(allocation.vehicle_ID)
+																	handleOpenAssignModal(allocation)
 																}
 															>
-																Route Reply
+																Assign
 															</Button>
-														) : order?.order?.order_status !==
-															"carrier assignment" ? (
-															<Button
-																variant="contained"
-																color="primary"
-																onClick={() => handleTrack(allocation)}
-															>
-																View Track
-															</Button>
-														) : null}
-													</>
-												)}
+														</>
+													)}
+												</>
+											)}
+
+											{assignedOrder?.data[0]?.allocated_vehicles?.some(
+												(vehicle: string) => vehicle === allocation.vehicle_ID
+											) && (
+												<>
+													{order?.order?.order_status === "finished" ? (
+														<Button
+															variant="contained"
+															color="primary"
+															onClick={() =>
+																handleRouteReply(allocation.vehicle_ID)
+															}
+														>
+															Route Reply
+														</Button>
+													) : order?.order?.order_status !==
+													  "carrier assignment" ? (
+														<Button
+															variant="contained"
+															color="primary"
+															onClick={() => handleTrack(allocation)}
+														>
+															View Track
+														</Button>
+													) : null}
+												</>
+											)}
 										</Box>
-									)}
+									)} */}
 								</Box>
 							</Collapse>
 						</Paper>
