@@ -1,37 +1,39 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-    Box,
-    Typography,
-    Card,
-    CardContent,
-    Divider,
-    IconButton,
-    Stack, 
-    TextField,
-    InputAdornment,
-    Backdrop,
-    CircularProgress,
-    Chip,
-    Button,
+	Box,
+	Typography,
+	Card,
+	CardContent,
+	Divider,
+	IconButton,
+	Stack,
+	TextField,
+	InputAdornment,
+	Backdrop,
+	CircularProgress,
+	Chip,
+	Button,
 } from '@mui/material';
 import {
-    Visibility,
-    Search,
-    Phone,
-    AccessTime,
-    LocationOn,
-    CheckCircle,
-    HourglassBottom,
+	Visibility,
+	Search,
+	Phone,
+	AccessTime,
+	LocationOn,
+	CheckCircle,
+	HourglassBottom,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import {
-    GoogleMap,
-    Polyline,
-    Marker,
-    useJsApiLoader,
+	GoogleMap,
+	Polyline,
+	Marker,
+	useJsApiLoader,
 	DirectionsRenderer,
 } from '@react-google-maps/api';
 import { useGetAllAssignedOrdersDataQuery } from '@/api/apiSlice';
@@ -41,25 +43,25 @@ import { useGetAllAssignedOrdersDataQuery } from '@/api/apiSlice';
 type RoutePoint = { lat: number; lng: number };
 
 interface Driver {
-    driver_name?: string;
-    driver_correspondence?: { phone?: string };
+	driver_name?: string;
+	driver_correspondence?: { phone?: string };
 }
 
 interface VehicleAssignment {
-    self_vehicle_num?: string;
-    driver?: Driver;
+	self_vehicle_num?: string;
+	driver?: Driver;
 }
 
 interface PODStop {
-    stopIndex: number;
-    status: string;
-    location: string;
+	stopIndex: number;
+	status: string;
+	location: string;
 }
 
 interface Assignment {
-    a_order_status?: string;
-    pod?: { stops?: PODStop[] };
-    vehicles?: VehicleAssignment[];
+	a_order_status?: string;
+	pod?: { stops?: PODStop[] };
+	vehicles?: VehicleAssignment[];
 }
 
 interface RouteLeg {
@@ -76,15 +78,15 @@ interface RouteLeg {
 interface Allocation {
 	color(color: string, arg1: number): string | google.maps.Icon | google.maps.Symbol | undefined;
 	key: any;
-    sampledRoutePoints?: RoutePoint[];
-    occupiedPercentUsable?: number;
-    route?: RouteLeg[];
+	sampledRoutePoints?: RoutePoint[];
+	occupiedPercentUsable?: number;
+	route?: RouteLeg[];
 }
 
 interface Order {
-    order_ID: string;
-    allocations?: Allocation[];
-    assignments?: Assignment[];
+	order_ID: string;
+	allocations?: Allocation[];
+	assignments?: Assignment[];
 }
 interface LatLngPoint {
 	latitude: number;
@@ -95,7 +97,7 @@ interface LatLngPoint {
 interface Stop extends LatLngPoint {
 	index: number;
 	delivered: boolean;
-} 
+}
 type StopWithMeta = Stop & {
 	allocationKey: string;
 	allocationColor: string;
@@ -106,12 +108,12 @@ type StopWithMeta = Stop & {
 /* ---------------- CONSTANTS ---------------- */
 
 const COLORS = [
-    '#2E7D32',
-    '#1565C0',
-    '#D84315',
-    '#6A1B9A',
-    '#00897B',
-    '#C2185B',
+	'#2E7D32',
+	'#1565C0',
+	'#D84315',
+	'#6A1B9A',
+	'#00897B',
+	'#C2185B',
 ];
 
 const DEFAULT_CENTER = { lat: 16.0, lng: 80.6 };
@@ -128,17 +130,17 @@ function parseDurationTime(duration: string = "0 mins"): number {
 }
 
 const parseDurationToMs = (duration?: string) => {
-    if (!duration) return 0;
-    const h = duration.match(/(\d+)\s*hour/)?.[1];
-    const m = duration.match(/(\d+)\s*min/)?.[1];
-    return ((h ? +h : 0) * 60 + (m ? +m : 0)) * 60_000;
+	if (!duration) return 0;
+	const h = duration.match(/(\d+)\s*hour/)?.[1];
+	const m = duration.match(/(\d+)\s*min/)?.[1];
+	return ((h ? +h : 0) * 60 + (m ? +m : 0)) * 60_000;
 };
 
 const formatTime = (date: number) =>
-    new Date(date).toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-    });
+	new Date(date).toLocaleTimeString([], {
+		hour: '2-digit',
+		minute: '2-digit',
+	});
 
 /* ---------------- COMPONENT ---------------- */
 
@@ -225,10 +227,10 @@ const TrackingPage: React.FC = () => {
 				const startLatLn =
 					alloc.route?.length && alloc.route[0]?.start
 						? {
-								latitude: alloc.route[0].start.latitude,
-								longitude: alloc.route[0].start.longitude,
-								address: alloc.route[0].start.address,
-						  }
+							latitude: alloc.route[0].start.latitude,
+							longitude: alloc.route[0].start.longitude,
+							address: alloc.route[0].start.address,
+						}
 						: null;
 
 				list.push({
@@ -256,7 +258,7 @@ const TrackingPage: React.FC = () => {
 
 		return list;
 	}, [orders]);
- 
+
 	useEffect(() => {
 		if (!isLoaded) return;
 		if (!window.google) return;
@@ -319,13 +321,13 @@ const TrackingPage: React.FC = () => {
 		};
 	};
 
-const getNumberedPinIcon = (
-	color: string,
-	label: number,
-	isStart: boolean = false
-): google.maps.Icon => {
-	const displayText = isStart ? `S` : `${label}`; // S + number for start
-	const svg = `
+	const getNumberedPinIcon = (
+		color: string,
+		label: number,
+		isStart: boolean = false
+	): google.maps.Icon => {
+		const displayText = isStart ? `S` : `${label}`; // S + number for start
+		const svg = `
     <svg width="36" height="46" viewBox="0 0 36 46" xmlns="http://www.w3.org/2000/svg">
       <path
         d="M18 0C8.6 0 1 7.4 1 16.5C1 29.5 18 46 18 46C18 46 35 29.5 35 16.5C35 7.4 27.4 0 18 0Z"
@@ -347,15 +349,15 @@ const getNumberedPinIcon = (
     </svg>
   `;
 
-	return {
-		url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
-		scaledSize: new google.maps.Size(36, 46),
-		anchor: new google.maps.Point(18, 46),
+		return {
+			url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
+			scaledSize: new google.maps.Size(36, 46),
+			anchor: new google.maps.Point(18, 46),
+		};
 	};
-};
 
 
- 
+
 	/* ---------------- UI ---------------- */
 
 	return (
@@ -409,13 +411,13 @@ const getNumberedPinIcon = (
 									boxShadow:
 										focusedKey === a.key ? `0 0 0 2px ${a.color}` : undefined,
 								}}
-								// onClick={() => {
-								// 	setFocusedKey(a.key);
-								// 	mapRef.current?.panTo(
-								// 		a.points[Math.floor(a.points.length / 2)]
-								// 	);
-								// 	mapRef.current?.setZoom(8);
-								// }}
+							// onClick={() => {
+							// 	setFocusedKey(a.key);
+							// 	mapRef.current?.panTo(
+							// 		a.points[Math.floor(a.points.length / 2)]
+							// 	);
+							// 	mapRef.current?.setZoom(8);
+							// }}
 							>
 								<CardContent>
 									{/* HEADER */}
@@ -596,15 +598,15 @@ const getNumberedPinIcon = (
 							// Start marker with "S" + number
 							const startMarker = a.startLatLn
 								? [
-										<Marker
-											key={`${a.key}-start`}
-											position={{
-												lat: a.startLatLn.latitude,
-												lng: a.startLatLn.longitude,
-											}}
-											icon={getNumberedPinIcon(a.color, 1, true)}  
-										/>,
-								  ]
+									<Marker
+										key={`${a.key}-start`}
+										position={{
+											lat: a.startLatLn.latitude,
+											lng: a.startLatLn.longitude,
+										}}
+										icon={getNumberedPinIcon(a.color, 1, true)}
+									/>,
+								]
 								: [];
 
 							// Regular stops
