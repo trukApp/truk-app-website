@@ -1,6 +1,6 @@
 "use client";
 
-import React, {useState } from "react";
+import React, { useState } from "react";
 import { useEditOrderMutation, useGetOrderByIdQuery } from "@/api/apiSlice";
 import {
 	Backdrop,
@@ -51,7 +51,7 @@ const OrderDetailedOverview: React.FC = () => {
 
 	const [openDialog, setOpenDialog] = useState(false);
 	const [documents, setDocuments] = useState<OrderDocMap[]>([]);
- 
+
 
 	const [openPreview, setOpenPreview] = useState<{ url: string; open: boolean }>({
 		url: "",
@@ -149,7 +149,7 @@ const OrderDetailedOverview: React.FC = () => {
 				<Paper sx={{ p: 2, mb: 2 }}>
 					<Typography
 						variant="h6"
-						sx={{ color: "#F08C24", fontWeight: "bold", fontSize:'18px' }}
+						sx={{ color: "#F08C24", fontWeight: "bold", fontSize: '18px' }}
 					>
 						Order Details
 					</Typography>
@@ -180,7 +180,7 @@ const OrderDetailedOverview: React.FC = () => {
 						</Grid>
 
 						{/* COLUMN 3   */}
-						<Grid item xs={12} md={3}>
+						<Grid item xs={12} md={4}>
 							<LOR
 								allocations={orderData?.allocations}
 								orderId={orderData?.order_ID}

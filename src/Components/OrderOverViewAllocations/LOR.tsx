@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
-import React, { useRef, useState,   ReactNode, useLayoutEffect } from "react";
+import React, { useRef, useState, ReactNode, useLayoutEffect } from "react";
 import { Typography, Paper, Grid, Box, Button, Backdrop, CircularProgress, Dialog, DialogActions, Checkbox, DialogContent, FormControlLabel, DialogTitle, IconButton, SxProps, Theme, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -32,7 +32,7 @@ interface LORProps {
 			e_way?: string;
 		}>;
 	}>;
-	from?: string;           // ✅ Add this
+	from?: string;
 	orderStatus?: string;
 }
 
@@ -77,25 +77,9 @@ interface ProductDetails {
 interface CellProps {
 	children: ReactNode;
 	sx?: SxProps<Theme>;
-	[key: string]: any; // Allow other Box props
+	[key: string]: any;
 }
 
-
-
-// const Cell = ({ children, sx = {}, ...props }) => (
-// 	<Box
-// 		{...props}
-// 		sx={{
-// 			border: "1px solid #333",
-// 			px: 1.5,
-// 			py: 0.7,
-// 			fontSize: "13px",
-// 			...sx
-// 		}}
-// 	>
-// 		{children}
-// 	</Box>
-// );
 const Cell = ({ children, sx = {}, ...props }: CellProps) => (
 	<Box
 		{...props}
@@ -113,27 +97,26 @@ const Cell = ({ children, sx = {}, ...props }: CellProps) => (
 const LOR = ({ allocations, orderId, allocatedPackageDetails, order, lrInvoices }: LORProps) => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [openPopup, setOpenPopup] = useState(false);
-	const [selectedCopy, setSelectedCopy] = useState("CONSIGNOR COPY");
+	const labelRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+	type LORRole = "CONSIGNOR COPY" | "CONSIGNEE COPY" | "TRANSPORTER COPY";
+
+	const [selectedCopy, setSelectedCopy] = useState<LORRole>("CONSIGNOR COPY");
+
 	const pdfRefs = useRef<{ [key: string]: HTMLElement | null }>({});
-	// const [currentShipToId, setCurrentShipToId] = useState(null);
 	const [currentShipToId, setCurrentShipToId] = useState<string | null>(null);
 	const { data: packagesOrderData } = useGetAllPackagesForOrderQuery([]);
 	const { data: productsData } = useGetAllProductsQuery({});
 	const allProductsData: Product[] = productsData?.products || [];
 	const allPackagesData: Package[] = packagesOrderData?.packages || [];
 	const pdfRef = useRef<HTMLDivElement | null>(null);
-const barcodeRefs = useRef<Record<string, SVGSVGElement | null>>({});
-const [selectedShipTo, setSelectedShipTo] = useState("");
-
-	// Utility functions
-
+	const barcodeRefs = useRef<Record<string, SVGSVGElement | null>>({});
+	const [selectedShipTo, setSelectedShipTo] = useState("");
 	const { data: locationsData } = useGetLocationMasterQuery([])
 	const getAllLocations: Location[] = locationsData?.locations.length > 0 ? locationsData?.locations : []
 	const getLocationDetails = (loc_ID: string) => {
 		const location = (locationsData?.locations || []).find((loc: Location) => loc.loc_ID === loc_ID);
 		if (!location) return "Location details not available";
 		return [
-			// location.locationDescription,
 			location.contact_name,
 			location.contact_email,
 			location.contact_phone_number,
@@ -150,22 +133,16 @@ const [selectedShipTo, setSelectedShipTo] = useState("");
 		const location = getAllLocations.find(
 			(loc: Location) => loc.loc_ID === loc_ID
 		);
-
 		if (!location) return "";
-
-		// return only city
 		return location.city || "";
 	};
 
 	const copyOptions = ["CONSIGNEE COPY", "CONSIGNOR COPY", "TRANSPORTER COPY"];
-
-	// Cancel popup
 	const handleCancel = () => {
 		setOpenPopup(false);
 	};
 
 	const getProductsInPackageDetails = (packId: string): ProductDetails => {
-		// Step 1: Find the package entry to get pickup date
 		const packageEntry = allPackagesData.find((pkg) => pkg.pack_ID === packId);
 		const pickupDate = packageEntry?.pickup_date_time || null;
 
@@ -177,12 +154,9 @@ const [selectedShipTo, setSelectedShipTo] = useState("");
 
 			pickupDateFormatted = `${day}-${month}-${year}`;
 		}
-		// Step 2: get all product entries under this package
 		const packProducts = allPackagesData
 			.filter((pkg) => pkg.pack_ID === packId)
 			.flatMap((pkg) => pkg.product_ID || []);
-
-		// If no products found, return consistent ProductDetails shape
 		if (!packProducts.length) {
 			return {
 				details: "No products found",
@@ -190,18 +164,14 @@ const [selectedShipTo, setSelectedShipTo] = useState("");
 				pickup_date_time: pickupDateFormatted,
 			};
 		}
-
 		let totalQuantity = 0;
-
 		const details = packProducts.map((prod: PackageProduct) => {
 			const productInfo = allProductsData.find(
 				(p) => p.product_ID === prod.prod_ID
 			);
-
 			if (!productInfo) {
 				return `Unknown Product (${prod.prod_ID})`;
 			}
-
 			totalQuantity += Number(prod.quantity || 0);
 
 			return `${productInfo.product_name}, quantity: ${prod.quantity}`;
@@ -225,12 +195,8 @@ const [selectedShipTo, setSelectedShipTo] = useState("");
 
 		const canvas = await html2canvas(ref as HTMLElement, { scale: 2, useCORS: true });
 		const imgData = canvas.toDataURL("image/png");
-
-		// Auto-size PDF to match the canvas
 		const pdf = new jsPDF("l", "px", [canvas.width, canvas.height]);
-
 		pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
-
 		pdf.save(fileName);
 		setIsLoading(false);
 	};
@@ -238,55 +204,41 @@ const [selectedShipTo, setSelectedShipTo] = useState("");
 
 	const handlePrintConfirm = () => {
 		setOpenPopup(false);
-
-		if (!currentShipToId) {
-			console.error("ShipToID missing");
-			return;
-		}
-
+		if (!currentShipToId) return;
 		const ref = pdfRefs.current[currentShipToId];
-
-		if (ref) {
-			handlePDFDownload(
-				ref,
-				`LOR-${orderId}.pdf`,
-				selectedCopy
-			);
-		}
+		if (!ref) return;
+		handlePDFDownload(
+			ref,
+			`LOR-${orderId}-${selectedCopy}.pdf`,
+			selectedCopy
+		);
 	};
-				const handlePrintLabels = async (shipTo: string) => {
-					if (!shipTo) return;
 
-					const selectedLR = lrInvoices.find((lr) => lr.ship_to === shipTo);
-					if (!selectedLR) return;
+	const handlePrintLabels = async (shipTo: string) => {
+		if (!shipTo) return;
+		const selectedLR = lrInvoices.find((lr) => lr.ship_to === shipTo);
+		if (!selectedLR) return;
+		const element = labelRefs.current[shipTo];
+		if (!element) return;
+		await new Promise((r) => setTimeout(r, 100));
+		const canvas = await html2canvas(element, {
+			scale: 3,
+			useCORS: true,
+			backgroundColor: "#ffffff",
+		});
+		const imgData = canvas.toDataURL("image/jpeg", 1.0);
+		const pdf = new jsPDF({
+			orientation: "portrait",
+			unit: "mm",
+			format: "a4",
+		});
+		const pdfWidth = pdf.internal.pageSize.getWidth();
+		const imgProps = pdf.getImageProperties(imgData);
+		const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+		pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
+		pdf.save(`LABELS-${selectedLR.lr_num}.pdf`);
+	};
 
-					const jsPDF = (await import("jspdf")).default;
-					const html2canvas = (await import("html2canvas")).default;
-
-					const element = pdfRefs.current[shipTo]; // 🔑 IMPORTANT
-					if (!element) return;
-
-					const canvas = await html2canvas(element, {
-						scale: 3,
-						useCORS: true,
-						backgroundColor: "#ffffff",
-					});
-
-					const imgData = canvas.toDataURL("image/jpeg", 1.0);
-
-					const pdf = new jsPDF({
-						orientation: "portrait",
-						unit: "mm",
-						format: "a4",
-					});
-
-					const pdfWidth = pdf.internal.pageSize.getWidth();
-					const imgProps = pdf.getImageProperties(imgData);
-					const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
-					pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
-					pdf.save(`LR-${selectedLR.lr_num}.pdf`);
-				};
 	return (
 		<>
 			<Dialog open={openPopup} onClose={handleCancel}>
@@ -307,7 +259,7 @@ const [selectedShipTo, setSelectedShipTo] = useState("");
 							control={
 								<Checkbox
 									checked={selectedCopy === copy}
-									onChange={() => setSelectedCopy(copy)}
+									onChange={() => setSelectedCopy(copy as LORRole)}
 								/>
 							}
 							label={copy}
@@ -334,35 +286,62 @@ const [selectedShipTo, setSelectedShipTo] = useState("");
 			>
 				<CircularProgress color="inherit" />
 			</Backdrop>
-			<Box display="flex" flexDirection='column'   justifyContent="center"  >
-				<Typography>Generate and Download labels for packages :</Typography>
+			<div style={{ display: 'flex', justifyContent: 'space-evenly', alignItems: 'center' }}>
+				<Box display="flex" flexDirection='column' justifyContent="center"  >
+					<Typography> Download LOR's :</Typography>
 
-				<FormControl size="small" sx={{ minWidth: 200 }}>
-					<InputLabel id="shipto-select">Download</InputLabel>
+					<FormControl size="small" sx={{ minWidth: 200 }}>
+						<InputLabel id="shipto-select">Download</InputLabel>
 
-					<Select 
-						labelId="shipto-select"
-						label="Download"
-						value={selectedShipTo}
-						onChange={(e) => {
-							const shipTo = e.target.value;
-							setSelectedShipTo(shipTo);
-						 	handlePrintLabels(shipTo);
-						}}
-					>
-						{lrInvoices.map((lr) => (
-							<MenuItem key={lr.lr_num} value={lr.ship_to}>
-								 {lr.ship_to}
-							</MenuItem>
-						))}
-					</Select>
-				</FormControl>
-			</Box>
+						<Select
+							labelId="shipto-select"
+							label="Download"
+							value={selectedShipTo}
+							onChange={(e) => {
+								const shipTo = e.target.value;
+								setSelectedShipTo(shipTo);
+								setCurrentShipToId(shipTo);
+								setOpenPopup(true);
+							}}
+
+						>
+							{lrInvoices.map((lr) => (
+								<MenuItem key={lr.lr_num} value={lr.ship_to}>
+									{lr.ship_to}
+								</MenuItem>
+							))}
+						</Select>
+					</FormControl>
+				</Box>
+				<Box display="flex" flexDirection="column">
+					<Typography>Download Labels :</Typography>
+
+					<FormControl size="small" sx={{ minWidth: 200 }}>
+						<InputLabel id="label-shipto-select">Download</InputLabel>
+
+						<Select
+							labelId="label-shipto-select"
+							label="Download"
+							value={selectedShipTo}
+							onChange={(e) => {
+								const shipTo = e.target.value;
+								handlePrintLabels(shipTo);
+							}}
+						>
+							{lrInvoices.map((lr) => (
+								<MenuItem key={lr.lr_num} value={lr.ship_to}>
+									{lr.ship_to}
+								</MenuItem>
+							))}
+						</Select>
+					</FormControl>
+				</Box>
+			</div>
+
 			{allocations.map((allocation, allocIndex) => {
 				const vehiclePackages = allocatedPackageDetails.filter((pkg) =>
 					allocation.packages.includes(pkg.pack_ID)
 				);
-				// const packagesByShipTo = {};
 				const packagesByShipTo: Record<string, Package[]> = {};
 				vehiclePackages.forEach((pkg) => {
 					if (pkg.ship_to) {
@@ -375,8 +354,6 @@ const [selectedShipTo, setSelectedShipTo] = useState("");
 				return Object.entries(packagesByShipTo).map(
 					([shipToId, pkgList], index) => {
 						const shipperPkg = pkgList[0];
-
-						// Find LR Invoice by matching the package
 						const lrData =
 							lrInvoices?.find((lr) =>
 								lr.packages_in_data?.some(
@@ -428,97 +405,51 @@ const [selectedShipTo, setSelectedShipTo] = useState("");
 						// eslint-disable-next-line react-hooks/rules-of-hooks
 
 						useLayoutEffect(() => {
-							const pacId = shipperPkg?.pac_id;
-							if (
-								!pacId ||
-								!consignorLoc ||
-								!consigneeLoc ||
-								!getAllLocations?.length
-							) {
-								return;
-							}
+							if (!getAllLocations?.length) return;
 
-							const svgEl = barcodeRefs.current[pacId];
-							if (!svgEl) return;
-
-							const from = getLocationCode(consignorLoc);
-							const to = getLocationCode(consigneeLoc);
-							if (!from || !to) return;
-
-							const totalCount = (lrData?.packages_in_data || []).reduce(
-								(sum, pkg) => {
-									const pkgInfo = getProductsInPackageDetails(pkg.pack_ID);
-									return sum + (pkgInfo?.quantity || 0);
-								},
-								0
-							);
-
-							const barcodeData = `${pacId}|${from.slice(0, 3)}|${to.slice(
-								0,
-								3
-							)}|${totalCount}`;
-
-							// 🔥 WAIT until layout is ready
-							requestAnimationFrame(() => {
+							(lrData?.packages_in_data || []).forEach((pkg) => {
+								const svgEl = barcodeRefs.current[pkg.pack_ID];
 								if (!svgEl) return;
 
-								svgEl.innerHTML = "";
+								const from = getLocationCode(consignorLoc);
+								const to = getLocationCode(consigneeLoc);
+								if (!from || !to) return;
 
+								const pkgInfo = getProductsInPackageDetails(pkg.pack_ID);
+
+								const barcodeData = `${pkg.pack_ID}|${from.slice(0, 3)}|${to.slice(
+									0,
+									3
+								)}|${pkgInfo.quantity}`;
+								svgEl.innerHTML = "";
 								JsBarcode(svgEl, barcodeData, {
 									format: "CODE128",
-									width: 1,
+									width: 1.2,
 									height: 45,
 									displayValue: false,
 								});
 							});
 						}, [
-							shipperPkg?.pac_id,
+							lrData?.packages_in_data,
 							consignorLoc,
 							consigneeLoc,
 							getAllLocations,
-							lrData?.packages_in_data,
 						]);
-
-						// const handlePrintLabels = async () => {
-						// 	const jsPDF = (await import("jspdf")).default;
-						// 	const html2canvas = (await import("html2canvas")).default;
-
-						// 	const element = pdfRef.current;
-						// 	if (!element) return;
-
-						// 	const canvas = await html2canvas(element, {
-						// 		scale: 3,
-						// 		useCORS: true,
-						// 		backgroundColor: "#ffffff",
-						// 	});
-
-						// 	const imgData = canvas.toDataURL("image/jpeg", 1.0);
-
-						// 	const pdf = new jsPDF({
-						// 		orientation: "portrait",
-						// 		unit: "mm",
-						// 		format: [210, 297], // A4 (change if needed)
-						// 	});
-
-						// 	const pdfWidth = pdf.internal.pageSize.getWidth();
-						// 	const imgProps = pdf.getImageProperties(imgData);
-						// 	const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
-						// 	pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
-						// 	pdf.save(`LR-${order?.order_ID || "document"}.pdf`);
-						// };
-
-		
 						return (
 							<Box key={`${allocIndex}-${index}`} mt={2}>
 								<div
+									ref={(el) => {
+										if (shipToId) {
+											labelRefs.current[shipToId] = el;
+										}
+									}}
 									id="hidden-labels"
 									style={{
 										position: "absolute",
 										top: "-99999px",
 										left: "-99999px",
 										pointerEvents: "none",
-										opacity: 0,
+										visibility: "visible",
 									}}
 								>
 									{lrData?.packages_in_data?.map((pkg) => {
@@ -541,7 +472,6 @@ const [selectedShipTo, setSelectedShipTo] = useState("");
 													marginBottom: "40px",
 												}}
 											>
-												{/* HEADER */}
 												<div
 													style={{
 														display: "flex",
@@ -567,9 +497,7 @@ const [selectedShipTo, setSelectedShipTo] = useState("");
 														</p>
 													</div>
 												</div>
-
 												<hr />
-
 												<p
 													style={{
 														fontSize: "12px",
@@ -579,10 +507,7 @@ const [selectedShipTo, setSelectedShipTo] = useState("");
 												>
 													Package ID : <b>{pkg.pack_ID}</b>
 												</p>
-
 												<hr />
-
-												{/* CENTER GRID WITH VERTICAL LINES */}
 												<div
 													style={{
 														display: "flex",
@@ -590,15 +515,12 @@ const [selectedShipTo, setSelectedShipTo] = useState("");
 														marginTop: "10px",
 													}}
 												>
-													{/* BOX 1 */}
 													<div style={{ width: "38%", padding: "6px" }}>
 														<p style={{ margin: 0, fontSize: "12px" }}>
 															Destination
 														</p>
 														<h4 style={{ margin: 0 }}>{toShort}</h4>
 													</div>
-
-													{/* VERTICAL LINE */}
 													<div
 														style={{
 															width: "1px",
@@ -606,16 +528,12 @@ const [selectedShipTo, setSelectedShipTo] = useState("");
 															margin: "0 4px",
 														}}
 													/>
-
-													{/* BOX 2 */}
 													<div style={{ width: "33%", padding: "6px" }}>
 														<p style={{ margin: 0, fontSize: "12px" }}>
 															Facility Code
 														</p>
 														<h4 style={{ margin: 0 }}>{consigneeLoc}</h4>
 													</div>
-
-													{/* VERTICAL LINE */}
 													<div
 														style={{
 															width: "1px",
@@ -623,8 +541,6 @@ const [selectedShipTo, setSelectedShipTo] = useState("");
 															margin: "0 4px",
 														}}
 													/>
-
-													{/* BOX 3 */}
 													<div style={{ width: "28%", padding: "6px" }}>
 														<p style={{ margin: 0, fontSize: "12px" }}>
 															Item Count
@@ -632,10 +548,7 @@ const [selectedShipTo, setSelectedShipTo] = useState("");
 														<h4 style={{ margin: 0 }}>{pkgInfo?.quantity}</h4>
 													</div>
 												</div>
-
 												<hr />
-
-												{/* ORIGIN + DELIVERY TYPE */}
 												<div
 													style={{
 														display: "flex",
@@ -656,41 +569,29 @@ const [selectedShipTo, setSelectedShipTo] = useState("");
 														<h4 style={{ margin: 0 }}>Standard</h4>
 													</div>
 												</div>
-
 												<hr />
-
 												<svg
 													width="200"
 													height="60"
 													ref={(el) => {
-														if (shipperPkg?.pac_id) {
-															barcodeRefs.current[shipperPkg.pac_id] = el;
+														if (el) {
+															barcodeRefs.current[pkg.pack_ID] = el;
 														}
 													}}
-												/>
 
+												/>
 												<Typography>{lrData?.lr_num}</Typography>
 											</div>
 										);
 									})}
 								</div>
 
-								{/* <Box display="flex" alignItems="center" justifyContent="center">
-							<Typography>
-								{" "}
-								Generate and Download labels for packages :{" "}
-							</Typography>
-							<Button variant="contained" onClick={handlePrintLabels}>
-								Download
-							</Button>
-						</Box> */}
-
 								<Box
 									sx={{
 										position: "fixed",
 										left: "-10000px",
 										top: 0,
-										visibility: "visible", // IMPORTANT
+										visibility: "visible",
 									}}
 								>
 									<Paper
@@ -718,7 +619,6 @@ const [selectedShipTo, setSelectedShipTo] = useState("");
 												fontFamily: "Arial, 'Liberation Sans', sans-serif",
 											}}
 										>
-											{/* Header */}
 											<Grid container>
 												<Grid item xs={2.5}>
 													<Image
@@ -750,9 +650,6 @@ const [selectedShipTo, setSelectedShipTo] = useState("");
 														Booking Date:{" "}
 														<b>{order?.created_at?.split("T")[0] || "-"}</b>
 													</Typography>
-													{/* <Typography fontWeight={700} fontSize="12px">
-												LOR NO.
-											</Typography> */}
 													<svg
 														width="200"
 														height="60"
@@ -762,11 +659,9 @@ const [selectedShipTo, setSelectedShipTo] = useState("");
 															}
 														}}
 													/>
-
 													<Typography>{lrData?.lr_num}</Typography>
 												</Grid>
 											</Grid>
-											{/* Top info table */}
 											<Grid container sx={{ border: "1px solid #333", mt: 1 }}>
 												<Grid container>
 													<Cell sx={{ width: "14%" }}>MODE</Cell>
@@ -782,10 +677,8 @@ const [selectedShipTo, setSelectedShipTo] = useState("");
 													<Cell sx={{ width: "20%" }}>{selectedCopy}</Cell>
 													<Cell sx={{ width: "16%" }}>Standard</Cell>
 													<Cell sx={{ width: "18%" }}>ALL DAY</Cell>
-													{/* <Cell sx={{ width: "32%" }} ></Cell> */}
 												</Grid>
 											</Grid>
-											{/* Consignor/Consignee table - from LR Invoice */}
 											<Grid container sx={{ border: "1px solid #333", mt: 1 }}>
 												<Cell sx={{ width: "50%" }}>
 													<Typography fontWeight={700} fontSize={13}>
@@ -804,9 +697,7 @@ const [selectedShipTo, setSelectedShipTo] = useState("");
 													</Typography>
 												</Cell>
 											</Grid>
-											{/* Table for goods */}
 											<Grid container sx={{ border: "1px solid #333", mt: 1 }}>
-												{/* Header row */}
 												<Cell sx={{ width: "8%" }}>SL No.</Cell>
 												<Cell sx={{ width: "18%" }}>Invoice Number</Cell>
 												<Cell sx={{ width: "18%" }}>EWB Number</Cell>
@@ -815,7 +706,6 @@ const [selectedShipTo, setSelectedShipTo] = useState("");
 												<Cell sx={{ width: "8%" }}>Dead Weight</Cell>
 												<Cell sx={{ width: "12%" }}>Chargable Weight</Cell>
 												<Cell sx={{ width: "10%" }}>Value</Cell>
-												{/* Data rows */}
 												{productRows.map((row, idx) => (
 													<React.Fragment key={idx}>
 														<Cell sx={{ width: "8%" }}>{row.slNo}</Cell>
@@ -830,17 +720,7 @@ const [selectedShipTo, setSelectedShipTo] = useState("");
 														<Cell sx={{ width: "10%" }}>{row.value}</Cell>
 													</React.Fragment>
 												))}
-												{/* Total row */}
-												{/* <Cell sx={{ width: "26%", borderTop: "2px solid #333" }}>
-											TOTAL
-										</Cell>
-										<Cell sx={{ width: "8%" }}>{totalCount}</Cell>
-										<Cell sx={{ width: "8%" }}>{totalDeedWeight}</Cell>
-										<Cell sx={{ width: "12%" }}>{totalChargeableWeight}</Cell>
-										<Cell sx={{ width: "10%" }}>{totalValue}</Cell> */}
-												{/* <Cell sx={{ width: "36%" }}></Cell> */}
 											</Grid>
-											{/* Declaration */}
 											<Grid container sx={{ border: "1px solid #333", mt: 1 }}>
 												<Cell sx={{ width: "100%" }}>
 													<b>DECLARATION BY THE CONSIGNER</b>
@@ -850,7 +730,6 @@ const [selectedShipTo, setSelectedShipTo] = useState("");
 													all the terms and conditions mentioned in agreement.
 												</Cell>
 											</Grid>
-											{/* Source, destination, signature */}
 											<Grid container sx={{ border: "1px solid #333", mt: 1 }}>
 												<Cell sx={{ width: "24%" }}>
 													<b>SOURCE</b> : {getLocationCode(consignorLoc)}
@@ -877,60 +756,27 @@ const [selectedShipTo, setSelectedShipTo] = useState("");
 															justifyContent: "space-between",
 														}}
 													>
-														{selectedCopy === "CONSIGNEE COPY" && (
-															<>
-																<Typography>Signature of Consignee</Typography>
-																<Typography></Typography>
-																<Typography>
-																	Signature of Transporter
-																</Typography>
-															</>
-														)}
-
-														{selectedCopy === "CONSIGNOR COPY" && (
-															<>
-																<Typography>Signature of Consigner</Typography>
-																<Typography></Typography>
-																<Typography>
-																	Signature of Transporter
-																</Typography>
-															</>
-														)}
-
-														{selectedCopy === "TRANSPORTER COPY" && (
-															<>
-																<Typography>Signature of Consignee</Typography>
-																<Typography>Signature of Consigner</Typography>
-																<Typography>
-																	Signature of Transporter
-																</Typography>
-															</>
-														)}
+														<Typography>
+															{selectedCopy === "CONSIGNEE COPY"
+																? ""
+																: "Signature of Consignee"}
+														</Typography>
+														<Typography>
+															{selectedCopy === "CONSIGNOR COPY"
+																? ""
+																: "Signature of Consigner"}
+														</Typography>
+														<Typography>
+															{selectedCopy === "TRANSPORTER COPY"
+																? ""
+																: "Signature of Transporter"}
+														</Typography>
 													</Box>
 												</Cell>
 											</Grid>
 										</Paper>{" "}
 									</Paper>
 								</Box>
-								{/* <Box textAlign="center" mb={10} mt={2}>
-									<Button
-										variant="contained"
-										onClick={() => {
-											setCurrentShipToId(shipToId); // store it
-											setOpenPopup(true); // open popup
-										}}
-									>
-										PRINT PDF
-									</Button>
-
-									<Button
-										variant="outlined"
-										sx={{ mx: 1, px: 4 }}
-										onClick={() => window.close()}
-									>
-										CLOSE
-									</Button>
-								</Box> */}
 							</Box>
 						);
 					}
