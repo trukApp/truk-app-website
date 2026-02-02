@@ -46,6 +46,9 @@ const ShipTo: React.FC = () => {
         ? `${defaultLocationData.loc_ID},${defaultLocationData.loc_desc}, ${defaultLocationData.city}, ${defaultLocationData.state}, ${defaultLocationData.pincode}`
         : '';
 
+
+    console.log("defaultLocationDataInputText: ", defaultLocationDataInputText)
+
     const [searchKey, setSearchKey] = useState(values.shipTo?.locationId || defaultLocationDataInputText || '');
     const [showSuggestions, setShowSuggestions] = useState(false);
     const { data: filteredLocations, isLoading: filteredLocationLoading } = useGetFilteredLocationsQuery(searchKey.length >= 3 ? searchKey : null, { skip: searchKey.length < 3 });
@@ -86,17 +89,20 @@ const ShipTo: React.FC = () => {
         selectedLocationId: string,
         setFieldValue: FormikProps<CreatePackageFormValues>['setFieldValue']
     ) => {
+
+
         setFieldValue("shipTo.shipTolocationId", selectedLocationId);
 
         const selectedLocation = getAllLocations.find(
             (loc: Location) => loc?.loc_ID === selectedLocationId
         );
 
+        console.log("selectedLocation: ", selectedLocation)
         if (selectedLocation) {
-            setFieldValue("shipTo.shipTolocationDescription", selectedLocation.loc_desc || "");
-            setFieldValue("shipTo.shipToaddressLine1", selectedLocation.address_1 || "");
-            setFieldValue("shipTo.shipToaddressLine2", selectedLocation.address_2 || "");
-            setFieldValue("shipTo.shipTocity", selectedLocation.city || "");
+            setFieldValue("shipTo.locationDescription", selectedLocation.loc_desc || "");
+            setFieldValue("shipTo.addressLine1", selectedLocation.address_1 || "");
+            setFieldValue("shipTo.addressLine2", selectedLocation.address_2 || "");
+            setFieldValue("shipTo.city", selectedLocation.city || "");
             setFieldValue("shipTo.state", selectedLocation.state || "");
             setFieldValue("shipTo.country", selectedLocation.country || "");
             setFieldValue("shipTo.pincode", selectedLocation.pincode || "");
