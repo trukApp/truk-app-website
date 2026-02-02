@@ -676,6 +676,15 @@ export const apiSlice = createApi({
       providesTags: [{ type: "Orders", id: "LIST" }],
     }),
 
+    getAllAssignedOrdersDataByStatus: builder.query({
+      query: ({ params, orderStatus }) => ({
+        url: `ao/orders-by-status?order_status=${orderStatus}`,
+        method: "GET",
+        params,
+      }),
+      providesTags: [{ type: "Orders", id: "LIST" }],
+    }),
+
     getOrderById: builder.query({
       query: ({ orderId }) => ({
         url: `order/order-by-id`,
@@ -998,5 +1007,6 @@ export const {
   useCancelAuctionMutation,
   useAssignToLowestBidMutation,
   // useLazyGetAllAssignedOrdersQuery
-  useGetAllAssignedOrdersDataQuery
+  useGetAllAssignedOrdersDataQuery,
+  useGetAllAssignedOrdersDataByStatusQuery
 } = apiSlice;

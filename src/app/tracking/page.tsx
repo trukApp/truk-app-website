@@ -145,6 +145,8 @@ const TrackingPage: React.FC = () => {
 		Record<string, google.maps.DirectionsResult>
 	>({});
 
+	console.log("data: ", data)
+
 	const { isLoaded } = useJsApiLoader({
 		googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
 		libraries: GOOGLE_MAP_LIBRARIES,

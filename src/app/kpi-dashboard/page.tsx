@@ -16,6 +16,7 @@ const KPIDashboard: React.FC = () => {
 
     const orders = allOrders?.orders || [];
     const kpis = calculateKPIs(orders);
+    console.log("KPI Dashboard rendered with orders:", orders);
 
     return (
         <>
