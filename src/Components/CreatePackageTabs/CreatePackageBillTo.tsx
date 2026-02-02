@@ -91,6 +91,7 @@ const BillTo: React.FC = () => {
         );
 
         if (selectedLocation) {
+            setFieldValue("billTo.locationId", selectedLocationId);
             setFieldValue("billTo.locationDescription", selectedLocation.loc_desc || "");
             setFieldValue("billTo.addressLine1", selectedLocation.address_1 || "");
             setFieldValue("billTo.addressLine2", selectedLocation.address_2 || "");
@@ -235,14 +236,33 @@ const BillTo: React.FC = () => {
                                                     <ListItem
                                                         key={location.loc_ID}
                                                         component="li"
+                                                        // onClick={() => {
+                                                        //     setShowSuggestions(false);
+                                                        //     const selectedDisplay = `${location.loc_ID},${location?.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
+                                                        //     setSearchKey(selectedDisplay);
+                                                        //     // setSearchKey(location.loc_ID);
+                                                        //     handleLocationChange(location.loc_ID, setFieldValue);
+                                                        //     setFieldValue("locationId", selectedDisplay);
+                                                        // }}
                                                         onClick={() => {
                                                             setShowSuggestions(false);
-                                                            const selectedDisplay = `${location.loc_ID},${location?.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
+
+                                                            const selectedDisplay = `${location.loc_ID},${location.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
+
+                                                            // UI value
                                                             setSearchKey(selectedDisplay);
-                                                            // setSearchKey(location.loc_ID);
+
+                                                            // Formik values
                                                             handleLocationChange(location.loc_ID, setFieldValue);
-                                                            setFieldValue("locationId", selectedDisplay);
+
+                                                            // ✅ CRITICAL FIX
+                                                            setFieldValue("billTo.locationId", location.loc_ID, false);
+                                                            setFieldValue("billTo.locationDescription", location.loc_desc || "", false);
+
+                                                            // ✅ Clear validation state
+                                                            setFieldValue("billTo.locationId", location.loc_ID);
                                                         }}
+
                                                         sx={{ cursor: "pointer" }}
                                                     >
                                                         <span style={{ fontSize: "14px" }}>

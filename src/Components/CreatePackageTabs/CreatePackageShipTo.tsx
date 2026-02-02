@@ -36,7 +36,7 @@ interface CreatePackageFormValues {
 }
 
 const ShipTo: React.FC = () => {
-    const { values, setFieldValue, touched, errors, handleBlur } = useFormikContext<CreatePackageFormValues>();
+    const { values, setFieldValue, touched, errors, handleBlur, setFieldTouched} = useFormikContext<CreatePackageFormValues>();
     const { data: locationsData, isLoading: isLocationLoading } = useGetLocationMasterQuery([])
     const [updateDefulatFromLocation, { isLoading: defaultLocationLoading }] = useUpdateShipToDefaultLocationIdMutation();
     const allLocations = locationsData?.locations.length > 0 ? locationsData?.locations : []
@@ -91,7 +91,7 @@ const ShipTo: React.FC = () => {
     ) => {
 
 
-        setFieldValue("shipTo.shipTolocationId", selectedLocationId);
+        setFieldValue("shipTo.locationId", selectedLocationId);
 
         const selectedLocation = getAllLocations.find(
             (loc: Location) => loc?.loc_ID === selectedLocationId
@@ -244,14 +244,29 @@ const ShipTo: React.FC = () => {
                                                     <ListItem
                                                         key={location.loc_ID}
                                                         component="li"
+                                                        // onClick={() => {
+                                                        //     setShowSuggestions(false);
+                                                        //     const selectedDisplay = `${location.loc_ID},${location?.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
+                                                        //     setSearchKey(selectedDisplay);
+                                                        //     // setSearchKey(location.loc_ID);
+                                                        //     handleLocationChange(location.loc_ID, setFieldValue);
+                                                        //     setFieldValue("locationId", selectedDisplay);
+                                                        // }}
                                                         onClick={() => {
-                                                            setShowSuggestions(false);
-                                                            const selectedDisplay = `${location.loc_ID},${location?.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
-                                                            setSearchKey(selectedDisplay);
-                                                            // setSearchKey(location.loc_ID);
-                                                            handleLocationChange(location.loc_ID, setFieldValue);
-                                                            setFieldValue("locationId", selectedDisplay);
-                                                        }}
+  setShowSuggestions(false);
+
+  const selectedDisplay = `${location.loc_ID},${location?.loc_desc}, ${location.city}, ${location.state}, ${location.pincode}`;
+
+  // UI value
+  setSearchKey(selectedDisplay);
+
+  // Update Formik values
+  handleLocationChange(location.loc_ID, setFieldValue);
+
+  // ✅ CRITICAL: clear Formik validation state
+  setFieldTouched("shipTo.locationId", false, false);
+}}
+
                                                         sx={{ cursor: "pointer" }}
                                                     >
                                                         <span style={{ fontSize: "14px" }}>
