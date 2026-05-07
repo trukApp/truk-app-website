@@ -22,19 +22,22 @@ import {
   Person as PersonIcon,
 } from "@mui/icons-material";
 import { usePathname, useRouter } from "next/navigation";
-import { signOut, useSession } from "next-auth/react"; // 👈 include useSession
+import { signOut, useSession } from "next-auth/react";
 
 const Header = () => {
   const [anchorElProfile, setAnchorElProfile] = useState<null | HTMLElement>(null);
   const [anchorElHamburger, setAnchorElHamburger] = useState<null | HTMLElement>(null);
   const router = useRouter();
   const currentPath = usePathname();
-  const { data: session } = useSession();
+  // const { data: session } = useSession();
+  const { data: session, status } = useSession();
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
+
   const user = {
-    name: session?.user?.name || "Teja Bandaru",
+    name: session?.user?.name || "Truk App User",
     profileImage: session?.user?.image || "/TLogo.png",
   };
 
@@ -55,18 +58,39 @@ const Header = () => {
   const handleHamburgerMenuClose = () => {
     setAnchorElHamburger(null);
   };
+  // useEffect(() => {
+  //   if (session?.error === "RefreshAccessTokenError") {
+  //     signOut({ callbackUrl: "/login" });
+  //   }
+  // }, [session]);
   useEffect(() => {
-    if (session?.error === "RefreshAccessTokenError") { 
+    if (session?.error === "RefreshAccessTokenError") {
       signOut({ callbackUrl: "/login" });
     }
-  }, [session]);
+  }, [session?.error]);
+  if (status === "loading") return null;
+
+  // useEffect(() => {
+  //   if (session?.error === "RefreshAccessTokenError") {
+  //     signOut(); // logout user
+  //   }
+  // }, [session]);
+
+  // const handleLogout = async () => {
+  //   const isConfirmed = window.confirm("Are you sure you want to log out?");
+  //   if (isConfirmed) {
+  //     await signOut({ redirect: false });
+  //     localStorage.clear();
+  //     setAnchorElProfile(null);
+  //     router.push("/login");
+  //   }
+  // };
+
   const handleLogout = async () => {
     const isConfirmed = window.confirm("Are you sure you want to log out?");
     if (isConfirmed) {
-      await signOut({ redirect: false });
       localStorage.clear();
-      setAnchorElProfile(null);
-      router.push("/login");
+      await signOut({ callbackUrl: "/login" });
     }
   };
 
@@ -87,7 +111,7 @@ const Header = () => {
             />
           </Grid>
 
-          {!isAuthPage && !session ? (
+          {!isAuthPage && status === "unauthenticated" ? (
             <>
               <Button color="inherit" href="/login">
                 Login
@@ -134,7 +158,7 @@ const Header = () => {
 
                     <IconButton onClick={handleProfileMenuOpen}>
                       {user.profileImage ? (
-                        <Avatar src={user.profileImage}  sx={{ p: '6px', backgroundColor:'#FCF0DE' }} />
+                        <Avatar src={user.profileImage} sx={{ p: '6px', backgroundColor: '#FCF0DE' }} />
                       ) : (
                         <Avatar>{user.name[0]}</Avatar>
                       )}

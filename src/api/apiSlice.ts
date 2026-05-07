@@ -182,6 +182,15 @@ export const apiSlice = createApi({
       providesTags: [{ type: "DRIVERS", id: "LIST" }],
     }),
 
+    getAllAvailablelDriversData: builder.query({
+      query: (params) => ({
+        url: "driver/available-drivers",
+        method: "GET",
+        params,
+      }),
+      providesTags: [{ type: "DRIVERS", id: "LIST" }],
+    }),
+
     getDriverData: builder.query({
       query: (params) => ({
         url: "driver/get-driver",
@@ -911,6 +920,21 @@ export const apiSlice = createApi({
       }),
       providesTags: [{ type: "Orders", id: "LIST" }],
     }),
+    getLiveTracking: builder.query({
+      query: ({ orderId }) => ({
+        url: `track/live`,
+        method: "GET",
+        params: { order_ID: orderId },
+      }),
+      providesTags: [{ type: "Orders", id: "LIST" }],
+    }),
+    shipmentDashoard: builder.query({
+      query: () => ({
+        url: `tracking/shipment-dashboard`,
+        method: "GET",
+      }),
+      providesTags: [{ type: "Orders", id: "LIST" }, { type: "Orderss", id: "LIST" }],
+    }),
   }),
 
 });
@@ -1006,7 +1030,9 @@ export const {
   useEditAuctionByOrderIDMutation,
   useCancelAuctionMutation,
   useAssignToLowestBidMutation,
-  // useLazyGetAllAssignedOrdersQuery
   useGetAllAssignedOrdersDataQuery,
-  useGetAllAssignedOrdersDataByStatusQuery
+  useGetAllAssignedOrdersDataByStatusQuery,
+  useGetLiveTrackingQuery,
+  useGetAllAvailablelDriversDataQuery,
+  useShipmentDashoardQuery,
 } = apiSlice;

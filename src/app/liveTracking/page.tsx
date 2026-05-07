@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   GoogleMap,
   Marker,
@@ -10,6 +10,7 @@ import {
   DirectionsService,
   DirectionsRenderer,
 } from "@react-google-maps/api";
+
 import {
   Box,
   Grid,
@@ -23,158 +24,393 @@ import {
   Chip,
   Card,
   CardContent,
+  Switch,
+  FormControlLabel,
+  CircularProgress,
 } from "@mui/material";
 
+import { useGetLiveTrackingQuery } from "@/api/apiSlice";
+import { useSearchParams } from "next/navigation";
+
+
+/* ---------------- TYPES ---------------- */
+
 type Vehicle = {
-  regNo: string;
-  status: string;
-  speed: number;
-  latitude: string;
-  longitude: string;
-  deviceId: string;
+  order_ID: string;
+  tracking_status: string;
+  device_id: string | null;
+  last_updated: string | null;
+
+  current_position: {
+    latitude: string;
+    longitude: string;
+    speed: string;
+    recorded_at: string;
+  } | null;
+
+  next_stop?: {
+    loc_ID: string;
+    radius_m: number;
+    status: string;
+    stop_no: number;
+  };
 };
 
-type RoutePoint = { lat: number; lng: number };
+type RoutePoint = {
+  lat: number;
+  lng: number;
+};
 
 type Allocation = {
   route: {
-    start: { latitude: number; longitude: number; address: string };
-    end: { latitude: number; longitude: number; address: string };
+    start: {
+      latitude: number;
+      longitude: number;
+      address: string;
+    };
+
+    end: {
+      latitude: number;
+      longitude: number;
+      address: string;
+    };
+
     distance: string;
     duration: string;
   }[];
 };
 
-const mapContainerStyle = { width: "100%", height: "600px" };
-const mapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
-const liveUrl = process.env.NEXT_PUBLIC_LIVE_TRACK_URL ?? "";
-const DEVIATION_THRESHOLD = 500;
+/* ---------------- CONFIG ---------------- */
 
-const getDistanceMeters = (a: RoutePoint, b: RoutePoint) => {
-  const R = 6371000;
-  const toRad = (v: number) => (v * Math.PI) / 180;
-  const dLat = toRad(b.lat - a.lat);
-  const dLng = toRad(b.lng - a.lng);
-  const x =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(a.lat)) *
-    Math.cos(toRad(b.lat)) *
-    Math.sin(dLng / 2) ** 2;
-  return 2 * R * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+const mapContainerStyle = {
+  width: "100%",
+  height: "600px",
 };
 
+/* IMPORTANT:
+   Use SAME libraries everywhere in app
+*/
+// const GOOGLE_LIBRARIES: ("places")[] = ["places"];
+const GOOGLE_LIBRARIES: ("places")[] = ["places"];
+
+/* ---------------- HELPERS ---------------- */
+
+const getBearing = (a: RoutePoint, b: RoutePoint) => {
+  const toRad = (v: number) => (v * Math.PI) / 180;
+  const toDeg = (v: number) => (v * 180) / Math.PI;
+
+  const y =
+    Math.sin(toRad(b.lng - a.lng)) * Math.cos(toRad(b.lat));
+
+  const x =
+    Math.cos(toRad(a.lat)) * Math.sin(toRad(b.lat)) -
+    Math.sin(toRad(a.lat)) *
+      Math.cos(toRad(b.lat)) *
+      Math.cos(toRad(b.lng - a.lng));
+
+  return (toDeg(Math.atan2(y, x)) + 360) % 360;
+};
+
+const lerp = (a: number, b: number, t: number) =>
+  a + (b - a) * t;
+
+/* ---------------- COMPONENT ---------------- */
+
 const LiveTracking: React.FC = () => {
+  const searchParams = useSearchParams();
+
+  const orderId = searchParams.get("order_ID") || "";
+
+  /* ---------------- GOOGLE MAPS ---------------- */
+
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: mapsKey,
-    libraries: ["places"],
+    id: "google-map-script",
+    googleMapsApiKey:
+      process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+    libraries: GOOGLE_LIBRARIES,
   });
 
-  const mapRef = useRef<google.maps.Map | null>(null);
-  const deviationTriggeredRef = useRef(false);
+  /* ---------------- REFS ---------------- */
 
-  const [allocation, setAllocation] = useState<Allocation | null>(null);
-  const [vehicle, setVehicle] = useState<Vehicle | null>(null);
+  const mapRef = useRef<google.maps.Map | null>(null);
+
+  /* ---------------- STATES ---------------- */
+
+  const [allocation, setAllocation] =
+    useState<Allocation | null>(null);
+
+  const [vehicle, setVehicle] =
+    useState<Vehicle | null>(null);
+
   const [vehiclePath, setVehiclePath] = useState<RoutePoint[]>([]);
-  const [center, setCenter] = useState<RoutePoint | null>(null);
-  const [deviationOpen, setDeviationOpen] = useState(false);
-  const [deviationMeters, setDeviationMeters] = useState(0);
+
+  const [center, setCenter] =
+    useState<RoutePoint | null>(null);
+
+  const [animatedPos, setAnimatedPos] =
+    useState<RoutePoint | null>(null);
+
+  const [bearing, setBearing] = useState(0);
+
+  const [autoCenter, setAutoCenter] = useState(true);
+
+  const [stopReached, setStopReached] = useState(false);
+
   const [modifyOpen, setModifyOpen] = useState(false);
+
   const [directions, setDirections] =
     useState<google.maps.DirectionsResult | null>(null);
-  const [selectedRouteIndex, setSelectedRouteIndex] = useState(0);
 
-  const deviceId = "867232055767934";
+  const [selectedRouteIndex, setSelectedRouteIndex] =
+    useState(0);
+
+  /* ---------------- API ---------------- */
+
+  const {
+    data,
+    isLoading,
+    error,
+  } = useGetLiveTrackingQuery(
+    { orderId },
+    {
+      pollingInterval: 10000,
+    }
+  );
+
+  console.log("LIVE TRACKING:", data);
+
+  /* ---------------- LOAD ALLOCATION ---------------- */
 
   useEffect(() => {
     const stored = localStorage.getItem("allocationData");
-    if (stored) setAllocation(JSON.parse(stored));
+
+    if (stored) {
+      setAllocation(JSON.parse(stored));
+    }
   }, []);
 
-  /* ---------- Live Tracking ---------- */
-  const fetchTracking = useCallback(async () => {
-    const res = await fetch(liveUrl);
-    const data: Vehicle[] = await res.json();
-    const v = data.find((d) => d.deviceId === deviceId);
-    if (!v) return;
-
-    const point = { lat: +v.latitude, lng: +v.longitude };
-    setVehicle(v);
-    setVehiclePath((p) => [...p.slice(-200), point]);
-    if (!center) setCenter(point);
-
-    if (directions?.routes?.[0]?.overview_path) {
-      const minDist = Math.min(
-        ...directions.routes[0].overview_path.map((p) =>
-          getDistanceMeters(point, { lat: p.lat(), lng: p.lng() })
-        )
-      );
-
-      if (minDist > DEVIATION_THRESHOLD && !deviationTriggeredRef.current) {
-        deviationTriggeredRef.current = true;
-        setDeviationMeters(minDist);
-        setDeviationOpen(true);
-      }
-    }
-  }, [center, directions]);
+  /* ---------------- LIVE TRACKING EFFECT ---------------- */
 
   useEffect(() => {
-    fetchTracking();
-    const i = setInterval(fetchTracking, 5000);
-    return () => clearInterval(i);
-  }, [fetchTracking]);
+    if (!data?.current_position) return;
 
-  if (!isLoaded || !center || !allocation) return <p>Loading map…</p>;
+    const point: RoutePoint = {
+      lat: Number(data.current_position.latitude),
+      lng: Number(data.current_position.longitude),
+    };
+
+    setVehicle(data);
+
+    setVehiclePath((prev) => [
+      ...prev.slice(-200),
+      point,
+    ]);
+
+    /* FIRST LOAD */
+
+    if (!center) {
+      setCenter(point);
+
+      if (mapRef.current) {
+        mapRef.current.setZoom(14);
+      }
+    }
+
+    /* FIRST MARKER */
+
+    if (!animatedPos) {
+      setAnimatedPos(point);
+      return;
+    }
+
+    /* NO MOVEMENT */
+
+    if (
+      animatedPos.lat === point.lat &&
+      animatedPos.lng === point.lng
+    ) {
+      return;
+    }
+
+    setBearing(getBearing(animatedPos, point));
+
+    let t = 0;
+
+    const animate = () => {
+      t += 0.12;
+
+      setAnimatedPos((prev) =>
+        prev
+          ? {
+              lat: lerp(prev.lat, point.lat, t),
+              lng: lerp(prev.lng, point.lng, t),
+            }
+          : point
+      );
+
+      if (t < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    animate();
+
+    if (autoCenter && mapRef.current) {
+      mapRef.current.panTo(point);
+    }
+  }, [animatedPos, autoCenter, center, data]);
+
+
+  if (!isLoaded) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="60vh"
+        flexDirection="column"
+        gap={2}
+      >
+        <CircularProgress />
+        <Typography>Loading Google Maps...</Typography>
+      </Box>
+    );
+  }
+
+  /* ---------------- ALLOCATION MISSING ---------------- */
+
+  if (!allocation) {
+    return (
+      <Paper sx={{ p: 4, textAlign: "center", mt: 4 }}>
+        <Typography variant="h5">
+          No Allocation Data Found
+        </Typography>
+      </Paper>
+    );
+  }
+
+  /* ---------------- TRACKING NOT STARTED ---------------- */
+
+  if (!data?.current_position) {
+    return (
+      <Paper
+        sx={{
+          p: 5,
+          mt: 4,
+          textAlign: "center",
+          borderRadius: 3,
+        }}
+      >
+        <Typography variant="h4" gutterBottom>
+          Trip Not Started Yet
+        </Typography>
+
+        <Typography
+          variant="body1"
+          color="text.secondary"
+        >
+          Live vehicle tracking will appear once the
+          driver starts the trip and GPS data becomes
+          available.
+        </Typography>
+
+        <Box mt={3}>
+          <Chip
+            label={`Tracking Status: ${
+              data?.tracking_status || "Pending"
+            }`}
+            color="warning"
+          />
+        </Box>
+      </Paper>
+    );
+  }
+
+  /* ---------------- ROUTE DATA ---------------- */
 
   const origin = allocation.route[0].start;
-  const destination = allocation.route[allocation.route.length - 1].end;
 
-  /** 🔑 WAYPOINTS = ALL STOPS (except first start & final end) */
+  const destination =
+    allocation.route[allocation.route.length - 1].end;
+
   const waypoints: google.maps.DirectionsWaypoint[] =
     allocation.route.slice(0, -1).map((r) => ({
-      location: { lat: r.end.latitude, lng: r.end.longitude },
+      location: {
+        lat: r.end.latitude,
+        lng: r.end.longitude,
+      },
       stopover: true,
     }));
 
+  /* ---------------- UI ---------------- */
+
   return (
     <>
-      {/* 🚨 Deviation Alert */}
-      <Dialog open={deviationOpen} onClose={() => setDeviationOpen(false)}>
-        <DialogTitle>⚠️ Route Deviation</DialogTitle>
+      {/* STOP DIALOG */}
+
+      <Dialog
+        open={stopReached}
+        onClose={() => setStopReached(false)}
+      >
+        <DialogTitle>Stop Reached</DialogTitle>
+
         <DialogContent>
-          <Typography>
-            Deviated by{" "}
-            <strong>{(deviationMeters / 1000).toFixed(2)} km</strong>
-          </Typography>
-          <Box mt={2} textAlign="right">
-            <Button onClick={() => setDeviationOpen(false)} variant="contained">
-              OK
-            </Button>
-          </Box>
+          Reached Stop {vehicle?.next_stop?.stop_no}
         </DialogContent>
       </Dialog>
 
-      {/* 🔁 Modify Route */}
-      <Dialog open={modifyOpen} onClose={() => setModifyOpen(false)} fullWidth>
-        <DialogTitle>Modify Route (Touches All Stops)</DialogTitle>
+      {/* ROUTE OPTIONS */}
+
+      <Dialog
+        open={modifyOpen}
+        onClose={() => setModifyOpen(false)}
+        fullWidth
+      >
+        <DialogTitle>
+          Select Alternate Route
+        </DialogTitle>
+
         <DialogContent>
           {directions?.routes.map((r, idx) => (
             <Card
               key={idx}
               sx={{
-                mb: 1,
+                mb: 2,
                 cursor: "pointer",
                 border:
                   selectedRouteIndex === idx
                     ? "2px solid #f57c00"
                     : "1px solid #ddd",
               }}
-              onClick={() => setSelectedRouteIndex(idx)}
+              onClick={() =>
+                setSelectedRouteIndex(idx)
+              }
             >
               <CardContent>
                 <Stack direction="row" spacing={1}>
-                  <Chip label={`Route ${idx + 1}`} />
-                  <Chip label={r.legs.reduce((a, l) => a + (l.distance?.value ?? 0), 0) / 1000 + " km"} />
-                  <Chip label={r.legs.reduce((a, l) => a + (l.duration?.value ?? 0), 0) / 3600 + " hrs"} />
+                  <Chip
+                    label={`Route ${idx + 1}`}
+                  />
+
+                  <Chip
+                    label={`${(
+                      r.legs.reduce(
+                        (a, l) =>
+                          a + (l.distance?.value ?? 0),
+                        0
+                      ) / 1000
+                    ).toFixed(1)} km`}
+                  />
+
+                  <Chip
+                    label={`${(
+                      r.legs.reduce(
+                        (a, l) =>
+                          a + (l.duration?.value ?? 0),
+                        0
+                      ) / 3600
+                    ).toFixed(1)} hrs`}
+                  />
                 </Stack>
               </CardContent>
             </Card>
@@ -182,53 +418,149 @@ const LiveTracking: React.FC = () => {
         </DialogContent>
       </Dialog>
 
+      {/* MAIN GRID */}
+
       <Grid container spacing={2}>
         {/* LEFT PANEL */}
+
         <Grid item xs={12} md={4}>
           <Paper sx={{ p: 2 }}>
-            <Typography variant="h6">Stops</Typography>
+            <Typography variant="h6">
+              Trip Details
+            </Typography>
+
+            {/* START */}
+
+            <Stack
+              direction="row"
+              spacing={1}
+              mt={2}
+            >
+              <Chip
+                color="success"
+                label="START"
+              />
+
+              <Typography variant="body2">
+                {origin.address}
+              </Typography>
+            </Stack>
+
+            {/* STOPS */}
+
+            <Typography
+              variant="subtitle1"
+              mt={2}
+            >
+              Stops
+            </Typography>
+
             {allocation.route.map((r, i) => (
-              <Stack key={i} direction="row" spacing={1} mt={1}>
+              <Stack
+                key={i}
+                direction="row"
+                spacing={1}
+                mt={1}
+              >
                 <Chip label={`Stop ${i + 1}`} />
-                <Typography variant="body2">{r.end.address}</Typography>
+
+                <Typography variant="body2">
+                  {r.end.address}
+                </Typography>
               </Stack>
             ))}
 
-            <Button
-              sx={{ mt: 2 }}
-              fullWidth
-              variant="contained"
-              color="warning"
-              onClick={() => {
-                setDirections(null);
-                setSelectedRouteIndex(0);
-                setModifyOpen(true);
-              }}
+            {/* DESTINATION */}
+
+            <Stack
+              direction="row"
+              spacing={1}
+              mt={2}
             >
-              Alternate Routes
-            </Button>
+              <Chip
+                color="error"
+                label="DESTINATION"
+              />
+
+              <Typography variant="body2">
+                {destination.address}
+              </Typography>
+            </Stack>
+
+            {/* CONTROLS */}
+
+            <Box mt={3}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={autoCenter}
+                    onChange={(e) =>
+                      setAutoCenter(
+                        e.target.checked
+                      )
+                    }
+                  />
+                }
+                label="Auto Center"
+              />
+
+              <Button
+                sx={{ mt: 2 }}
+                fullWidth
+                variant="contained"
+                color="warning"
+                onClick={() =>
+                  setModifyOpen(true)
+                }
+              >
+                Alternate Routes
+              </Button>
+            </Box>
           </Paper>
         </Grid>
 
         {/* MAP */}
+
         <Grid item xs={12} md={8}>
-          <GoogleMap mapContainerStyle={mapContainerStyle} center={center} zoom={8}>
+          <GoogleMap
+            mapContainerStyle={mapContainerStyle}
+            center={center!}
+            zoom={14}
+            onLoad={(map) => {
+              mapRef.current = map;
+            }}
+          >
+            {/* DIRECTIONS */}
+
             {!directions && (
               <DirectionsService
                 options={{
-                  origin: { lat: origin.latitude, lng: origin.longitude },
+                  origin: {
+                    lat: origin.latitude,
+                    lng: origin.longitude,
+                  },
+
                   destination: {
                     lat: destination.latitude,
                     lng: destination.longitude,
                   },
+
                   waypoints,
-                  optimizeWaypoints: false, // 🚨 important
-                  travelMode: google.maps.TravelMode.DRIVING,
+
+                  travelMode:
+                    google.maps.TravelMode.DRIVING,
+
                   provideRouteAlternatives: true,
                 }}
-                callback={(res) => res && setDirections(res)}
+                callback={(res) => {
+                  if (res) {
+                    setDirections(res);
+                  }
+                }}
               />
             )}
+
+            {/* ROUTE RENDER */}
 
             {directions && (
               <DirectionsRenderer
@@ -236,34 +568,67 @@ const LiveTracking: React.FC = () => {
                 routeIndex={selectedRouteIndex}
                 options={{
                   suppressMarkers: true,
-                  polylineOptions: { strokeColor: "#1976d2", strokeWeight: 5 },
                 }}
               />
             )}
 
-            {vehiclePath.length > 1 && (
-              <Polyline
-                path={vehiclePath}
-                options={{ strokeColor: "#d32f2f", strokeWeight: 6 }}
-              />
-            )}
+            {/* STOP MARKERS */}
 
-            {/* START */}
-            <Marker
-              position={{ lat: origin.latitude, lng: origin.longitude }}
-              icon="https://maps.google.com/mapfiles/ms/icons/green-dot.png"
-            />
-
-            {/* STOPS */}
             {allocation.route.map((r, i) => (
               <Marker
                 key={i}
-                position={{ lat: r.end.latitude, lng: r.end.longitude }}
+                position={{
+                  lat: r.end.latitude,
+                  lng: r.end.longitude,
+                }}
                 label={`${i + 1}`}
               />
             ))}
 
-            <Marker position={center} />
+            {/* START */}
+
+            <Marker
+              position={{
+                lat: origin.latitude,
+                lng: origin.longitude,
+              }}
+              icon="https://maps.google.com/mapfiles/ms/icons/green-dot.png"
+            />
+
+            {/* END */}
+
+            <Marker
+              position={{
+                lat: destination.latitude,
+                lng: destination.longitude,
+              }}
+              icon="https://maps.google.com/mapfiles/ms/icons/red-dot.png"
+            />
+
+            {/* PATH */}
+
+            {vehiclePath.length > 1 && (
+              <Polyline
+                path={vehiclePath}
+                options={{
+                  strokeColor: "#d32f2f",
+                  strokeWeight: 5,
+                }}
+              />
+            )}
+
+            {/* VEHICLE */}
+
+            {animatedPos && (
+              <Marker
+                position={animatedPos}
+                icon={{
+                  url: "https://maps.google.com/mapfiles/kml/shapes/truck.png",
+                  scaledSize:
+                    new google.maps.Size(40, 40),
+                }}
+              />
+            )}
           </GoogleMap>
         </Grid>
       </Grid>

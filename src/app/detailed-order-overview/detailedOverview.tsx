@@ -48,6 +48,7 @@ const OrderDetailedOverview: React.FC = () => {
 	const orderData = order?.order;
 	const lrInvoices = order?.lr_invoices || [];
 	const allocatedPackageDetails = order?.allocated_packages_details;
+	console.log("Order Data:", orderData)
 
 	const [openDialog, setOpenDialog] = useState(false);
 	const [documents, setDocuments] = useState<OrderDocMap[]>([]);

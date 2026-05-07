@@ -13,6 +13,40 @@ import ScrollToTop from "@/Components/ReusableComponents/ScrollToTop";
 import NetworkStatusModal from "@/Components/ReusableComponents/NetworkStatus";
 // import { usePathname } from "next/navigation";
 
+// const LayoutClientWrapper = ({
+// 	children,
+// 	session,
+// }: {
+// 	children: React.ReactNode;
+// 	session: Session | null;
+// }) => {
+// 	// const pathname = usePathname();
+// 	// const isLandingPage = pathname === "/"
+// 	return (
+// 		<SessionProvider session={session}>
+// 			<ThemeProvider theme={theme}>
+// 				<CssBaseline />
+// 				<NetworkStatusModal />
+// 				<ReduxProvider>
+// 					<Header />
+// 					<Toolbar />
+// 					<Grid
+// 						sx={{
+// 							marginLeft: { xs: "5px", md: "20px" },
+// 							padding: "10px",
+// 							backgroundColor: "#ffffff",
+// 							minHeight: "90vh",
+// 						}}
+// 					>
+// 						<ScrollToTop />
+// 						{children}
+// 					</Grid>
+// 					<Footer />
+// 				</ReduxProvider>
+// 			</ThemeProvider>
+// 		</SessionProvider>
+// 	);
+// };
 const LayoutClientWrapper = ({
 	children,
 	session,
@@ -20,28 +54,40 @@ const LayoutClientWrapper = ({
 	children: React.ReactNode;
 	session: Session | null;
 }) => {
-	// const pathname = usePathname();
-	// const isLandingPage = pathname === "/"
 	return (
 		<SessionProvider session={session}>
 			<ThemeProvider theme={theme}>
 				<CssBaseline />
 				<NetworkStatusModal />
+
 				<ReduxProvider>
-					<Header />
-					<Toolbar />
-					<Grid
-						sx={{
-							marginLeft: { xs: "5px", md: "20px" },
-							padding: "10px",
-							backgroundColor: "#ffffff",
-							minHeight: "90vh",
+					{/* 🔹 MAIN WRAPPER */}
+					<div
+						style={{
+							display: "flex",
+							flexDirection: "column",
+							minHeight: "100vh",
 						}}
 					>
-						<ScrollToTop />
-						{children}
-					</Grid>
-					<Footer />
+						<Header />
+						<Toolbar />
+
+						{/* 🔹 CONTENT AREA (GROWS) */}
+						<Grid
+							sx={{
+								flex: 1, // ✅ THIS PUSHES FOOTER DOWN
+								marginLeft: { xs: "5px", md: "20px" },
+								padding: "10px",
+								backgroundColor: "#ffffff",
+							}}
+						>
+							<ScrollToTop />
+							{children}
+						</Grid>
+
+						{/* 🔹 FOOTER ALWAYS AT BOTTOM */}
+						<Footer />
+					</div>
 				</ReduxProvider>
 			</ThemeProvider>
 		</SessionProvider>

@@ -209,9 +209,12 @@
 
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+// import { DefaultSession } from "next-auth";
+
+import { DefaultUser } from "next-auth";
 
 declare module "next-auth" {
-  interface User {
+  interface User extends DefaultUser {
     id: string;
     accessToken: string;
     refreshToken: string;
@@ -219,58 +222,67 @@ declare module "next-auth" {
 
   interface Session {
     user: User;
-    error: string;
-  }
-
-  interface JWT {
-    id: string;
-    accessToken: string;
-    refreshToken: string;
-    accessTokenExpires: number;
     error?: string;
   }
 }
+// const refreshAccessToken = async (refreshToken: string) => {
+//   try {
+//     const response = await fetch(
+//       "https://dev-api.trukapp.com/truk/log/refresh-token",
+//       {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${refreshToken}`, // 🔥 IMPORTANT
+//         },
+//       }
+//     );
 
-const refreshAccessToken = async (
-  refreshToken: string
-): Promise<
-  | { accessToken: string; refreshToken: string; accessTokenExpires: number }
-  | { error: string }
-> => {
+//     if (!response.ok) {
+//       throw new Error(`Failed to refresh access token: ${response.status}`);
+//     }
+
+//     const data = await response.json();
+
+//     return {
+//       accessToken: data.accessToken,
+//       refreshToken: data.refreshToken ?? refreshToken,
+//       accessTokenExpires: Date.now() + data.expiresIn * 1000,
+//     };
+//   } catch (error) {
+//     console.error("Refresh token error:", error);
+//     return { error: "RefreshAccessTokenError" };
+//   }
+// };
+const refreshAccessToken = async (refreshToken: string) => {
   try {
     const response = await fetch(
-      `https://dev-api.trukapp.com/truk/log/refresh-token`,
-      // `http://13.127.36.10:8088/truk/log/refresh-token`,
-      // `http://localhost:8088/truk/log/refresh-token`,     //local
-
+      "https://dev-api.trukapp.com/truk/log/refresh-token",
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ refreshToken }),
+        body: JSON.stringify({ refreshToken }), // ✅ FIXED
       }
     );
 
     if (!response.ok) {
-      console.log("refresh token err :", response.statusText);
-      throw new Error(`Failed to refresh access token: ${response.statusText}`);
+      throw new Error(`Failed to refresh access token: ${response.status}`);
     }
 
     const data = await response.json();
+
     return {
       accessToken: data.accessToken,
-      refreshToken: refreshToken,
-      accessTokenExpires: Date.now() + 24 * 60 * 60 * 1000,
+      refreshToken: refreshToken, // backend not returning new one
+      accessTokenExpires: Date.now() + 24 * 60 * 60 * 1000, // 1 day
     };
   } catch (error) {
     console.error("Refresh token error:", error);
-    return {
-      error: "RefreshAccessTokenError",
-    };
+    return { error: "RefreshAccessTokenError" };
   }
 };
-
 export const options: NextAuthOptions = {
   providers: [
     CredentialsProvider({
@@ -364,6 +376,13 @@ export const options: NextAuthOptions = {
 
       const refreshedToken = await refreshAccessToken(token.refreshToken as string);
 
+      // if ("error" in refreshedToken) {
+      //   return {
+      //     ...token,
+      //     error: "RefreshAccessTokenError",
+      //   };
+      // }
+
       if ("error" in refreshedToken) {
         return {
           ...token,
@@ -380,7 +399,13 @@ export const options: NextAuthOptions = {
     },
 
     async session({ session, token }) {
+      // session.user = {
+      //   id: token.id as string,
+      //   accessToken: token.accessToken as string,
+      //   refreshToken: token.refreshToken as string,
+      // };
       session.user = {
+        ...session.user, // ✅ keep default fields
         id: token.id as string,
         accessToken: token.accessToken as string,
         refreshToken: token.refreshToken as string,

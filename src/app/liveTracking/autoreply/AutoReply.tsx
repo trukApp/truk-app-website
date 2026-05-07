@@ -20,11 +20,6 @@ interface VehicleLocation {
     longitude: number;
     timestamp: number;
 }
-// interface DeviationPoints {
-//     lat: number;
-//     lng: number;
-// }
-
 const AutoReply = () => {
     const searchParams = useSearchParams();
     // const router = useRouter();
@@ -63,13 +58,8 @@ const AutoReply = () => {
             const fromDateUTC = '1745390239926'; //23-04-2025: 12:07
             const toDateUTC = '1745408179926'; //23-04-2025: 17:06
             const userId = process.env.NEXT_PUBLIC_VAMOSYS_USERID || '';
-
             const response = await fetch(`https://gpsvtsprobend.vamosys.com/getVehicleHistory?vehicleId=${vehicleId}&fromDateUTC=${fromDateUTC}&toDateUTC=${toDateUTC}&interval=-1&userId=${userId}`);
             const data = await response.json();
-
-            // setActualDistance(data?.tripDistance);
-            // setStartLocation(data?.startLocation);
-            // setEndLocation(data?.endLocation);
             setVehicleType(data?.vehicleType);
 
             if (response.ok) {
@@ -79,16 +69,10 @@ const AutoReply = () => {
                 }));
 
                 setVehicleLocations(locations);
-
-                // const vehiclelocations = data?.vehicleLocations?.map((loc: { latitude: string; longitude: string }) => ({
-                //     lat: parseFloat(loc.latitude),
-                //     lng: parseFloat(loc.longitude),
-                // }));
                 const deviatedLocations = data?.vehicleLocations?.map((loc: { latitude: string; longitude: string }) => ({
                     lat: parseFloat(loc.latitude),
                     lng: parseFloat(loc.longitude),
                 })) || [];
-                // setVehicleDeviatedLocations(vehiclelocations);
 
                 if (locations?.length > 0) {
                     setCenter({ lat: locations[0].latitude, lng: locations[0].longitude });
@@ -108,13 +92,10 @@ const AutoReply = () => {
                     actual_distance_traveled: actual_distance_traveled,
                     driverRoute: deviatedLocations
                 };
-                // console.log('postBody:;', postBody);
                 try {
                     const response = await postValidateRoute(postBody).unwrap();
-                    // console.log('response:;', response);
                     setRouteDetails(response);
                     dispatch(setDeviationData(response));
-                    // router.push('/route-details');
                 } catch (error) {
                     console.error("API Error:", error);
                 }
@@ -155,7 +136,6 @@ const AutoReply = () => {
             </Box>
         );
     }
-    // console.log("vehicleLocations: ", vehicleLocations)
 
     if (error || vehicleLocations?.length === 0) {
         return (
@@ -166,30 +146,6 @@ const AutoReply = () => {
             </Box>
         );
     }
-
-    // const handleViewRouteDetails = async () => {
-    //     setModalOpen(true);
-    //     const postBody = {
-    //         order_ID: orderId,
-    //         vehicle_ID: vehicleID,
-    //         start_lat: parseFloat(startLocation.split(",")[0]),
-    //         start_lng: parseFloat(startLocation.split(",")[1]),
-    //         end_lat: parseFloat(endLocation.split(",")[0]),
-    //         end_lng: parseFloat(endLocation.split(",")[1]),
-    //         actual_distance_traveled: Number(actualDistance),
-    //         driverRoute: vehicleDeviatedLocations
-    //     };
-
-    //     try {
-    //         const response = await postValidateRoute(postBody).unwrap();
-    //         dispatch(setDeviationData(response));
-    //         router.push('/route-details');
-    //     } catch (error) {
-    //         console.error("API Error:", error);
-    //     } finally {
-    //         setModalOpen(false);
-    //     }
-    // };
 
     return (
         <Box>
@@ -219,30 +175,7 @@ const AutoReply = () => {
                     </GoogleMap>
                 </Grid>
             </Grid>
-            {/* <Box mt={3} textAlign="center">
-                <Button variant="contained" color="primary" onClick={handleViewRouteDetails}>
-                    View Route Details
-                </Button>
-            </Box> */}
-            {/* <Modal open={modalOpen} aria-labelledby="loading-modal">
-                <Box
-                    sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        boxShadow: 24,
-                        p: 4,
-                        borderRadius: 2,
-                    }}
-                >
-                    <CircularProgress />
-                </Box>
-            </Modal> */}
+
         </Box>
     );
 };
