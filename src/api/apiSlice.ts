@@ -655,6 +655,36 @@ export const apiSlice = createApi({
       },
       invalidatesTags: [{ type: "Orders", id: "LIST" }],
     }),
+        confirmDraft: builder.mutation({
+      query: (body) => {
+        return {
+          url: "order/confirm-draft-order",
+          method: "POST",
+          body,
+        };
+      },
+      invalidatesTags: [{ type: "Orders", id: "LIST" }],
+    }),
+
+updateDraft: builder.mutation({
+  query: ({ order_ID, body }) => ({
+    url: `order/update-order-draft?order_ID=${order_ID}`,
+    method: "PUT",
+    body,
+  }),
+  invalidatesTags: [{ type: "Orders", id: "LIST" }],
+}),
+
+        saveAsDraft: builder.mutation({
+      query: (body) => {
+        return {
+          url: "order/save-order-draft",
+          method: "POST",
+          body,
+        };
+      },
+      invalidatesTags: [{ type: "Orders", id: "LIST" }],
+    }),
 
     editOrder: builder.mutation({
       query: ({ body, params }) => {
@@ -1035,4 +1065,7 @@ export const {
   useGetLiveTrackingQuery,
   useGetAllAvailablelDriversDataQuery,
   useShipmentDashoardQuery,
+  useSaveAsDraftMutation,
+  useUpdateDraftMutation,
+  useConfirmDraftMutation,
 } = apiSlice;

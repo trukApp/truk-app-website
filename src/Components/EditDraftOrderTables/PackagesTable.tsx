@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState, useMemo } from "react";
 import {
   DataGrid,
@@ -5,7 +6,6 @@ import {
   GridColDef,
   GridToolbarContainer,
 } from "@mui/x-data-grid";
-
 import {
   Grid,
   TextField,
@@ -17,22 +17,16 @@ import {
   Box,
   Divider,
 } from "@mui/material";
-
 import ViewColumnIcon from "@mui/icons-material/ViewColumn";
-
 import { useAppSelector, useAppDispatch } from "@/store";
-import { setSelectedPackages } from "@/store/authSlice";
-
+import { setEditDraftPackages } from "@/store/authSlice";
 import DataGridSkeletonLoader from "../ReusableComponents/DataGridSkeletonLoader";
-
 import {
   useGetAllProductsQuery,
   useGetLocationMasterQuery,
   useGetPackageMasterQuery,
 } from "@/api/apiSlice";
-
 import { Location } from "../MasterDataComponents/Locations";
-
 import moment from "moment";
 
 export interface Product {
@@ -76,27 +70,31 @@ export interface Package {
 interface PackagesTableProps {
   allPackagesData: Package[];
   isPackagesLoading: boolean;
+  isEditMode?: boolean;
+  draftPackageIds?: string[];
 }
 
 const PackagesTable: React.FC<PackagesTableProps> = ({
   allPackagesData,
   isPackagesLoading,
+  isEditMode,
+  draftPackageIds,
 }) => {
   const dispatch = useAppDispatch();
+  console.log("All Packages Data in Table:", allPackagesData);
 
-  const selectedPackages = useAppSelector(
-    (state) => state.auth.selectedPackages || [],
-  );
-
+  // const selectedPackages = useAppSelector(
+  //   (state) => state.auth.selectedPackages || [],
+  // );
+  // const editDraftPackages = useAppSelector(
+  //   (state) => state.auth.editDraftPackages || [],
+  // );
+  const packageIds = draftPackageIds || [];
   const [selectionModel, setSelectionModel] = useState<number[]>([]);
-
   const [dateFilter, setDateFilter] = useState<string>("All");
-
   const [pickupCustomDate, setPickupCustomDate] = useState("");
-
   const [dropoffCustomDate, setDropoffCustomDate] = useState("");
 
-  // COLUMN VISIBILITY
   const [columnVisibilityModel, setColumnVisibilityModel] = useState({
     pack_ID: true,
     ship_from: true,
@@ -104,7 +102,6 @@ const PackagesTable: React.FC<PackagesTableProps> = ({
     pickup_date_time: true,
     dropoff_date_time: true,
     product_details: true,
-
     package_info: false,
     bill_to: false,
     return_label: false,
@@ -113,35 +110,26 @@ const PackagesTable: React.FC<PackagesTableProps> = ({
   });
 
   const { data: locationsData } = useGetLocationMasterQuery({});
-
   const getAllLocations =
     locationsData?.locations?.length > 0 ? locationsData.locations : [];
-
   const { data: productsData } = useGetAllProductsQuery({});
-
   const allProductsData = productsData?.products || [];
-
   const { data: packagesData } = useGetPackageMasterQuery({});
-
   const getAllPackages =
     packagesData?.packages?.length > 0 ? packagesData.packages : [];
 
-  //   const unorderedPackages = allPackagesData.filter(
-  //     (eachPackage) => eachPackage?.package_status !== "ordered",
-  //   );
-  const unorderedPackages = allPackagesData.filter(
-    (eachPackage) =>
-      !["ordered", "draft"].includes(
-        eachPackage?.package_status?.toLowerCase(),
-      ),
-  );
+  const unorderedPackages = allPackagesData.filter((pkg) => {
+    const status = pkg.package_status?.toLowerCase();
+    if (isEditMode) {
+      return !status || packageIds.includes(pkg.pack_ID);
+    }
+    return !status;
+  });
   const getLocationDescription = (loc_ID: string) => {
     const location = getAllLocations.find(
       (loc: Location) => loc.loc_ID === loc_ID,
     );
-
     if (!location) return "Location details not available";
-
     const details = [
       location.loc_ID,
       location.loc_desc,
@@ -151,7 +139,6 @@ const PackagesTable: React.FC<PackagesTableProps> = ({
       location.country,
       location.pincode,
     ].filter(Boolean);
-
     return details.length > 0
       ? details.join(", ")
       : "Location details not available";
@@ -161,15 +148,12 @@ const PackagesTable: React.FC<PackagesTableProps> = ({
     const packageInfo = getAllPackages.find(
       (pkg: Package) => pkg.pac_ID === pac_ID,
     );
-
     if (!packageInfo) return "Package details not available";
-
     const details = [
       packageInfo.packaging_type_name,
       packageInfo.dimensions,
       packageInfo.handling_unit_type,
     ].filter(Boolean);
-
     return details.length > 0
       ? details.join(", ")
       : "Package details not available";
@@ -179,47 +163,35 @@ const PackagesTable: React.FC<PackagesTableProps> = ({
     const productInfo = allProductsData.find(
       (product: Product) => product.product_ID === productID,
     );
-
     if (!productInfo) return "Product details not available";
-
     const details = [productInfo.product_name, productInfo.weight].filter(
       Boolean,
     );
-
     return details.length > 0
       ? details.join(" - ")
       : "Product details not available";
   };
-
   const formatPickupDateTime = (pickupDateTime: string) => {
     return moment(pickupDateTime).format("MMM DD, YYYY h:mm A");
   };
 
   const filteredPackages = useMemo(() => {
     let filtered = unorderedPackages;
-
     if (dateFilter !== "All") {
       const today = moment();
-
       filtered = filtered.filter((pkg) => {
         const pickupDate = moment(pkg.pickup_date_time);
-
         switch (dateFilter) {
           case "Today":
             return pickupDate.isSame(today, "day");
-
           case "Yesterday":
             return pickupDate.isSame(today.clone().subtract(1, "day"), "day");
-
           case "This Week":
             return pickupDate.isSame(today, "week");
-
           case "This Month":
             return pickupDate.isSame(today, "month");
-
           case "This Year":
             return pickupDate.isSame(today, "year");
-
           default:
             return true;
         }
@@ -237,15 +209,38 @@ const PackagesTable: React.FC<PackagesTableProps> = ({
         moment(pkg.dropoff_date_time).isSame(moment(dropoffCustomDate), "day"),
       );
     }
-
     return filtered;
   }, [unorderedPackages, dateFilter, pickupCustomDate, dropoffCustomDate]);
 
-  useEffect(() => {
-    const selectedIds = selectedPackages.map((pkg) => pkg.pac_id);
+  // useEffect(() => {
+  //   if (draftPackageIds?.length > 0 && allPackagesData.length > 0) {
+  //     const selectedIds = allPackagesData
+  //       .filter((pkg) => draftPackageIds.includes(pkg.pack_ID))
+  //       .map((pkg) => pkg.pac_id);
 
-    setSelectionModel(selectedIds);
-  }, [selectedPackages]);
+  //     console.log("Selected Row IDs:", selectedIds);
+
+  //     setSelectionModel(selectedIds);
+  //   }
+  // }, [draftPackageIds, allPackagesData]);
+  useEffect(() => {
+    const packageIds = draftPackageIds || [];
+
+    if (packageIds.length > 0 && allPackagesData.length > 0) {
+      const selectedIds = allPackagesData
+        .filter((pkg) => packageIds.includes(pkg.pack_ID))
+        .map((pkg) => pkg.pac_id);
+
+      console.log("Selected Row IDs:", selectedIds);
+
+      setSelectionModel(selectedIds);
+    }
+  }, [draftPackageIds, allPackagesData]);
+
+  // console.log(
+  //   "Matched Packages:",
+  //   allPackagesData.filter((pkg) => draftPackageIds.includes(pkg.pack_ID)),
+  // );
 
   const columns: GridColDef[] = [
     {
@@ -297,22 +292,17 @@ const PackagesTable: React.FC<PackagesTableProps> = ({
       field: "product_details",
       headerName: "Product Details",
       width: 450,
-
       renderCell: (params: GridCellParams) => {
         const products = Array.isArray(params.value) ? params.value : [];
-
         if (!products.length) {
           return <div>No products</div>;
         }
-
         const productText = products
           .map((prod) => {
             const detail = getProductDetails(prod.prod_ID);
-
             return `${detail} (Qty: ${prod.quantity})`;
           })
           .join(", ");
-
         return (
           <div
             style={{
@@ -329,17 +319,14 @@ const PackagesTable: React.FC<PackagesTableProps> = ({
       field: "additional_info",
       headerName: "Additional Info",
       width: 250,
-
       renderCell: (params: GridCellParams) => {
         const info = params.value as {
           invoice: string;
           reference_id: string;
         };
-
         return (
           <div>
             <div>Invoice: {info?.invoice}</div>
-
             <div>Reference: {info?.reference_id}</div>
           </div>
         );
@@ -349,27 +336,16 @@ const PackagesTable: React.FC<PackagesTableProps> = ({
 
   const rows = filteredPackages.map((pkg: Package) => ({
     id: pkg.pac_id,
-
     pack_ID: pkg.pack_ID,
-
     ship_from: getLocationDescription(pkg.ship_from),
-
     ship_to: getLocationDescription(pkg.ship_to),
-
     package_info: getPackageDetails(pkg.package_info),
-
     bill_to: getLocationDescription(pkg.bill_to),
-
     return_label: pkg.return_label === 1 ? "Yes" : "No",
-
     pickup_date_time: formatPickupDateTime(pkg.pickup_date_time),
-
     dropoff_date_time: formatPickupDateTime(pkg.dropoff_date_time),
-
     tax_rate: pkg.tax_info.tax_rate,
-
     product_details: pkg.product_ID ?? [],
-
     additional_info: pkg.additional_info,
   }));
 
@@ -379,8 +355,7 @@ const PackagesTable: React.FC<PackagesTableProps> = ({
     const selectedPackages = newSelection
       .map((id) => allPackagesData.find((pkg) => pkg.pac_id === id))
       .filter((pkg): pkg is Package => pkg !== undefined);
-
-    dispatch(setSelectedPackages(selectedPackages));
+    dispatch(setEditDraftPackages(selectedPackages));
   };
 
   const CustomToolbar = ({
@@ -388,9 +363,7 @@ const PackagesTable: React.FC<PackagesTableProps> = ({
     setColumnVisibilityModel,
   }: any) => {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-
     const open = Boolean(anchorEl);
-
     const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
       setAnchorEl(event.currentTarget);
     };

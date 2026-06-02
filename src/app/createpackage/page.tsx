@@ -80,6 +80,7 @@ import { useCreatePackageForOrderMutation } from '@/api/apiSlice';
 import { withAuthComponent } from '@/Components/WithAuthComponent';
 import { Form, Formik, FormikHelpers } from 'formik';
 import { createPackageValidationSchema } from '@/Components/CreatePackageTabs/ValidationSchema';
+import MassUpload from '@/Components/MassUpload/MassUpload'
 
 const CreatePackage = () => {
     const router = useRouter();
@@ -319,7 +320,7 @@ const CreatePackage = () => {
                     </DialogActions>
                 </Dialog>
             )}
-            <Box sx={{ px: isMobile ? 2 : 4, pb: 1 }}>
+            <Box sx={{ px: isMobile ? 2 : 4, pb: 1, mt: 4 }}>
                 <Typography variant="h5" fontWeight="bold" gutterBottom color="primary">
                     Create a Package
                 </Typography>
@@ -328,6 +329,15 @@ const CreatePackage = () => {
                 </Typography>
             </Box>
 
+            <Box
+                display="flex"
+                justifyContent="flex-end"
+                alignItems="center"
+                gap={2}
+                sx={{ px: isMobile ? 2 : 4, mt: 2 }}
+            >
+                <MassUpload arrayKey="createPackageOrders" />
+            </Box>
 
             {/* Form Content */}
             <Formik<CreatePackageFormValues>

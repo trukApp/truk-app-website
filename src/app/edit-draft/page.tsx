@@ -1,9 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useEffect, useState } from "react";
 import {
-  Stepper,
-  Step,
-  StepLabel,
   Button,
   Typography,
   DialogActions,
@@ -12,31 +10,38 @@ import {
   DialogTitle,
   Backdrop,
   CircularProgress,
-  StepIconProps,
   Box,
 } from "@mui/material";
-import PackagesTable from "@/Components/CreateOrderTables/PackagesTable";
-import TrucksTable, { Truck } from "@/Components/CreateOrderTables/TrucksTable";
+import PackagesTable, {
+  Package,
+} from "@/Components/EditDraftOrderTables/PackagesTable";
+import TrucksTable, {
+  Truck,
+} from "@/Components/EditDraftOrderTables/TrucksTable";
 import RootOptimization, {
   RootOptimizationType,
-} from "@/Components/CreateOrderTables/RootOptimization";
-import LoadOptimization from "@/Components/CreateOrderTables/LoadOptimization";
+} from "@/Components/EditDraftOrderTables/RootOptimization";
+import LoadOptimization from "@/Components/EditDraftOrderTables/LoadOptimization";
 import { useAppDispatch, useAppSelector } from "@/store";
 import styles from "./createorder.module.css";
 import { withAuthComponent } from "@/Components/WithAuthComponent";
 import {
   useGetAllPackagesForOrderQuery,
   useSelectTheProductsMutation,
-  useConfomOrderMutation,
+  // useConfomOrderMutation,
+  useConfirmDraftMutation,
+  useGetOrderByIdQuery,
+  useUpdateDraftMutation,
 } from "@/api/apiSlice";
-import ReviewCreateOrder from "@/Components/CreateOrderTables/ReviewOrder";
+import ReviewCreateOrder from "@/Components/EditDraftOrderTables/ReviewOrder";
 import SnackbarAlert from "@/Components/ReusableComponents/SnackbarAlerts";
 import {
   CustomButtonFilled,
   CustomButtonOutlined,
 } from "@/Components/ReusableComponents/ButtonsComponent";
-import { setSelectedPackages, setSelectedTrucks } from "@/store/authSlice";
-import { useMediaQuery, useTheme } from "@mui/material";
+import { setSelectedTrucks, setEditDraftPackages } from "@/store/authSlice";
+// import { useMediaQuery, useTheme } from "@mui/material";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface AllocationType {
   vehicle_ID: string;
@@ -51,10 +56,45 @@ interface ConfirmPayload {
   allocations: AllocationType[];
   unallocatedPackages: [];
 }
-const CreateOrder: React.FC = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+const EditDraft: React.FC = () => {
+  const router = useRouter();
+  // const theme = useTheme();
+  // const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const dispatch = useAppDispatch();
+  const searchParams = useSearchParams();
+  const draftId = searchParams.get("draftId") || "";
+  const orderId = draftId.replace(/^DF/, "");
+  const { data: orderDetails } = useGetOrderByIdQuery({ orderId });
+  const selectedPackages = useAppSelector(
+    (state) => state.auth.editDraftPackages || [],
+  );
+  const {
+    data: packagesData,
+    error: allProductsFectchingError,
+    isLoading: isPackagesLoading,
+  } = useGetAllPackagesForOrderQuery([]);
+  if (allProductsFectchingError) {
+  }
+  const allPackagesData = packagesData?.packages || [];
+  const [draftPackageIds, setDraftPackageIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (
+      orderDetails?.order?.allocations?.length &&
+      allPackagesData.length > 0
+    ) {
+      const packageIds = orderDetails.order.allocations.flatMap(
+        (allocation: any) => allocation.packages || [],
+      );
+      setDraftPackageIds(packageIds);
+      const selectedPackages = allPackagesData.filter((pkg: Package) =>
+        packageIds.includes(pkg.pack_ID),
+      );
+
+      dispatch(setEditDraftPackages(selectedPackages));
+    }
+  }, [orderDetails, allPackagesData]);
+
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<
@@ -65,8 +105,10 @@ const CreateOrder: React.FC = () => {
     selectTheTrucks,
     { error: packageSelectErr, isLoading: truckSelectionLoading },
   ] = useSelectTheProductsMutation();
-  const [createOrder, { isLoading: confirmOrderLoading }] =
-    useConfomOrderMutation();
+  const [updateDraft, { isLoading: updateDraftLoading }] =
+    useUpdateDraftMutation();
+  const [confirmDraft, { isLoading: confirmDraftLoading }] =
+    useConfirmDraftMutation();
   const [selectTrucks, setSelectTrucks] = useState<Truck[]>([]);
   const [unAllocatedPackages, setUnAllocatedPackages] = useState<[]>([]);
   const [conformOrderPayload, setConformOrderPayload] =
@@ -78,6 +120,7 @@ const CreateOrder: React.FC = () => {
     });
 
   const [modalOpen, setModalOpen] = useState(false);
+  const [modalOpenConfirm, setModalOpenConfirm] = useState(false);
   const [noVechilePopup, setNoVechilePopup] = useState(false);
   const filters = useAppSelector((state) => state.auth.filters);
   const [additionalDocs, setAdditionalDocs] = useState<
@@ -134,30 +177,20 @@ const CreateOrder: React.FC = () => {
     }
   }, [packageSelectErr]);
 
-  const selectedPackages = useAppSelector(
-    (state) => state.auth.selectedPackages || [],
-  );
-  const {
-    data: packagesData,
-    error: allProductsFectchingError,
-    isLoading: isPackagesLoading,
-  } = useGetAllPackagesForOrderQuery([]);
-  if (allProductsFectchingError) {
-  }
-
-  const allPackagesData = packagesData?.packages || [];
-  console.log("All packages data:", allPackagesData);
-  const steps = [
-    "Select Packages",
-    "Vehicle Optimization",
-    "Route Optimization",
-    "Load Optimization",
-    "Review Order",
-  ];
-
-  const handleCreateOrder = async () => {
-    const createOrderBody = {
-      scenario_label: conformOrderPayload?.message,
+  const loadOptimizationEnabled =
+    orderDetails?.order?.scenario_label ===
+    "Best Combinational Scenario load draft";
+  const steps = loadOptimizationEnabled
+    ? [
+        "Select Packages",
+        "Vehicle Optimization",
+        "Load Optimization",
+        "Review Order",
+      ]
+    : ["Select Packages", "Route Optimization", "Review Order"];
+  const handleUpdateDraft = async () => {
+    const updateDraftBody = {
+      scenario_label: orderDetails?.order?.scenario_label,
       total_cost: conformOrderPayload?.totalCost,
       allocations: conformOrderPayload?.allocations.map((vehicle) => ({
         ...vehicle,
@@ -173,17 +206,71 @@ const CreateOrder: React.FC = () => {
 
     setModalOpen(false);
     try {
-      const response = await createOrder(createOrderBody).unwrap();
+      // const response = await updateDraft(updateDraftBody).unwrap();
+      const response = await updateDraft({
+        order_ID: orderId,
+        body: updateDraftBody,
+      }).unwrap();
+      console.log(response);
       if (response) {
-        const orderIds = response.created_orders
-          .map((order: { order_ID: string }) => order.order_ID)
-          .join(", ");
-        setSnackbarMessage(`Order ID ${orderIds} created successfully!`);
+        console.log(response);
+        setSnackbarMessage(
+          `Draft ID DF${response.order_ID} updated successfully!`,
+        );
         setSnackbarSeverity("success");
         setSnackbarOpen(true);
         setActiveStep(0);
-        dispatch(setSelectedPackages([]));
         dispatch(setSelectedTrucks([]));
+        dispatch(setEditDraftPackages([]));
+        router.push("/order-overview");
+      }
+    } catch (error: unknown) {
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "data" in error &&
+        typeof error.data === "object" &&
+        error.data !== null &&
+        "message" in error.data &&
+        typeof error.data.message === "string"
+      ) {
+        if (
+          error.data.message ===
+          "Some packages are already confirmed in an existing order."
+        ) {
+          setSnackbarMessage(
+            `Some packages are already confirmed in an existing order, Please check`,
+          );
+          setSnackbarSeverity("error");
+          setSnackbarOpen(true);
+        }
+      }
+    }
+  };
+
+  const handleConfirmDraft = async () => {
+    const confirmDraftBody = {
+      order_ID: orderId,
+    };
+
+    setModalOpenConfirm(false);
+    try {
+      const response = await confirmDraft({
+        order_ID: orderId,
+        body: confirmDraftBody,
+      }).unwrap();
+      console.log(response);
+      if (response) {
+        console.log(response);
+        setSnackbarMessage(
+          `Draft ID DF${response.order_ID} confirmed successfully!`,
+        );
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
+        setActiveStep(0);
+        dispatch(setSelectedTrucks([]));
+        dispatch(setEditDraftPackages([]));
+        router.push("/order-overview");
       }
     } catch (error: unknown) {
       if (
@@ -215,6 +302,7 @@ const CreateOrder: React.FC = () => {
       const body = {
         packages: packagesIDArray,
         filters,
+        draft_order_ID: orderId,
       };
 
       const response = await selectTheTrucks(body).unwrap();
@@ -238,32 +326,32 @@ const CreateOrder: React.FC = () => {
       setActiveStep((prev) => prev + 1);
     }
   };
-  const CustomStepIcon = (props: StepIconProps) => {
-    const { active, completed, icon } = props;
-    return (
-      <Box
-        sx={{
-          width: 25,
-          height: 25,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          borderRadius: "50%",
-          backgroundColor: completed ? "#F08C24" : active ? "#F08C24" : "#ccc",
-          color: "white",
-          fontWeight: "bold",
-        }}
-      >
-        {completed ? (
-          <Typography variant="body2" sx={{ fontSize: 15, fontWeight: "bold" }}>
-            ✔
-          </Typography>
-        ) : (
-          <Typography variant="body2">{icon}</Typography>
-        )}
-      </Box>
-    );
-  };
+  // const CustomStepIcon = (props: StepIconProps) => {
+  //   const { active, completed, icon } = props;
+  //   return (
+  //     <Box
+  //       sx={{
+  //         width: 25,
+  //         height: 25,
+  //         display: "flex",
+  //         alignItems: "center",
+  //         justifyContent: "center",
+  //         borderRadius: "50%",
+  //         backgroundColor: completed ? "#F08C24" : active ? "#F08C24" : "#ccc",
+  //         color: "white",
+  //         fontWeight: "bold",
+  //       }}
+  //     >
+  //       {completed ? (
+  //         <Typography variant="body2" sx={{ fontSize: 15, fontWeight: "bold" }}>
+  //           ✔
+  //         </Typography>
+  //       ) : (
+  //         <Typography variant="body2">{icon}</Typography>
+  //       )}
+  //     </Box>
+  //   );
+  // };
 
   return (
     <Box sx={{ width: "100%", p: 3 }}>
@@ -272,7 +360,9 @@ const CreateOrder: React.FC = () => {
           color: "#ffffff",
           zIndex: (theme) => theme.zIndex.drawer + 1,
         }}
-        open={confirmOrderLoading || truckSelectionLoading}
+        open={
+          updateDraftLoading || truckSelectionLoading || confirmDraftLoading
+        }
       >
         <CircularProgress color="inherit" />
       </Backdrop>
@@ -285,9 +375,9 @@ const CreateOrder: React.FC = () => {
       />
       {modalOpen && (
         <Dialog open={modalOpen} onClose={() => setModalOpen(false)}>
-          <DialogTitle>Proceed for order </DialogTitle>
+          <DialogTitle>Proceed to Update </DialogTitle>
           <DialogContent>
-            <Typography>Are you sure you want to create the order ?</Typography>
+            <Typography>Are you sure you want to update the draft ?</Typography>
           </DialogContent>
           <DialogActions>
             <Button
@@ -297,7 +387,33 @@ const CreateOrder: React.FC = () => {
             >
               Cancel
             </Button>
-            <CustomButtonFilled onClick={handleCreateOrder}>
+            <CustomButtonFilled onClick={handleUpdateDraft}>
+              Update
+            </CustomButtonFilled>
+          </DialogActions>
+        </Dialog>
+      )}
+
+      {modalOpenConfirm && (
+        <Dialog
+          open={modalOpenConfirm}
+          onClose={() => setModalOpenConfirm(false)}
+        >
+          <DialogTitle>Proceed to Confirm </DialogTitle>
+          <DialogContent>
+            <Typography>
+              Are you sure you want to confirm the draft ?
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              variant="outlined"
+              onClick={() => setModalOpenConfirm(false)}
+              color="secondary"
+            >
+              Cancel
+            </Button>
+            <CustomButtonFilled onClick={handleConfirmDraft}>
               Confirm
             </CustomButtonFilled>
           </DialogActions>
@@ -329,7 +445,7 @@ const CreateOrder: React.FC = () => {
           color="primary"
           sx={{ fontWeight: "bold", mb: 1 }}
         >
-          Create New Order
+          Update Draft Order - DF{orderId}
         </Typography>
         <Typography variant="body1" sx={{ color: "gray", mb: 2 }}>
           This flow helps you create a shipment order by selecting packages,
@@ -339,7 +455,7 @@ const CreateOrder: React.FC = () => {
         </Typography>
       </Box>
 
-      <Box
+      {/* <Box
         sx={{
           width: "100%",
           overflowX: isMobile ? "auto" : "visible",
@@ -373,9 +489,9 @@ const CreateOrder: React.FC = () => {
             </Step>
           ))}
         </Stepper>
-      </Box>
+      </Box> */}
 
-      <div>
+      {/* <div>
         {activeStep === 0 && (
           <div>
             <Typography variant="h6" sx={{ fontWeight: 600, marginTop: 2 }}>
@@ -384,6 +500,8 @@ const CreateOrder: React.FC = () => {
             <PackagesTable
               allPackagesData={allPackagesData}
               isPackagesLoading={isPackagesLoading}
+              isEditMode={true}
+              draftPackageIds={draftPackageIds || []}
             />
           </div>
         )}
@@ -432,8 +550,78 @@ const CreateOrder: React.FC = () => {
             />
           </div>
         )}
+      </div> */}
+      <div>
+        {activeStep === 0 && (
+          <div>
+            <Typography variant="h6" sx={{ fontWeight: 600, marginTop: 2 }}>
+              Select packages
+            </Typography>
+
+            <PackagesTable
+              allPackagesData={allPackagesData}
+              isPackagesLoading={isPackagesLoading}
+              isEditMode={true}
+              draftPackageIds={draftPackageIds || []}
+            />
+          </div>
+        )}
+
+        {/* STEP 1 */}
+        {activeStep === 1 && (
+          <div>
+            {loadOptimizationEnabled ? (
+              <TrucksTable
+                selectedPackages={selectedPackages}
+                trucks={selectTrucks}
+                unAllocatedPackages={unAllocatedPackages}
+              />
+            ) : (
+              <RootOptimization
+                rootOptimization={
+                  selectTrucks as unknown as RootOptimizationType[]
+                }
+                onUpdateSampledPoints={(vehicle_ID, points) => {
+                  setUpdatedRoutePointsByVehicle((prev) => ({
+                    ...prev,
+                    [vehicle_ID]: points,
+                  }));
+                }}
+              />
+            )}
+          </div>
+        )}
+
+        {/* STEP 2 */}
+        {activeStep === 2 && (
+          <div>
+            {loadOptimizationEnabled ? (
+              <LoadOptimization
+                trucks={selectTrucks}
+                selectedPackages={selectedPackages}
+              />
+            ) : (
+              <ReviewCreateOrder
+                trucks={selectTrucks}
+                additionalDocs={additionalDocs}
+                setAdditionalDocs={setAdditionalDocs}
+              />
+            )}
+          </div>
+        )}
+
+        {/* STEP 3 - ONLY FOR LOAD OPTIMIZATION FLOW */}
+        {loadOptimizationEnabled && activeStep === 3 && (
+          <div>
+            <ReviewCreateOrder
+              trucks={selectTrucks}
+              additionalDocs={additionalDocs}
+              setAdditionalDocs={setAdditionalDocs}
+            />
+          </div>
+        )}
       </div>
-      <div className={styles.buttonsContainer}>
+      {/* <div className={styles.buttonsContainer}>
         {activeStep === 0 ? null : (
           <CustomButtonOutlined
             onClick={() => setActiveStep((prev) => prev - 1)}
@@ -442,9 +630,39 @@ const CreateOrder: React.FC = () => {
           </CustomButtonOutlined>
         )}
         {activeStep === 4 ? (
-          <CustomButtonFilled onClick={() => setModalOpen(true)}>
-            Submit
+          <>
+            <CustomButtonFilled onClick={() => setModalOpen(true)}>
+              Update draft
+            </CustomButtonFilled>
+            <CustomButtonFilled onClick={() => handleConfirmDraft()}>
+              Confirm Order
+            </CustomButtonFilled>
+          </>
+        ) : (
+          <CustomButtonFilled onClick={() => handleSelectTruck()}>
+            Next
           </CustomButtonFilled>
+        )}
+      </div> */}
+      <div className={styles.buttonsContainer}>
+        {activeStep === 0 ? null : (
+          <CustomButtonOutlined
+            onClick={() => setActiveStep((prev) => prev - 1)}
+          >
+            Back
+          </CustomButtonOutlined>
+        )}
+
+        {activeStep === steps.length - 1 ? (
+          <>
+            <CustomButtonFilled onClick={() => setModalOpen(true)}>
+              Update Draft
+            </CustomButtonFilled>
+
+            <CustomButtonFilled onClick={() => handleConfirmDraft()}>
+              Confirm Order
+            </CustomButtonFilled>
+          </>
         ) : (
           <CustomButtonFilled onClick={() => handleSelectTruck()}>
             Next
@@ -455,4 +673,4 @@ const CreateOrder: React.FC = () => {
   );
 };
 
-export default withAuthComponent(CreateOrder);
+export default withAuthComponent(EditDraft);

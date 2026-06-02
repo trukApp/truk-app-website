@@ -11,6 +11,7 @@ import {
   Button,
   useTheme,
   useMediaQuery,
+  Box,
 } from "@mui/material";
 import Image from "next/image";
 import {
@@ -25,8 +26,11 @@ import { usePathname, useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 
 const Header = () => {
-  const [anchorElProfile, setAnchorElProfile] = useState<null | HTMLElement>(null);
-  const [anchorElHamburger, setAnchorElHamburger] = useState<null | HTMLElement>(null);
+  const [anchorElProfile, setAnchorElProfile] = useState<null | HTMLElement>(
+    null,
+  );
+  const [anchorElHamburger, setAnchorElHamburger] =
+    useState<null | HTMLElement>(null);
   const router = useRouter();
   const currentPath = usePathname();
   // const { data: session } = useSession();
@@ -35,13 +39,11 @@ const Header = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-
   const user = {
     name: session?.user?.name || "Truk App User",
     profileImage: session?.user?.image || "/TLogo.png",
   };
-
-  const isAuthPage = currentPath === "/login"
+  const isAuthPage = currentPath === "/login";
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElProfile(event.currentTarget);
@@ -58,34 +60,12 @@ const Header = () => {
   const handleHamburgerMenuClose = () => {
     setAnchorElHamburger(null);
   };
-  // useEffect(() => {
-  //   if (session?.error === "RefreshAccessTokenError") {
-  //     signOut({ callbackUrl: "/login" });
-  //   }
-  // }, [session]);
   useEffect(() => {
     if (session?.error === "RefreshAccessTokenError") {
       signOut({ callbackUrl: "/login" });
     }
   }, [session?.error]);
   if (status === "loading") return null;
-
-  // useEffect(() => {
-  //   if (session?.error === "RefreshAccessTokenError") {
-  //     signOut(); // logout user
-  //   }
-  // }, [session]);
-
-  // const handleLogout = async () => {
-  //   const isConfirmed = window.confirm("Are you sure you want to log out?");
-  //   if (isConfirmed) {
-  //     await signOut({ redirect: false });
-  //     localStorage.clear();
-  //     setAnchorElProfile(null);
-  //     router.push("/login");
-  //   }
-  // };
-
   const handleLogout = async () => {
     const isConfirmed = window.confirm("Are you sure you want to log out?");
     if (isConfirmed) {
@@ -99,9 +79,21 @@ const Header = () => {
   };
   return (
     <>
-      <AppBar position="fixed" sx={{ backgroundColor: 'whitesmoke' }}>
+      {/* <AppBar position="fixed" sx={{ backgroundColor: 'whitesmoke' }}> */}
+      <AppBar
+        position="fixed"
+        elevation={0}
+        sx={{
+          backgroundColor: "#fff",
+          borderBottom: "1px solid #e5e7eb",
+          zIndex: 1300,
+        }}
+      >
         <Toolbar>
-          <Grid sx={{ flexGrow: 1, cursor: "pointer" }} onClick={handleNavigationToHomePage}>
+          <Grid
+            sx={{ flexGrow: 1, cursor: "pointer" }}
+            onClick={handleNavigationToHomePage}
+          >
             <Image
               src="/TrukAppLogo.png"
               alt="Logo"
@@ -123,7 +115,7 @@ const Header = () => {
                 {/* Desktop View */}
                 {!isMobile && (
                   <div className="hidden md:flex space-x-4">
-                    <IconButton
+                    {/* <IconButton
                       sx={{
                         color: currentPath === "/" ? "#F08C24" : "inherit",
                         fontWeight: "bold",
@@ -154,18 +146,78 @@ const Header = () => {
                     >
                       <InventoryIcon style={{ marginRight: "5px" }} />
                       <p style={{ fontSize: "14px" }}>Create Package</p>
-                    </IconButton>
+                    </IconButton> */}
 
-                    <IconButton onClick={handleProfileMenuOpen}>
+                    {/* <IconButton onClick={handleProfileMenuOpen}>
                       {user.profileImage ? (
                         <Avatar src={user.profileImage} sx={{ p: '6px', backgroundColor: '#FCF0DE' }} />
                       ) : (
                         <Avatar>{user.name[0]}</Avatar>
                       )}
-                    </IconButton>
+                    </IconButton> */}
+                    <Box
+                      display="flex"
+                      alignItems="center"
+                      gap={1.2}
+                      sx={{
+                        cursor: "pointer",
+                        px: 1.5,
+                        py: 0.5,
+                        borderRadius: "12px",
+
+                        "&:hover": {
+                          backgroundColor: "#f3f4f6",
+                        },
+                      }}
+                      onClick={handleProfileMenuOpen}
+                    >
+                      {/* USER NAME */}
+                      <Box textAlign="right">
+                        <div
+                          style={{
+                            fontSize: "14px",
+                            fontWeight: 600,
+                            color: "#111827",
+                            lineHeight: 1.2,
+                          }}
+                        >
+                          {user.name}
+                        </div>
+
+                        <div
+                          style={{
+                            fontSize: "11px",
+                            color: "#6b7280",
+                          }}
+                        >
+                          Administrator
+                        </div>
+                      </Box>
+
+                      {/* PROFILE IMAGE */}
+                      {user.profileImage ? (
+                        <Avatar
+                          src={user.profileImage}
+                          sx={{
+                            width: 38,
+                            height: 38,
+                            p: "6px",
+                            backgroundColor: "#FCF0DE",
+                          }}
+                        />
+                      ) : (
+                        <Avatar
+                          sx={{
+                            width: 38,
+                            height: 38,
+                          }}
+                        >
+                          {user.name[0]}
+                        </Avatar>
+                      )}
+                    </Box>
                   </div>
                 )}
-
 
                 {/* Mobile View */}
                 {isMobile && (
@@ -193,7 +245,11 @@ const Header = () => {
                   open={Boolean(anchorElProfile)}
                   onClose={handleProfileMenuClose}
                 >
-                  <MenuItem onClick={handleProfileMenuClose} component="a" href="/profile">
+                  <MenuItem
+                    onClick={handleProfileMenuClose}
+                    component="a"
+                    href="/profile"
+                  >
                     <PersonIcon style={{ marginRight: "10px" }} />
                     My Profile
                   </MenuItem>
@@ -242,9 +298,7 @@ const Header = () => {
         </Toolbar>
       </AppBar>
     </>
-
   );
-
 };
 
 export default Header;

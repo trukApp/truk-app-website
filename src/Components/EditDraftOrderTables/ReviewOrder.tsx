@@ -10,7 +10,7 @@ import {
 } from "@/api/apiSlice";
 import { Location } from "../MasterDataComponents/Locations";
 import moment from "moment";
-import AdditionalDocuments from "./AdditionalDocuments";
+// import AdditionalDocuments from './AdditionalDocuments';
 
 interface TrucksTableProps {
   trucks: Truck[];
@@ -26,13 +26,9 @@ interface TrucksTableProps {
 //     packages: [];
 // }
 
-const ReviewCreateOrder: React.FC<TrucksTableProps> = ({
-  trucks,
-  additionalDocs,
-  setAdditionalDocs,
-}) => {
+const ReviewCreateOrder: React.FC<TrucksTableProps> = ({ trucks }) => {
   const selectedPackages = useAppSelector(
-    (state) => state.auth.selectedPackages || [],
+    (state) => state.auth.editDraftPackages || [],
   );
 
   const selectedTrucks = trucks;
@@ -185,10 +181,6 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({
                   Total Weight Capacity:{" "}
                   <strong>{vehicle?.totalWeightCapacity?.toFixed(2)} kg</strong>
                 </Typography>
-                {/* <Typography>
-                                    Leftover Weight: <strong>{parseFloat(vehicle?.leftoverWeight)?.toFixed(2)} kg</strong>
-                                </Typography> */}
-
                 <Typography>
                   Leftover Weight:{" "}
                   <strong>
@@ -204,9 +196,6 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({
                   Leftover Volume:{" "}
                   <strong>{vehicle.leftoverVolume.toFixed(2)} m³</strong>
                 </Typography>
-                {/* <Typography>
-                                    Estimated Cost: <strong>₹{vehicle.cost.toFixed(2)}</strong>
-                                </Typography> */}
                 {vehicle.loadArrangement &&
                 vehicle.loadArrangement.length > 0 ? (
                   <Box
@@ -219,23 +208,28 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({
                     }}
                   >
                     <DataGrid
-                      // rows={vehicle.loadArrangement.map((item: PackageDetails, i) => ({
-                      //     id: item.stop || i + 1,
-                      //     location: (item.location) || "N/A",
-                      //     packages: item.packages ? item.packages.join(", ") : "N/A",
+                      // rows={vehicle.loadArrangement.map((item, i) => ({
+                      //   id: item.stop || i + 1,
+                      //   location: item.location || "N/A",
+                      //   packages: item.packages.length
+                      //     ? item.packages.join(", ")
+                      //     : "N/A",
                       // }))}
-                      rows={vehicle.loadArrangement.map((item, i) => ({
-                        id: item.stop || i + 1,
-                        location: item.location || "N/A",
-                        packages: item.packages.length
-                          ? item.packages.join(", ")
-                          : "N/A",
-                      }))}
+                      rows={[...(vehicle.loadArrangement || [])]
+                        .reverse()
+                        .map((item, i) => ({
+                          id: i + 1,
+                          loadArrangement: i + 1,
+                          location: item.location || "N/A",
+                          packages: item.packages?.length
+                            ? item.packages.join(", ")
+                            : "N/A",
+                        }))}
                       columns={[
                         {
-                          field: "id",
+                          field: "loadArrangement",
                           headerName: "Load Arrangement",
-                          width: 100,
+                          width: 150,
                         },
                         {
                           field: "location",
@@ -276,12 +270,6 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({
           ))}
         </Grid>
       </Paper>
-      <Grid>
-        <AdditionalDocuments
-          documents={additionalDocs}
-          setDocuments={setAdditionalDocs}
-        />
-      </Grid>
     </Box>
   );
 };

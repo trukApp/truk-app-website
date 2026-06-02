@@ -1,9 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import React, { useEffect, useState } from "react";
 import {
-  Stepper,
-  Step,
-  StepLabel,
   Button,
   Typography,
   DialogActions,
@@ -12,15 +10,12 @@ import {
   DialogTitle,
   Backdrop,
   CircularProgress,
-  StepIconProps,
   Box,
 } from "@mui/material";
-import PackagesTable from "@/Components/CreateOrderTables/PackagesTable";
-import TrucksTable, { Truck } from "@/Components/CreateOrderTables/TrucksTable";
-import RootOptimization, {
-  RootOptimizationType,
-} from "@/Components/CreateOrderTables/RootOptimization";
-import LoadOptimization from "@/Components/CreateOrderTables/LoadOptimization";
+// import PackagesTable from "@/Components/CreateOrderTables/PackagesTable";
+import PackagesTable from "@/Components/LoadOptimizer/PackagesTable";
+import TrucksTable, { Truck } from "@/Components/LoadOptimizer/TrucksTable";
+import LoadOptimization from "@/Components/LoadOptimizer/LoadOptimization";
 import { useAppDispatch, useAppSelector } from "@/store";
 import styles from "./createorder.module.css";
 import { withAuthComponent } from "@/Components/WithAuthComponent";
@@ -28,8 +23,9 @@ import {
   useGetAllPackagesForOrderQuery,
   useSelectTheProductsMutation,
   useConfomOrderMutation,
+  //   useSaveDraftOrderMutation,
+  useSaveAsDraftMutation,
 } from "@/api/apiSlice";
-import ReviewCreateOrder from "@/Components/CreateOrderTables/ReviewOrder";
 import SnackbarAlert from "@/Components/ReusableComponents/SnackbarAlerts";
 import {
   CustomButtonFilled,
@@ -51,10 +47,11 @@ interface ConfirmPayload {
   allocations: AllocationType[];
   unallocatedPackages: [];
 }
-const CreateOrder: React.FC = () => {
+const LoadOptimizer: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const dispatch = useAppDispatch();
+
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<
@@ -83,6 +80,7 @@ const CreateOrder: React.FC = () => {
   const [additionalDocs, setAdditionalDocs] = useState<
     { [key: string]: string }[]
   >([]);
+  const [saveDraftOrder] = useSaveAsDraftMutation();
   const [updatedRoutePointsByVehicle, setUpdatedRoutePointsByVehicle] =
     useState<RoutePointsMap>({});
   useEffect(() => {
@@ -146,18 +144,63 @@ const CreateOrder: React.FC = () => {
   }
 
   const allPackagesData = packagesData?.packages || [];
-  console.log("All packages data:", allPackagesData);
-  const steps = [
-    "Select Packages",
-    "Vehicle Optimization",
-    "Route Optimization",
-    "Load Optimization",
-    "Review Order",
-  ];
 
   const handleCreateOrder = async () => {
     const createOrderBody = {
       scenario_label: conformOrderPayload?.message,
+      total_cost: conformOrderPayload?.totalCost,
+      allocations: conformOrderPayload?.allocations.map((vehicle) => ({
+        ...vehicle,
+        sampledRoutePoints:
+          updatedRoutePointsByVehicle[vehicle.vehicle_ID] ||
+          vehicle.sampledRoutePoints ||
+          [],
+      })),
+      unallocated_packages: conformOrderPayload?.unallocatedPackages,
+      created_at: new Date().toISOString().split("T")[0],
+      // order_docs: additionalDocs,
+    };
+
+    setModalOpen(false);
+    try {
+      const response = await createOrder(createOrderBody).unwrap();
+      if (response) {
+        const orderIds = response.created_orders
+          .map((order: { order_ID: string }) => order.order_ID)
+          .join(", ");
+        setSnackbarMessage(`Order ID ${orderIds} created successfully!`);
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
+        setActiveStep(0);
+        dispatch(setSelectedPackages([]));
+        dispatch(setSelectedTrucks([]));
+      }
+    } catch (error: unknown) {
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "data" in error &&
+        typeof error.data === "object" &&
+        error.data !== null &&
+        "message" in error.data &&
+        typeof error.data.message === "string"
+      ) {
+        if (
+          error.data.message ===
+          "Some packages are already confirmed in an existing order."
+        ) {
+          setSnackbarMessage(
+            `Some packages are already confirmed in an existing order, Please check`,
+          );
+          setSnackbarSeverity("error");
+          setSnackbarOpen(true);
+        }
+      }
+    }
+  };
+  const handleSaveDraftOrder = async () => {
+    const createOrderBody = {
+      scenario_label: "Best Combinational Scenario load draft",
       total_cost: conformOrderPayload?.totalCost,
       allocations: conformOrderPayload?.allocations.map((vehicle) => ({
         ...vehicle,
@@ -173,12 +216,12 @@ const CreateOrder: React.FC = () => {
 
     setModalOpen(false);
     try {
-      const response = await createOrder(createOrderBody).unwrap();
+      const response = await saveDraftOrder(createOrderBody).unwrap();
       if (response) {
-        const orderIds = response.created_orders
-          .map((order: { order_ID: string }) => order.order_ID)
-          .join(", ");
-        setSnackbarMessage(`Order ID ${orderIds} created successfully!`);
+        // const orderIds = response.created_orders
+        //   .map((order: { order_ID: string }) => order.order_ID)
+        //   .join(", ");
+        setSnackbarMessage(`Draft saved successfully!`);
         setSnackbarSeverity("success");
         setSnackbarOpen(true);
         setActiveStep(0);
@@ -231,38 +274,12 @@ const CreateOrder: React.FC = () => {
           setConformOrderPayload(response);
           setSelectTrucks(response?.allocations);
           setUnAllocatedPackages(response?.unallocatedPackages);
-          setActiveStep((prev) => prev + 1);
+          setActiveStep(1);
         }
       }
     } else {
-      setActiveStep((prev) => prev + 1);
+      setActiveStep(1);
     }
-  };
-  const CustomStepIcon = (props: StepIconProps) => {
-    const { active, completed, icon } = props;
-    return (
-      <Box
-        sx={{
-          width: 25,
-          height: 25,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          borderRadius: "50%",
-          backgroundColor: completed ? "#F08C24" : active ? "#F08C24" : "#ccc",
-          color: "white",
-          fontWeight: "bold",
-        }}
-      >
-        {completed ? (
-          <Typography variant="body2" sx={{ fontSize: 15, fontWeight: "bold" }}>
-            ✔
-          </Typography>
-        ) : (
-          <Typography variant="body2">{icon}</Typography>
-        )}
-      </Box>
-    );
   };
 
   return (
@@ -329,7 +346,7 @@ const CreateOrder: React.FC = () => {
           color="primary"
           sx={{ fontWeight: "bold", mb: 1 }}
         >
-          Create New Order
+          Load Optimizer
         </Typography>
         <Typography variant="body1" sx={{ color: "gray", mb: 2 }}>
           This flow helps you create a shipment order by selecting packages,
@@ -345,35 +362,7 @@ const CreateOrder: React.FC = () => {
           overflowX: isMobile ? "auto" : "visible",
           padding: "10px",
         }}
-      >
-        <Stepper
-          activeStep={activeStep}
-          alternativeLabel
-          sx={{
-            flexWrap: "nowrap",
-            "& .MuiStepConnector-line": {
-              borderWidth: "1px",
-            },
-          }}
-        >
-          {steps.map((label, index) => (
-            <Step key={index}>
-              <StepLabel StepIconComponent={CustomStepIcon}>
-                <Typography
-                  sx={{
-                    fontSize: "14px",
-                    color: activeStep === index ? "#F08C24" : "#333",
-                    fontWeight: activeStep === index ? "bold" : "400",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {label}
-                </Typography>
-              </StepLabel>
-            </Step>
-          ))}
-        </Stepper>
-      </Box>
+      ></Box>
 
       <div>
         {activeStep === 0 && (
@@ -399,60 +388,36 @@ const CreateOrder: React.FC = () => {
         )}
 
         {activeStep === 2 && (
-          <div>
-            <RootOptimization
-              rootOptimization={
-                selectTrucks as unknown as RootOptimizationType[]
-              }
-              onUpdateSampledPoints={(vehicle_ID, points) => {
-                setUpdatedRoutePointsByVehicle((prev) => ({
-                  ...prev,
-                  [vehicle_ID]: points,
-                }));
-              }}
-            />
-          </div>
-        )}
-
-        {activeStep === 3 && (
-          <div>
-            <LoadOptimization
-              trucks={selectTrucks}
-              selectedPackages={selectedPackages}
-            />
-          </div>
-        )}
-
-        {activeStep === 4 && (
-          <div>
-            <ReviewCreateOrder
-              trucks={selectTrucks}
-              additionalDocs={additionalDocs}
-              setAdditionalDocs={setAdditionalDocs}
-            />
-          </div>
+          <LoadOptimization
+            trucks={selectTrucks}
+            selectedPackages={selectedPackages}
+            onBack={() => setActiveStep(1)}
+            onSaveDraft={handleSaveDraftOrder}
+            onConfirmOrder={handleCreateOrder}
+          />
         )}
       </div>
-      <div className={styles.buttonsContainer}>
-        {activeStep === 0 ? null : (
-          <CustomButtonOutlined
-            onClick={() => setActiveStep((prev) => prev - 1)}
-          >
-            Back
-          </CustomButtonOutlined>
-        )}
-        {activeStep === 4 ? (
-          <CustomButtonFilled onClick={() => setModalOpen(true)}>
-            Submit
-          </CustomButtonFilled>
-        ) : (
-          <CustomButtonFilled onClick={() => handleSelectTruck()}>
+      {activeStep === 0 && (
+        <div className={styles.buttonsContainer}>
+          <CustomButtonFilled onClick={handleSelectTruck}>
             Next
           </CustomButtonFilled>
-        )}
-      </div>
+        </div>
+      )}
+
+      {activeStep === 1 && (
+        <div className={styles.buttonsContainer}>
+          <CustomButtonOutlined onClick={() => setActiveStep(0)}>
+            Back
+          </CustomButtonOutlined>
+
+          <CustomButtonFilled onClick={() => setActiveStep(2)}>
+            Next
+          </CustomButtonFilled>
+        </div>
+      )}
     </Box>
   );
 };
 
-export default withAuthComponent(CreateOrder);
+export default withAuthComponent(LoadOptimizer);

@@ -28,7 +28,7 @@ const ConfigSettings = () => {
             >
                 Config Settings
             </Typography>
-            
+
             <Typography
                 variant="body1"
                 sx={{ textAlign: "center", color: "#666", mb: 2 }}
@@ -48,13 +48,13 @@ const ConfigSettings = () => {
                 justifyContent={isMobile ? "center" : "flex-start"}
             >
                 <Grid item xs={12}>
-                        <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
-                            General Settings
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: '#666', mb: 2 }}>
-                            These settings control the general behavior and appearance of your account. You can toggle options like notifications and more.
-                        </Typography>
-                    </Grid>
+                    <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
+                        General Settings
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#666', mb: 2 }}>
+                        These settings control the general behavior and appearance of your account. You can toggle options like notifications and more.
+                    </Typography>
+                </Grid>
                 {Object.entries(filters).map(([filterKey, filterValue]) => (
                     <Grid item key={filterKey} xs={12} sm={6} md={4}>
                         <FormControlLabel

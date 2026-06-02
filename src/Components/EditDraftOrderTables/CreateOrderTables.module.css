@@ -1,0 +1,44 @@
+.custom-dropdown {
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+    width: 250px;
+  }
+  
+  .route-option {
+    padding: 8px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eaeaea;
+    transition: background-color 0.3s;
+  }
+  
+  .route-option:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .route-title {
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .route-details {
+    font-size: 0.9rem;
+    color: #666;
+  }
+  
+  .distance {
+    color: #1e90ff;
+    font-weight: bold;
+    margin-right: 5px;
+  }
+  
+  .duration {
+    color: #28a745;
+    font-weight: bold;
+  }
+  

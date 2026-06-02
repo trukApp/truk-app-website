@@ -125,153 +125,153 @@ const PackagesTable = () => {
 
 
     const columns: GridColDef[] = [
-			{ field: "pack_ID", headerName: "Package ID", width: 150 },
-			{
-				field: "ship_from",
-				headerName: "Ship from",
-				width: 150,
-				renderCell: (params) => (
-					<Tooltip title={getLocationDetails(params.value)} arrow>
-						<span>{params.value}</span>
-					</Tooltip>
-				),
-			},
-			{
-				field: "ship_to",
-				headerName: "Ship to",
-				width: 150,
-				renderCell: (params) => (
-					<Tooltip title={getLocationDetails(params.value)} arrow>
-						<span>{params.value}</span>
-					</Tooltip>
-				),
-			},
-			{
-				field: "package_info",
-				headerName: "Package Info",
-				width: 150,
-				renderCell: (params) => (
-					<Tooltip title={getPackageDetails(params.value)} arrow>
-						<span>{params.value}</span>
-					</Tooltip>
-				),
-			},
-			{
-				field: "bill_to",
-				headerName: "Bill to",
-				width: 150,
-				renderCell: (params) => (
-					<Tooltip title={getLocationDetails(params.value)} arrow>
-						<span>{params.value}</span>
-					</Tooltip>
-				),
-			},
-			{ field: "return_label", headerName: "Return Label", width: 150 },
-			{
-				field: "pickup_date_time",
-				headerName: "Pickup Date & Time",
-				width: 200,
-				sortable: true,
-				sortComparator: (v1, v2, param1, param2) =>
-					new Date(
-						param1.api.getCellValue(param1.id, "pickup_date_time_raw")
-					).getTime() -
-					new Date(
-						param2.api.getCellValue(param2.id, "pickup_date_time_raw")
-					).getTime(),
-			},
-			{
-				field: "dropoff_date_time",
-				headerName: "Dropoff Date & Time",
-				width: 200,
-				sortable: true,
-				sortComparator: (v1, v2, param1, param2) =>
-					new Date(
-						param1.api.getCellValue(param1.id, "dropoff_date_time_raw")
-					).getTime() -
-					new Date(
-						param2.api.getCellValue(param2.id, "dropoff_date_time_raw")
-					).getTime(),
-			},
-			{ field: "tax_rate", headerName: "Tax Rate", width: 150 },
-			{
-				field: "product_details",
-				headerName: "Product Details",
-				width: 400,
-				renderCell: (params: GridCellParams) => {
-					const products = Array.isArray(params.value) ? params.value : [];
-					if (!products.length) return <div>No products</div>;
+        { field: "pack_ID", headerName: "Package ID", width: 150 },
+        {
+            field: "ship_from",
+            headerName: "Ship from",
+            width: 150,
+            renderCell: (params) => (
+                <Tooltip title={getLocationDetails(params.value)} arrow>
+                    <span>{params.value}</span>
+                </Tooltip>
+            ),
+        },
+        {
+            field: "ship_to",
+            headerName: "Ship to",
+            width: 150,
+            renderCell: (params) => (
+                <Tooltip title={getLocationDetails(params.value)} arrow>
+                    <span>{params.value}</span>
+                </Tooltip>
+            ),
+        },
+        {
+            field: "package_info",
+            headerName: "Package Info",
+            width: 150,
+            renderCell: (params) => (
+                <Tooltip title={getPackageDetails(params.value)} arrow>
+                    <span>{params.value}</span>
+                </Tooltip>
+            ),
+        },
+        {
+            field: "bill_to",
+            headerName: "Bill to",
+            width: 150,
+            renderCell: (params) => (
+                <Tooltip title={getLocationDetails(params.value)} arrow>
+                    <span>{params.value}</span>
+                </Tooltip>
+            ),
+        },
+        { field: "return_label", headerName: "Return Label", width: 150 },
+        {
+            field: "pickup_date_time",
+            headerName: "Pickup Date & Time",
+            width: 200,
+            sortable: true,
+            sortComparator: (v1, v2, param1, param2) =>
+                new Date(
+                    param1.api.getCellValue(param1.id, "pickup_date_time_raw")
+                ).getTime() -
+                new Date(
+                    param2.api.getCellValue(param2.id, "pickup_date_time_raw")
+                ).getTime(),
+        },
+        {
+            field: "dropoff_date_time",
+            headerName: "Dropoff Date & Time",
+            width: 200,
+            sortable: true,
+            sortComparator: (v1, v2, param1, param2) =>
+                new Date(
+                    param1.api.getCellValue(param1.id, "dropoff_date_time_raw")
+                ).getTime() -
+                new Date(
+                    param2.api.getCellValue(param2.id, "dropoff_date_time_raw")
+                ).getTime(),
+        },
+        { field: "tax_rate", headerName: "Tax Rate", width: 150 },
+        {
+            field: "product_details",
+            headerName: "Product Details",
+            width: 400,
+            renderCell: (params: GridCellParams) => {
+                const products = Array.isArray(params.value) ? params.value : [];
+                if (!products.length) return <div>No products</div>;
 
-					const productText = products
-						.map((prod) => {
-							const detail = getProductDetails(prod.prod_ID);
-							return `${detail} (Qty: ${prod.quantity})`;
-						})
-						.join(", ");
+                const productText = products
+                    .map((prod) => {
+                        const detail = getProductDetails(prod.prod_ID);
+                        return `${detail} (Qty: ${prod.quantity})`;
+                    })
+                    .join(", ");
 
-					return (
-						<div style={{ whiteSpace: "normal", wordWrap: "break-word" }}>
-							{productText}
-						</div>
-					);
-				},
-			},
-			{
-				field: "additional_info",
-				headerName: "Additional Info",
-				width: 250,
-				renderCell: (params: GridCellParams) => {
-					const info = params.value as {
-						invoice: string;
-						reference_id: string;
-					};
-					return (
-						<div>
-							<div>Invoice: {info?.invoice}</div>
-							<div>Reference: {info?.reference_id}</div>
-						</div>
-					);
-				},
-			},
-			{
-				field: "package_status",
-				headerName: "Package Status",
-				width: 200,
-				renderCell: (params) => (
-					<Typography
-						sx={{
-							color: params.value === "ordered" ? "green" : "#F08C24",
-							fontSize: "14px",
-							marginTop: 2,
-							fontWeight: 600,
-						}}
-					>
-						{params.value === "ordered" ? "Order placed" : "Not ordered"}
-					</Typography>
-				),
-			},
-		];
+                return (
+                    <div style={{ whiteSpace: "normal", wordWrap: "break-word" }}>
+                        {productText}
+                    </div>
+                );
+            },
+        },
+        {
+            field: "additional_info",
+            headerName: "Additional Info",
+            width: 250,
+            renderCell: (params: GridCellParams) => {
+                const info = params.value as {
+                    invoice: string;
+                    reference_id: string;
+                };
+                return (
+                    <div>
+                        <div>Invoice: {info?.invoice}</div>
+                        <div>Reference: {info?.reference_id}</div>
+                    </div>
+                );
+            },
+        },
+        {
+            field: "package_status",
+            headerName: "Package Status",
+            width: 200,
+            renderCell: (params) => (
+                <Typography
+                    sx={{
+                        color: params.value === "ordered" ? "green" : "#F08C24",
+                        fontSize: "14px",
+                        marginTop: 2,
+                        fontWeight: 600,
+                    }}
+                >
+                    {params.value === "ordered" ? "Order placed" : "Not ordered"}
+                </Typography>
+            ),
+        },
+    ];
 
     const rows = allPackagesData.map((pkg: Package) => ({
-			id: pkg.pac_id,
-			pack_ID: pkg.pack_ID,
-			ship_from: getLocationDescription(pkg.ship_from),
-			ship_to: getLocationDescription(pkg.ship_to),
-			package_info: getPackageDetails(pkg.package_info),
-			bill_to: getLocationDescription(pkg.bill_to),
-			return_label: pkg.return_label,
-			pickup_date_time_raw: pkg?.pickup_date_time
-				? new Date(pkg.pickup_date_time)
-				: null,
-			dropoff_date_time_raw: pkg?.dropoff_date_time
-				? new Date(pkg.dropoff_date_time)
-				: null,
-			pickup_date_time: formatPickupDateTime(pkg.pickup_date_time),
-			dropoff_date_time: formatPickupDateTime(pkg.dropoff_date_time),
-			tax_rate: pkg.tax_info.tax_rate,
-			product_details: pkg.product_ID ?? [],
-			additional_info: pkg.additional_info,
-		}));
+        id: pkg.pac_id,
+        pack_ID: pkg.pack_ID,
+        ship_from: getLocationDescription(pkg.ship_from),
+        ship_to: getLocationDescription(pkg.ship_to),
+        package_info: getPackageDetails(pkg.package_info),
+        bill_to: getLocationDescription(pkg.bill_to),
+        return_label: pkg.return_label,
+        pickup_date_time_raw: pkg?.pickup_date_time
+            ? new Date(pkg.pickup_date_time)
+            : null,
+        dropoff_date_time_raw: pkg?.dropoff_date_time
+            ? new Date(pkg.dropoff_date_time)
+            : null,
+        pickup_date_time: formatPickupDateTime(pkg.pickup_date_time),
+        dropoff_date_time: formatPickupDateTime(pkg.dropoff_date_time),
+        tax_rate: pkg.tax_info.tax_rate,
+        product_details: pkg.product_ID ?? [],
+        additional_info: pkg.additional_info,
+    }));
 
     // Filter rows based on dateFilter
     const filteredRows = useMemo(() => {

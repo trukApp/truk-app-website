@@ -56,7 +56,7 @@ export interface Truck {
   leftoverWeight: string | number;
   totalVolumeCapacity: number;
   leftoverVolume: number;
-  // cost: number;
+  cost: number;
   route?: LoadLeg[];
   loadArrangement: { stop: number; location: string; packages: string[] }[];
   boxPlacements:

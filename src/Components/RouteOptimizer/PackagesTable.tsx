@@ -36,7 +36,7 @@ import { Location } from "../MasterDataComponents/Locations";
 import moment from "moment";
 
 export interface Product {
-  product_name: any;
+  product_name: string;
   prod_ID: string;
   quantity: number;
   product_ID: string;
@@ -126,15 +126,12 @@ const PackagesTable: React.FC<PackagesTableProps> = ({
   const getAllPackages =
     packagesData?.packages?.length > 0 ? packagesData.packages : [];
 
-  //   const unorderedPackages = allPackagesData.filter(
-  //     (eachPackage) => eachPackage?.package_status !== "ordered",
-  //   );
   const unorderedPackages = allPackagesData.filter(
     (eachPackage) =>
-      !["ordered", "draft"].includes(
-        eachPackage?.package_status?.toLowerCase(),
-      ),
+      eachPackage?.package_status !== "ordered" &&
+      eachPackage?.package_status !== "draft",
   );
+
   const getLocationDescription = (loc_ID: string) => {
     const location = getAllLocations.find(
       (loc: Location) => loc.loc_ID === loc_ID,

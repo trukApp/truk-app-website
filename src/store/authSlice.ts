@@ -113,6 +113,7 @@ export interface IAuthState {
   selectedTrucks: Array<Truck> | null;
   unitsofMeasurement: string[];
   selectedPackages: Array<Package>;
+  editDraftPackages: Array<Package>;
   createOrderDesination: string;
   selectedRoutes: ISelectedRoute[];
   packageShipFrom: IShipFrom | null;
@@ -142,6 +143,7 @@ const initialState: IAuthState = {
   selectedTrucks: [],
   unitsofMeasurement: [],
   selectedPackages: [],
+  editDraftPackages: [],
   createOrderDesination: "",
   packageShipFrom: null,
   packageShipTo: null,
@@ -205,18 +207,6 @@ export const authSlice = createSlice({
     setPackageBillTo: (state, action: PayloadAction<IShipFrom | null>) => {
       state.packageBillTo = action.payload;
     },
-    // setPackageAddtionalInfo: (
-    //   state,
-    //   action: PayloadAction<AdditionalInfo | null>
-    // ) => {
-    //   state.packageAdditionalInfo = action.payload;
-    // },
-    // setPackagePickAndDropTimings: (
-    //   state,
-    //   action: PayloadAction<FormValues | null>
-    // ) => {
-    //   state.packagePickAndDropTimings = action.payload;
-    // },
     setPackageTax: (state, action: PayloadAction<IPackageTax | null>) => {
       state.packageTax = action.payload;
     },
@@ -234,6 +224,9 @@ export const authSlice = createSlice({
     },
     setDeviationData: (state, action: PayloadAction<DeviationState>) => {
       state.deviationData = action.payload;
+    },
+    setEditDraftPackages: (state, action: PayloadAction<Array<Package>>) => {
+      state.editDraftPackages = action.payload;
     },
   },
 });
@@ -260,6 +253,7 @@ export const {
   setFilters,
   setSelectedRoutes,
   setDeviationData,
+  setEditDraftPackages,
 } = authSlice.actions;
 
 export const authReducer = authSlice.reducer;
