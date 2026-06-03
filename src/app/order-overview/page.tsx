@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -278,171 +279,339 @@ const OrdersGrid: React.FC = () => {
   };
   const formatDate = (date: string) =>
     moment(date).format("MMM DD, YYYY h:mm A");
-  const columns: GridColDef[] = [
-    {
-      field: "order_ID",
-      headerName: showSavedDrafts ? "Draft ID" : "Order ID",
-      width: 160,
-    },
+  // const columns: GridColDef[] = [
+  //   {
+  //     field: "order_ID",
+  //     headerName: showSavedDrafts ? "Draft ID" : "Order ID",
+  //     width: 160,
+  //   },
 
-    {
-      field: "ship_from",
-      headerName: "Ship From",
-      width: 300,
-    },
+  //   {
+  //     field: "ship_from",
+  //     headerName: "Ship From",
+  //     width: 300,
+  //   },
 
-    {
-      field: "ship_to",
-      headerName: "Ship To",
-      width: 300,
-    },
+  //   {
+  //     field: "ship_to",
+  //     headerName: "Ship To",
+  //     width: 300,
+  //   },
 
-    {
-      field: "products",
-      headerName: "Products",
-      width: 320,
-    },
+  //   {
+  //     field: "products",
+  //     headerName: "Products",
+  //     width: 320,
+  //   },
 
-    {
-      field: "stops",
-      headerName: "Stops",
-      width: 100,
-    },
+  //   {
+  //     field: "stops",
+  //     headerName: "Stops",
+  //     width: 100,
+  //   },
 
-    {
-      field: "order_status",
-      headerName: "Order Status",
-      width: 220,
+  //   {
+  //     field: "order_status",
+  //     headerName: "Order Status",
+  //     width: 220,
 
-      renderCell: (params: GridRenderCellParams) => {
-        const status = params.value || "";
+  //     renderCell: (params: GridRenderCellParams) => {
+  //       const status = params.value || "";
 
-        return (
-          <Typography
-            sx={{
-              fontWeight: 700,
-              color: statusColors[status.toLowerCase()] || "#111827",
-              fontSize: "15px",
-            }}
-          >
-            {toPascalCase(status)}
-          </Typography>
-        );
+  //       return (
+  //         <Typography
+  //           sx={{
+  //             fontWeight: 700,
+  //             color: statusColors[status.toLowerCase()] || "#111827",
+  //             fontSize: "15px",
+  //           }}
+  //         >
+  //           {toPascalCase(status)}
+  //         </Typography>
+  //       );
+  //     },
+  //   },
+  //   {
+  //     field: "draft_saved",
+  //     headerName: "Draft Saved",
+  //     width: 220,
+
+  //     renderCell: (params: GridRenderCellParams) => {
+  //       const value = params.value;
+
+  //       const isRoute = value === "Route Optimization";
+
+  //       return (
+  //         <Box
+  //           sx={{
+  //             px: 1.5,
+  //             py: 0.5,
+  //             borderRadius: "16px",
+  //             fontWeight: 600,
+  //             fontSize: "13px",
+  //             color: "#fff",
+  //             backgroundColor: isRoute ? "#1976D2" : "#2E7D32",
+  //             textAlign: "center",
+  //             minWidth: "150px",
+  //           }}
+  //         >
+  //           {value}
+  //         </Box>
+  //       );
+  //     },
+  //   },
+  //   {
+  //     field: "action",
+  //     headerName: showSavedDrafts ? "Edit" : "View",
+  //     width: 120,
+  //     sortable: false,
+
+  //     renderCell: (params: GridRenderCellParams) => {
+  //       if (showSavedDrafts) {
+  //         return (
+  //           <Box
+  //             sx={{
+  //               display: "flex",
+  //               alignItems: "center",
+  //               gap: 0.5,
+  //               cursor: "pointer",
+  //               color: "#F08C24",
+  //               fontWeight: 600,
+  //             }}
+  //             onClick={() => handleEditDraft(params.row)}
+  //           >
+  //             <Edit fontSize="small" />
+  //             Edit
+  //           </Box>
+  //         );
+  //       }
+
+  //       return (
+  //         <IconButton
+  //           onClick={() => handleViewOrder(params.row.order_ID)}
+  //           sx={{ color: "#F08C24" }}
+  //         >
+  //           <Visibility />
+  //         </IconButton>
+  //       );
+  //     },
+  //   },
+  //   {
+  //     field: "scenario_label",
+  //     headerName: "Scenario",
+  //     width: 220,
+  //   },
+  //   {
+  //     field: "total_distance",
+  //     headerName: "Total Distance",
+  //     width: 180,
+  //   },
+
+  //   {
+  //     field: "total_weight",
+  //     headerName: "Total Weight",
+  //     width: 180,
+  //   },
+
+  //   {
+  //     field: "allocated_vehicles",
+  //     headerName: "Allocated Vehicles",
+  //     width: 250,
+  //   },
+
+  //   {
+  //     field: "allocated_packages",
+  //     headerName: "Allocated Packages",
+  //     width: 260,
+  //   },
+
+  //   {
+  //     field: "package_dest_radius",
+  //     headerName: "Package Destination Radius",
+  //     width: 320,
+  //   },
+
+  //   {
+  //     field: "unallocated_packages",
+  //     headerName: "Unallocated Packages",
+  //     width: 260,
+  //   },
+
+  //   {
+  //     field: "created_at",
+  //     headerName: "Created At",
+  //     width: 220,
+  //   },
+  // ];
+  const columns: GridColDef[] = useMemo(() => {
+    const baseColumns: GridColDef[] = [
+      {
+        field: "order_ID",
+        headerName: showSavedDrafts ? "Draft ID" : "Order ID",
+        width: 160,
       },
-    },
-    {
-      field: "draft_saved",
-      headerName: "Draft Saved",
-      width: 220,
 
-      renderCell: (params: GridRenderCellParams) => {
-        const value = params.value;
-
-        const isRoute = value === "Route Optimization";
-
-        return (
-          <Box
-            sx={{
-              px: 1.5,
-              py: 0.5,
-              borderRadius: "16px",
-              fontWeight: 600,
-              fontSize: "13px",
-              color: "#fff",
-              backgroundColor: isRoute ? "#1976D2" : "#2E7D32",
-              textAlign: "center",
-              minWidth: "150px",
-            }}
-          >
-            {value}
-          </Box>
-        );
+      {
+        field: "ship_from",
+        headerName: "Ship From",
+        width: 300,
       },
-    },
-    {
-      field: "action",
-      headerName: showSavedDrafts ? "Edit" : "View",
-      width: 120,
-      sortable: false,
 
-      renderCell: (params: GridRenderCellParams) => {
-        if (showSavedDrafts) {
+      {
+        field: "ship_to",
+        headerName: "Ship To",
+        width: 300,
+      },
+
+      {
+        field: "products",
+        headerName: "Products",
+        width: 320,
+      },
+
+      {
+        field: "stops",
+        headerName: "Stops",
+        width: 100,
+      },
+
+      {
+        field: "order_status",
+        headerName: "Order Status",
+        width: 220,
+        renderCell: (params: GridRenderCellParams) => {
+          const status = params.value || "";
+
           return (
-            <Box
+            <Typography
               sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 0.5,
-                cursor: "pointer",
-                color: "#F08C24",
-                fontWeight: 600,
+                fontWeight: 700,
+                color: statusColors[status.toLowerCase()] || "#111827",
+                fontSize: "15px",
               }}
-              onClick={() => handleEditDraft(params.row)}
             >
-              <Edit fontSize="small" />
-              Edit
-            </Box>
+              {toPascalCase(status)}
+            </Typography>
           );
-        }
-
-        return (
-          <IconButton
-            onClick={() => handleViewOrder(params.row.order_ID)}
-            sx={{ color: "#F08C24" }}
-          >
-            <Visibility />
-          </IconButton>
-        );
+        },
       },
-    },
-    {
-      field: "scenario_label",
-      headerName: "Scenario",
-      width: 220,
-    },
-    {
-      field: "total_distance",
-      headerName: "Total Distance",
-      width: 180,
-    },
 
-    {
-      field: "total_weight",
-      headerName: "Total Weight",
-      width: 180,
-    },
+      {
+        field: "action",
+        headerName: showSavedDrafts ? "Edit" : "View",
+        width: 120,
+        sortable: false,
+        renderCell: (params: GridRenderCellParams) => {
+          if (showSavedDrafts) {
+            return (
+              <Grid
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.5,
+                  cursor: "pointer",
+                  color: "#F08C24",
+                  fontWeight: 600,
+                }}
+                onClick={() => handleEditDraft(params.row)}
+              >
+                <Edit fontSize="small" />
+                Edit
+              </Grid>
+            );
+          }
 
-    {
-      field: "allocated_vehicles",
-      headerName: "Allocated Vehicles",
-      width: 250,
-    },
+          return (
+            <IconButton
+              onClick={() => handleViewOrder(params.row.order_ID)}
+              sx={{ color: "#F08C24" }}
+            >
+              <Visibility />
+            </IconButton>
+          );
+        },
+      },
 
-    {
-      field: "allocated_packages",
-      headerName: "Allocated Packages",
-      width: 260,
-    },
+      {
+        field: "scenario_label",
+        headerName: "Scenario",
+        width: 220,
+      },
 
-    {
-      field: "package_dest_radius",
-      headerName: "Package Destination Radius",
-      width: 320,
-    },
+      {
+        field: "total_distance",
+        headerName: "Total Distance",
+        width: 180,
+      },
 
-    {
-      field: "unallocated_packages",
-      headerName: "Unallocated Packages",
-      width: 260,
-    },
+      {
+        field: "total_weight",
+        headerName: "Total Weight",
+        width: 180,
+      },
 
-    {
-      field: "created_at",
-      headerName: "Created At",
-      width: 220,
-    },
-  ];
+      {
+        field: "allocated_vehicles",
+        headerName: "Allocated Vehicles",
+        width: 250,
+      },
 
+      {
+        field: "allocated_packages",
+        headerName: "Allocated Packages",
+        width: 260,
+      },
+
+      {
+        field: "package_dest_radius",
+        headerName: "Package Destination Radius",
+        width: 320,
+      },
+
+      {
+        field: "unallocated_packages",
+        headerName: "Unallocated Packages",
+        width: 260,
+      },
+
+      {
+        field: "created_at",
+        headerName: "Created At",
+        width: 220,
+      },
+    ];
+
+    if (showSavedDrafts) {
+      baseColumns.splice(6, 0, {
+        field: "draft_saved",
+        headerName: "Draft Saved",
+        width: 220,
+        renderCell: (params: GridRenderCellParams) => {
+          const isRoute = params.value === "Route Optimization";
+
+          return (
+            <Grid
+              sx={{
+                px: 1.5,
+                py: 0.5,
+                borderRadius: "16px",
+                fontWeight: 600,
+                fontSize: "13px",
+                color: "#fff",
+                backgroundColor: isRoute ? "#1976D2" : "#2E7D32",
+                textAlign: "center",
+                minWidth: "150px",
+              }}
+            >
+              {params.value}
+            </Grid>
+          );
+        },
+      });
+    }
+
+    return baseColumns;
+  }, [showSavedDrafts]);
   const rows = filteredOrders.map((order: Order) => {
     const firstAllocation = order.allocations?.[0];
     const firstRoute = firstAllocation?.route?.[0];
@@ -597,7 +766,7 @@ const OrdersGrid: React.FC = () => {
   };
 
   return (
-    <Box sx={{ width: "100%", p: 3 }}>
+    <Grid sx={{ width: "100%", p: 3 }}>
       {error && (
         <Typography color="error" sx={{ mb: 2 }}>
           Failed to load orders.
@@ -618,7 +787,7 @@ const OrdersGrid: React.FC = () => {
 
       {/* HEADER */}
 
-      <Box sx={{ mb: 2 }}>
+      <Grid sx={{ mb: 2 }}>
         <Typography
           variant="h5"
           color="primary"
@@ -638,10 +807,10 @@ const OrdersGrid: React.FC = () => {
         >
           Review and manage all order allocations and shipment details.
         </Typography>
-      </Box>
+      </Grid>
 
       {/* FILTERS */}
-      <Box
+      <Grid
         sx={{
           display: "flex",
           justifyContent: "space-between",
@@ -649,7 +818,7 @@ const OrdersGrid: React.FC = () => {
           mb: 3,
         }}
       >
-        <Box sx={{ display: "flex", gap: 2 }}>
+        <Grid sx={{ display: "flex", gap: 2 }}>
           <Button
             variant={!showSavedDrafts ? "contained" : "outlined"}
             onClick={() => setShowSavedDrafts(false)}
@@ -672,14 +841,14 @@ const OrdersGrid: React.FC = () => {
           >
             Saved Drafts
           </Button>
-        </Box>
+        </Grid>
 
         <Typography variant="body2" color="text.secondary">
           {showSavedDrafts
             ? `${filteredOrders.length} Draft Orders`
             : `${filteredOrders.length} Orders`}
         </Typography>
-      </Box>
+      </Grid>
 
       <Grid container spacing={2} justifyContent="flex-end" sx={{ mb: 2 }}>
         <Grid item xs={12} md={2}>
@@ -750,7 +919,7 @@ const OrdersGrid: React.FC = () => {
           setColumnVisibilityModel(newModel)
         }
       />
-    </Box>
+    </Grid>
   );
 };
 
