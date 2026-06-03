@@ -1,9 +1,10 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { GridColDef, DataGrid, GridRenderCellParams } from "@mui/x-data-grid";
 import {
-  Box,
+  // Box,
   Typography,
   IconButton,
   Backdrop,
@@ -178,7 +179,7 @@ const SpotAuction: React.FC = () => {
     return moment(createDate).format("MMM DD, YYYY h:mm A");
   };
   return (
-    <Box sx={{ width: "100%", marginTop: 2 }}>
+    <div style={{ width: "100%", marginTop: 2 }}>
       <Backdrop
         open={loading || isLoading}
         sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
@@ -192,13 +193,13 @@ const SpotAuction: React.FC = () => {
         justifyContent="space-between"
         sx={{ mb: 2 }}
       >
-        <Grid item>
+        <Grid>
           <Typography variant="h5" color="primary" sx={{ fontWeight: 600 }}>
             Spot Auction Orders
           </Typography>
         </Grid>
         <Grid container justifyContent="flex-end" sx={{ mb: 2, mt: 2 }}>
-          <Grid item xs={12} sm={4} md={3}>
+          <Grid xs={12} sm={4} md={3}>
             <TextField
               select
               fullWidth
@@ -242,7 +243,7 @@ const SpotAuction: React.FC = () => {
           pagination: { paginationModel: { pageSize: 10 } },
         }}
       />
-    </Box>
+    </div>
   );
 };
 

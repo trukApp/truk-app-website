@@ -10,6 +10,7 @@ import {
   GridColDef,
   GridRenderCellParams,
   GridToolbarContainer,
+  GridColumnVisibilityModel,
 } from "@mui/x-data-grid";
 
 import {
@@ -104,25 +105,42 @@ const OrdersGrid: React.FC = () => {
   const [dateFilter, setDateFilter] = useState("All");
   const [pickupCustomDate, setPickupCustomDate] = useState("");
   const [dropoffCustomDate, setDropoffCustomDate] = useState("");
-  const [columnVisibilityModel, setColumnVisibilityModel] = useState({
-    order_ID: true,
-    ship_from: true,
-    ship_to: true,
-    products: true,
-    stops: true,
-    order_status: true,
-    view: true,
-    scenario_label: false,
-    // total_cost: false,
-    total_distance: false,
-    total_weight: false,
-    allocated_vehicles: false,
-    allocated_packages: false,
-    package_dest_radius: false,
-    unallocated_packages: false,
-    created_at: false,
-  });
-
+  // const [columnVisibilityModel, setColumnVisibilityModel] = useState({
+  //   order_ID: true,
+  //   ship_from: true,
+  //   ship_to: true,
+  //   products: true,
+  //   stops: true,
+  //   order_status: true,
+  //   view: true,
+  //   scenario_label: false,
+  //   // total_cost: false,
+  //   total_distance: false,
+  //   total_weight: false,
+  //   allocated_vehicles: false,
+  //   allocated_packages: false,
+  //   package_dest_radius: false,
+  //   unallocated_packages: false,
+  //   created_at: false,
+  // });
+  const [columnVisibilityModel, setColumnVisibilityModel] =
+    useState<GridColumnVisibilityModel>({
+      order_ID: true,
+      ship_from: true,
+      ship_to: true,
+      products: true,
+      stops: true,
+      order_status: true,
+      action: true,
+      scenario_label: false,
+      total_distance: false,
+      total_weight: false,
+      allocated_vehicles: false,
+      allocated_packages: false,
+      package_dest_radius: false,
+      unallocated_packages: false,
+      created_at: false,
+    });
   const { data: allOrders, error, isLoading } = useGetAllOrdersQuery({});
   console.log("Fetched Orders Data:", allOrders);
   const ordersData: Order[] = useMemo(

@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState, useMemo } from "react";
 import {
   DataGrid,
   GridCellParams,
   GridColDef,
   GridToolbarContainer,
+  GridColumnVisibilityModel,
 } from "@mui/x-data-grid";
 
 import {
@@ -97,21 +99,35 @@ const PackagesTable: React.FC<PackagesTableProps> = ({
   const [dropoffCustomDate, setDropoffCustomDate] = useState("");
 
   // COLUMN VISIBILITY
-  const [columnVisibilityModel, setColumnVisibilityModel] = useState({
-    pack_ID: true,
-    ship_from: true,
-    ship_to: true,
-    pickup_date_time: true,
-    dropoff_date_time: true,
-    product_details: true,
+  // const [columnVisibilityModel, setColumnVisibilityModel] = useState({
+  //   pack_ID: true,
+  //   ship_from: true,
+  //   ship_to: true,
+  //   pickup_date_time: true,
+  //   dropoff_date_time: true,
+  //   product_details: true,
 
-    package_info: false,
-    bill_to: false,
-    return_label: false,
-    tax_rate: false,
-    additional_info: false,
-  });
+  //   package_info: false,
+  //   bill_to: false,
+  //   return_label: false,
+  //   tax_rate: false,
+  //   additional_info: false,
+  // });
 
+  const [columnVisibilityModel, setColumnVisibilityModel] =
+    useState<GridColumnVisibilityModel>({
+      pack_ID: true,
+      ship_from: true,
+      ship_to: true,
+      pickup_date_time: true,
+      dropoff_date_time: true,
+      product_details: true,
+      package_info: false,
+      bill_to: false,
+      return_label: false,
+      tax_rate: false,
+      additional_info: false,
+    });
   const { data: locationsData } = useGetLocationMasterQuery({});
 
   const getAllLocations =

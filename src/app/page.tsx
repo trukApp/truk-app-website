@@ -339,30 +339,18 @@ const Home = () => {
   ];
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <div style={{ display: "flex" }}>
       <Sidebar />
-      <Box
-        sx={{
+      <div
+        style={{
           flex: 1,
-          ml: {
-            xs: "85px",
-            md: collapsed ? "85px" : "290px",
-          },
-
-          // mt: "70px",
-          p: {
-            xs: 2,
-            sm: 3,
-            md: 4,
-          },
-
-          bgcolor: "#f8fafc",
+          marginLeft: collapsed ? "85px" : "290px",
+          padding: "16px",
+          backgroundColor: "#f8fafc",
           minHeight: "100vh",
-
-          transition: "all 0.3s ease",
         }}
       >
-        <Box mb={5}>
+        <div style={{ marginBottom: "24px" }}>
           <Typography
             variant="h4"
             fontWeight={800}
@@ -387,7 +375,7 @@ const Home = () => {
             Centralized transport planning, optimization, tracking and dock
             execution system powered by AI and real-time analytics.
           </Typography>
-        </Box>
+        </div>
         <Box
           sx={{
             display: "grid",
@@ -470,7 +458,7 @@ const Home = () => {
 
                   bgcolor: alpha(module.color, 0.12),
 
-                  color: module.color,
+                  color: "#000000",
 
                   fontSize: 12,
                   fontWeight: 700,
@@ -481,8 +469,8 @@ const Home = () => {
             </Card>
           ))}
         </Box>
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 };
 

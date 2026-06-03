@@ -485,7 +485,7 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
     const headerRow = worksheet.getRow(1);
 
     for (let col = 1; col <= headers.length; col++) {
-      const cell = headerRow.getCell(col);
+      const cell = headerRow.getCell(col) as ExcelJS.Cell;
 
       cell.fill = {
         type: "pattern",
@@ -516,14 +516,26 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
     }
 
     // Auto Width
-    worksheet.columns.forEach((column) => {
-      column.width = 30;
-    });
+    for (let col = 1; col <= headers.length; col++) {
+      worksheet.getColumn(col).width = 30;
+    }
 
     const buffer = await workbook.xlsx.writeBuffer();
 
     saveAs(new Blob([buffer]), `${arrayKey}_template.xlsx`);
   };
+
+  const isLoading: boolean =
+    locationLoading ||
+    vehicleLoading ||
+    laneLoading ||
+    deviceLoading ||
+    packageLoading ||
+    customerLoading ||
+    vendorLoading ||
+    carrierLoading ||
+    productLoading ||
+    createPackageOrderLoading;
 
   return (
     <Box>
@@ -538,18 +550,7 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
           color: "#ffffff",
           zIndex: (theme) => theme.zIndex.drawer + 1,
         }}
-        open={
-          locationLoading ||
-          vehicleLoading ||
-          laneLoading ||
-          deviceLoading ||
-          packageLoading ||
-          customerLoading ||
-          vendorLoading ||
-          carrierLoading ||
-          productLoading ||
-          createPackageOrderLoading
-        }
+        open={isLoading}
       >
         <CircularProgress color="inherit" />
       </Backdrop>
@@ -559,14 +560,16 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
       <Button
         variant="contained"
         onClick={() => setIsModalOpen(true)}
-        sx={{
-          backgroundColor: "#F08C24", // Custom background color for normal state
-          color: "#fff",
-          "&:hover": {
-            backgroundColor: "#fff",
-            color: "#F08C24",
-          },
-        }}
+        sx={
+          {
+            backgroundColor: "#F08C24",
+            color: "#fff",
+            "&:hover": {
+              backgroundColor: "#fff",
+              color: "#F08C24",
+            },
+          } as const
+        }
       >
         Upload File
       </Button>

@@ -5,6 +5,7 @@ import {
   GridCellParams,
   GridColDef,
   GridToolbarContainer,
+  GridColumnVisibilityModel,
 } from "@mui/x-data-grid";
 import {
   Grid,
@@ -18,7 +19,7 @@ import {
   Divider,
 } from "@mui/material";
 import ViewColumnIcon from "@mui/icons-material/ViewColumn";
-import { useAppSelector, useAppDispatch } from "@/store";
+import { useAppDispatch } from "@/store";
 import { setEditDraftPackages } from "@/store/authSlice";
 import DataGridSkeletonLoader from "../ReusableComponents/DataGridSkeletonLoader";
 import {
@@ -95,19 +96,20 @@ const PackagesTable: React.FC<PackagesTableProps> = ({
   const [pickupCustomDate, setPickupCustomDate] = useState("");
   const [dropoffCustomDate, setDropoffCustomDate] = useState("");
 
-  const [columnVisibilityModel, setColumnVisibilityModel] = useState({
-    pack_ID: true,
-    ship_from: true,
-    ship_to: true,
-    pickup_date_time: true,
-    dropoff_date_time: true,
-    product_details: true,
-    package_info: false,
-    bill_to: false,
-    return_label: false,
-    tax_rate: false,
-    additional_info: false,
-  });
+  const [columnVisibilityModel, setColumnVisibilityModel] =
+    useState<GridColumnVisibilityModel>({
+      pack_ID: true,
+      ship_from: true,
+      ship_to: true,
+      pickup_date_time: true,
+      dropoff_date_time: true,
+      product_details: true,
+      package_info: false,
+      bill_to: false,
+      return_label: false,
+      tax_rate: false,
+      additional_info: false,
+    });
 
   const { data: locationsData } = useGetLocationMasterQuery({});
   const getAllLocations =

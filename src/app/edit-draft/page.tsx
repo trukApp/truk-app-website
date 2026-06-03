@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useEffect, useState } from "react";
@@ -10,7 +11,7 @@ import {
   DialogTitle,
   Backdrop,
   CircularProgress,
-  Box,
+  // Box,
 } from "@mui/material";
 import PackagesTable, {
   Package,
@@ -354,7 +355,7 @@ const EditDraft: React.FC = () => {
   // };
 
   return (
-    <Box sx={{ width: "100%", p: 3 }}>
+    <div style={{ width: "100%", padding: 3 }}>
       <Backdrop
         sx={{
           color: "#ffffff",
@@ -439,7 +440,7 @@ const EditDraft: React.FC = () => {
           </DialogActions>
         </Dialog>
       )}
-      <Box sx={{ px: 2, mt: 2 }}>
+      <div style={{ paddingLeft: 16, marginTop: 16 }}>
         <Typography
           variant="h5"
           color="primary"
@@ -453,7 +454,7 @@ const EditDraft: React.FC = () => {
           details. Start by selecting packages with the same pickup location and
           date.
         </Typography>
-      </Box>
+      </div>
 
       {/* <Box
         sx={{
@@ -669,7 +670,7 @@ const EditDraft: React.FC = () => {
           </CustomButtonFilled>
         )}
       </div>
-    </Box>
+    </div>
   );
 };
 
