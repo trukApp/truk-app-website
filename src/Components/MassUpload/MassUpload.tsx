@@ -3,13 +3,14 @@ import React, { useState } from "react";
 import Papa from "papaparse";
 import {
   Backdrop,
-  Box,
+  // Box,
   Button,
   CircularProgress,
   Link,
   Modal,
   Typography,
   useTheme,
+  Grid,
 } from "@mui/material";
 import { DropzoneArea } from "mui-file-dropzone";
 import {
@@ -230,63 +231,6 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
       return transformedRow;
     });
   };
-  // Handle file upload
-  // const handleUpload = async () => {
-  //   if (!file) {
-  //     setMessage('Please select a file.');
-  //     return;
-  //   }
-
-  //   setIsUploading(true);
-
-  //   try {
-  //     const columnMappings = getColumnMappings();
-
-  //     const parsedData = await new Promise<ParsedRow[]>((resolve, reject) => {
-  //       Papa.parse(file, {
-  //         header: true,
-  //         skipEmptyLines: true,
-  //         complete: (result) => {
-  //           if (result.errors.length) {
-  //             reject(new Error(result.errors[0].message));
-  //           } else {
-  //             resolve(result.data as ParsedRow[]);
-  //           }
-  //         },
-  //         error: reject,
-  //       });
-  //     });
-
-  //     const transformedData = mapCsvToPayload(parsedData, columnMappings);
-  //     const body = {
-  //       [arrayKey]: transformedData.map((item: object) => {
-  //         if (arrayKey === 'partners' && partnerType) {
-  //           return { ...item, partner_type: partnerType };
-  //         }
-
-  //         return item;
-  //       }),
-  //     };
-  //     const response = (await postMapping[arrayKey](body)) as ApiResponse;
-  //     const uploadedRecords = response.data.created_records.length;
-  //     if (uploadedRecords) {
-  //       setSnackbarMessage(`${uploadedRecords} records uploaded successfully!`);
-  //       setSnackbarSeverity("success");
-  //       setSnackbarOpen(true);
-  //       setIsModalOpen(false);
-  //     }
-
-  //     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  //   } catch (error) {
-  //     setSnackbarMessage(`Something went wrong! Please try again, ${error}`);
-  //     setSnackbarSeverity("error");
-  //     setSnackbarOpen(true);
-  //     setIsModalOpen(false)
-  //   } finally {
-  //     setIsUploading(false);
-  //   }
-  // };
-
   const excelDateToJSDate = (excelDate: number) => {
     const date = new Date((excelDate - 25569) * 86400 * 1000);
 
@@ -302,25 +246,7 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
 
     try {
       const columnMappings = getColumnMappings();
-
-      // const parsedData = await new Promise<ParsedRow[]>((resolve, reject) => {
-      //   Papa.parse(file, {
-      //     header: true,
-      //     skipEmptyLines: true,
-
-      //     complete: (result) => {
-      //       if (result.errors.length) {
-      //         reject(new Error(result.errors[0].message));
-      //       } else {
-      //         resolve(result.data as ParsedRow[]);
-      //       }
-      //     },
-
-      //     error: reject,
-      //   });
-      // });
       let parsedData: ParsedRow[] = [];
-
       if (file.name.endsWith(".csv")) {
         parsedData = await new Promise<ParsedRow[]>((resolve, reject) => {
           Papa.parse(file, {
@@ -342,32 +268,21 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
         const workbook = XLSX.read(data, {
           type: "array",
         });
-
         const sheetName = workbook.SheetNames[0];
-
         const worksheet = workbook.Sheets[sheetName];
-
         parsedData = XLSX.utils.sheet_to_json(worksheet) as ParsedRow[];
       }
       const transformedData = mapCsvToPayload(parsedData, columnMappings);
-
       let finalData: any[] = transformedData;
-
-      /**
-       * Create Package Orders transformation
-       */
       if (arrayKey === "createPackageOrders") {
         finalData = transformedData.map((item: any) => {
           const productIds =
             item.prod_IDs?.split(",").map((id: string) => id.trim()) || [];
-
           const quantities =
             item.quantities?.split(",").map((qty: string) => qty.trim()) || [];
-
           const packageInfos =
             item.package_infos?.split(",").map((pkg: string) => pkg.trim()) ||
             [];
-
           const product_ID = productIds.map(
             (prod_ID: string, index: number) => ({
               prod_ID,
@@ -375,45 +290,31 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
               package_info: packageInfos[index] || item.package_info || "",
             }),
           );
-
           return {
             ship_from: item.ship_from,
-
             ship_to: item.ship_to,
-
             bill_to: item.bill_to,
-
             destination_radius: `${item.geo_fencing_radius || ""}${item.geo_fencing_unit || ""}`,
-
             product_ID,
-
             package_info: item.package_info,
-
             return_label: Number(item.return_label || 0),
-
             additional_info: {
               ...item.additional_info,
               return_label: Boolean(Number(item.return_label || 0)),
             },
-
             pickup_date_time:
               item.pickup_date_time && !isNaN(Number(item.pickup_date_time))
                 ? excelDateToJSDate(Number(item.pickup_date_time))
                 : item.pickup_date_time,
-
             dropoff_date_time:
               item.dropoff_date_time && !isNaN(Number(item.dropoff_date_time))
                 ? excelDateToJSDate(Number(item.dropoff_date_time))
                 : item.dropoff_date_time,
-
             tax_info: item.tax_info || {},
           };
         });
       }
 
-      /**
-       * Partners transformation
-       */
       if (arrayKey === "partners" && partnerType) {
         finalData = transformedData.map((item: any) => ({
           ...item,
@@ -424,69 +325,36 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
       const body = {
         [arrayKey === "createPackageOrders" ? "packages" : arrayKey]: finalData,
       };
-
       const response = (await postMapping[arrayKey](body)) as ApiResponse;
-
       const uploadedRecords = response?.data?.created_records?.length || 0;
-
       if (uploadedRecords) {
         setSnackbarMessage(`${uploadedRecords} records uploaded successfully!`);
-
         setSnackbarSeverity("success");
-
         setSnackbarOpen(true);
-
         setIsModalOpen(false);
-
         setFile(null);
       }
     } catch (error) {
       console.error("Upload Error:", error);
-
       setSnackbarMessage(`Something went wrong! Please try again.`);
-
       setSnackbarSeverity("error");
-
       setSnackbarOpen(true);
-
       setIsModalOpen(false);
     } finally {
       setIsUploading(false);
     }
   };
-  // const handleDownloadTemplate = () => {
-  //   const columnMappings = getColumnMappings();
-
-  //   const headers = columnMappings
-  //     .map((col) => `"${col.displayName.padEnd(20, " ")}"`)
-  //     .join(",");
-
-  //   const csvContent = `data:text/csv;charset=utf-8,${headers}`;
-  //   const encodedUri = encodeURI(csvContent);
-  //   const link = document.createElement("a");
-  //   link.setAttribute("href", encodedUri);
-  //   link.setAttribute("download", `${arrayKey}_template.csv`);
-  //   link.click();
-  // };
-
   const handleDownloadTemplate = async () => {
     const workbook = new ExcelJS.Workbook();
-
     const worksheet = workbook.addWorksheet("Package Orders");
-
     const columnMappings = getColumnMappings();
-
     // Headers
     const headers = columnMappings.map((col) => col.displayName);
-
     worksheet.addRow(headers);
-
     // Header Styling
     const headerRow = worksheet.getRow(1);
-
     for (let col = 1; col <= headers.length; col++) {
       const cell = headerRow.getCell(col) as ExcelJS.Cell;
-
       cell.fill = {
         type: "pattern",
         pattern: "solid",
@@ -515,13 +383,10 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
       };
     }
 
-    // Auto Width
     for (let col = 1; col <= headers.length; col++) {
       worksheet.getColumn(col).width = 30;
     }
-
     const buffer = await workbook.xlsx.writeBuffer();
-
     saveAs(new Blob([buffer]), `${arrayKey}_template.xlsx`);
   };
 
@@ -538,7 +403,7 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
     createPackageOrderLoading;
 
   return (
-    <Box>
+    <Grid>
       <SnackbarAlert
         open={snackbarOpen}
         message={snackbarMessage}
@@ -554,9 +419,6 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
       >
         <CircularProgress color="inherit" />
       </Backdrop>
-      {/* <Button variant="contained" onClick={() => setIsModalOpen(true)}>
-        Upload CSV
-      </Button> */}
       <Button
         variant="contained"
         onClick={() => setIsModalOpen(true)}
@@ -575,7 +437,7 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
       </Button>
 
       <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <Box
+        <Grid
           sx={{
             position: "absolute",
             top: "50%",
@@ -617,7 +479,7 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
               </span>
             </Typography>
           )}
-          <Box sx={{ mt: 3, display: "flex", gap: 2 }}>
+          <Grid sx={{ mt: 3, display: "flex", gap: 2 }}>
             <Button
               variant="outlined"
               onClick={() => {
@@ -638,7 +500,7 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
             >
               {isUploading ? "Uploading..." : "Upload"}
             </Button>
-          </Box>
+          </Grid>
 
           {message && (
             <Typography
@@ -650,9 +512,9 @@ const MassUpload: React.FC<MassUploadProps> = ({ arrayKey, partnerType }) => {
               {message}
             </Typography>
           )}
-        </Box>
+        </Grid>
       </Modal>
-    </Box>
+    </Grid>
   );
 };
 

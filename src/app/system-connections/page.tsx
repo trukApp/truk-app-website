@@ -1,7 +1,7 @@
-'use client'
-import React from 'react';
+"use client";
+import React from "react";
 import {
-  Box,
+  // Box,
   Card,
   CardContent,
   CardHeader,
@@ -11,73 +11,67 @@ import {
   Button,
   Stack,
   Divider,
-} from '@mui/material';
+} from "@mui/material";
 import {
-    CheckCircle, AddCircle
-    // Cancel,
-} from '@mui/icons-material';
+  CheckCircle,
+  AddCircle,
+  // Cancel,
+} from "@mui/icons-material";
 
 interface ERPConnection {
   name: string;
-  status: 'connected' | 'disconnected';
+  status: "connected" | "disconnected";
   lastSynced: string | null;
 }
 
 const demoERPConnections: ERPConnection[] = [
   {
-    name: 'SAP',
-    status: 'connected',
-    lastSynced: '2025-04-20 14:22',
+    name: "SAP",
+    status: "connected",
+    lastSynced: "2025-04-20 14:22",
   },
   {
-    name: 'Oracle NetSuite',
-    status: 'disconnected',
+    name: "Oracle NetSuite",
+    status: "disconnected",
     lastSynced: null,
   },
   {
-    name: 'Zoho Inventory',
-    status: 'connected',
-    lastSynced: '2025-04-21 09:15',
+    name: "Zoho Inventory",
+    status: "connected",
+    lastSynced: "2025-04-21 09:15",
   },
   {
-    name: 'Microsoft Dynamics',
-    status: 'disconnected',
+    name: "Microsoft Dynamics",
+    status: "disconnected",
     lastSynced: null,
   },
   {
-    name: 'Tally ERP',
-    status: 'disconnected',
+    name: "Tally ERP",
+    status: "disconnected",
     lastSynced: null,
   },
 ];
 
 const SystemConections: React.FC = () => {
-  const connected = demoERPConnections.filter((e) => e.status === 'connected');
-  const disconnected = demoERPConnections.filter((e) => e.status === 'disconnected');
+  const connected = demoERPConnections.filter((e) => e.status === "connected");
+  const disconnected = demoERPConnections.filter(
+    (e) => e.status === "disconnected",
+  );
 
   return (
-    <Box p={4}>
-
+    <Grid p={4}>
       {/* Connected Systems */}
 
-        <Typography
-          variant="h5"
-          color="primary"
-          fontWeight="bold" 
-          gutterBottom
-        >
-         ERP Connections
-        </Typography>
-
-        {/* Page Description */}
-        <Typography
-          variant="body1"
-          color="text.secondary"
-          mb={5}
-        >
-          Manage and monitor your ERP integrations. View connected systems and easily connect new ones to streamline your business operations.
+      <Typography variant="h5" color="primary" fontWeight="bold" gutterBottom>
+        ERP Connections
       </Typography>
-            <Typography variant="h6" gutterBottom>
+
+      {/* Page Description */}
+      <Typography variant="body1" color="text.secondary" mb={5}>
+        Manage and monitor your ERP integrations. View connected systems and
+        easily connect new ones to streamline your business operations.
+      </Typography>
+      <Typography variant="h6" gutterBottom>
         ✅ Connected Systems
       </Typography>
       <Grid container spacing={3}>
@@ -86,7 +80,9 @@ const SystemConections: React.FC = () => {
             <Card elevation={3}>
               <CardHeader
                 title={erp.name}
-                titleTypographyProps={{ sx: { fontSize: '16px', fontWeight: 500 } }}
+                titleTypographyProps={{
+                  sx: { fontSize: "16px", fontWeight: 500 },
+                }}
                 action={
                   <Chip
                     label="Connected"
@@ -118,7 +114,9 @@ const SystemConections: React.FC = () => {
             <Card elevation={3}>
               <CardHeader
                 title={erp.name}
-                titleTypographyProps={{ sx: { fontSize: '16px', fontWeight: 500 } }}
+                titleTypographyProps={{
+                  sx: { fontSize: "16px", fontWeight: 500 },
+                }}
                 // action={
                 //   <Chip
                 //     label="Disconnected"
@@ -146,7 +144,7 @@ const SystemConections: React.FC = () => {
           </Grid>
         ))}
       </Grid>
-    </Box>
+    </Grid>
   );
 };
 

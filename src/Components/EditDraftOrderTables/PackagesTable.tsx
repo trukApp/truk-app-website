@@ -15,7 +15,7 @@ import {
   Checkbox,
   FormControlLabel,
   Typography,
-  Box,
+  // Box,
   Divider,
 } from "@mui/material";
 import ViewColumnIcon from "@mui/icons-material/ViewColumn";
@@ -384,7 +384,7 @@ const PackagesTable: React.FC<PackagesTableProps> = ({
             py: 1,
           }}
         >
-          <Box
+          <Grid
             onClick={handleOpen}
             sx={{
               display: "flex",
@@ -410,7 +410,7 @@ const PackagesTable: React.FC<PackagesTableProps> = ({
                 color: "#555",
               }}
             />
-          </Box>
+          </Grid>
         </GridToolbarContainer>
 
         <Popover

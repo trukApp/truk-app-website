@@ -1,13 +1,12 @@
-'use client';
+"use client";
 
 // components/Footer.tsx
 import React from "react";
-import { Box, Typography } from "@mui/material";
-
+import { Typography, Grid } from "@mui/material";
 
 const Footer: React.FC = () => {
   return (
-    <Box
+    <Grid
       component="footer"
       sx={{
         backgroundColor: "#f4f4f4",
@@ -16,7 +15,7 @@ const Footer: React.FC = () => {
         borderTop: "1px solid #ccc",
       }}
     >
-      <Box
+      <Grid
         sx={{
           display: "flex",
           flexDirection: "column",
@@ -24,12 +23,11 @@ const Footer: React.FC = () => {
           gap: 1,
           mb: 2,
         }}
-      >
-      </Box>
+      ></Grid>
       <Typography variant="body2" sx={{ color: "#010101" }}>
         © {new Date().getFullYear()} Trukapp. All rights reserved.
       </Typography>
-    </Box>
+    </Grid>
   );
 };
 

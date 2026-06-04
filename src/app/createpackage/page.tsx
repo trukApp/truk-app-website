@@ -71,7 +71,7 @@ import React, { useState } from "react";
 import {
   useMediaQuery,
   useTheme,
-  Box,
+  // Box,
   Typography,
   Dialog,
   DialogTitle,
@@ -356,7 +356,7 @@ const CreatePackage = () => {
         </Dialog>
       )}
       {/* <Box sx={{ px: isMobile ? 2 : 4, pb: 1, mt: 4 }}> */}
-      <Box
+      <Grid
         style={{
           paddingLeft: isMobile ? 16 : 32,
           paddingRight: isMobile ? 16 : 32,
@@ -371,9 +371,9 @@ const CreatePackage = () => {
           Fill out the Following Steps to Successfully Create a Package With all
           Relevant Shipping, Billing, and Tax Details.
         </Typography>
-      </Box>
+      </Grid>
 
-      <Box
+      <Grid
         display="flex"
         justifyContent="flex-end"
         alignItems="center"
@@ -381,7 +381,7 @@ const CreatePackage = () => {
         sx={{ px: isMobile ? 2 : 4, mt: 2 }}
       >
         <MassUpload arrayKey="createPackageOrders" />
-      </Box>
+      </Grid>
 
       {/* Form Content */}
       <Formik<CreatePackageFormValues>

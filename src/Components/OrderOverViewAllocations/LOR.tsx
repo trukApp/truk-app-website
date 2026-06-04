@@ -1,789 +1,824 @@
+/* eslint-disable react-hooks/rules-of-hooks */
+/* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 import React, { useRef, useState, ReactNode, useLayoutEffect } from "react";
-import { Typography, Paper, Grid, Box, Button, Backdrop, CircularProgress, Dialog, DialogActions, Checkbox, DialogContent, FormControlLabel, DialogTitle, IconButton, SxProps, Theme, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import {
+  Typography,
+  Paper,
+  Grid,
+  Box,
+  Button,
+  Backdrop,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  Checkbox,
+  DialogContent,
+  FormControlLabel,
+  DialogTitle,
+  IconButton,
+  SxProps,
+  Theme,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+} from "@mui/material";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { useGetAllPackagesForOrderQuery, useGetAllProductsQuery, useGetLocationMasterQuery } from "@/api/apiSlice";
+import {
+  useGetAllPackagesForOrderQuery,
+  useGetAllProductsQuery,
+  useGetLocationMasterQuery,
+} from "@/api/apiSlice";
 import JsBarcode from "jsbarcode";
 import Image from "next/image";
 
-
 interface LORProps {
-	allocations: Array<{ packages: string[], occupiedWeight?: number, chargeableWeight?: number }>; // Adjust based on actual allocation structure
-	orderId: string; // Assuming orderId is a string; change if it's a number
-	allocatedPackageDetails: Array<{
-		pack_ID: string;
-		ship_to?: string;
-		package_weight?: number;
-		pac_id?: string;
-		product_lines?: Array<{ quantity?: number; package_info?: string }>; // If needed from commented code
-	}>;
-	order: { order_ID?: string; created_at?: string }; // Basic order structure
-	lrInvoices: Array<{
-		lr_num?: string;
-		ship_from?: string;
-		ship_to?: string;
-		e_way?: string;
-		packages_in_data?: Array<{
-			pack_ID: string;
-			invoice?: string;
-			e_way?: string;
-		}>;
-	}>;
-	from?: string;
-	orderStatus?: string;
+  allocations: Array<{
+    packages: string[];
+    occupiedWeight?: number;
+    chargeableWeight?: number;
+  }>; // Adjust based on actual allocation structure
+  orderId: string; // Assuming orderId is a string; change if it's a number
+  allocatedPackageDetails: Array<{
+    pack_ID: string;
+    ship_to?: string;
+    package_weight?: number;
+    pac_id?: string;
+    product_lines?: Array<{ quantity?: number; package_info?: string }>; // If needed from commented code
+  }>;
+  order: { order_ID?: string; created_at?: string }; // Basic order structure
+  lrInvoices: Array<{
+    lr_num?: string;
+    ship_from?: string;
+    ship_to?: string;
+    e_way?: string;
+    packages_in_data?: Array<{
+      pack_ID: string;
+      invoice?: string;
+      e_way?: string;
+    }>;
+  }>;
+  from?: string;
+  orderStatus?: string;
 }
 
 interface Location {
-	loc_ID: string;
-	contact_name?: string;
-	contact_email?: string;
-	contact_phone_number?: string;
-	address_1?: string;
-	city?: string;
-	state?: string;
-	country?: string;
-	pincode?: string;
+  loc_ID: string;
+  contact_name?: string;
+  contact_email?: string;
+  contact_phone_number?: string;
+  address_1?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  pincode?: string;
 }
 
 interface Product {
-	product_ID: string;
-	product_name: string;
+  product_ID: string;
+  product_name: string;
 }
 
 interface PackageProduct {
-	prod_ID: string;
-	quantity: number;
-	package_info?: string;
+  prod_ID: string;
+  quantity: number;
+  package_info?: string;
 }
 
 interface Package {
-	pac_id?: any;
-	package_weight?: number;
-	pack_ID: string;
-	pickup_date_time?: string;
-	product_ID?: PackageProduct[];
-
+  pac_id?: any;
+  package_weight?: number;
+  pack_ID: string;
+  pickup_date_time?: string;
+  product_ID?: PackageProduct[];
 }
 
 interface ProductDetails {
-	details: string;
-	quantity: number;
-	pickup_date_time: string | null;
+  details: string;
+  quantity: number;
+  pickup_date_time: string | null;
 }
 
 interface CellProps {
-	children: ReactNode;
-	sx?: SxProps<Theme>;
-	[key: string]: any;
+  children: ReactNode;
+  sx?: SxProps<Theme>;
+  [key: string]: any;
 }
 
 const Cell = ({ children, sx = {}, ...props }: CellProps) => (
-	<Box
-		{...props}
-		sx={{
-			border: "1px solid #333",
-			px: 1.5,
-			py: 0.7,
-			fontSize: "13px",
-			...sx
-		}}
-	>
-		{children}
-	</Box>
+  <Grid
+    {...props}
+    sx={{
+      border: "1px solid #333",
+      px: 1.5,
+      py: 0.7,
+      fontSize: "13px",
+      ...sx,
+    }}
+  >
+    {children}
+  </Grid>
 );
-const LOR = ({ allocations, orderId, allocatedPackageDetails, order, lrInvoices }: LORProps) => {
-	const [isLoading, setIsLoading] = useState(false);
-	const [openPopup, setOpenPopup] = useState(false);
-	const labelRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
-	type LORRole = "CONSIGNOR COPY" | "CONSIGNEE COPY" | "TRANSPORTER COPY";
+const LOR = ({
+  allocations,
+  orderId,
+  allocatedPackageDetails,
+  order,
+  lrInvoices,
+}: LORProps) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [openPopup, setOpenPopup] = useState(false);
+  const labelRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  type LORRole = "CONSIGNOR COPY" | "CONSIGNEE COPY" | "TRANSPORTER COPY";
 
-	const [selectedCopy, setSelectedCopy] = useState<LORRole>("CONSIGNOR COPY");
+  const [selectedCopy, setSelectedCopy] = useState<LORRole>("CONSIGNOR COPY");
 
-	const pdfRefs = useRef<{ [key: string]: HTMLElement | null }>({});
-	const [currentShipToId, setCurrentShipToId] = useState<string | null>(null);
-	const { data: packagesOrderData } = useGetAllPackagesForOrderQuery([]);
-	const { data: productsData } = useGetAllProductsQuery({});
-	const allProductsData: Product[] = productsData?.products || [];
-	const allPackagesData: Package[] = packagesOrderData?.packages || [];
-	const pdfRef = useRef<HTMLDivElement | null>(null);
-	const barcodeRefs = useRef<Record<string, SVGSVGElement | null>>({});
-	const [selectedShipTo, setSelectedShipTo] = useState("");
-	const { data: locationsData } = useGetLocationMasterQuery([])
-	const getAllLocations: Location[] = locationsData?.locations.length > 0 ? locationsData?.locations : []
-	const getLocationDetails = (loc_ID: string) => {
-		const location = (locationsData?.locations || []).find((loc: Location) => loc.loc_ID === loc_ID);
-		if (!location) return "Location details not available";
-		return [
-			location.contact_name,
-			location.contact_email,
-			location.contact_phone_number,
-			location.address_1,
-			location.city,
-			location.state,
-			location.country,
-			location.pincode,
-		].filter(Boolean).join(", ");
-	};
+  const pdfRefs = useRef<{ [key: string]: HTMLElement | null }>({});
+  const [currentShipToId, setCurrentShipToId] = useState<string | null>(null);
+  const { data: packagesOrderData } = useGetAllPackagesForOrderQuery([]);
+  const { data: productsData } = useGetAllProductsQuery({});
+  const allProductsData: Product[] = productsData?.products || [];
+  const allPackagesData: Package[] = packagesOrderData?.packages || [];
+  const pdfRef = useRef<HTMLDivElement | null>(null);
+  const barcodeRefs = useRef<Record<string, SVGSVGElement | null>>({});
+  const [selectedShipTo, setSelectedShipTo] = useState("");
+  const { data: locationsData } = useGetLocationMasterQuery([]);
+  const getAllLocations: Location[] =
+    locationsData?.locations.length > 0 ? locationsData?.locations : [];
+  const getLocationDetails = (loc_ID: string) => {
+    const location = (locationsData?.locations || []).find(
+      (loc: Location) => loc.loc_ID === loc_ID,
+    );
+    if (!location) return "Location details not available";
+    return [
+      location.contact_name,
+      location.contact_email,
+      location.contact_phone_number,
+      location.address_1,
+      location.city,
+      location.state,
+      location.country,
+      location.pincode,
+    ]
+      .filter(Boolean)
+      .join(", ");
+  };
 
+  const getLocationCode = (loc_ID: string) => {
+    const location = getAllLocations.find(
+      (loc: Location) => loc.loc_ID === loc_ID,
+    );
+    if (!location) return "";
+    return location.city || "";
+  };
 
-	const getLocationCode = (loc_ID: string) => {
-		const location = getAllLocations.find(
-			(loc: Location) => loc.loc_ID === loc_ID
-		);
-		if (!location) return "";
-		return location.city || "";
-	};
+  const copyOptions = ["CONSIGNEE COPY", "CONSIGNOR COPY", "TRANSPORTER COPY"];
+  const handleCancel = () => {
+    setOpenPopup(false);
+  };
 
-	const copyOptions = ["CONSIGNEE COPY", "CONSIGNOR COPY", "TRANSPORTER COPY"];
-	const handleCancel = () => {
-		setOpenPopup(false);
-	};
+  const getProductsInPackageDetails = (packId: string): ProductDetails => {
+    const packageEntry = allPackagesData.find((pkg) => pkg.pack_ID === packId);
+    const pickupDate = packageEntry?.pickup_date_time || null;
 
-	const getProductsInPackageDetails = (packId: string): ProductDetails => {
-		const packageEntry = allPackagesData.find((pkg) => pkg.pack_ID === packId);
-		const pickupDate = packageEntry?.pickup_date_time || null;
+    let pickupDateFormatted: string | null = null;
 
-		let pickupDateFormatted: string | null = null;
+    if (pickupDate) {
+      const dateOnly = pickupDate.split("T")[0];
+      const [year, month, day] = dateOnly.split("-");
 
-		if (pickupDate) {
-			const dateOnly = pickupDate.split("T")[0];
-			const [year, month, day] = dateOnly.split("-");
+      pickupDateFormatted = `${day}-${month}-${year}`;
+    }
+    const packProducts = allPackagesData
+      .filter((pkg) => pkg.pack_ID === packId)
+      .flatMap((pkg) => pkg.product_ID || []);
+    if (!packProducts.length) {
+      return {
+        details: "No products found",
+        quantity: 0,
+        pickup_date_time: pickupDateFormatted,
+      };
+    }
+    let totalQuantity = 0;
+    const details = packProducts.map((prod: PackageProduct) => {
+      const productInfo = allProductsData.find(
+        (p) => p.product_ID === prod.prod_ID,
+      );
+      if (!productInfo) {
+        return `Unknown Product (${prod.prod_ID})`;
+      }
+      totalQuantity += Number(prod.quantity || 0);
 
-			pickupDateFormatted = `${day}-${month}-${year}`;
-		}
-		const packProducts = allPackagesData
-			.filter((pkg) => pkg.pack_ID === packId)
-			.flatMap((pkg) => pkg.product_ID || []);
-		if (!packProducts.length) {
-			return {
-				details: "No products found",
-				quantity: 0,
-				pickup_date_time: pickupDateFormatted,
-			};
-		}
-		let totalQuantity = 0;
-		const details = packProducts.map((prod: PackageProduct) => {
-			const productInfo = allProductsData.find(
-				(p) => p.product_ID === prod.prod_ID
-			);
-			if (!productInfo) {
-				return `Unknown Product (${prod.prod_ID})`;
-			}
-			totalQuantity += Number(prod.quantity || 0);
+      return `${productInfo.product_name}, quantity: ${prod.quantity}`;
+    });
 
-			return `${productInfo.product_name}, quantity: ${prod.quantity}`;
-		});
+    return {
+      details: details.join(" || "),
+      quantity: totalQuantity,
+      pickup_date_time: pickupDateFormatted,
+    };
+  };
 
-		return {
-			details: details.join(" || "),
-			quantity: totalQuantity,
-			pickup_date_time: pickupDateFormatted,
-		};
-	};
+  const handlePDFDownload = async (
+    ref: HTMLElement | null,
+    fileName: string,
+    selectedCopy: string,
+  ): Promise<void> => {
+    setIsLoading(true);
 
-	const handlePDFDownload = async (
-		ref: HTMLElement | null,
-		fileName: string,
-		selectedCopy: string
-	): Promise<void> => {
-		setIsLoading(true);
+    console.log("Copy selected inside download:", selectedCopy);
 
-		console.log("Copy selected inside download:", selectedCopy);
+    const canvas = await html2canvas(ref as HTMLElement, {
+      scale: 2,
+      useCORS: true,
+    });
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF("l", "px", [canvas.width, canvas.height]);
+    pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
+    pdf.save(fileName);
+    setIsLoading(false);
+  };
 
-		const canvas = await html2canvas(ref as HTMLElement, { scale: 2, useCORS: true });
-		const imgData = canvas.toDataURL("image/png");
-		const pdf = new jsPDF("l", "px", [canvas.width, canvas.height]);
-		pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
-		pdf.save(fileName);
-		setIsLoading(false);
-	};
+  const handlePrintConfirm = () => {
+    setOpenPopup(false);
+    if (!currentShipToId) return;
+    const ref = pdfRefs.current[currentShipToId];
+    if (!ref) return;
+    handlePDFDownload(ref, `LOR-${orderId}-${selectedCopy}.pdf`, selectedCopy);
+  };
 
+  const handlePrintLabels = async (shipTo: string) => {
+    if (!shipTo) return;
+    const selectedLR = lrInvoices.find((lr) => lr.ship_to === shipTo);
+    if (!selectedLR) return;
+    const element = labelRefs.current[shipTo];
+    if (!element) return;
+    await new Promise((r) => setTimeout(r, 100));
+    const canvas = await html2canvas(element, {
+      scale: 3,
+      useCORS: true,
+      backgroundColor: "#ffffff",
+    });
+    const imgData = canvas.toDataURL("image/jpeg", 1.0);
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+    });
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
+    pdf.save(`LABELS-${selectedLR.lr_num}.pdf`);
+  };
 
-	const handlePrintConfirm = () => {
-		setOpenPopup(false);
-		if (!currentShipToId) return;
-		const ref = pdfRefs.current[currentShipToId];
-		if (!ref) return;
-		handlePDFDownload(
-			ref,
-			`LOR-${orderId}-${selectedCopy}.pdf`,
-			selectedCopy
-		);
-	};
+  return (
+    <>
+      <Dialog open={openPopup} onClose={handleCancel}>
+        <DialogTitle>
+          Select Copy Type
+          <IconButton
+            onClick={handleCancel}
+            sx={{ position: "absolute", right: 8, top: 8 }}
+          >
+            X
+          </IconButton>
+        </DialogTitle>
 
-	const handlePrintLabels = async (shipTo: string) => {
-		if (!shipTo) return;
-		const selectedLR = lrInvoices.find((lr) => lr.ship_to === shipTo);
-		if (!selectedLR) return;
-		const element = labelRefs.current[shipTo];
-		if (!element) return;
-		await new Promise((r) => setTimeout(r, 100));
-		const canvas = await html2canvas(element, {
-			scale: 3,
-			useCORS: true,
-			backgroundColor: "#ffffff",
-		});
-		const imgData = canvas.toDataURL("image/jpeg", 1.0);
-		const pdf = new jsPDF({
-			orientation: "portrait",
-			unit: "mm",
-			format: "a4",
-		});
-		const pdfWidth = pdf.internal.pageSize.getWidth();
-		const imgProps = pdf.getImageProperties(imgData);
-		const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-		pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
-		pdf.save(`LABELS-${selectedLR.lr_num}.pdf`);
-	};
+        <DialogContent sx={{ minWidth: 300 }}>
+          {copyOptions.map((copy) => (
+            <FormControlLabel
+              key={copy}
+              control={
+                <Checkbox
+                  checked={selectedCopy === copy}
+                  onChange={() => setSelectedCopy(copy as LORRole)}
+                />
+              }
+              label={copy}
+            />
+          ))}
+        </DialogContent>
 
-	return (
-		<>
-			<Dialog open={openPopup} onClose={handleCancel}>
-				<DialogTitle>
-					Select Copy Type
-					<IconButton
-						onClick={handleCancel}
-						sx={{ position: "absolute", right: 8, top: 8 }}
-					>
-						X
-					</IconButton>
-				</DialogTitle>
+        <DialogActions>
+          <Button variant="contained" onClick={handlePrintConfirm}>
+            Print
+          </Button>
+          <Button variant="outlined" onClick={handleCancel}>
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>{" "}
+      <div
+        id="labels-container"
+        style={{ position: "absolute", left: "-9999px", top: 0 }}
+      ></div>
+      <Backdrop
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={isLoading}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-evenly",
+          alignItems: "center",
+        }}
+      >
+        <Grid display="flex" flexDirection="column" justifyContent="center">
+          <Typography> Download LOR's :</Typography>
 
-				<DialogContent sx={{ minWidth: 300 }}>
-					{copyOptions.map((copy) => (
-						<FormControlLabel
-							key={copy}
-							control={
-								<Checkbox
-									checked={selectedCopy === copy}
-									onChange={() => setSelectedCopy(copy as LORRole)}
-								/>
-							}
-							label={copy}
-						/>
-					))}
-				</DialogContent>
+          <FormControl size="small" sx={{ minWidth: 200 }}>
+            <InputLabel id="shipto-select">Download</InputLabel>
 
-				<DialogActions>
-					<Button variant="contained" onClick={handlePrintConfirm}>
-						Print
-					</Button>
-					<Button variant="outlined" onClick={handleCancel}>
-						Cancel
-					</Button>
-				</DialogActions>
-			</Dialog>{" "}
-			<div
-				id="labels-container"
-				style={{ position: "absolute", left: "-9999px", top: 0 }}
-			></div>
-			<Backdrop
-				sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-				open={isLoading}
-			>
-				<CircularProgress color="inherit" />
-			</Backdrop>
-			<div style={{ display: 'flex', justifyContent: 'space-evenly', alignItems: 'center' }}>
-				<Box display="flex" flexDirection='column' justifyContent="center"  >
-					<Typography> Download LOR's :</Typography>
+            <Select
+              labelId="shipto-select"
+              label="Download"
+              value={selectedShipTo}
+              onChange={(e) => {
+                const shipTo = e.target.value;
+                setSelectedShipTo(shipTo);
+                setCurrentShipToId(shipTo);
+                setOpenPopup(true);
+              }}
+            >
+              {lrInvoices.map((lr) => (
+                <MenuItem key={lr.lr_num} value={lr.ship_to}>
+                  {lr.ship_to}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid display="flex" flexDirection="column">
+          <Typography>Download Labels :</Typography>
 
-					<FormControl size="small" sx={{ minWidth: 200 }}>
-						<InputLabel id="shipto-select">Download</InputLabel>
+          <FormControl size="small" sx={{ minWidth: 200 }}>
+            <InputLabel id="label-shipto-select">Download</InputLabel>
 
-						<Select
-							labelId="shipto-select"
-							label="Download"
-							value={selectedShipTo}
-							onChange={(e) => {
-								const shipTo = e.target.value;
-								setSelectedShipTo(shipTo);
-								setCurrentShipToId(shipTo);
-								setOpenPopup(true);
-							}}
+            <Select
+              labelId="label-shipto-select"
+              label="Download"
+              value={selectedShipTo}
+              onChange={(e) => {
+                const shipTo = e.target.value;
+                handlePrintLabels(shipTo);
+              }}
+            >
+              {lrInvoices.map((lr) => (
+                <MenuItem key={lr.lr_num} value={lr.ship_to}>
+                  {lr.ship_to}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+      </div>
+      {allocations.map((allocation, allocIndex) => {
+        const vehiclePackages = allocatedPackageDetails.filter((pkg) =>
+          allocation.packages.includes(pkg.pack_ID),
+        );
+        const packagesByShipTo: Record<string, Package[]> = {};
+        vehiclePackages.forEach((pkg) => {
+          if (pkg.ship_to) {
+            if (!packagesByShipTo[pkg.ship_to])
+              packagesByShipTo[pkg.ship_to] = [];
+            packagesByShipTo[pkg.ship_to].push(pkg);
+          }
+        });
 
-						>
-							{lrInvoices.map((lr) => (
-								<MenuItem key={lr.lr_num} value={lr.ship_to}>
-									{lr.ship_to}
-								</MenuItem>
-							))}
-						</Select>
-					</FormControl>
-				</Box>
-				<Box display="flex" flexDirection="column">
-					<Typography>Download Labels :</Typography>
+        return Object.entries(packagesByShipTo).map(
+          ([shipToId, pkgList], index) => {
+            const shipperPkg = pkgList[0];
+            const lrData =
+              lrInvoices?.find((lr) =>
+                lr.packages_in_data?.some(
+                  (pkg) => pkg.pack_ID === shipperPkg.pack_ID,
+                ),
+              ) || {};
 
-					<FormControl size="small" sx={{ minWidth: 200 }}>
-						<InputLabel id="label-shipto-select">Download</InputLabel>
+            const consignorLoc = lrData.ship_from ?? "";
+            const consigneeLoc = lrData.ship_to ?? "";
+            const productRows = (lrData?.packages_in_data || []).map(
+              (
+                pkg: { pack_ID: string; invoice?: string; e_way?: string },
+                idx: number,
+              ) => {
+                const pkgInfo = getProductsInPackageDetails(pkg?.pack_ID || "");
 
-						<Select
-							labelId="label-shipto-select"
-							label="Download"
-							value={selectedShipTo}
-							onChange={(e) => {
-								const shipTo = e.target.value;
-								handlePrintLabels(shipTo);
-							}}
-						>
-							{lrInvoices.map((lr) => (
-								<MenuItem key={lr.lr_num} value={lr.ship_to}>
-									{lr.ship_to}
-								</MenuItem>
-							))}
-						</Select>
-					</FormControl>
-				</Box>
-			</div>
+                return {
+                  slNo: idx + 1,
+                  invoice: pkg.invoice || "-",
+                  ewb: pkg.e_way ?? "-",
+                  details: pkgInfo.details,
+                  count: pkgInfo.quantity,
+                  deedWeight:
+                    shipperPkg?.package_weight ??
+                    allocation?.occupiedWeight ??
+                    "-",
+                  chargeableWeight: allocation?.chargeableWeight ?? "-",
+                  value: 0,
+                };
+              },
+            );
 
-			{allocations.map((allocation, allocIndex) => {
-				const vehiclePackages = allocatedPackageDetails.filter((pkg) =>
-					allocation.packages.includes(pkg.pack_ID)
-				);
-				const packagesByShipTo: Record<string, Package[]> = {};
-				vehiclePackages.forEach((pkg) => {
-					if (pkg.ship_to) {
-						if (!packagesByShipTo[pkg.ship_to])
-							packagesByShipTo[pkg.ship_to] = [];
-						packagesByShipTo[pkg.ship_to].push(pkg);
-					}
-				});
+            const totalCount = productRows.reduce(
+              (a, b) => a + Number(b.count || 0),
+              0,
+            );
+            const totalDeedWeight = productRows.reduce(
+              (a, b) => a + Number(b.deedWeight || 0),
+              0,
+            );
+            const totalChargeableWeight = productRows.reduce(
+              (a, b) => a + Number(b.chargeableWeight || 0),
+              0,
+            );
+            const totalValue = productRows.reduce(
+              (a, b) => a + Number(b.value || 0),
+              0,
+            );
+            // eslint-disable-next-line react-hooks/rules-of-hooks
 
-				return Object.entries(packagesByShipTo).map(
-					([shipToId, pkgList], index) => {
-						const shipperPkg = pkgList[0];
-						const lrData =
-							lrInvoices?.find((lr) =>
-								lr.packages_in_data?.some(
-									(pkg) => pkg.pack_ID === shipperPkg.pack_ID
-								)
-							) || {};
+            useLayoutEffect(() => {
+              if (!getAllLocations?.length) return;
 
-						const consignorLoc = lrData.ship_from ?? "";
-						const consigneeLoc = lrData.ship_to ?? "";
-						const productRows = (lrData?.packages_in_data || []).map(
-							(
-								pkg: { pack_ID: string; invoice?: string; e_way?: string },
-								idx: number
-							) => {
-								const pkgInfo = getProductsInPackageDetails(pkg?.pack_ID || "");
+              (lrData?.packages_in_data || []).forEach((pkg) => {
+                const svgEl = barcodeRefs.current[pkg.pack_ID];
+                if (!svgEl) return;
 
-								return {
-									slNo: idx + 1,
-									invoice: pkg.invoice || "-",
-									ewb: pkg.e_way ?? "-",
-									details: pkgInfo.details,
-									count: pkgInfo.quantity,
-									deedWeight:
-										shipperPkg?.package_weight ??
-										allocation?.occupiedWeight ??
-										"-",
-									chargeableWeight: allocation?.chargeableWeight ?? "-",
-									value: 0,
-								};
-							}
-						);
+                const from = getLocationCode(consignorLoc);
+                const to = getLocationCode(consigneeLoc);
+                if (!from || !to) return;
 
-						const totalCount = productRows.reduce(
-							(a, b) => a + Number(b.count || 0),
-							0
-						);
-						const totalDeedWeight = productRows.reduce(
-							(a, b) => a + Number(b.deedWeight || 0),
-							0
-						);
-						const totalChargeableWeight = productRows.reduce(
-							(a, b) => a + Number(b.chargeableWeight || 0),
-							0
-						);
-						const totalValue = productRows.reduce(
-							(a, b) => a + Number(b.value || 0),
-							0
-						);
-						// eslint-disable-next-line react-hooks/rules-of-hooks
+                const pkgInfo = getProductsInPackageDetails(pkg.pack_ID);
 
-						useLayoutEffect(() => {
-							if (!getAllLocations?.length) return;
+                const barcodeData = `${pkg.pack_ID}|${from.slice(0, 3)}|${to.slice(
+                  0,
+                  3,
+                )}|${pkgInfo.quantity}`;
+                svgEl.innerHTML = "";
+                JsBarcode(svgEl, barcodeData, {
+                  format: "CODE128",
+                  width: 1.2,
+                  height: 45,
+                  displayValue: false,
+                });
+              });
+            }, [lrData?.packages_in_data, consignorLoc, consigneeLoc]);
+            return (
+              <Grid key={`${allocIndex}-${index}`} mt={2}>
+                <div
+                  ref={(el) => {
+                    if (shipToId) {
+                      labelRefs.current[shipToId] = el;
+                    }
+                  }}
+                  id="hidden-labels"
+                  style={{
+                    position: "absolute",
+                    top: "-99999px",
+                    left: "-99999px",
+                    pointerEvents: "none",
+                    visibility: "visible",
+                  }}
+                >
+                  {lrData?.packages_in_data?.map((pkg) => {
+                    const pkgInfo = getProductsInPackageDetails(pkg.pack_ID);
+                    const fromShort =
+                      getLocationCode(consignorLoc)?.toUpperCase();
+                    const toShort =
+                      getLocationCode(consigneeLoc)?.toUpperCase();
 
-							(lrData?.packages_in_data || []).forEach((pkg) => {
-								const svgEl = barcodeRefs.current[pkg.pack_ID];
-								if (!svgEl) return;
+                    return (
+                      <div
+                        key={pkg.pack_ID}
+                        id={`label-${pkg.pack_ID}`}
+                        style={{
+                          width: "350px",
+                          padding: "18px",
+                          border: "2px solid #000",
+                          background: "#fff",
+                          fontFamily: "Arial, sans-serif",
+                          marginBottom: "40px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <Grid item xs={2}>
+                            <Image
+                              src="/TrukAppLogo.png"
+                              alt="Logo"
+                              width={90}
+                              height={30}
+                              unoptimized
+                            />
+                          </Grid>
 
-								const from = getLocationCode(consignorLoc);
-								const to = getLocationCode(consigneeLoc);
-								if (!from || !to) return;
+                          <div style={{ textAlign: "right", fontSize: "12px" }}>
+                            <p style={{ margin: 0 }}>
+                              Date: {pkgInfo?.pickup_date_time}
+                            </p>
+                            <p style={{ margin: 0 }}>
+                              Invoice No: <b>{pkg?.invoice}</b>
+                            </p>
+                          </div>
+                        </div>
+                        <hr />
+                        <p
+                          style={{
+                            fontSize: "12px",
+                            textAlign: "center",
+                            marginTop: "-4px",
+                          }}
+                        >
+                          Package ID : <b>{pkg.pack_ID}</b>
+                        </p>
+                        <hr />
+                        <div
+                          style={{
+                            display: "flex",
+                            textAlign: "center",
+                            marginTop: "10px",
+                          }}
+                        >
+                          <div style={{ width: "38%", padding: "6px" }}>
+                            <p style={{ margin: 0, fontSize: "12px" }}>
+                              Destination
+                            </p>
+                            <h4 style={{ margin: 0 }}>{toShort}</h4>
+                          </div>
+                          <div
+                            style={{
+                              width: "1px",
+                              background: "#000",
+                              margin: "0 4px",
+                            }}
+                          />
+                          <div style={{ width: "33%", padding: "6px" }}>
+                            <p style={{ margin: 0, fontSize: "12px" }}>
+                              Facility Code
+                            </p>
+                            <h4 style={{ margin: 0 }}>{consigneeLoc}</h4>
+                          </div>
+                          <div
+                            style={{
+                              width: "1px",
+                              background: "#000",
+                              margin: "0 4px",
+                            }}
+                          />
+                          <div style={{ width: "28%", padding: "6px" }}>
+                            <p style={{ margin: 0, fontSize: "12px" }}>
+                              Item Count
+                            </p>
+                            <h4 style={{ margin: 0 }}>{pkgInfo?.quantity}</h4>
+                          </div>
+                        </div>
+                        <hr />
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <div>
+                            <p style={{ margin: 0, fontSize: "12px" }}>
+                              Origin
+                            </p>
+                            <h4 style={{ margin: 0 }}>{fromShort}</h4>
+                          </div>
 
-								const pkgInfo = getProductsInPackageDetails(pkg.pack_ID);
+                          <div style={{ textAlign: "right" }}>
+                            <p style={{ margin: 0, fontSize: "12px" }}>
+                              Delivery Type
+                            </p>
+                            <h4 style={{ margin: 0 }}>Standard</h4>
+                          </div>
+                        </div>
+                        <hr />
+                        <svg
+                          width="200"
+                          height="60"
+                          ref={(el) => {
+                            if (el) {
+                              barcodeRefs.current[pkg.pack_ID] = el;
+                            }
+                          }}
+                        />
+                        <Typography>{lrData?.lr_num}</Typography>
+                      </div>
+                    );
+                  })}
+                </div>
 
-								const barcodeData = `${pkg.pack_ID}|${from.slice(0, 3)}|${to.slice(
-									0,
-									3
-								)}|${pkgInfo.quantity}`;
-								svgEl.innerHTML = "";
-								JsBarcode(svgEl, barcodeData, {
-									format: "CODE128",
-									width: 1.2,
-									height: 45,
-									displayValue: false,
-								});
-							});
-						}, [
-							lrData?.packages_in_data,
-							consignorLoc,
-							consigneeLoc,
-							getAllLocations,
-						]);
-						return (
-							<Box key={`${allocIndex}-${index}`} mt={2}>
-								<div
-									ref={(el) => {
-										if (shipToId) {
-											labelRefs.current[shipToId] = el;
-										}
-									}}
-									id="hidden-labels"
-									style={{
-										position: "absolute",
-										top: "-99999px",
-										left: "-99999px",
-										pointerEvents: "none",
-										visibility: "visible",
-									}}
-								>
-									{lrData?.packages_in_data?.map((pkg) => {
-										const pkgInfo = getProductsInPackageDetails(pkg.pack_ID);
-										const fromShort =
-											getLocationCode(consignorLoc)?.toUpperCase();
-										const toShort =
-											getLocationCode(consigneeLoc)?.toUpperCase();
+                <Grid
+                  sx={{
+                    position: "fixed",
+                    left: "-10000px",
+                    top: 0,
+                    visibility: "visible",
+                  }}
+                >
+                  <Paper
+                    ref={pdfRef}
+                    sx={{
+                      p: 2,
+                      border: "1px solid #222",
+                      width: "1400px",
+                      fontFamily: "Arial, 'Liberation Sans', sans-serif",
+                    }}
+                  >
+                    <Paper
+                      ref={(el) => {
+                        if (shipToId) {
+                          pdfRefs.current[shipToId] = el;
+                        }
+                      }}
+                      sx={{
+                        p: 0.7,
+                        border: "1px solid #222",
+                        minWidth: 1300,
+                        maxWidth: 1322,
+                        margin: "0 auto",
 
-										return (
-											<div
-												key={pkg.pack_ID}
-												id={`label-${pkg.pack_ID}`}
-												style={{
-													width: "350px",
-													padding: "18px",
-													border: "2px solid #000",
-													background: "#fff",
-													fontFamily: "Arial, sans-serif",
-													marginBottom: "40px",
-												}}
-											>
-												<div
-													style={{
-														display: "flex",
-														justifyContent: "space-between",
-													}}
-												>
-													<Grid item xs={2}>
-														<Image
-															src="/TrukAppLogo.png"
-															alt="Logo"
-															width={90}
-															height={30}
-															unoptimized
-														/>
-													</Grid>
+                        fontFamily: "Arial, 'Liberation Sans', sans-serif",
+                      }}
+                    >
+                      <Grid container>
+                        <Grid item xs={2.5}>
+                          <Image
+                            src="/TrukAppLogo.png"
+                            alt="Logo"
+                            width={150}
+                            height={50}
+                            unoptimized
+                          />
+                        </Grid>
 
-													<div style={{ textAlign: "right", fontSize: "12px" }}>
-														<p style={{ margin: 0 }}>
-															Date: {pkgInfo?.pickup_date_time}
-														</p>
-														<p style={{ margin: 0 }}>
-															Invoice No: <b>{pkg?.invoice}</b>
-														</p>
-													</div>
-												</div>
-												<hr />
-												<p
-													style={{
-														fontSize: "12px",
-														textAlign: "center",
-														marginTop: "-4px",
-													}}
-												>
-													Package ID : <b>{pkg.pack_ID}</b>
-												</p>
-												<hr />
-												<div
-													style={{
-														display: "flex",
-														textAlign: "center",
-														marginTop: "10px",
-													}}
-												>
-													<div style={{ width: "38%", padding: "6px" }}>
-														<p style={{ margin: 0, fontSize: "12px" }}>
-															Destination
-														</p>
-														<h4 style={{ margin: 0 }}>{toShort}</h4>
-													</div>
-													<div
-														style={{
-															width: "1px",
-															background: "#000",
-															margin: "0 4px",
-														}}
-													/>
-													<div style={{ width: "33%", padding: "6px" }}>
-														<p style={{ margin: 0, fontSize: "12px" }}>
-															Facility Code
-														</p>
-														<h4 style={{ margin: 0 }}>{consigneeLoc}</h4>
-													</div>
-													<div
-														style={{
-															width: "1px",
-															background: "#000",
-															margin: "0 4px",
-														}}
-													/>
-													<div style={{ width: "28%", padding: "6px" }}>
-														<p style={{ margin: 0, fontSize: "12px" }}>
-															Item Count
-														</p>
-														<h4 style={{ margin: 0 }}>{pkgInfo?.quantity}</h4>
-													</div>
-												</div>
-												<hr />
-												<div
-													style={{
-														display: "flex",
-														justifyContent: "space-between",
-													}}
-												>
-													<div>
-														<p style={{ margin: 0, fontSize: "12px" }}>
-															Origin
-														</p>
-														<h4 style={{ margin: 0 }}>{fromShort}</h4>
-													</div>
-
-													<div style={{ textAlign: "right" }}>
-														<p style={{ margin: 0, fontSize: "12px" }}>
-															Delivery Type
-														</p>
-														<h4 style={{ margin: 0 }}>Standard</h4>
-													</div>
-												</div>
-												<hr />
-												<svg
-													width="200"
-													height="60"
-													ref={(el) => {
-														if (el) {
-															barcodeRefs.current[pkg.pack_ID] = el;
-														}
-													}}
-
-												/>
-												<Typography>{lrData?.lr_num}</Typography>
-											</div>
-										);
-									})}
-								</div>
-
-								<Box
-									sx={{
-										position: "fixed",
-										left: "-10000px",
-										top: 0,
-										visibility: "visible",
-									}}
-								>
-									<Paper
-										ref={pdfRef}
-										sx={{
-											p: 2,
-											border: "1px solid #222",
-											width: "1400px",
-											fontFamily: "Arial, 'Liberation Sans', sans-serif",
-										}}
-									>
-										<Paper
-											ref={(el) => {
-												if (shipToId) {
-													pdfRefs.current[shipToId] = el;
-												}
-											}}
-											sx={{
-												p: 0.7,
-												border: "1px solid #222",
-												minWidth: 1300,
-												maxWidth: 1322,
-												margin: "0 auto",
-
-												fontFamily: "Arial, 'Liberation Sans', sans-serif",
-											}}
-										>
-											<Grid container>
-												<Grid item xs={2.5}>
-													<Image
-														src="/TrukAppLogo.png"
-														alt="Logo"
-														width={150}
-														height={50}
-														unoptimized
-													/>
-												</Grid>
-
-												<Grid item xs={7} sx={{ textAlign: "center" }}>
-													<Typography fontWeight={700} fontSize="15px">
-														Shadowfax Technologies Pvt. Ltd.
-													</Typography>
-													<Typography fontSize={13}>
-														GSTIN: 07AAVCS6967K1ZS &nbsp;|&nbsp; PAN: AAVCS6967K
-													</Typography>
-												</Grid>
-												<Grid
-													item
-													xs={2.5}
-													sx={{ textAlign: "right", fontSize: 13 }}
-												>
-													<Typography>
-														Order Reference No.: <b>{order?.order_ID || "-"}</b>
-													</Typography>
-													<Typography>
-														Booking Date:{" "}
-														<b>{order?.created_at?.split("T")[0] || "-"}</b>
-													</Typography>
-													<svg
-														width="200"
-														height="60"
-														ref={(el) => {
-															if (shipperPkg?.pac_id) {
-																barcodeRefs.current[shipperPkg.pac_id] = el;
-															}
-														}}
-													/>
-													<Typography>{lrData?.lr_num}</Typography>
-												</Grid>
-											</Grid>
-											<Grid container sx={{ border: "1px solid #333", mt: 1 }}>
-												<Grid container>
-													<Cell sx={{ width: "14%" }}>MODE</Cell>
-													<Cell sx={{ width: "20%" }}>LOR TYPE</Cell>
-													<Cell sx={{ width: "16%" }}>DELIVERY TYPE</Cell>
-													<Cell sx={{ width: "18%" }}>DELIVERY SLOT</Cell>
-													<Cell sx={{ width: "32%" }}>
-														SIGNATURE & STAMP OF CONSIGNEE
-													</Cell>
-												</Grid>
-												<Grid container>
-													<Cell sx={{ width: "14%" }}>Surface</Cell>
-													<Cell sx={{ width: "20%" }}>{selectedCopy}</Cell>
-													<Cell sx={{ width: "16%" }}>Standard</Cell>
-													<Cell sx={{ width: "18%" }}>ALL DAY</Cell>
-												</Grid>
-											</Grid>
-											<Grid container sx={{ border: "1px solid #333", mt: 1 }}>
-												<Cell sx={{ width: "50%" }}>
-													<Typography fontWeight={700} fontSize={13}>
-														CONSIGNER NAME & ADDRESS
-													</Typography>
-													<Typography fontSize={13}>
-														{getLocationDetails(consignorLoc)}
-													</Typography>
-												</Cell>
-												<Cell sx={{ width: "50%" }}>
-													<Typography fontWeight={700} fontSize={13}>
-														CONSIGNEE NAME & ADDRESS
-													</Typography>
-													<Typography fontSize={13}>
-														{getLocationDetails(consigneeLoc)}
-													</Typography>
-												</Cell>
-											</Grid>
-											<Grid container sx={{ border: "1px solid #333", mt: 1 }}>
-												<Cell sx={{ width: "8%" }}>SL No.</Cell>
-												<Cell sx={{ width: "18%" }}>Invoice Number</Cell>
-												<Cell sx={{ width: "18%" }}>EWB Number</Cell>
-												<Cell sx={{ width: "18%" }}>Product Details</Cell>
-												<Cell sx={{ width: "8%" }}>Count</Cell>
-												<Cell sx={{ width: "8%" }}>Dead Weight</Cell>
-												<Cell sx={{ width: "12%" }}>Chargable Weight</Cell>
-												<Cell sx={{ width: "10%" }}>Value</Cell>
-												{productRows.map((row, idx) => (
-													<React.Fragment key={idx}>
-														<Cell sx={{ width: "8%" }}>{row.slNo}</Cell>
-														<Cell sx={{ width: "18%" }}>{row.invoice}</Cell>
-														<Cell sx={{ width: "18%" }}>{row.ewb}</Cell>
-														<Cell sx={{ width: "18%" }}>{row.details}</Cell>
-														<Cell sx={{ width: "8%" }}>{row.count}</Cell>
-														<Cell sx={{ width: "8%" }}>{row.deedWeight}</Cell>
-														<Cell sx={{ width: "12%" }}>
-															{row.chargeableWeight}
-														</Cell>
-														<Cell sx={{ width: "10%" }}>{row.value}</Cell>
-													</React.Fragment>
-												))}
-											</Grid>
-											<Grid container sx={{ border: "1px solid #333", mt: 1 }}>
-												<Cell sx={{ width: "100%" }}>
-													<b>DECLARATION BY THE CONSIGNER</b>
-													<br />I hereby solemnly declare that all the
-													particulars mentioned on this consignment note are
-													true and correct and I have read, understood & accept
-													all the terms and conditions mentioned in agreement.
-												</Cell>
-											</Grid>
-											<Grid container sx={{ border: "1px solid #333", mt: 1 }}>
-												<Cell sx={{ width: "24%" }}>
-													<b>SOURCE</b> : {getLocationCode(consignorLoc)}
-													<br />
-													Facility Code:{consignorLoc}
-												</Cell>
-												<Cell sx={{ width: "24%" }}>
-													<b>DESTINATION</b> : {getLocationCode(consigneeLoc)}
-													<br />
-													Facility Code: {consigneeLoc}
-												</Cell>
-												<Cell
-													sx={{
-														width: "52%",
-														display: "flex",
-														justifyContent: "space-between",
-														alignItems: "flex-end",
-													}}
-												>
-													<Box
-														sx={{
-															display: "flex",
-															width: "100%",
-															justifyContent: "space-between",
-														}}
-													>
-														<Typography>
-															{selectedCopy === "CONSIGNEE COPY"
-																? ""
-																: "Signature of Consignee"}
-														</Typography>
-														<Typography>
-															{selectedCopy === "CONSIGNOR COPY"
-																? ""
-																: "Signature of Consigner"}
-														</Typography>
-														<Typography>
-															{selectedCopy === "TRANSPORTER COPY"
-																? ""
-																: "Signature of Transporter"}
-														</Typography>
-													</Box>
-												</Cell>
-											</Grid>
-										</Paper>{" "}
-									</Paper>
-								</Box>
-							</Box>
-						);
-					}
-				);
-			})}
-		</>
-	);
+                        <Grid item xs={7} sx={{ textAlign: "center" }}>
+                          <Typography fontWeight={700} fontSize="15px">
+                            Shadowfax Technologies Pvt. Ltd.
+                          </Typography>
+                          <Typography fontSize={13}>
+                            GSTIN: 07AAVCS6967K1ZS &nbsp;|&nbsp; PAN: AAVCS6967K
+                          </Typography>
+                        </Grid>
+                        <Grid
+                          item
+                          xs={2.5}
+                          sx={{ textAlign: "right", fontSize: 13 }}
+                        >
+                          <Typography>
+                            Order Reference No.: <b>{order?.order_ID || "-"}</b>
+                          </Typography>
+                          <Typography>
+                            Booking Date:{" "}
+                            <b>{order?.created_at?.split("T")[0] || "-"}</b>
+                          </Typography>
+                          <svg
+                            width="200"
+                            height="60"
+                            ref={(el) => {
+                              if (shipperPkg?.pac_id) {
+                                barcodeRefs.current[shipperPkg.pac_id] = el;
+                              }
+                            }}
+                          />
+                          <Typography>{lrData?.lr_num}</Typography>
+                        </Grid>
+                      </Grid>
+                      <Grid container sx={{ border: "1px solid #333", mt: 1 }}>
+                        <Grid container>
+                          <Cell sx={{ width: "14%" }}>MODE</Cell>
+                          <Cell sx={{ width: "20%" }}>LOR TYPE</Cell>
+                          <Cell sx={{ width: "16%" }}>DELIVERY TYPE</Cell>
+                          <Cell sx={{ width: "18%" }}>DELIVERY SLOT</Cell>
+                          <Cell sx={{ width: "32%" }}>
+                            SIGNATURE & STAMP OF CONSIGNEE
+                          </Cell>
+                        </Grid>
+                        <Grid container>
+                          <Cell sx={{ width: "14%" }}>Surface</Cell>
+                          <Cell sx={{ width: "20%" }}>{selectedCopy}</Cell>
+                          <Cell sx={{ width: "16%" }}>Standard</Cell>
+                          <Cell sx={{ width: "18%" }}>ALL DAY</Cell>
+                        </Grid>
+                      </Grid>
+                      <Grid container sx={{ border: "1px solid #333", mt: 1 }}>
+                        <Cell sx={{ width: "50%" }}>
+                          <Typography fontWeight={700} fontSize={13}>
+                            CONSIGNER NAME & ADDRESS
+                          </Typography>
+                          <Typography fontSize={13}>
+                            {getLocationDetails(consignorLoc)}
+                          </Typography>
+                        </Cell>
+                        <Cell sx={{ width: "50%" }}>
+                          <Typography fontWeight={700} fontSize={13}>
+                            CONSIGNEE NAME & ADDRESS
+                          </Typography>
+                          <Typography fontSize={13}>
+                            {getLocationDetails(consigneeLoc)}
+                          </Typography>
+                        </Cell>
+                      </Grid>
+                      <Grid container sx={{ border: "1px solid #333", mt: 1 }}>
+                        <Cell sx={{ width: "8%" }}>SL No.</Cell>
+                        <Cell sx={{ width: "18%" }}>Invoice Number</Cell>
+                        <Cell sx={{ width: "18%" }}>EWB Number</Cell>
+                        <Cell sx={{ width: "18%" }}>Product Details</Cell>
+                        <Cell sx={{ width: "8%" }}>Count</Cell>
+                        <Cell sx={{ width: "8%" }}>Dead Weight</Cell>
+                        <Cell sx={{ width: "12%" }}>Chargable Weight</Cell>
+                        <Cell sx={{ width: "10%" }}>Value</Cell>
+                        {productRows.map((row, idx) => (
+                          <React.Fragment key={idx}>
+                            <Cell sx={{ width: "8%" }}>{row.slNo}</Cell>
+                            <Cell sx={{ width: "18%" }}>{row.invoice}</Cell>
+                            <Cell sx={{ width: "18%" }}>{row.ewb}</Cell>
+                            <Cell sx={{ width: "18%" }}>{row.details}</Cell>
+                            <Cell sx={{ width: "8%" }}>{row.count}</Cell>
+                            <Cell sx={{ width: "8%" }}>{row.deedWeight}</Cell>
+                            <Cell sx={{ width: "12%" }}>
+                              {row.chargeableWeight}
+                            </Cell>
+                            <Cell sx={{ width: "10%" }}>{row.value}</Cell>
+                          </React.Fragment>
+                        ))}
+                      </Grid>
+                      <Grid container sx={{ border: "1px solid #333", mt: 1 }}>
+                        <Cell sx={{ width: "100%" }}>
+                          <b>DECLARATION BY THE CONSIGNER</b>
+                          <br />I hereby solemnly declare that all the
+                          particulars mentioned on this consignment note are
+                          true and correct and I have read, understood & accept
+                          all the terms and conditions mentioned in agreement.
+                        </Cell>
+                      </Grid>
+                      <Grid container sx={{ border: "1px solid #333", mt: 1 }}>
+                        <Cell sx={{ width: "24%" }}>
+                          <b>SOURCE</b> : {getLocationCode(consignorLoc)}
+                          <br />
+                          Facility Code:{consignorLoc}
+                        </Cell>
+                        <Cell sx={{ width: "24%" }}>
+                          <b>DESTINATION</b> : {getLocationCode(consigneeLoc)}
+                          <br />
+                          Facility Code: {consigneeLoc}
+                        </Cell>
+                        <Cell
+                          sx={{
+                            width: "52%",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "flex-end",
+                          }}
+                        >
+                          <Grid
+                            sx={{
+                              display: "flex",
+                              width: "100%",
+                              justifyContent: "space-between",
+                            }}
+                          >
+                            <Typography>
+                              {selectedCopy === "CONSIGNEE COPY"
+                                ? ""
+                                : "Signature of Consignee"}
+                            </Typography>
+                            <Typography>
+                              {selectedCopy === "CONSIGNOR COPY"
+                                ? ""
+                                : "Signature of Consigner"}
+                            </Typography>
+                            <Typography>
+                              {selectedCopy === "TRANSPORTER COPY"
+                                ? ""
+                                : "Signature of Transporter"}
+                            </Typography>
+                          </Grid>
+                        </Cell>
+                      </Grid>
+                    </Paper>{" "}
+                  </Paper>
+                </Grid>
+              </Grid>
+            );
+          },
+        );
+      })}
+    </>
+  );
 };
 
 export default LOR;

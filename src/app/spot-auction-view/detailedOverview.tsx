@@ -11,7 +11,7 @@ import {
   Grid,
   Paper,
   Typography,
-  Box,
+  // Box,
   Dialog,
 } from "@mui/material";
 import Allocations from "@/Components/OrderOverViewAllocations/Allocations";
@@ -52,7 +52,7 @@ const OrderDetailedOverview: React.FC = () => {
   };
 
   return (
-    <Box sx={{ p: { xs: 0.2, md: 2 } }}>
+    <Grid sx={{ p: { xs: 0.2, md: 2 } }}>
       <Dialog
         open={openPreview.open}
         onClose={() => setOpenPreview({ url: "", open: false })}
@@ -205,7 +205,7 @@ const OrderDetailedOverview: React.FC = () => {
           />
         )}
       </Paper>
-    </Box>
+    </Grid>
   );
 };
 

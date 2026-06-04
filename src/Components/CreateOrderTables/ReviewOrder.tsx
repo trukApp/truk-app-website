@@ -1,6 +1,6 @@
 import { useAppSelector } from "@/store";
 import React from "react";
-import { Box, Typography, Paper, Grid } from "@mui/material";
+import { Typography, Paper, Grid } from "@mui/material";
 import { DataGrid, GridCellParams } from "@mui/x-data-grid";
 import { Truck } from "./TrucksTable";
 import { Product } from "./PackagesTable";
@@ -147,7 +147,7 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({
   }));
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Grid sx={{ p: 3 }}>
       <Paper sx={{ mb: 3, p: 2, borderRadius: 2, boxShadow: 3 }}>
         <Typography variant="h6" gutterBottom sx={{ color: "#F08C24" }}>
           Selected Packages
@@ -169,7 +169,7 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({
         <Grid container spacing={2}>
           {selectedTrucks?.map((vehicle: Truck, index: number) => (
             <Grid item xs={12} md={6} key={index}>
-              <Box
+              <Grid
                 sx={{
                   p: 2,
                   borderRadius: 2,
@@ -209,7 +209,7 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({
                                 </Typography> */}
                 {vehicle.loadArrangement &&
                 vehicle.loadArrangement.length > 0 ? (
-                  <Box
+                  <Grid
                     sx={{
                       mt: 2,
                       height: 300,
@@ -263,7 +263,7 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({
                         },
                       }}
                     />
-                  </Box>
+                  </Grid>
                 ) : (
                   <Typography
                     sx={{ mt: 1, fontStyle: "italic", color: "gray" }}
@@ -271,7 +271,7 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({
                     No load arrangement data available.
                   </Typography>
                 )}
-              </Box>
+              </Grid>
             </Grid>
           ))}
         </Grid>
@@ -282,7 +282,7 @@ const ReviewCreateOrder: React.FC<TrucksTableProps> = ({
           setDocuments={setAdditionalDocs}
         />
       </Grid>
-    </Box>
+    </Grid>
   );
 };
 

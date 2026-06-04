@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import {
-  Box,
+  // Box,
   Card,
   CardContent,
   Grid,
@@ -218,10 +218,10 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
   );
 
   return (
-    <Box sx={{ padding: 2 }}>
+    <Grid sx={{ padding: 2 }}>
       {/* Unallocated Packages */}
       {unAllocatedPackages.length > 0 && (
-        <Box sx={{ marginBottom: 3 }}>
+        <Grid sx={{ marginBottom: 3 }}>
           <Typography variant="h6" color="error" fontWeight={600}>
             Unallocated Packages:
           </Typography>
@@ -247,7 +247,7 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
               );
             })}
           </ul>
-        </Box>
+        </Grid>
       )}
 
       {/* Trucks Grid */}
@@ -313,17 +313,17 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
                     Height cap: {allowedByHeight ?? "—"} • SF cap:{" "}
                     {allowedBySF ?? "—"} • Used: {layersUsed ?? "—"}
                   </Typography>
-                  <Box mt={2}>
+                  <Grid mt={2}>
                     <Typography>
                       Chargeable Weight: {truck?.chargeableWeight} kg
                     </Typography>
-                  </Box>
+                  </Grid>
                   {/* <Typography variant="body2" sx={{ mt: 1 }}>
                     Trip cost: <b>{truck.cost.toFixed(2)}</b>
                   </Typography> */}
 
                   {/* Weight bar */}
-                  <Box mt={2}>
+                  <Grid mt={2}>
                     <Typography>
                       Weight: {weightUsed.toFixed(2)} / {weightTotal.toFixed(2)}{" "}
                       kg
@@ -336,10 +336,10 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
                     <Typography variant="caption">
                       {weightPct}% occupied
                     </Typography>
-                  </Box>
+                  </Grid>
 
                   {/* Volume bars */}
-                  <Box mt={2}>
+                  <Grid mt={2}>
                     <Typography>
                       Volume (raw interior): {volumeUsed.toFixed(2)} /{" "}
                       {volumeTotalRaw.toFixed(2)} m³
@@ -366,9 +366,9 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
                     <Typography variant="caption">
                       {volumePctUsable}% of stacking-rule envelope
                     </Typography>
-                  </Box>
+                  </Grid>
 
-                  <Box mt={2}>
+                  <Grid mt={2}>
                     <Button
                       variant="contained"
                       color="primary"
@@ -383,7 +383,7 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
                         ? "Hide load builder"
                         : "Show load builder"}
                     </Button>
-                  </Box>
+                  </Grid>
                 </CardContent>
               </Card>
             </Grid>
@@ -393,11 +393,11 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
 
       {/* 3D + indexes for the selected card */}
       {openTruck && (
-        <Box sx={{ mt: 4 }}>
+        <Grid sx={{ mt: 4 }}>
           <Grid container spacing={3}>
             {/* LEFT: 3D Truck Scene */}
             <Grid item xs={12} md={8}>
-              <Box sx={{ height: "90vh", width: "100%" }}>
+              <Grid sx={{ height: "90vh", width: "100%" }}>
                 {(() => {
                   const blocks = normalizeBlocks(openTruck.boxPlacements);
                   const noStack =
@@ -425,13 +425,13 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
                     />
                   );
                 })()}
-              </Box>
+              </Grid>
             </Grid>
 
             {/* RIGHT: Stops + Product Index */}
             <Grid item xs={12} md={4}>
               {!!openTruck.loadArrangement?.length && (
-                <Box sx={{ mb: 3 }}>
+                <Grid sx={{ mb: 3 }}>
                   <Typography
                     variant="h6"
                     sx={{ mb: 1, fontWeight: 600, fontSize: 18 }}
@@ -478,7 +478,7 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
                         </Button>
 
                         {expandedStops.includes(s.stop) && (
-                          <Box sx={{ pl: 2, mt: 1 }}>
+                          <Grid sx={{ pl: 2, mt: 1 }}>
                             {s.packages.map((pkgID) => {
                               const details =
                                 openTruck.productLegend
@@ -537,18 +537,18 @@ const TrucksTable: React.FC<TrucksTableProps> = ({
                                 </Card>
                               );
                             })}
-                          </Box>
+                          </Grid>
                         )}
                       </li>
                     ))}
                   </ol>
-                </Box>
+                </Grid>
               )}
             </Grid>
           </Grid>
-        </Box>
+        </Grid>
       )}
-    </Box>
+    </Grid>
   );
 };
 

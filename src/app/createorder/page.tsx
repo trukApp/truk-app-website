@@ -13,7 +13,8 @@ import {
   Backdrop,
   CircularProgress,
   StepIconProps,
-  Box,
+  // Box,
+  Grid,
 } from "@mui/material";
 import PackagesTable from "@/Components/CreateOrderTables/PackagesTable";
 import TrucksTable, { Truck } from "@/Components/CreateOrderTables/TrucksTable";
@@ -241,7 +242,7 @@ const CreateOrder: React.FC = () => {
   const CustomStepIcon = (props: StepIconProps) => {
     const { active, completed, icon } = props;
     return (
-      <Box
+      <Grid
         sx={{
           width: 25,
           height: 25,
@@ -261,12 +262,12 @@ const CreateOrder: React.FC = () => {
         ) : (
           <Typography variant="body2">{icon}</Typography>
         )}
-      </Box>
+      </Grid>
     );
   };
 
   return (
-    <Box sx={{ width: "100%", p: 3 }}>
+    <Grid sx={{ width: "100%", p: 3 }}>
       <Backdrop
         sx={{
           color: "#ffffff",
@@ -323,7 +324,7 @@ const CreateOrder: React.FC = () => {
           </DialogActions>
         </Dialog>
       )}
-      <Box sx={{ px: 2, mt: 2 }}>
+      <Grid sx={{ px: 2, mt: 2 }}>
         <Typography
           variant="h5"
           color="primary"
@@ -337,9 +338,9 @@ const CreateOrder: React.FC = () => {
           details. Start by selecting packages with the same pickup location and
           date.
         </Typography>
-      </Box>
+      </Grid>
 
-      <Box
+      <Grid
         sx={{
           width: "100%",
           overflowX: isMobile ? "auto" : "visible",
@@ -373,7 +374,7 @@ const CreateOrder: React.FC = () => {
             </Step>
           ))}
         </Stepper>
-      </Box>
+      </Grid>
 
       <div>
         {activeStep === 0 && (
@@ -451,7 +452,7 @@ const CreateOrder: React.FC = () => {
           </CustomButtonFilled>
         )}
       </div>
-    </Box>
+    </Grid>
   );
 };
 

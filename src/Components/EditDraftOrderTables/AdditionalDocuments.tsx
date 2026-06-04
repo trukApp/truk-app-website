@@ -1,10 +1,19 @@
 import React, { useState } from "react";
-import { Grid, Typography, TextField, FormLabel, Dialog, IconButton } from "@mui/material";
+import {
+  Grid,
+  Typography,
+  TextField,
+  FormLabel,
+  Dialog,
+  IconButton,
+} from "@mui/material";
 import { useImageUploadingMutation } from "@/api/apiSlice";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 interface AdditionalDocumentsProps {
   documents: { [key: string]: string }[];
-  setDocuments: React.Dispatch<React.SetStateAction<{ [key: string]: string }[]>>;
+  setDocuments: React.Dispatch<
+    React.SetStateAction<{ [key: string]: string }[]>
+  >;
 }
 
 interface DocumentField {
@@ -19,16 +28,27 @@ const documentFields: DocumentField[] = [
   { label: "MSDS", key: "msds" },
 ];
 
-const AdditionalDocuments: React.FC<AdditionalDocumentsProps> = ({ documents, setDocuments }) => {
-  const [selectedFiles, setSelectedFiles] = useState<{ [key: string]: File | null }>({});
-  const [openPreview, setOpenPreview] = useState<{ url: string; open: boolean }>({
+const AdditionalDocuments: React.FC<AdditionalDocumentsProps> = ({
+  documents,
+  setDocuments,
+}) => {
+  const [selectedFiles, setSelectedFiles] = useState<{
+    [key: string]: File | null;
+  }>({});
+  const [openPreview, setOpenPreview] = useState<{
+    url: string;
+    open: boolean;
+  }>({
     url: "",
     open: false,
   });
 
   const [imageUpload] = useImageUploadingMutation();
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>, key: string) => {
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+    key: string,
+  ) => {
     const file = event.target.files?.[0] || null;
     if (!file) return;
 
@@ -56,7 +76,7 @@ const AdditionalDocuments: React.FC<AdditionalDocumentsProps> = ({ documents, se
   };
 
   return (
-    <Grid container spacing={2}  >
+    <Grid container spacing={2}>
       <Dialog
         open={openPreview.open}
         onClose={() => setOpenPreview({ url: "", open: false })}
@@ -92,27 +112,6 @@ const AdditionalDocuments: React.FC<AdditionalDocumentsProps> = ({ documents, se
               placeholder="Choose a file"
               InputProps={{
                 readOnly: true,
-                // endAdornment: (
-                //   <Button
-                //     variant="contained"
-                //     component="label"
-                //     sx={{
-                //       minWidth: "auto",
-                //       margin: 0,
-                //       marginRight: "-12px",
-                //       height: "100%",
-                //       color: "#fff",
-                //     }}
-                //   >
-                //     Browse
-                //     <input
-                //       type="file"
-                //       hidden
-                //       accept="image/*,application/pdf"
-                //       onChange={(e) => handleFileChange(e, field.key)}
-                //     />
-                //   </Button>
-                // ),
                 endAdornment: (
                   <IconButton
                     component="label"
@@ -120,7 +119,7 @@ const AdditionalDocuments: React.FC<AdditionalDocumentsProps> = ({ documents, se
                       padding: 0,
                       marginRight: "-12px",
                       height: "100%",
-                      color: "#F08C24"
+                      color: "#F08C24",
                     }}
                   >
                     <AttachFileIcon />
@@ -131,8 +130,7 @@ const AdditionalDocuments: React.FC<AdditionalDocumentsProps> = ({ documents, se
                       onChange={(e) => handleFileChange(e, field.key)}
                     />
                   </IconButton>
-                )
-
+                ),
               }}
             />
             {url && (

@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useEffect, useState } from "react";
 import {
-  Box,
+  // Box,
   Collapse,
   IconButton,
   Paper,
@@ -52,7 +53,7 @@ import {
   usePostSingleVehicleMasterMutation,
 } from "@/api/apiSlice";
 import SnackbarAlert from "../ReusableComponents/SnackbarAlerts";
-import { Driver } from "../BusinessPartnersForms/DriverForm";
+// import { Driver } from "../BusinessPartnersForms/DriverForm";
 import moment, { Moment } from "moment";
 import Image from "next/image";
 import AdditionalInformation from "@/Components/CreatePackageTabs/AddtionalInformation";
@@ -206,7 +207,7 @@ const Allocations: React.FC<AllocationsProps> = ({
     { orderId },
     { skip: !orderId },
   );
-  const wrapperRef = useRef<HTMLDivElement>(null);
+  // const wrapperRef = useRef<HTMLDivElement>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [openAssignModal, setOpenAssignModal] = useState(false);
@@ -673,7 +674,7 @@ const Allocations: React.FC<AllocationsProps> = ({
   };
 
   return (
-    <Box>
+    <Grid>
       <Backdrop
         sx={{
           color: "#ffffff",
@@ -707,7 +708,7 @@ const Allocations: React.FC<AllocationsProps> = ({
         const uniqueKey = `${allocation?.vehicle_ID}_${allocation.route[0]?.end.address}`;
         return (
           <>
-            <Box
+            <Grid
               sx={{
                 display: "flex",
                 flexDirection: "row",
@@ -732,7 +733,7 @@ const Allocations: React.FC<AllocationsProps> = ({
               <>
                 {" "}
                 {!isGeneratingPDF && (
-                  <Box
+                  <Grid
                     sx={{
                       display: "flex",
                       justifyContent: isMobile ? "center" : "flex-end",
@@ -794,10 +795,10 @@ const Allocations: React.FC<AllocationsProps> = ({
                         ) : null}
                       </>
                     )}
-                  </Box>
+                  </Grid>
                 )}
               </>
-            </Box>
+            </Grid>
             <Dialog open={openAssignModal} onClose={handleCloseAssignModal}>
               <DialogTitle sx={{ m: 0, p: 2, position: "relative" }}>
                 Choose Assignment Type
@@ -818,7 +819,7 @@ const Allocations: React.FC<AllocationsProps> = ({
                 <Typography>
                   Select how you want to assign this order:
                 </Typography>
-                <Box display="flex" flexDirection="column" gap={2} mt={2}>
+                <Grid display="flex" flexDirection="column" gap={2} mt={2}>
                   <Button
                     variant="outlined"
                     color="secondary"
@@ -838,12 +839,12 @@ const Allocations: React.FC<AllocationsProps> = ({
                   >
                     Carrier Assignment
                   </Button>
-                </Box>
+                </Grid>
               </DialogContent>
             </Dialog>
             <Modal open={open} onClose={handleClose}>
-              <Box sx={{ ...style, position: "relative", p: 3 }}>
-                <Box
+              <Grid sx={{ ...style, position: "relative", p: 3 }}>
+                <Grid
                   display="flex"
                   justifyContent="space-between"
                   alignItems="center"
@@ -857,7 +858,7 @@ const Allocations: React.FC<AllocationsProps> = ({
                   >
                     <CloseIcon />
                   </IconButton>
-                </Box>
+                </Grid>
                 <Formik
                   initialValues={initialFormValues}
                   validationSchema={validationSchema}
@@ -1047,7 +1048,7 @@ const Allocations: React.FC<AllocationsProps> = ({
                           </Grid>
                         </Grid>
 
-                        <Box mt={3} textAlign="center">
+                        <Grid mt={3} textAlign="center">
                           <Button
                             type="submit"
                             variant="contained"
@@ -1074,12 +1075,12 @@ const Allocations: React.FC<AllocationsProps> = ({
                           >
                             Reset
                           </Button>
-                        </Box>
+                        </Grid>
                       </Grid>
                     </Form>
                   )}
                 </Formik>
-              </Box>
+              </Grid>
             </Modal>
             <Dialog open={openReject} onClose={handleCloseReject}>
               <DialogTitle sx={{ m: 0, p: 2, position: "relative" }}>
@@ -1119,7 +1120,7 @@ const Allocations: React.FC<AllocationsProps> = ({
                 setSelectedAllocation(null);
               }}
             >
-              <Box
+              <Grid
                 sx={{
                   position: "absolute",
                   top: "50%",
@@ -1133,7 +1134,7 @@ const Allocations: React.FC<AllocationsProps> = ({
                 }}
                 // onClick={(e) => e.stopPropagation()}
               >
-                <Box
+                <Grid
                   sx={{
                     display: "flex",
                     justifyContent: "space-between",
@@ -1158,8 +1159,8 @@ const Allocations: React.FC<AllocationsProps> = ({
                   >
                     <CloseIcon />
                   </IconButton>
-                </Box>
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                </Grid>
+                <Grid sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                   <Grid
                     item
                     xs={12}
@@ -1343,8 +1344,8 @@ const Allocations: React.FC<AllocationsProps> = ({
                   >
                     Submit
                   </Button>
-                </Box>
-              </Box>
+                </Grid>
+              </Grid>
             </Modal>
             <Modal
               open={multipleCarriers}
@@ -1354,7 +1355,7 @@ const Allocations: React.FC<AllocationsProps> = ({
               }}
             >
               {
-                <Box
+                <Grid
                   sx={{
                     position: "absolute",
                     top: "50%",
@@ -1379,7 +1380,7 @@ const Allocations: React.FC<AllocationsProps> = ({
                     The following are the multiple valid contracted carriers
                     found. Choose one for assignment.
                   </Typography>
-                  <Box
+                  <Grid
                     sx={{ display: "flex", flexDirection: "column", gap: 4 }}
                   >
                     <TextField
@@ -1408,8 +1409,8 @@ const Allocations: React.FC<AllocationsProps> = ({
                     >
                       Submit
                     </Button>
-                  </Box>
-                </Box>
+                  </Grid>
+                </Grid>
               }
             </Modal>
             <Dialog open={openBidding} onClose={handleDialogCloseBidding}>
@@ -1702,7 +1703,7 @@ const Allocations: React.FC<AllocationsProps> = ({
                 timeout="auto"
                 unmountOnExit
               >
-                <Box
+                <Grid
                   sx={{
                     mt: 2,
                     p: 2,
@@ -1763,19 +1764,19 @@ const Allocations: React.FC<AllocationsProps> = ({
                     </Grid>
                   </Grid>
 
-                  <Box sx={{ mt: 2 }}>
+                  <Grid sx={{ mt: 2 }}>
                     <Typography variant="body2">
                       <strong>Packages:</strong>{" "}
                       {allocation.packages.join(", ")}
                     </Typography>
-                  </Box>
+                  </Grid>
 
                   {allocatedPackageDetails
                     .filter((pkg: PackageDetail) =>
                       allocation.packages.includes(pkg.pack_ID),
                     )
                     .map((pkg: PackageDetail) => (
-                      <Box key={pkg.pac_id}>
+                      <Grid key={pkg.pac_id}>
                         <Grid
                           key={pkg.pac_id}
                           sx={{
@@ -2048,7 +2049,7 @@ const Allocations: React.FC<AllocationsProps> = ({
                                 >
                                   Product Details
                                 </Typography>
-                                <Box sx={{ mt: 1 }}>
+                                <Grid sx={{ mt: 1 }}>
                                   <Typography
                                     variant="body2"
                                     sx={{ fontWeight: "bold" }}
@@ -2067,20 +2068,20 @@ const Allocations: React.FC<AllocationsProps> = ({
                                       </Typography>
                                     ),
                                   )}
-                                </Box>
+                                </Grid>
                               </Grid>
                             </Grid>
                           </Grid>
                         </Grid>
-                      </Box>
+                      </Grid>
                     ))}
-                </Box>
+                </Grid>
               </Collapse>
             </Paper>
           </>
         );
       })}
-    </Box>
+    </Grid>
   );
 };
 

@@ -420,31 +420,6 @@ export const productColumnNames = [
   },
 ];
 
-// export const createPackageOrderColumnNames = [
-//   { displayName: 'Ship From Location ID*', key: 'ship_from' },
-//   { displayName: 'Ship To Location ID*', key: 'ship_to' },
-//   { displayName: 'Bill To Location ID*', key: 'bill_to' },
-
-//   { displayName: 'Destination Radius*', key: 'destination_radius' },
-
-//   { displayName: 'Product IDs*', key: 'prod_IDs' },
-//   { displayName: 'Quantities*', key: 'quantities' },
-
-//   { displayName: 'Package Info (PKG000001)*', key: 'package_info' },
-
-//   { displayName: 'Return Label (1 or 0)', key: 'return_label' },
-
-//   { displayName: 'Reference ID', key: 'reference_id', nestedKey: 'additional_info' },
-
-//   { displayName: 'Invoice Number*', key: 'invoice', nestedKey: 'additional_info' },
-
-//   { displayName: 'Pickup Date Time (yyyy-mm-dd hh:mm)', key: 'pickup_date_time' },
-
-//   { displayName: 'Dropoff Date Time (yyyy-mm-dd hh:mm)', key: 'dropoff_date_time' },
-
-//   { displayName: 'Tax Rate', key: 'tax_rate', nestedKey: 'tax_info' },
-// ];
-
 export const createPackageOrderColumnNames = [
   // Location Details
   { displayName: "Ship From Location ID*", key: "ship_from" },

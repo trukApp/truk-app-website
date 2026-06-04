@@ -4,7 +4,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useLoadScript } from "@react-google-maps/api";
 import {
-  Box,
+  // Box,
   Button,
   FormControl,
   InputLabel,
@@ -225,299 +225,287 @@ const RootOptimization: React.FC<Props> = ({
   };
 
   return (
-    <div>
-      <Grid container>
-        <Grid item xs={12} md={12}>
-          <Box
-            sx={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 1.5,
-              mb: 3,
-            }}
-          >
-            {rootOptimization?.map((vehicle, index) => {
-              const isSelected =
-                selectedVehicle?.vehicle_ID === vehicle.vehicle_ID &&
-                selectedVehicle?.startAddress ===
-                  vehicle?.route?.[0]?.start?.address &&
-                selectedVehicle?.endAddress ===
-                  vehicle?.route?.[0]?.end?.address;
-
-              return (
-                <Button
-                  key={`${vehicle.vehicle_ID}_${index}`}
-                  variant={isSelected ? "contained" : "outlined"}
-                  color={isSelected ? "primary" : "inherit"}
-                  onClick={() =>
-                    handleVehicleSelection(
-                      vehicle.vehicle_ID,
-                      vehicle?.route?.[0]?.start?.address,
-                      vehicle?.route?.[0]?.end?.address,
-                    )
-                  }
-                  sx={{
-                    textTransform: "none",
-                    px: 3,
-                    py: 1,
-                    fontWeight: "bold",
-                    borderRadius: 2,
-                    boxShadow: isSelected
-                      ? "0 2px 8px rgba(0,0,0,0.2)"
-                      : "none",
-                  }}
-                >
-                  🚚 {vehicle?.vehicle_ID}
-                </Button>
-              );
-            })}
-          </Box>
-
-          {/* Route Details */}
-          {selectedVehicleData && (
-            <Grid container spacing={3} sx={{ mb: 3 }}>
-              {/* Start & End */}
-              <Grid item xs={12} md={6}>
-                <Card
-                  sx={{
-                    p: 2,
-                    borderRadius: 3,
-                    boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
-                    background: "linear-gradient(135deg, #fff 60%, #f9f9f9)",
-                  }}
-                >
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      fontWeight: "bold",
-                      color: "#333",
-                      mb: 2,
-                    }}
-                  >
-                    Route Details
-                  </Typography>
-
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      p: 1.2,
-                      borderRadius: 2,
-                      backgroundColor: "#f4f6f8",
-                      mb: 1.5,
-                      gap: 1,
-                    }}
-                  >
-                    <Image
-                      src="/start.svg"
-                      alt="Start"
-                      width={24}
-                      height={24}
-                      unoptimized
-                    />
-                    <Typography sx={{ fontSize: 15, fontWeight: 500 }}>
-                      <b>Start:</b>{" "}
-                      {selectedVehicleData?.route[0]?.start.address}
-                    </Typography>
-                  </Box>
-
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      p: 1.2,
-                      borderRadius: 2,
-                      backgroundColor: "#f4f6f8",
-                      gap: 1,
-                    }}
-                  >
-                    <Image
-                      src="/drop.svg"
-                      alt="End"
-                      width={24}
-                      height={24}
-                      unoptimized
-                    />
-                    <Typography sx={{ fontSize: 15, fontWeight: 500 }}>
-                      <b>End:</b>{" "}
-                      {
-                        selectedVehicleData?.route[
-                          selectedVehicleData?.route.length - 1
-                        ]?.end.address
-                      }
-                    </Typography>
-                  </Box>
-                </Card>
-                {routeSummary && (
-                  <Card sx={{ mt: 2, p: 2 }}>
-                    <Typography variant="h6" sx={{ mb: 1 }}>
-                      Route Summary
-                    </Typography>
-
-                    <Typography variant="body1">
-                      <b>Suggested Route:</b>
-                      <br />
-                      Distance:{" "}
-                      {formatDistance(routeSummary.totalDistanceActual)}
-                      <br />
-                      Duration:{" "}
-                      {formatDurationSeconds(routeSummary.totalDurationActual)}
-                    </Typography>
-
-                    {routeSummary.showReoptimized && (
-                      <>
-                        <Typography variant="body1" sx={{ mt: 1 }}>
-                          <b>Re-Optimized Route:</b>
-                          <br />
-                          Distance:{" "}
-                          {formatDistance(routeSummary.totalDistanceReroute)}
-                          <br />
-                          Duration:{" "}
-                          {formatDurationSeconds(
-                            routeSummary.totalDurationReroute,
-                          )}
-                        </Typography>
-
-                        <Typography variant="body2" sx={{ mt: 1 }}>
-                          <b>Difference:</b>
-                          <br />
-                          Distance: {routeSummary.distanceDiff > 0 ? "+" : ""}
-                          {formatDistance(routeSummary.distanceDiff)}
-                          <br />
-                          Duration: {routeSummary.durationDiff > 0 ? "+" : ""}
-                          {formatDurationSeconds(routeSummary.durationDiff)}
-                        </Typography>
-                      </>
-                    )}
-                  </Card>
-                )}
-              </Grid>
-              {/* Drop Points */}
-              <Grid item xs={12} md={6}>
-                <Card
-                  sx={{
-                    p: 2,
-                    borderRadius: 3,
-                    boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
-                    background: "linear-gradient(135deg, #fff 60%, #f9f9f9)",
-                    height: "100%",
-                  }}
-                >
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      fontWeight: "bold",
-                      color: "#F08C24",
-                      mb: 2,
-                      textDecoration: "underline",
-                    }}
-                  >
-                    Drop Points
-                  </Typography>
-
-                  <Box
-                    sx={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 1,
-                      maxHeight: 200,
-                      overflowY: "auto",
-                      pr: 1,
-                    }}
-                  >
-                    {[...(selectedVehicleData?.loadArrangement || [])].map(
-                      (stop, index) => (
-                        <Box
-                          key={index}
-                          sx={{
-                            p: 1.2,
-                            border: "1px solid #ddd",
-                            borderRadius: 2,
-                            backgroundColor: "#fff",
-                            "&:hover": {
-                              backgroundColor: "#f5f5f5",
-                              cursor: "pointer",
-                            },
-                          }}
-                        >
-                          <Typography sx={{ fontSize: 14 }}>
-                            <strong>Stop {index + 1}:</strong> {stop.location}
-                          </Typography>
-                        </Box>
-                      ),
-                    )}
-                  </Box>
-                </Card>
-              </Grid>
-            </Grid>
-          )}
-
-          {/* Map Section */}
-          <Card
-            sx={{
-              borderRadius: 3,
-              overflow: "hidden",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-            }}
-          >
-            <GoogleMapRenderer
-              selectedVehicleData={selectedVehicleData}
-              matchedRoute={matchedRoute}
-              directionsResults={directionsResults}
-              showReturnRoute={showReturnRoute}
-              returnRoute={returnRoute}
-              alternateRoutes={alternateRoutes}
-              selectedRouteIndex={selectedRouteIndex}
-              onRouteSummaryChange={setRouteSummary}
-              // onSampledRoutePointsChange={(points) => {
-              //     console.log('✅ Received sampled route points:', points.length);
-              //     console.log(points); // preview first few
-              // }}
-
-              onSampledRoutePointsChange={(vehliceId, points) => {
-                console.log("Received sampled route points:", points);
-                if (selectedVehicleData?.vehicle_ID) {
-                  onUpdateSampledPoints(vehliceId, points);
-                }
-              }}
-            />
-          </Card>
-        </Grid>
-        <Box
+    <Grid container>
+      <Grid item xs={12} md={12}>
+        <Grid
           sx={{
             display: "flex",
-            justifyContent: "space-between",
-            mt: 4,
-            px: 4,
+            flexWrap: "wrap",
+            gap: 1.5,
+            mb: 3,
           }}
         >
-          <Button variant="outlined" onClick={onBack}>
-            Back
+          {rootOptimization?.map((vehicle, index) => {
+            const isSelected =
+              selectedVehicle?.vehicle_ID === vehicle.vehicle_ID &&
+              selectedVehicle?.startAddress ===
+                vehicle?.route?.[0]?.start?.address &&
+              selectedVehicle?.endAddress === vehicle?.route?.[0]?.end?.address;
+
+            return (
+              <Button
+                key={`${vehicle.vehicle_ID}_${index}`}
+                variant={isSelected ? "contained" : "outlined"}
+                color={isSelected ? "primary" : "inherit"}
+                onClick={() =>
+                  handleVehicleSelection(
+                    vehicle.vehicle_ID,
+                    vehicle?.route?.[0]?.start?.address,
+                    vehicle?.route?.[0]?.end?.address,
+                  )
+                }
+                sx={{
+                  textTransform: "none",
+                  px: 3,
+                  py: 1,
+                  fontWeight: "bold",
+                  borderRadius: 2,
+                  boxShadow: isSelected ? "0 2px 8px rgba(0,0,0,0.2)" : "none",
+                }}
+              >
+                🚚 {vehicle?.vehicle_ID}
+              </Button>
+            );
+          })}
+        </Grid>
+
+        {/* Route Details */}
+        {selectedVehicleData && (
+          <Grid container spacing={3} sx={{ mb: 3 }}>
+            {/* Start & End */}
+            <Grid item xs={12} md={6}>
+              <Card
+                sx={{
+                  p: 2,
+                  borderRadius: 3,
+                  boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
+                  background: "linear-gradient(135deg, #fff 60%, #f9f9f9)",
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: "bold",
+                    color: "#333",
+                    mb: 2,
+                  }}
+                >
+                  Route Details
+                </Typography>
+
+                <Grid
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    p: 1.2,
+                    borderRadius: 2,
+                    backgroundColor: "#f4f6f8",
+                    mb: 1.5,
+                    gap: 1,
+                  }}
+                >
+                  <Image
+                    src="/start.svg"
+                    alt="Start"
+                    width={24}
+                    height={24}
+                    unoptimized
+                  />
+                  <Typography sx={{ fontSize: 15, fontWeight: 500 }}>
+                    <b>Start:</b> {selectedVehicleData?.route[0]?.start.address}
+                  </Typography>
+                </Grid>
+
+                <Grid
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    p: 1.2,
+                    borderRadius: 2,
+                    backgroundColor: "#f4f6f8",
+                    gap: 1,
+                  }}
+                >
+                  <Image
+                    src="/drop.svg"
+                    alt="End"
+                    width={24}
+                    height={24}
+                    unoptimized
+                  />
+                  <Typography sx={{ fontSize: 15, fontWeight: 500 }}>
+                    <b>End:</b>{" "}
+                    {
+                      selectedVehicleData?.route[
+                        selectedVehicleData?.route.length - 1
+                      ]?.end.address
+                    }
+                  </Typography>
+                </Grid>
+              </Card>
+              {routeSummary && (
+                <Card sx={{ mt: 2, p: 2 }}>
+                  <Typography variant="h6" sx={{ mb: 1 }}>
+                    Route Summary
+                  </Typography>
+
+                  <Typography variant="body1">
+                    <b>Suggested Route:</b>
+                    <br />
+                    Distance: {formatDistance(routeSummary.totalDistanceActual)}
+                    <br />
+                    Duration:{" "}
+                    {formatDurationSeconds(routeSummary.totalDurationActual)}
+                  </Typography>
+
+                  {routeSummary.showReoptimized && (
+                    <>
+                      <Typography variant="body1" sx={{ mt: 1 }}>
+                        <b>Re-Optimized Route:</b>
+                        <br />
+                        Distance:{" "}
+                        {formatDistance(routeSummary.totalDistanceReroute)}
+                        <br />
+                        Duration:{" "}
+                        {formatDurationSeconds(
+                          routeSummary.totalDurationReroute,
+                        )}
+                      </Typography>
+
+                      <Typography variant="body2" sx={{ mt: 1 }}>
+                        <b>Difference:</b>
+                        <br />
+                        Distance: {routeSummary.distanceDiff > 0 ? "+" : ""}
+                        {formatDistance(routeSummary.distanceDiff)}
+                        <br />
+                        Duration: {routeSummary.durationDiff > 0 ? "+" : ""}
+                        {formatDurationSeconds(routeSummary.durationDiff)}
+                      </Typography>
+                    </>
+                  )}
+                </Card>
+              )}
+            </Grid>
+            {/* Drop Points */}
+            <Grid item xs={12} md={6}>
+              <Card
+                sx={{
+                  p: 2,
+                  borderRadius: 3,
+                  boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
+                  background: "linear-gradient(135deg, #fff 60%, #f9f9f9)",
+                  height: "100%",
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: "bold",
+                    color: "#F08C24",
+                    mb: 2,
+                    textDecoration: "underline",
+                  }}
+                >
+                  Drop Points
+                </Typography>
+
+                <Grid
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 1,
+                    maxHeight: 200,
+                    overflowY: "auto",
+                    pr: 1,
+                  }}
+                >
+                  {[...(selectedVehicleData?.loadArrangement || [])].map(
+                    (stop, index) => (
+                      <Grid
+                        key={index}
+                        sx={{
+                          p: 1.2,
+                          border: "1px solid #ddd",
+                          borderRadius: 2,
+                          backgroundColor: "#fff",
+                          "&:hover": {
+                            backgroundColor: "#f5f5f5",
+                            cursor: "pointer",
+                          },
+                        }}
+                      >
+                        <Typography sx={{ fontSize: 14 }}>
+                          <strong>Stop {index + 1}:</strong> {stop.location}
+                        </Typography>
+                      </Grid>
+                    ),
+                  )}
+                </Grid>
+              </Card>
+            </Grid>
+          </Grid>
+        )}
+
+        {/* Map Section */}
+        <Card
+          sx={{
+            borderRadius: 3,
+            overflow: "hidden",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+          }}
+        >
+          <GoogleMapRenderer
+            selectedVehicleData={selectedVehicleData}
+            matchedRoute={matchedRoute}
+            directionsResults={directionsResults}
+            showReturnRoute={showReturnRoute}
+            returnRoute={returnRoute}
+            alternateRoutes={alternateRoutes}
+            selectedRouteIndex={selectedRouteIndex}
+            onRouteSummaryChange={setRouteSummary}
+            onSampledRoutePointsChange={(vehliceId, points) => {
+              console.log("Received sampled route points:", points);
+              if (selectedVehicleData?.vehicle_ID) {
+                onUpdateSampledPoints(vehliceId, points);
+              }
+            }}
+          />
+        </Card>
+      </Grid>
+      <Grid
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          mt: 4,
+          px: 4,
+        }}
+      >
+        <Button variant="outlined" onClick={onBack}>
+          Back
+        </Button>
+
+        <Grid
+          sx={{
+            display: "flex",
+            gap: 2,
+          }}
+        >
+          <Button variant="outlined" onClick={onSaveDraft}>
+            Save As Draft
           </Button>
 
-          <Box
+          <Button
+            variant="contained"
             sx={{
-              display: "flex",
-              gap: 2,
+              bgcolor: "#F08C24",
             }}
+            onClick={onConfirmOrder}
           >
-            <Button variant="outlined" onClick={onSaveDraft}>
-              Save As Draft
-            </Button>
-
-            <Button
-              variant="contained"
-              sx={{
-                bgcolor: "#F08C24",
-              }}
-              onClick={onConfirmOrder}
-            >
-              Confirm Order
-            </Button>
-          </Box>
-        </Box>
+            Confirm Order
+          </Button>
+        </Grid>
       </Grid>
-    </div>
+    </Grid>
   );
 };
 

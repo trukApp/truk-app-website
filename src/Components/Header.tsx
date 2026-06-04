@@ -11,7 +11,7 @@ import {
   Button,
   useTheme,
   useMediaQuery,
-  Box,
+  // Box,
 } from "@mui/material";
 import Image from "next/image";
 import {
@@ -78,7 +78,7 @@ const Header = () => {
     router.push("/");
   };
   return (
-    <>
+    <Grid>
       {/* <AppBar position="fixed" sx={{ backgroundColor: 'whitesmoke' }}> */}
       <AppBar
         position="fixed"
@@ -155,7 +155,7 @@ const Header = () => {
                         <Avatar>{user.name[0]}</Avatar>
                       )}
                     </IconButton> */}
-                    <Box
+                    <Grid
                       display="flex"
                       alignItems="center"
                       gap={1.2}
@@ -172,7 +172,7 @@ const Header = () => {
                       onClick={handleProfileMenuOpen}
                     >
                       {/* USER NAME */}
-                      <Box textAlign="right">
+                      <Grid textAlign="right">
                         <div
                           style={{
                             fontSize: "14px",
@@ -192,7 +192,7 @@ const Header = () => {
                         >
                           Administrator
                         </div>
-                      </Box>
+                      </Grid>
 
                       {/* PROFILE IMAGE */}
                       {user.profileImage ? (
@@ -215,7 +215,7 @@ const Header = () => {
                           {user.name[0]}
                         </Avatar>
                       )}
-                    </Box>
+                    </Grid>
                   </div>
                 )}
 
@@ -297,7 +297,7 @@ const Header = () => {
           )}
         </Toolbar>
       </AppBar>
-    </>
+    </Grid>
   );
 };
 

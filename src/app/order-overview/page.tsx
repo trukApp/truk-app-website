@@ -15,7 +15,7 @@ import {
 } from "@mui/x-data-grid";
 
 import {
-  Box,
+  // Box,
   Typography,
   IconButton,
   Backdrop,
@@ -671,7 +671,7 @@ const OrdersGrid: React.FC = () => {
             py: 1,
           }}
         >
-          <Box
+          <Grid
             onClick={handleOpen}
             sx={{
               display: "flex",
@@ -697,7 +697,7 @@ const OrdersGrid: React.FC = () => {
                 color: "#555",
               }}
             />
-          </Box>
+          </Grid>
         </GridToolbarContainer>
 
         <Popover

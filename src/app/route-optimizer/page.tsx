@@ -9,7 +9,8 @@ import {
   DialogTitle,
   Backdrop,
   CircularProgress,
-  Box,
+  // Box,
+  Grid,
 } from "@mui/material";
 import PackagesTable from "@/Components/LoadOptimizer/PackagesTable";
 import { useAppDispatch, useAppSelector } from "@/store";
@@ -76,9 +77,9 @@ const RouteOptimizer: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [noVechilePopup, setNoVechilePopup] = useState(false);
   const filters = useAppSelector((state) => state.auth.filters);
-  const [additionalDocs, setAdditionalDocs] = useState<
-    { [key: string]: string }[]
-  >([]);
+  // const [additionalDocs, setAdditionalDocs] = useState<
+  //   { [key: string]: string }[]
+  // >([]);
   const [saveDraftOrder] = useSaveAsDraftMutation();
   const [updatedRoutePointsByVehicle, setUpdatedRoutePointsByVehicle] =
     useState<RoutePointsMap>({});
@@ -157,7 +158,7 @@ const RouteOptimizer: React.FC = () => {
       })),
       unallocated_packages: conformOrderPayload?.unallocatedPackages,
       created_at: new Date().toISOString().split("T")[0],
-      order_docs: additionalDocs,
+      // order_docs: additionalDocs,
     };
 
     setModalOpen(false);
@@ -210,7 +211,7 @@ const RouteOptimizer: React.FC = () => {
       })),
       unallocated_packages: conformOrderPayload?.unallocatedPackages,
       created_at: new Date().toISOString().split("T")[0],
-      order_docs: additionalDocs,
+      // order_docs: additionalDocs,
     };
 
     setModalOpen(false);
@@ -282,7 +283,7 @@ const RouteOptimizer: React.FC = () => {
   };
 
   return (
-    <Box sx={{ width: "100%", p: 3 }}>
+    <Grid sx={{ width: "100%", p: 3 }}>
       <Backdrop
         sx={{
           color: "#ffffff",
@@ -339,7 +340,7 @@ const RouteOptimizer: React.FC = () => {
           </DialogActions>
         </Dialog>
       )}
-      <Box sx={{ px: 2, mt: 2 }}>
+      <Grid sx={{ px: 2, mt: 2 }}>
         <Typography
           variant="h5"
           color="primary"
@@ -353,15 +354,15 @@ const RouteOptimizer: React.FC = () => {
           details. Start by selecting packages with the same pickup location and
           date.
         </Typography>
-      </Box>
+      </Grid>
 
-      <Box
+      <Grid
         sx={{
           width: "100%",
           overflowX: isMobile ? "auto" : "visible",
           padding: "10px",
         }}
-      ></Box>
+      ></Grid>
 
       <div>
         {activeStep === 0 && (
@@ -400,7 +401,7 @@ const RouteOptimizer: React.FC = () => {
           </CustomButtonFilled>
         </div>
       )}
-    </Box>
+    </Grid>
   );
 };
 

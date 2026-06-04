@@ -16,7 +16,7 @@ import {
   Checkbox,
   FormControlLabel,
   Typography,
-  Box,
+  // Box,
   Divider,
 } from "@mui/material";
 
@@ -349,37 +349,24 @@ const PackagesTable: React.FC<PackagesTableProps> = ({
 
   const rows = filteredPackages.map((pkg: Package) => ({
     id: pkg.pac_id,
-
     pack_ID: pkg.pack_ID,
-
     ship_from: getLocationDescription(pkg.ship_from),
-
     ship_to: getLocationDescription(pkg.ship_to),
-
     package_info: getPackageDetails(pkg.package_info),
-
     bill_to: getLocationDescription(pkg.bill_to),
-
     return_label: pkg.return_label === 1 ? "Yes" : "No",
-
     pickup_date_time: formatPickupDateTime(pkg.pickup_date_time),
-
     dropoff_date_time: formatPickupDateTime(pkg.dropoff_date_time),
-
     tax_rate: pkg.tax_info.tax_rate,
-
     product_details: pkg.product_ID ?? [],
-
     additional_info: pkg.additional_info,
   }));
 
   const handleSelectionChange = (newSelection: number[]) => {
     setSelectionModel(newSelection);
-
     const selectedPackages = newSelection
       .map((id) => allPackagesData.find((pkg) => pkg.pac_id === id))
       .filter((pkg): pkg is Package => pkg !== undefined);
-
     dispatch(setSelectedPackages(selectedPackages));
   };
 
@@ -388,9 +375,7 @@ const PackagesTable: React.FC<PackagesTableProps> = ({
     setColumnVisibilityModel,
   }: any) => {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-
     const open = Boolean(anchorEl);
-
     const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
       setAnchorEl(event.currentTarget);
     };
@@ -409,7 +394,7 @@ const PackagesTable: React.FC<PackagesTableProps> = ({
             py: 1,
           }}
         >
-          <Box
+          <Grid
             onClick={handleOpen}
             sx={{
               display: "flex",
@@ -435,7 +420,7 @@ const PackagesTable: React.FC<PackagesTableProps> = ({
                 color: "#555",
               }}
             />
-          </Box>
+          </Grid>
         </GridToolbarContainer>
 
         <Popover
@@ -507,15 +492,10 @@ const PackagesTable: React.FC<PackagesTableProps> = ({
             onChange={(e) => setDateFilter(e.target.value)}
           >
             <MenuItem value="All">All</MenuItem>
-
             <MenuItem value="Today">Today</MenuItem>
-
             <MenuItem value="Yesterday">Yesterday</MenuItem>
-
             <MenuItem value="This Week">This Week</MenuItem>
-
             <MenuItem value="This Month">This Month</MenuItem>
-
             <MenuItem value="This Year">This Year</MenuItem>
           </TextField>
         </Grid>

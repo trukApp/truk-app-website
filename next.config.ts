@@ -3,9 +3,9 @@ const nextConfig = {
   images: {
     domains: ["trukapp.s3.ap-south-1.amazonaws.com"],
   },
-    typescript: {
-    ignoreBuildErrors: true,
-  },
+  //   typescript: {
+  //   ignoreBuildErrors: true,
+  // },
 };
 
 module.exports = nextConfig;

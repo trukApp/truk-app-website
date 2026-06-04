@@ -1,6 +1,6 @@
 import React from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Box, Typography, Paper } from "@mui/material";
+import { Typography, Paper, Grid } from "@mui/material";
 import { Truck } from "./TrucksTable";
 import { Package, Product } from "./PackagesTable";
 import { useGetAllProductsQuery } from "@/api/apiSlice";
@@ -43,7 +43,7 @@ const LoadOptimization: React.FC<TrucksTableProps> = ({
   ];
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Grid sx={{ p: 2 }}>
       <Typography
         variant="h5"
         gutterBottom
@@ -165,7 +165,7 @@ const LoadOptimization: React.FC<TrucksTableProps> = ({
                   No load arrangement data available.
                 </Typography>
               ) : (
-                <Box sx={{ mt: 2, height: 350, backgroundColor: "white" }}>
+                <Grid sx={{ mt: 2, height: 350, backgroundColor: "white" }}>
                   <DataGrid
                     rows={rows}
                     columns={columns}
@@ -175,13 +175,13 @@ const LoadOptimization: React.FC<TrucksTableProps> = ({
                     }}
                     disableRowSelectionOnClick
                   />
-                </Box>
+                </Grid>
               )}
             </Paper>
           );
         })}
       </div>
-    </Box>
+    </Grid>
   );
 };
 

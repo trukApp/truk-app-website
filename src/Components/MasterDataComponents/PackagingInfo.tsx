@@ -1,32 +1,46 @@
-'use client';
-import React, { useEffect, useState } from 'react';
-import { Box, Button, MenuItem, TextField, Grid, Typography, Collapse, IconButton, Backdrop, CircularProgress } from '@mui/material';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
-import { GridColDef, GridPaginationModel } from '@mui/x-data-grid';
-import { DataGridComponent } from '../GridComponent';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import styles from './MasterData.module.css';
+"use client";
+import React, { useEffect, useState } from "react";
+import {
+  Button,
+  MenuItem,
+  TextField,
+  Grid,
+  Typography,
+  Collapse,
+  IconButton,
+  Backdrop,
+  CircularProgress,
+} from "@mui/material";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import { GridColDef, GridPaginationModel } from "@mui/x-data-grid";
+import { DataGridComponent } from "../GridComponent";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import styles from "./MasterData.module.css";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { useGetPackageMasterQuery, usePostPackageMasterMutation, useEditPackageMasterMutation, useDeletePackageMasterMutation } from '@/api/apiSlice';
-import MassUpload from '../MassUpload/MassUpload';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
-import DataGridSkeletonLoader from '../ReusableComponents/DataGridSkeletonLoader';
-import SnackbarAlert from '../ReusableComponents/SnackbarAlerts';
+import {
+  useGetPackageMasterQuery,
+  usePostPackageMasterMutation,
+  useEditPackageMasterMutation,
+  useDeletePackageMasterMutation,
+} from "@/api/apiSlice";
+import MassUpload from "../MassUpload/MassUpload";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
+import DataGridSkeletonLoader from "../ReusableComponents/DataGridSkeletonLoader";
+import SnackbarAlert from "../ReusableComponents/SnackbarAlerts";
 export interface Package {
   handling_unit_type: string;
-  pack_length: number,
-  pack_width: number,
-  pack_height: number,
+  pack_length: number;
+  pack_width: number;
+  pack_height: number;
   packageItem: string;
   dimensions_uom: string;
   packaging_type_name: string;
   pac_ID: string;
   package_id: string;
-
 }
 export interface PackageInfo {
   id: string;
@@ -38,27 +52,41 @@ export interface PackageInfo {
   packagingDimensionsUoM: string;
   packagingTypeName: string;
   packagingTypeId: string;
-
 }
 
 const PackagingForm = () => {
-  const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10, });
+  const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
+    page: 0,
+    pageSize: 10,
+  });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "warning" | "info">("success");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<
+    "success" | "error" | "warning" | "info"
+  >("success");
   const [isEditing, setIsEditing] = useState(false);
-  const [editRow, setEditRow] = useState<PackageInfo | null>(null);;
+  const [editRow, setEditRow] = useState<PackageInfo | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const { data, error, isLoading } = useGetPackageMasterQuery({ page: paginationModel.page + 1, limit: paginationModel.pageSize })
+  const { data, error, isLoading } = useGetPackageMasterQuery({
+    page: paginationModel.page + 1,
+    limit: paginationModel.pageSize,
+  });
   const { data: allData } = useGetPackageMasterQuery({});
-  const [postPackage, { isLoading: postPackageLoading }] = usePostPackageMasterMutation()
-  const [editPackage, { isLoading: editPackageLoading }] = useEditPackageMasterMutation()
-  const [deletePackage, { isLoading: deletePackageLoading }] = useDeletePackageMasterMutation()
-  const unitsofMeasurement = useSelector((state: RootState) => state.auth.unitsofMeasurement);
+  const [postPackage, { isLoading: postPackageLoading }] =
+    usePostPackageMasterMutation();
+  const [editPackage, { isLoading: editPackageLoading }] =
+    useEditPackageMasterMutation();
+  const [deletePackage, { isLoading: deletePackageLoading }] =
+    useDeletePackageMasterMutation();
+  const unitsofMeasurement = useSelector(
+    (state: RootState) => state.auth.unitsofMeasurement,
+  );
   if (error) {
-    console.log("err while getting package info :", error)
+    console.log("err while getting package info :", error);
   }
-  const handlePaginationModelChange = (newPaginationModel: GridPaginationModel) => {
+  const handlePaginationModelChange = (
+    newPaginationModel: GridPaginationModel,
+  ) => {
     setPaginationModel(newPaginationModel);
   };
   const handleFormSubmit = async (values: PackageInfo) => {
@@ -72,9 +100,9 @@ const PackagingForm = () => {
             pack_width: values.packagingWidth,
             pack_height: values.packagingHeight,
             handling_unit_type: values.handlingUnitType,
-          }
-        ]
-      }
+          },
+        ],
+      };
       const editBody = {
         packaging_type_name: values.packagingTypeName,
         dimensions_uom: values.packagingDimensionsUoM,
@@ -82,45 +110,45 @@ const PackagingForm = () => {
         pack_width: values.packagingWidth,
         pack_height: values.packagingHeight,
         handling_unit_type: values.handlingUnitType,
-      }
+      };
       if (isEditing && editRow) {
-        const packageId = editRow.id
-        const response = await editPackage({ body: editBody, packageId }).unwrap()
+        const packageId = editRow.id;
+        const response = await editPackage({
+          body: editBody,
+          packageId,
+        }).unwrap();
         if (response?.updated_record) {
-          setSnackbarMessage(`Package ID ${response.updated_record} updated successfully!`);
+          setSnackbarMessage(
+            `Package ID ${response.updated_record} updated successfully!`,
+          );
           formik.resetForm();
-          setShowForm(false)
-          setIsEditing(false)
+          setShowForm(false);
+          setIsEditing(false);
           setSnackbarSeverity("success");
           setSnackbarOpen(true);
-
         }
-
-      }
-      else {
+      } else {
         const response = await postPackage(body).unwrap();
         if (response?.created_records) {
-          setSnackbarMessage(`Package ID ${response.created_records[0]} created successfully!`);
+          setSnackbarMessage(
+            `Package ID ${response.created_records[0]} created successfully!`,
+          );
           formik.resetForm();
-          setShowForm(false)
-          setIsEditing(false)
+          setShowForm(false);
+          setIsEditing(false);
           setSnackbarSeverity("success");
           setSnackbarOpen(true);
         }
-
-
       }
-
     } catch (error) {
-      console.error('API Error:', error);
-      setIsEditing(false)
-      setShowForm(false)
+      console.error("API Error:", error);
+      setIsEditing(false);
+      setShowForm(false);
       setSnackbarMessage("Something went wrong! please try again");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
     }
-
-  }
+  };
   const handlingUnitTypes = [
     "Pallet",
     "Container",
@@ -128,34 +156,38 @@ const PackagingForm = () => {
     "Box",
     "Drum",
     "Bag",
-    "Sack"
-  ]
+    "Sack",
+  ];
   const formik = useFormik({
     initialValues: {
-      id: '',
-      packagingTypeId: '',
-      packagingTypeName: '',
-      packagingDimensionsUoM: 'm',
-      packagingLength: '',
-      packagingWidth: '',
-      packagingHeight: '',
-      handlingUnitType: '',
-      packagingDimensions: ''
+      id: "",
+      packagingTypeId: "",
+      packagingTypeName: "",
+      packagingDimensionsUoM: "m",
+      packagingLength: "",
+      packagingWidth: "",
+      packagingHeight: "",
+      handlingUnitType: "",
+      packagingDimensions: "",
     },
     validationSchema: Yup.object({
-      packagingTypeName: Yup.string().required('Packaging Type Name is required'),
-      packagingDimensionsUoM: Yup.string().required('Packaging Dimensions UoM is required'),
-      packagingLength: Yup.string().required('Packaging length is required'),
-      packagingWidth: Yup.string().required('Packaging width is required'),
-      packagingHeight: Yup.string().required('Packaging height is required'),
-      handlingUnitType: Yup.string().required('Handling Unit Type is required'),
+      packagingTypeName: Yup.string().required(
+        "Packaging Type Name is required",
+      ),
+      packagingDimensionsUoM: Yup.string().required(
+        "Packaging Dimensions UoM is required",
+      ),
+      packagingLength: Yup.string().required("Packaging length is required"),
+      packagingWidth: Yup.string().required("Packaging width is required"),
+      packagingHeight: Yup.string().required("Packaging height is required"),
+      handlingUnitType: Yup.string().required("Handling Unit Type is required"),
     }),
-    onSubmit: handleFormSubmit
+    onSubmit: handleFormSubmit,
   });
 
   useEffect(() => {
     if (editRow) {
-      const dimensions = editRow.packagingDimensions.split(" * ")
+      const dimensions = editRow.packagingDimensions.split(" * ");
       formik.setValues({
         id: editRow?.id,
         packagingTypeId: editRow?.packagingTypeId,
@@ -165,17 +197,15 @@ const PackagingForm = () => {
         packagingWidth: dimensions[1],
         packagingHeight: dimensions[2],
         handlingUnitType: editRow?.handlingUnitType,
-        packagingDimensions: ''
-
-
+        packagingDimensions: "",
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editRow]);
   const handleEdit = (row: PackageInfo) => {
-    setShowForm(true)
-    setIsEditing(true)
-    setEditRow(row)
+    setShowForm(true);
+    setIsEditing(true);
+    setEditRow(row);
   };
 
   const handleDelete = async (row: PackageInfo) => {
@@ -187,7 +217,9 @@ const PackagingForm = () => {
       return;
     }
 
-    const confirmed = window.confirm("Are you sure you want to delete this vehicle?");
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this vehicle?",
+    );
     if (!confirmed) {
       return;
     }
@@ -195,7 +227,9 @@ const PackagingForm = () => {
     try {
       const response = await deletePackage(packageId);
       if (response?.data?.deleted_record) {
-        setSnackbarMessage(`Package ID ${response.data.deleted_record} deleted successfully!`);
+        setSnackbarMessage(
+          `Package ID ${response.data.deleted_record} deleted successfully!`,
+        );
         setSnackbarSeverity("info");
         setSnackbarOpen(true);
       }
@@ -207,7 +241,6 @@ const PackagingForm = () => {
     }
   };
 
-
   const rows = data?.packages.map((packageItem: Package) => ({
     id: packageItem?.package_id,
     packagingTypeId: packageItem.pac_ID,
@@ -218,9 +251,18 @@ const PackagingForm = () => {
   }));
 
   const columns: GridColDef[] = [
-    { field: "packagingTypeId", headerName: "Packaging Type ID", width: 200, editable: false },
+    {
+      field: "packagingTypeId",
+      headerName: "Packaging Type ID",
+      width: 200,
+      editable: false,
+    },
     { field: "packagingTypeName", headerName: "Packaging Name", width: 200 },
-    { field: "packagingDimensionsUoM", headerName: "Dimensions UoM", width: 200 },
+    {
+      field: "packagingDimensionsUoM",
+      headerName: "Dimensions UoM",
+      width: 200,
+    },
     { field: "packagingDimensions", headerName: "Dimensions", width: 300 },
     { field: "handlingUnitType", headerName: "Handling Unit Type", width: 200 },
     {
@@ -229,16 +271,10 @@ const PackagingForm = () => {
       width: 100,
       renderCell: (params) => (
         <div>
-          <IconButton
-            color="primary"
-            onClick={() => handleEdit(params.row)}
-          >
+          <IconButton color="primary" onClick={() => handleEdit(params.row)}>
             <EditIcon />
           </IconButton>
-          <IconButton
-            color="error"
-            onClick={() => handleDelete(params.row)}
-          >
+          <IconButton color="error" onClick={() => handleDelete(params.row)}>
             <DeleteIcon />
           </IconButton>
         </div>
@@ -263,29 +299,38 @@ const PackagingForm = () => {
         severity={snackbarSeverity}
         onClose={() => setSnackbarOpen(false)}
       />
-      <Box display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
+      <Grid display="flex" justifyContent="flex-end" marginBottom={3} gap={2}>
         <Button
           onClick={() => setShowForm((prev) => !prev)}
           className={styles.createButton}
         >
           Create Package
-          {showForm ? <KeyboardArrowUpIcon style={{ marginLeft: 8 }} /> : <KeyboardArrowDownIcon style={{ marginLeft: 8 }} />}
+          {showForm ? (
+            <KeyboardArrowUpIcon style={{ marginLeft: 8 }} />
+          ) : (
+            <KeyboardArrowDownIcon style={{ marginLeft: 8 }} />
+          )}
         </Button>
-        <MassUpload arrayKey='packages' />
-      </Box>
+        <MassUpload arrayKey="packages" />
+      </Grid>
 
       <Collapse in={showForm}>
-        <Box marginBottom={4} padding={2} border="1px solid #ccc" borderRadius={2}>
+        <Grid
+          marginBottom={4}
+          padding={2}
+          border="1px solid #ccc"
+          borderRadius={2}
+        >
           <form onSubmit={formik.handleSubmit}>
-            <Typography variant="h5" align='center' gutterBottom>
+            <Typography variant="h5" align="center" gutterBottom>
               Packaging master
             </Typography>
-            <Grid container spacing={2}  >
-
-              {isEditing &&
+            <Grid container spacing={2}>
+              {isEditing && (
                 <Grid item xs={12} md={2.4}>
                   <TextField
-                    fullWidth disabled
+                    fullWidth
+                    disabled
                     id="packagingTypeId"
                     name="packagingTypeId"
                     label="ID (Auto-generated)"
@@ -294,8 +339,8 @@ const PackagingForm = () => {
                     InputProps={{ readOnly: true }}
                     size="small"
                   />
-                </Grid>}
-
+                </Grid>
+              )}
 
               {/* Packaging Type Name */}
               <Grid item xs={12} md={2.4}>
@@ -307,8 +352,14 @@ const PackagingForm = () => {
                   onBlur={formik.handleBlur}
                   value={formik.values.packagingTypeName}
                   onChange={formik.handleChange}
-                  error={formik.touched.packagingTypeName && Boolean(formik.errors.packagingTypeName)}
-                  helperText={formik.touched.packagingTypeName && formik.errors.packagingTypeName}
+                  error={
+                    formik.touched.packagingTypeName &&
+                    Boolean(formik.errors.packagingTypeName)
+                  }
+                  helperText={
+                    formik.touched.packagingTypeName &&
+                    formik.errors.packagingTypeName
+                  }
                   size="small"
                 />
               </Grid>
@@ -322,8 +373,14 @@ const PackagingForm = () => {
                   name="packagingDimensionsUoM"
                   value={formik.values.packagingDimensionsUoM || ""}
                   onChange={formik.handleChange}
-                  error={formik.touched.packagingDimensionsUoM && Boolean(formik.errors.packagingDimensionsUoM)}
-                  helperText={formik.touched.packagingDimensionsUoM && formik.errors.packagingDimensionsUoM}
+                  error={
+                    formik.touched.packagingDimensionsUoM &&
+                    Boolean(formik.errors.packagingDimensionsUoM)
+                  }
+                  helperText={
+                    formik.touched.packagingDimensionsUoM &&
+                    formik.errors.packagingDimensionsUoM
+                  }
                   size="small"
                 >
                   {unitsofMeasurement.map((unit) => (
@@ -340,7 +397,8 @@ const PackagingForm = () => {
                   fullWidth
                   id="packagingLength"
                   name="packagingLength"
-                  label="Package length" type='number'
+                  label="Package length"
+                  type="number"
                   value={formik.values.packagingLength}
                   onBlur={formik.handleBlur}
                   // onChange={formik.handleChange}
@@ -352,8 +410,14 @@ const PackagingForm = () => {
                       formik.handleChange(e);
                     }
                   }}
-                  error={formik.touched.packagingLength && Boolean(formik.errors.packagingLength)}
-                  helperText={formik.touched.packagingLength && formik.errors.packagingLength}
+                  error={
+                    formik.touched.packagingLength &&
+                    Boolean(formik.errors.packagingLength)
+                  }
+                  helperText={
+                    formik.touched.packagingLength &&
+                    formik.errors.packagingLength
+                  }
                   size="small"
                 />
               </Grid>
@@ -363,7 +427,8 @@ const PackagingForm = () => {
                   id="packagingWidth"
                   name="packagingWidth"
                   onBlur={formik.handleBlur}
-                  label="Package width" type='number'
+                  label="Package width"
+                  type="number"
                   value={formik.values.packagingWidth}
                   // onChange={formik.handleChange}
                   onChange={(e) => {
@@ -374,8 +439,14 @@ const PackagingForm = () => {
                       formik.handleChange(e);
                     }
                   }}
-                  error={formik.touched.packagingWidth && Boolean(formik.errors.packagingWidth)}
-                  helperText={formik.touched.packagingWidth && formik.errors.packagingWidth}
+                  error={
+                    formik.touched.packagingWidth &&
+                    Boolean(formik.errors.packagingWidth)
+                  }
+                  helperText={
+                    formik.touched.packagingWidth &&
+                    formik.errors.packagingWidth
+                  }
                   size="small"
                 />
               </Grid>
@@ -384,7 +455,8 @@ const PackagingForm = () => {
                   fullWidth
                   id="packagingHeight"
                   name="packagingHeight"
-                  label="Package height" type='number'
+                  label="Package height"
+                  type="number"
                   value={formik.values.packagingHeight}
                   // onChange={formik.handleChange}
                   onChange={(e) => {
@@ -396,21 +468,28 @@ const PackagingForm = () => {
                     }
                   }}
                   onBlur={formik.handleBlur}
-                  error={formik.touched.packagingHeight && Boolean(formik.errors.packagingHeight)}
-                  helperText={formik.touched.packagingHeight && formik.errors.packagingHeight}
+                  error={
+                    formik.touched.packagingHeight &&
+                    Boolean(formik.errors.packagingHeight)
+                  }
+                  helperText={
+                    formik.touched.packagingHeight &&
+                    formik.errors.packagingHeight
+                  }
                   size="small"
                 />
               </Grid>
               <Grid item xs={12} md={2.4}>
                 <TextField
-                  fullWidth size='small' disabled
+                  fullWidth
+                  size="small"
+                  disabled
                   label="Volume"
                   value={
                     Number(formik.values.packagingLength || 1) *
                     Number(formik.values.packagingWidth || 1) *
                     Number(formik.values.packagingHeight || 1)
                   }
-
                   InputProps={{ readOnly: true }}
                 />
               </Grid>
@@ -437,8 +516,14 @@ const PackagingForm = () => {
                   value={formik.values.handlingUnitType}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  error={formik.touched.handlingUnitType && Boolean(formik.errors.handlingUnitType)}
-                  helperText={formik.touched.handlingUnitType && formik.errors.handlingUnitType}
+                  error={
+                    formik.touched.handlingUnitType &&
+                    Boolean(formik.errors.handlingUnitType)
+                  }
+                  helperText={
+                    formik.touched.handlingUnitType &&
+                    formik.errors.handlingUnitType
+                  }
                   size="small"
                 >
                   {handlingUnitTypes.map((type) => (
@@ -451,7 +536,7 @@ const PackagingForm = () => {
             </Grid>
 
             {/* Submit Button */}
-            <Box sx={{ marginTop: 3, textAlign: 'center' }}>
+            <Grid sx={{ marginTop: 3, textAlign: "center" }}>
               <Button
                 type="submit"
                 variant="contained"
@@ -460,8 +545,8 @@ const PackagingForm = () => {
                   color: "#fff",
                   "&:hover": {
                     backgroundColor: "#fff",
-                    color: "#F08C24"
-                  }
+                    color: "#F08C24",
+                  },
                 }}
               >
                 {isEditing ? "Update package" : "Create package"}
@@ -471,16 +556,17 @@ const PackagingForm = () => {
                 variant="outlined"
                 color="secondary"
                 onClick={() => {
-                  formik.resetForm()
+                  formik.resetForm();
                   setIsEditing(false);
                   setEditRow(null);
                 }}
-                style={{ marginLeft: "10px" }}>Reset
+                style={{ marginLeft: "10px" }}
+              >
+                Reset
               </Button>
-            </Box>
+            </Grid>
           </form>
-        </Box>
-
+        </Grid>
       </Collapse>
 
       {/* Data grid */}
@@ -494,7 +580,7 @@ const PackagingForm = () => {
             rowCount={allData && allData?.length}
             isLoading={isLoading}
             paginationModel={paginationModel}
-            activeEntity='packages'
+            activeEntity="packages"
             onPaginationModelChange={handlePaginationModelChange}
           />
         )}

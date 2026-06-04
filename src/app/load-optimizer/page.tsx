@@ -11,6 +11,7 @@ import {
   Backdrop,
   CircularProgress,
   Box,
+  Grid,
 } from "@mui/material";
 // import PackagesTable from "@/Components/CreateOrderTables/PackagesTable";
 import PackagesTable from "@/Components/LoadOptimizer/PackagesTable";
@@ -283,7 +284,7 @@ const LoadOptimizer: React.FC = () => {
   };
 
   return (
-    <Box sx={{ width: "100%", p: 3 }}>
+    <Grid sx={{ width: "100%", p: 3 }}>
       <Backdrop
         sx={{
           color: "#ffffff",
@@ -340,7 +341,7 @@ const LoadOptimizer: React.FC = () => {
           </DialogActions>
         </Dialog>
       )}
-      <Box sx={{ px: 2, mt: 2 }}>
+      <Grid sx={{ px: 2, mt: 2 }}>
         <Typography
           variant="h5"
           color="primary"
@@ -354,15 +355,15 @@ const LoadOptimizer: React.FC = () => {
           details. Start by selecting packages with the same pickup location and
           date.
         </Typography>
-      </Box>
+      </Grid>
 
-      <Box
+      <Grid
         sx={{
           width: "100%",
           overflowX: isMobile ? "auto" : "visible",
           padding: "10px",
         }}
-      ></Box>
+      ></Grid>
 
       <div>
         {activeStep === 0 && (
@@ -416,7 +417,7 @@ const LoadOptimizer: React.FC = () => {
           </CustomButtonFilled>
         </div>
       )}
-    </Box>
+    </Grid>
   );
 };
 

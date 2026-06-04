@@ -249,7 +249,7 @@
 
 import React from "react";
 
-import { Box, Card, Typography, alpha } from "@mui/material";
+import { Card, Grid, Typography, alpha } from "@mui/material";
 
 import {
   Inventory2,
@@ -376,7 +376,7 @@ const Home = () => {
             execution system powered by AI and real-time analytics.
           </Typography>
         </div>
-        <Box
+        <Grid
           sx={{
             display: "grid",
             gridTemplateColumns: {
@@ -411,7 +411,7 @@ const Home = () => {
                 },
               }}
             >
-              <Box
+              <Grid
                 sx={{
                   width: 60,
                   height: 60,
@@ -425,7 +425,7 @@ const Home = () => {
                 }}
               >
                 {module.icon}
-              </Box>
+              </Grid>
               <Typography
                 fontWeight={800}
                 fontSize={18}
@@ -444,7 +444,7 @@ const Home = () => {
               >
                 {module.description}
               </Typography>
-              <Box
+              <Grid
                 mt={3}
                 sx={{
                   display: "inline-flex",
@@ -465,10 +465,10 @@ const Home = () => {
                 }}
               >
                 Open Module
-              </Box>
+              </Grid>
             </Card>
           ))}
-        </Box>
+        </Grid>
       </div>
     </div>
   );

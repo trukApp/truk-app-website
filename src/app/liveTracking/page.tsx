@@ -32,7 +32,6 @@ import {
 import { useGetLiveTrackingQuery } from "@/api/apiSlice";
 import { useSearchParams } from "next/navigation";
 
-
 /* ---------------- TYPES ---------------- */
 
 type Vehicle = {
@@ -91,7 +90,7 @@ const mapContainerStyle = {
    Use SAME libraries everywhere in app
 */
 // const GOOGLE_LIBRARIES: ("places")[] = ["places"];
-const GOOGLE_LIBRARIES: ("places")[] = ["places"];
+const GOOGLE_LIBRARIES: "places"[] = ["places"];
 
 /* ---------------- HELPERS ---------------- */
 
@@ -99,8 +98,7 @@ const getBearing = (a: RoutePoint, b: RoutePoint) => {
   const toRad = (v: number) => (v * Math.PI) / 180;
   const toDeg = (v: number) => (v * 180) / Math.PI;
 
-  const y =
-    Math.sin(toRad(b.lng - a.lng)) * Math.cos(toRad(b.lat));
+  const y = Math.sin(toRad(b.lng - a.lng)) * Math.cos(toRad(b.lat));
 
   const x =
     Math.cos(toRad(a.lat)) * Math.sin(toRad(b.lat)) -
@@ -111,8 +109,7 @@ const getBearing = (a: RoutePoint, b: RoutePoint) => {
   return (toDeg(Math.atan2(y, x)) + 360) % 360;
 };
 
-const lerp = (a: number, b: number, t: number) =>
-  a + (b - a) * t;
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
 /* ---------------- COMPONENT ---------------- */
 
@@ -125,8 +122,7 @@ const LiveTracking: React.FC = () => {
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey:
-      process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
     libraries: GOOGLE_LIBRARIES,
   });
 
@@ -136,19 +132,15 @@ const LiveTracking: React.FC = () => {
 
   /* ---------------- STATES ---------------- */
 
-  const [allocation, setAllocation] =
-    useState<Allocation | null>(null);
+  const [allocation, setAllocation] = useState<Allocation | null>(null);
 
-  const [vehicle, setVehicle] =
-    useState<Vehicle | null>(null);
+  const [vehicle, setVehicle] = useState<Vehicle | null>(null);
 
   const [vehiclePath, setVehiclePath] = useState<RoutePoint[]>([]);
 
-  const [center, setCenter] =
-    useState<RoutePoint | null>(null);
+  const [center, setCenter] = useState<RoutePoint | null>(null);
 
-  const [animatedPos, setAnimatedPos] =
-    useState<RoutePoint | null>(null);
+  const [animatedPos, setAnimatedPos] = useState<RoutePoint | null>(null);
 
   const [bearing, setBearing] = useState(0);
 
@@ -161,20 +153,15 @@ const LiveTracking: React.FC = () => {
   const [directions, setDirections] =
     useState<google.maps.DirectionsResult | null>(null);
 
-  const [selectedRouteIndex, setSelectedRouteIndex] =
-    useState(0);
+  const [selectedRouteIndex, setSelectedRouteIndex] = useState(0);
 
   /* ---------------- API ---------------- */
 
-  const {
-    data,
-    isLoading,
-    error,
-  } = useGetLiveTrackingQuery(
+  const { data, isLoading, error } = useGetLiveTrackingQuery(
     { orderId },
     {
       pollingInterval: 10000,
-    }
+    },
   );
 
   console.log("LIVE TRACKING:", data);
@@ -201,10 +188,7 @@ const LiveTracking: React.FC = () => {
 
     setVehicle(data);
 
-    setVehiclePath((prev) => [
-      ...prev.slice(-200),
-      point,
-    ]);
+    setVehiclePath((prev) => [...prev.slice(-200), point]);
 
     /* FIRST LOAD */
 
@@ -225,10 +209,7 @@ const LiveTracking: React.FC = () => {
 
     /* NO MOVEMENT */
 
-    if (
-      animatedPos.lat === point.lat &&
-      animatedPos.lng === point.lng
-    ) {
+    if (animatedPos.lat === point.lat && animatedPos.lng === point.lng) {
       return;
     }
 
@@ -245,7 +226,7 @@ const LiveTracking: React.FC = () => {
               lat: lerp(prev.lat, point.lat, t),
               lng: lerp(prev.lng, point.lng, t),
             }
-          : point
+          : point,
       );
 
       if (t < 1) {
@@ -260,10 +241,9 @@ const LiveTracking: React.FC = () => {
     }
   }, [animatedPos, autoCenter, center, data]);
 
-
   if (!isLoaded) {
     return (
-      <Box
+      <Grid
         display="flex"
         justifyContent="center"
         alignItems="center"
@@ -273,7 +253,7 @@ const LiveTracking: React.FC = () => {
       >
         <CircularProgress />
         <Typography>Loading Google Maps...</Typography>
-      </Box>
+      </Grid>
     );
   }
 
@@ -282,9 +262,7 @@ const LiveTracking: React.FC = () => {
   if (!allocation) {
     return (
       <Paper sx={{ p: 4, textAlign: "center", mt: 4 }}>
-        <Typography variant="h5">
-          No Allocation Data Found
-        </Typography>
+        <Typography variant="h5">No Allocation Data Found</Typography>
       </Paper>
     );
   }
@@ -305,23 +283,17 @@ const LiveTracking: React.FC = () => {
           Trip Not Started Yet
         </Typography>
 
-        <Typography
-          variant="body1"
-          color="text.secondary"
-        >
-          Live vehicle tracking will appear once the
-          driver starts the trip and GPS data becomes
-          available.
+        <Typography variant="body1" color="text.secondary">
+          Live vehicle tracking will appear once the driver starts the trip and
+          GPS data becomes available.
         </Typography>
 
-        <Box mt={3}>
+        <Grid mt={3}>
           <Chip
-            label={`Tracking Status: ${
-              data?.tracking_status || "Pending"
-            }`}
+            label={`Tracking Status: ${data?.tracking_status || "Pending"}`}
             color="warning"
           />
-        </Box>
+        </Grid>
       </Paper>
     );
   }
@@ -330,11 +302,11 @@ const LiveTracking: React.FC = () => {
 
   const origin = allocation.route[0].start;
 
-  const destination =
-    allocation.route[allocation.route.length - 1].end;
+  const destination = allocation.route[allocation.route.length - 1].end;
 
-  const waypoints: google.maps.DirectionsWaypoint[] =
-    allocation.route.slice(0, -1).map((r) => ({
+  const waypoints: google.maps.DirectionsWaypoint[] = allocation.route
+    .slice(0, -1)
+    .map((r) => ({
       location: {
         lat: r.end.latitude,
         lng: r.end.longitude,
@@ -348,10 +320,7 @@ const LiveTracking: React.FC = () => {
     <>
       {/* STOP DIALOG */}
 
-      <Dialog
-        open={stopReached}
-        onClose={() => setStopReached(false)}
-      >
+      <Dialog open={stopReached} onClose={() => setStopReached(false)}>
         <DialogTitle>Stop Reached</DialogTitle>
 
         <DialogContent>
@@ -361,14 +330,8 @@ const LiveTracking: React.FC = () => {
 
       {/* ROUTE OPTIONS */}
 
-      <Dialog
-        open={modifyOpen}
-        onClose={() => setModifyOpen(false)}
-        fullWidth
-      >
-        <DialogTitle>
-          Select Alternate Route
-        </DialogTitle>
+      <Dialog open={modifyOpen} onClose={() => setModifyOpen(false)} fullWidth>
+        <DialogTitle>Select Alternate Route</DialogTitle>
 
         <DialogContent>
           {directions?.routes.map((r, idx) => (
@@ -382,33 +345,23 @@ const LiveTracking: React.FC = () => {
                     ? "2px solid #f57c00"
                     : "1px solid #ddd",
               }}
-              onClick={() =>
-                setSelectedRouteIndex(idx)
-              }
+              onClick={() => setSelectedRouteIndex(idx)}
             >
               <CardContent>
                 <Stack direction="row" spacing={1}>
-                  <Chip
-                    label={`Route ${idx + 1}`}
-                  />
+                  <Chip label={`Route ${idx + 1}`} />
 
                   <Chip
                     label={`${(
-                      r.legs.reduce(
-                        (a, l) =>
-                          a + (l.distance?.value ?? 0),
-                        0
-                      ) / 1000
+                      r.legs.reduce((a, l) => a + (l.distance?.value ?? 0), 0) /
+                      1000
                     ).toFixed(1)} km`}
                   />
 
                   <Chip
                     label={`${(
-                      r.legs.reduce(
-                        (a, l) =>
-                          a + (l.duration?.value ?? 0),
-                        0
-                      ) / 3600
+                      r.legs.reduce((a, l) => a + (l.duration?.value ?? 0), 0) /
+                      3600
                     ).toFixed(1)} hrs`}
                   />
                 </Stack>
@@ -425,80 +378,46 @@ const LiveTracking: React.FC = () => {
 
         <Grid item xs={12} md={4}>
           <Paper sx={{ p: 2 }}>
-            <Typography variant="h6">
-              Trip Details
-            </Typography>
+            <Typography variant="h6">Trip Details</Typography>
 
             {/* START */}
 
-            <Stack
-              direction="row"
-              spacing={1}
-              mt={2}
-            >
-              <Chip
-                color="success"
-                label="START"
-              />
+            <Stack direction="row" spacing={1} mt={2}>
+              <Chip color="success" label="START" />
 
-              <Typography variant="body2">
-                {origin.address}
-              </Typography>
+              <Typography variant="body2">{origin.address}</Typography>
             </Stack>
 
             {/* STOPS */}
 
-            <Typography
-              variant="subtitle1"
-              mt={2}
-            >
+            <Typography variant="subtitle1" mt={2}>
               Stops
             </Typography>
 
             {allocation.route.map((r, i) => (
-              <Stack
-                key={i}
-                direction="row"
-                spacing={1}
-                mt={1}
-              >
+              <Stack key={i} direction="row" spacing={1} mt={1}>
                 <Chip label={`Stop ${i + 1}`} />
 
-                <Typography variant="body2">
-                  {r.end.address}
-                </Typography>
+                <Typography variant="body2">{r.end.address}</Typography>
               </Stack>
             ))}
 
             {/* DESTINATION */}
 
-            <Stack
-              direction="row"
-              spacing={1}
-              mt={2}
-            >
-              <Chip
-                color="error"
-                label="DESTINATION"
-              />
+            <Stack direction="row" spacing={1} mt={2}>
+              <Chip color="error" label="DESTINATION" />
 
-              <Typography variant="body2">
-                {destination.address}
-              </Typography>
+              <Typography variant="body2">{destination.address}</Typography>
             </Stack>
 
             {/* CONTROLS */}
 
-            <Box mt={3}>
+            <Grid mt={3}>
               <FormControlLabel
                 control={
                   <Switch
                     checked={autoCenter}
-                    onChange={(e) =>
-                      setAutoCenter(
-                        e.target.checked
-                      )
-                    }
+                    onChange={(e) => setAutoCenter(e.target.checked)}
                   />
                 }
                 label="Auto Center"
@@ -509,13 +428,11 @@ const LiveTracking: React.FC = () => {
                 fullWidth
                 variant="contained"
                 color="warning"
-                onClick={() =>
-                  setModifyOpen(true)
-                }
+                onClick={() => setModifyOpen(true)}
               >
                 Alternate Routes
               </Button>
-            </Box>
+            </Grid>
           </Paper>
         </Grid>
 
@@ -547,8 +464,7 @@ const LiveTracking: React.FC = () => {
 
                   waypoints,
 
-                  travelMode:
-                    google.maps.TravelMode.DRIVING,
+                  travelMode: google.maps.TravelMode.DRIVING,
 
                   provideRouteAlternatives: true,
                 }}
@@ -624,8 +540,7 @@ const LiveTracking: React.FC = () => {
                 position={animatedPos}
                 icon={{
                   url: "https://maps.google.com/mapfiles/kml/shapes/truck.png",
-                  scaledSize:
-                    new google.maps.Size(40, 40),
+                  scaledSize: new google.maps.Size(40, 40),
                 }}
               />
             )}

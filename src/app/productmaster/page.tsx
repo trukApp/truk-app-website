@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import {
-  Box,
+  // Box,
   Button,
   Collapse,
   Grid,
@@ -574,7 +574,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({
           Workflows. Fill in the Required Fields Including Product Name, HSN
           code, Packaging Type, and Location.
         </Typography>
-        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
+        <Grid sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
           <Button
             onClick={() => setShowForm((prev) => !prev)}
             className={style.createButton}
@@ -587,10 +587,10 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({
             )}
           </Button>
           <MassUpload arrayKey="products" />
-        </Box>
+        </Grid>
 
         <Collapse in={showForm}>
-          <Box
+          <Grid
             marginBottom={2}
             padding={2}
             border="1px solid #ccc"
@@ -1241,7 +1241,7 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({
                     </Grid>
                   </Grid>
 
-                  <Box marginTop={2} textAlign="center">
+                  <Grid marginTop={2} textAlign="center">
                     <CustomButtonFilled>
                       {updateRecord ? "Update product" : "Create product"}
                     </CustomButtonFilled>
@@ -1258,11 +1258,11 @@ const ProductMasterPage: React.FC<ProductMasterProps> = ({
                     >
                       Reset
                     </Button>
-                  </Box>
+                  </Grid>
                 </Form>
               )}
             </Formik>
-          </Box>
+          </Grid>
         </Collapse>
         <div style={{ marginTop: "40px" }}>
           {isLoading ? (

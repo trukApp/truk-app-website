@@ -8,7 +8,7 @@ import {
   Grid,
   Paper,
   Typography,
-  Box,
+  // Box,
   Button,
   Dialog,
   DialogContent,
@@ -88,7 +88,7 @@ const OrderDetailedOverview: React.FC = () => {
     : [];
 
   return (
-    <Box sx={{ p: { xs: 1, md: 2 } }}>
+    <Grid sx={{ p: { xs: 1, md: 2 } }}>
       <SnackbarAlert
         open={snackbarOpen}
         message={snackbarMessage}
@@ -204,7 +204,7 @@ const OrderDetailedOverview: React.FC = () => {
                   {docKey.replace(/_/g, " ")}
                 </Typography>
 
-                <Box
+                <Grid
                   sx={{ cursor: "pointer", mt: 1 }}
                   onClick={() => handlePreview(url)}
                 >
@@ -219,7 +219,7 @@ const OrderDetailedOverview: React.FC = () => {
                   ) : (
                     <Image src={url} alt={docKey} width={150} height={80} />
                   )}
-                </Box>
+                </Grid>
               </Grid>
             ))}
           </Grid>
@@ -244,7 +244,7 @@ const OrderDetailedOverview: React.FC = () => {
           />
         </>
       )}
-    </Box>
+    </Grid>
   );
 };
 

@@ -1,17 +1,17 @@
 // components/NetworkStatusModal.tsx
 import React, { useEffect, useState } from "react";
-import { Modal, Box, Typography } from "@mui/material";
+import { Modal, Grid, Typography } from "@mui/material";
 
 const modalStyle = {
-  position: 'fixed',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  bgcolor: 'background.paper',
+  position: "fixed",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  bgcolor: "background.paper",
   borderRadius: 2,
   boxShadow: 24,
   p: 4,
-  zIndex: 2000
+  zIndex: 2000,
 };
 
 const NetworkStatusModal = () => {
@@ -35,14 +35,14 @@ const NetworkStatusModal = () => {
 
   return (
     <Modal open={!isOnline}>
-      <Box sx={modalStyle}>
+      <Grid sx={modalStyle}>
         <Typography variant="h6" color="error" align="center">
           No Internet Connection
         </Typography>
         <Typography variant="body2" align="center">
           Please check your network connection.
         </Typography>
-      </Box>
+      </Grid>
     </Modal>
   );
 };
