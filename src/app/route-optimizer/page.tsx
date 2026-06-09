@@ -77,9 +77,6 @@ const RouteOptimizer: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [noVechilePopup, setNoVechilePopup] = useState(false);
   const filters = useAppSelector((state) => state.auth.filters);
-  // const [additionalDocs, setAdditionalDocs] = useState<
-  //   { [key: string]: string }[]
-  // >([]);
   const [saveDraftOrder] = useSaveAsDraftMutation();
   const [updatedRoutePointsByVehicle, setUpdatedRoutePointsByVehicle] =
     useState<RoutePointsMap>({});
@@ -145,6 +142,17 @@ const RouteOptimizer: React.FC = () => {
 
   const allPackagesData = packagesData?.packages || [];
 
+  // const [updatedRoutePointsByVehicle, setUpdatedRoutePointsByVehicle] =
+  //   useState<RoutePointsMap>({});
+
+  const [pendingRoutePointsByVehicle, setPendingRoutePointsByVehicle] =
+    useState<RoutePointsMap>({});
+
+  const [routeUpdateDialogOpen, setRouteUpdateDialogOpen] = useState(false);
+
+  const [actionType, setActionType] = useState<"draft" | "confirm" | null>(
+    null,
+  );
   const handleCreateOrder = async () => {
     const createOrderBody = {
       scenario_label: conformOrderPayload?.message,
@@ -321,6 +329,56 @@ const RouteOptimizer: React.FC = () => {
         </Dialog>
       )}
 
+      <Dialog
+        open={routeUpdateDialogOpen}
+        onClose={() => setRouteUpdateDialogOpen(false)}
+      >
+        <DialogTitle>Update Route</DialogTitle>
+
+        <DialogContent>
+          <Typography>
+            Route has changed based on the selected optimization metrics (Avoid
+            Tolls / Avoid Highways / Weather). Do you want to update the current
+            route points?
+          </Typography>
+        </DialogContent>
+
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setRouteUpdateDialogOpen(false);
+
+              if (actionType === "draft") {
+                handleSaveDraftOrder();
+              } else {
+                handleCreateOrder();
+              }
+            }}
+          >
+            Cancel
+          </Button>
+
+          <Button
+            variant="contained"
+            onClick={() => {
+              setUpdatedRoutePointsByVehicle(pendingRoutePointsByVehicle);
+
+              setRouteUpdateDialogOpen(false);
+
+              setTimeout(() => {
+                if (actionType === "draft") {
+                  handleSaveDraftOrder();
+                } else {
+                  handleCreateOrder();
+                }
+              }, 100);
+            }}
+          >
+            Yes
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {noVechilePopup && (
         <Dialog open={noVechilePopup} onClose={() => setNoVechilePopup(false)}>
           <DialogTitle sx={{ color: "red" }}>Alert !!!</DialogTitle>
@@ -381,16 +439,30 @@ const RouteOptimizer: React.FC = () => {
           <RootOptimization
             // trucks={selectTrucks}
             rootOptimization={selectTrucks as unknown as RootOptimizationType[]}
+            // onUpdateSampledPoints={(vehicle_ID, points) => {
+            //   setUpdatedRoutePointsByVehicle((prev) => ({
+            //     ...prev,
+            //     [vehicle_ID]: points,
+            //   }));
+            // }}
             onUpdateSampledPoints={(vehicle_ID, points) => {
-              setUpdatedRoutePointsByVehicle((prev) => ({
+              setPendingRoutePointsByVehicle((prev) => ({
                 ...prev,
                 [vehicle_ID]: points,
               }));
             }}
             // selectedPackages={selectedPackages}
             onBack={() => setActiveStep(0)}
-            onSaveDraft={handleSaveDraftOrder}
-            onConfirmOrder={handleCreateOrder}
+            // onSaveDraft={handleSaveDraftOrder}
+            onSaveDraft={() => {
+              setActionType("draft");
+              setRouteUpdateDialogOpen(true);
+            }}
+            // onConfirmOrder={handleCreateOrder}
+            onConfirmOrder={() => {
+              setActionType("confirm");
+              setRouteUpdateDialogOpen(true);
+            }}
           />
         )}
       </div>

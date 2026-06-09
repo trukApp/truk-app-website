@@ -472,24 +472,21 @@ const RootOptimization: React.FC<Props> = ({
           />
         </Card>
       </Grid>
-      <Grid
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          mt: 4,
-          px: 4,
-        }}
-      >
-        <Button variant="outlined" onClick={onBack}>
-          Back
-        </Button>
-
+      <Grid display="flex" justifyContent="center" mt={4} width="100%">
         <Grid
           sx={{
             display: "flex",
-            gap: 2,
+            justifyContent: "space-between",
+            mt: 4,
+            px: 4,
+            width: "50%",
+            alignSelf: "center",
           }}
         >
+          <Button variant="outlined" onClick={onBack}>
+            Back
+          </Button>
+
           <Button variant="outlined" onClick={onSaveDraft}>
             Save As Draft
           </Button>
