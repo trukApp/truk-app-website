@@ -91,11 +91,8 @@ const PackagesTable: React.FC<PackagesTableProps> = ({
   );
 
   const [selectionModel, setSelectionModel] = useState<number[]>([]);
-
   const [dateFilter, setDateFilter] = useState<string>("All");
-
   const [pickupCustomDate, setPickupCustomDate] = useState("");
-
   const [dropoffCustomDate, setDropoffCustomDate] = useState("");
 
   // COLUMN VISIBILITY
@@ -401,7 +398,7 @@ const PackagesTable: React.FC<PackagesTableProps> = ({
     };
 
     return (
-      <>
+      <Grid>
         <GridToolbarContainer
           sx={{
             display: "flex",
@@ -490,7 +487,7 @@ const PackagesTable: React.FC<PackagesTableProps> = ({
             />
           ))}
         </Popover>
-      </>
+      </Grid>
     );
   };
 
@@ -550,6 +547,8 @@ const PackagesTable: React.FC<PackagesTableProps> = ({
         sx={{
           marginTop: "5px",
           marginBottom: "20px",
+          // border: "2px solid #000000",
+          width: "100%",
         }}
       >
         {isPackagesLoading ? (

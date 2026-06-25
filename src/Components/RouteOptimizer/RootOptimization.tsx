@@ -57,6 +57,12 @@ interface Props {
   onBack: () => void;
   onSaveDraft: () => void;
   onConfirmOrder: () => void;
+  onRouteModified: (modified: boolean) => void;
+  onRouteSettingsChange: (settings: {
+    is_weather: boolean;
+    avoid_tolls: boolean;
+    avoid_highways: boolean;
+  }) => void;
 }
 
 export interface RootOptimizationType {
@@ -71,6 +77,8 @@ const RootOptimization: React.FC<Props> = ({
   onBack,
   onSaveDraft,
   onConfirmOrder,
+  onRouteModified,
+  onRouteSettingsChange,
 }) => {
   console.log("rootOptimization:", rootOptimization);
   const { isLoaded, loadError } = useLoadScript({
@@ -102,6 +110,11 @@ const RootOptimization: React.FC<Props> = ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [routeSummary, setRouteSummary] = useState<any>(null);
   console.log("routeSummary: ", routeSummary);
+  type RouteSettings = {
+    is_weather: boolean;
+    avoid_tolls: boolean;
+    avoid_highways: boolean;
+  };
 
   const fetchDirections = useCallback(async () => {
     if (
@@ -204,23 +217,17 @@ const RootOptimization: React.FC<Props> = ({
     totalSeconds: number | undefined | null,
   ): string => {
     if (totalSeconds == null || Number.isNaN(totalSeconds)) return "—";
-
     let secs = Math.max(0, Math.floor(totalSeconds));
-
     const days = Math.floor(secs / 86400);
     secs -= days * 86400;
-
     const hours = Math.floor(secs / 3600);
     secs -= hours * 3600;
-
     const minutes = Math.round(secs / 60);
-
     const parts: string[] = [];
     if (days > 0) parts.push(`${days} day${days > 1 ? "s" : ""}`);
     if (hours > 0) parts.push(`${hours} hr`);
     if (minutes > 0) parts.push(`${minutes} min`);
     if (parts.length === 0) parts.push("0 min");
-
     return parts.join(" ");
   };
 
@@ -469,6 +476,8 @@ const RootOptimization: React.FC<Props> = ({
                 onUpdateSampledPoints(vehliceId, points);
               }
             }}
+            onRouteModified={onRouteModified}
+            onRouteSettingsChange={onRouteSettingsChange}
           />
         </Card>
       </Grid>

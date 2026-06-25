@@ -116,6 +116,8 @@ const RouteOptimizer: React.FC = () => {
           setSnackbarMessage(`All packages must be same source location.`);
         } else if (errorMessage?.includes("Stacking-factor mismatch")) {
           setSnackbarMessage(errorMessage);
+        } else if (errorMessage?.includes("No packages provided.")) {
+          setSnackbarMessage(errorMessage);
         } else {
           setSnackbarMessage(
             "Something went wrong please try again after some time.",
@@ -149,7 +151,18 @@ const RouteOptimizer: React.FC = () => {
     useState<RoutePointsMap>({});
 
   const [routeUpdateDialogOpen, setRouteUpdateDialogOpen] = useState(false);
+  const [routeModified, setRouteModified] = useState(false);
+  type RouteSettings = {
+    is_weather: boolean;
+    avoid_tolls: boolean;
+    avoid_highways: boolean;
+  };
 
+  const [routeSettings, setRouteSettings] = useState<RouteSettings>({
+    is_weather: false,
+    avoid_tolls: false,
+    avoid_highways: false,
+  });
   const [actionType, setActionType] = useState<"draft" | "confirm" | null>(
     null,
   );
@@ -157,12 +170,31 @@ const RouteOptimizer: React.FC = () => {
     const createOrderBody = {
       scenario_label: conformOrderPayload?.message,
       total_cost: conformOrderPayload?.totalCost,
+      // allocations: conformOrderPayload?.allocations.map((vehicle) => ({
+      //   ...vehicle,
+      //   sampledRoutePoints:
+      //     updatedRoutePointsByVehicle[vehicle.vehicle_ID] ||
+      //     vehicle.sampledRoutePoints ||
+      //     [],
+      // })),
       allocations: conformOrderPayload?.allocations.map((vehicle) => ({
         ...vehicle,
+
         sampledRoutePoints:
           updatedRoutePointsByVehicle[vehicle.vehicle_ID] ||
           vehicle.sampledRoutePoints ||
           [],
+
+        is_default:
+          !routeSettings.is_weather &&
+          !routeSettings.avoid_tolls &&
+          !routeSettings.avoid_highways,
+
+        is_weather: routeSettings.is_weather,
+
+        avoid_tolls: routeSettings.avoid_tolls,
+
+        avoid_highways: routeSettings.avoid_highways,
       })),
       unallocated_packages: conformOrderPayload?.unallocatedPackages,
       created_at: new Date().toISOString().split("T")[0],
@@ -210,12 +242,28 @@ const RouteOptimizer: React.FC = () => {
     const createOrderBody = {
       scenario_label: "Best Combinational Scenario route draft",
       total_cost: conformOrderPayload?.totalCost,
+      // allocations: conformOrderPayload?.allocations.map((vehicle) => ({
+      //   ...vehicle,
+      //   sampledRoutePoints:
+      //     updatedRoutePointsByVehicle[vehicle.vehicle_ID] ||
+      //     vehicle.sampledRoutePoints ||
+      //     [],
+      // })),
       allocations: conformOrderPayload?.allocations.map((vehicle) => ({
         ...vehicle,
+
         sampledRoutePoints:
           updatedRoutePointsByVehicle[vehicle.vehicle_ID] ||
           vehicle.sampledRoutePoints ||
           [],
+
+        is_default:
+          !routeSettings.is_weather &&
+          !routeSettings.avoid_tolls &&
+          !routeSettings.avoid_highways,
+        is_weather: routeSettings.is_weather,
+        avoid_tolls: routeSettings.avoid_tolls,
+        avoid_highways: routeSettings.avoid_highways,
       })),
       unallocated_packages: conformOrderPayload?.unallocatedPackages,
       created_at: new Date().toISOString().split("T")[0],
@@ -344,7 +392,7 @@ const RouteOptimizer: React.FC = () => {
         </DialogContent>
 
         <DialogActions>
-          <Button
+          {/* <Button
             onClick={() => {
               setRouteUpdateDialogOpen(false);
 
@@ -356,8 +404,15 @@ const RouteOptimizer: React.FC = () => {
             }}
           >
             Cancel
+          </Button> */}
+          <Button
+            onClick={() => {
+              setRouteUpdateDialogOpen(false);
+              setActionType(null);
+            }}
+          >
+            Cancel
           </Button>
-
           <Button
             variant="contained"
             onClick={() => {
@@ -437,32 +492,33 @@ const RouteOptimizer: React.FC = () => {
 
         {activeStep === 1 && (
           <RootOptimization
-            // trucks={selectTrucks}
             rootOptimization={selectTrucks as unknown as RootOptimizationType[]}
-            // onUpdateSampledPoints={(vehicle_ID, points) => {
-            //   setUpdatedRoutePointsByVehicle((prev) => ({
-            //     ...prev,
-            //     [vehicle_ID]: points,
-            //   }));
-            // }}
             onUpdateSampledPoints={(vehicle_ID, points) => {
               setPendingRoutePointsByVehicle((prev) => ({
                 ...prev,
                 [vehicle_ID]: points,
               }));
             }}
-            // selectedPackages={selectedPackages}
             onBack={() => setActiveStep(0)}
-            // onSaveDraft={handleSaveDraftOrder}
+            onRouteModified={setRouteModified}
             onSaveDraft={() => {
+              if (!routeModified) {
+                handleSaveDraftOrder();
+                return;
+              }
+
               setActionType("draft");
               setRouteUpdateDialogOpen(true);
             }}
-            // onConfirmOrder={handleCreateOrder}
             onConfirmOrder={() => {
+              if (!routeModified) {
+                handleCreateOrder();
+                return;
+              }
               setActionType("confirm");
               setRouteUpdateDialogOpen(true);
             }}
+            onRouteSettingsChange={setRouteSettings}
           />
         )}
       </div>
