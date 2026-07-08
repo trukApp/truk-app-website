@@ -1,3 +1,26 @@
+export type VehicleStatus = "Moving" | "Idle" | "Stopped";
+
+// export interface Vehicle {
+//   id: number;
+//   vehicleNumber: string;
+//   driverName: string;
+//   driverPhone: string;
+//   status: VehicleStatus;
+//   speed: number;
+//   latitude: number;
+//   longitude: number;
+//   location: string;
+//   idleTime: number;
+//   lastIdleDuration: number;
+//   todayDistance: number;
+//   fuelLevel: number;
+//   engineOn: boolean;
+//   lastUpdated: string;
+//   lastStartedAt: string;
+//   lastStoppedAt: string;
+// }
+
+
 export interface Vehicle {
   id: number;
   vehicleNumber: string;
@@ -21,11 +44,11 @@ export interface Vehicle {
   overSpeedLimit: number;
 }
 
-
 export interface SensorBasedVehicleMode {
   sensor: string;
   vehicleMode: string;
 }
+
 
 export interface VehicleTrackingApiResponse {
   rowId: number;
