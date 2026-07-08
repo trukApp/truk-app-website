@@ -42,6 +42,7 @@ export interface Vehicle {
   gsmLevel: string;
   expiryDate: string;
   overSpeedLimit: number;
+  lastStartedAt: string;
 }
 
 export interface SensorBasedVehicleMode {
