@@ -1,28 +1,13 @@
 import { BaseQueryApi, createApi, FetchArgs, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import apiConfig from "../Config/Config";
 import { getSession } from "next-auth/react";
+import { VehicleTrackingApiResponse } from "@/types/vehicle";
 
 // Define the base URL
 const baseUrl = apiConfig.develpoment.apiBaseUrl;
-
-// Base query with headers
-// const baseQuery = fetchBaseQuery({
-//   baseUrl,
-//   prepareHeaders: async (headers) => {
-//     try {
-//       const session = await getSession();
-//       const token = session?.user?.accessToken;
-//       if (token) {
-//         headers.set("Authorization", `Bearer ${token}`);
-//       }
-//     } catch (error) {
-//       console.error("Error fetching headers", error);
-//     }
-
-//     return headers;
-//   },
-// });
-
+const trackingBaseQuery = fetchBaseQuery({
+  baseUrl: "https://api.vamosys.com/mobile/",
+});
 const customBaseQuery = async (
   args: string | FetchArgs,
   api: BaseQueryApi,
@@ -72,7 +57,8 @@ export const apiSlice = createApi({
     "SingleVehicleMaster",
     "DataCount",
     "ValidateRoute",
-    "DockCarrier"
+    "DockCarrier",
+    "VehicleTracking"
   ],
   endpoints: (builder) => ({
     userLogin: builder.mutation<User, { phone: string; password: string }>({
@@ -965,6 +951,73 @@ updateDraft: builder.mutation({
       }),
       providesTags: [{ type: "Orders", id: "LIST" }, { type: "Orderss", id: "LIST" }],
     }),
+    
+//     getVehicleTracking: builder.query({
+//   async queryFn(_arg, _api, _extraOptions) {
+//     try {
+//       const result = await trackingBaseQuery(
+//         "getGrpDataForTrustedClients?providerName=9640881718&fcode=VAMTO",
+//         _api,
+//         _extraOptions
+//       );
+
+//       if (result.error) {
+//         return { error: result.error };
+//       }
+
+//       return {
+//         data: result.data,
+//       };
+//     } catch (error: any) {
+//       return {
+//         error: {
+//           status: "CUSTOM_ERROR",
+//           error: error.message,
+//         },
+//       };
+//     }
+//   },
+
+//   providesTags: [
+//     {
+//       type: "VehicleTracking",
+//       id: "LIST",
+//     },
+//   ],
+// }),
+getVehicleTracking: builder.query<VehicleTrackingApiResponse[], void>({
+  async queryFn(_arg, _api, _extraOptions) {
+    try {
+      const result = await trackingBaseQuery(
+        "getGrpDataForTrustedClients?providerName=9640881718&fcode=VAMTO",
+        _api,
+        _extraOptions
+      );
+
+      if (result.error) {
+        return { error: result.error };
+      }
+
+      return {
+        data: result.data as VehicleTrackingApiResponse[],
+      };
+    } catch (error: unknown) {
+  return {
+    error: {
+      status: "CUSTOM_ERROR",
+      error: error instanceof Error ? error.message : "Unknown error",
+    },
+  };
+}
+  },
+
+  providesTags: [
+    {
+      type: "VehicleTracking",
+      id: "LIST",
+    },
+  ],
+}),
   }),
 
 });
@@ -1068,4 +1121,5 @@ export const {
   useSaveAsDraftMutation,
   useUpdateDraftMutation,
   useConfirmDraftMutation,
+  useGetVehicleTrackingQuery
 } = apiSlice;

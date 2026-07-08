@@ -38,6 +38,7 @@ import {
   Notifications,
   Link,
   Build,
+  VerifiedUser,
 } from "@mui/icons-material";
 
 import { useRouter, usePathname } from "next/navigation";
@@ -336,6 +337,11 @@ const Sidebar = () => {
                 "Tracking",
                 "/tracking",
                 <TrackChanges fontSize="small" />,
+              )}
+              {renderSubItem(
+                "Gate Operations",
+                "/gate-operations",
+                <VerifiedUser fontSize="small" />,
               )}
             </>
           ),
