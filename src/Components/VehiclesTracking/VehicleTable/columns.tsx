@@ -1,9 +1,6 @@
 "use client";
-
 import { GridColDef } from "@mui/x-data-grid";
-
 import { Vehicle } from "@/types/vehicle";
-
 import VehicleAvatar from "./VehicleAvatar";
 import EngineStatus from "./EngineStatus";
 import LocationCell from "./LocationCell";
@@ -11,14 +8,20 @@ import IdleChip from "./IdleChip";
 import StatusChip from "../StatusChip";
 import VehicleActions from "./VehicleActions";
 
+// interface ColumnProps {
+//   onView: (vehicle: Vehicle) => void;
+//   onTrack: (vehicle: Vehicle) => void;
+// }
 interface ColumnProps {
   onView: (vehicle: Vehicle) => void;
   onTrack: (vehicle: Vehicle) => void;
+  onGeoFence: (vehicle: Vehicle) => void;
 }
 
 export const getVehicleColumns = ({
   onView,
   onTrack,
+  onGeoFence,
 }: ColumnProps): GridColDef[] => [
   {
     field: "vehicleNumber",
@@ -106,10 +109,16 @@ export const getVehicleColumns = ({
     //   <VehicleActions vehicle={params.row as Vehicle} onView={onView} />
     // ),
     renderCell: (params) => (
+      // <VehicleActions
+      //   vehicle={params.row as Vehicle}
+      //   onView={onView}
+      //   onTrack={onTrack}
+      // />
       <VehicleActions
         vehicle={params.row as Vehicle}
         onView={onView}
         onTrack={onTrack}
+        onGeoFence={onGeoFence}
       />
     ),
   },

@@ -6,7 +6,7 @@ import { Vehicle } from "@/types/vehicle";
 import TableToolbar from "./TableToolbar";
 import VehicleDrawer from "../VehicleDrawer";
 import { getVehicleColumns } from "./columns";
-
+import VehicleGeoFenceDialog from "../VehicleGeoFenceDialog";
 // interface Props {
 //   vehicles: Vehicle[];
 // }
@@ -19,10 +19,18 @@ export default function VehicleTable({ vehicles, onTrackVehicle }: Props) {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("All");
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+  const [geoFenceOpen, setGeoFenceOpen] = useState(false);
+  const openGeoFence = (vehicle: Vehicle) => {
+    setSelectedVehicle(vehicle);
+    setGeoFenceOpen(true);
+  };
   const [drawerOpen, setDrawerOpen] = useState(false);
   const openDrawer = (vehicle: Vehicle) => {
     setSelectedVehicle(vehicle);
     setDrawerOpen(true);
+  };
+  const closeGeoFence = () => {
+    setGeoFenceOpen(false);
   };
 
   const closeDrawer = () => {
@@ -57,9 +65,14 @@ export default function VehicleTable({ vehicles, onTrackVehicle }: Props) {
           <DataGrid
             autoHeight
             rows={filteredVehicles}
+            // columns={getVehicleColumns({
+            //   onView: openDrawer,
+            //   onTrack: onTrackVehicle,
+            // })}
             columns={getVehicleColumns({
               onView: openDrawer,
               onTrack: onTrackVehicle,
+              onGeoFence: openGeoFence,
             })}
             pageSizeOptions={[10, 20, 50]}
             initialState={{
@@ -96,6 +109,12 @@ export default function VehicleTable({ vehicles, onTrackVehicle }: Props) {
       <VehicleDrawer
         open={drawerOpen}
         onClose={closeDrawer}
+        vehicle={selectedVehicle}
+      />
+
+      <VehicleGeoFenceDialog
+        open={geoFenceOpen}
+        onClose={closeGeoFence}
         vehicle={selectedVehicle}
       />
     </>

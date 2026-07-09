@@ -178,3 +178,28 @@ export interface VehicleTrackingApiResponse {
   cameraEnabled: boolean;
   ac: boolean;
 }
+
+export interface GeoFence {
+  geofence_id: number;
+  geofence_code: string;
+  vehicle_ID: string;
+  vehicle_number: string;
+  geofence_name: string;
+  center_lat: string;
+  center_lng: string;
+  radius_m: number;
+  handler_email: string;
+  active: number;
+  notify_on_entry: number;
+  notify_on_exit: number;
+  last_inside: number;
+  last_alert_sent_at: string | null;
+  created_by: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GeoFenceResponse {
+  message: string;
+  geofences: GeoFence[];
+}

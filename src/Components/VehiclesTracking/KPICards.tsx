@@ -17,13 +17,9 @@ interface Props {
 
 export default function KPICards({ vehicles }: Props) {
   const total = vehicles.length;
-
   const moving = vehicles.filter((v) => v.status === "Moving").length;
-
   const idle = vehicles.filter((v) => v.status === "Idle").length;
-
   const stopped = vehicles.filter((v) => v.status === "Stopped").length;
-
   const cards = [
     {
       title: "Total Vehicles",

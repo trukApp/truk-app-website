@@ -1,7 +1,12 @@
-import { BaseQueryApi, createApi, FetchArgs, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import {
+  BaseQueryApi,
+  createApi,
+  FetchArgs,
+  fetchBaseQuery,
+} from "@reduxjs/toolkit/query/react";
 import apiConfig from "../Config/Config";
 import { getSession } from "next-auth/react";
-import { VehicleTrackingApiResponse } from "@/types/vehicle";
+import { GeoFenceResponse, VehicleTrackingApiResponse } from "@/types/vehicle";
 
 // Define the base URL
 const baseUrl = apiConfig.develpoment.apiBaseUrl;
@@ -11,7 +16,7 @@ const trackingBaseQuery = fetchBaseQuery({
 const customBaseQuery = async (
   args: string | FetchArgs,
   api: BaseQueryApi,
-  extraOptions: Record<string, unknown>
+  extraOptions: Record<string, unknown>,
 ) => {
   const session = await getSession();
   const token = session?.user?.accessToken;
@@ -58,7 +63,7 @@ export const apiSlice = createApi({
     "DataCount",
     "ValidateRoute",
     "DockCarrier",
-    "VehicleTracking"
+    "VehicleTracking",
   ],
   endpoints: (builder) => ({
     userLogin: builder.mutation<User, { phone: string; password: string }>({
@@ -76,7 +81,10 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "PARTNERS", id: "LIST" }, { type: "DataCount", id: "LIST" }],
+      invalidatesTags: [
+        { type: "PARTNERS", id: "LIST" },
+        { type: "DataCount", id: "LIST" },
+      ],
     }),
 
     vendorRegistration: builder.mutation({
@@ -85,7 +93,10 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "PARTNERS", id: "LIST" }, { type: "DataCount", id: "LIST" }],
+      invalidatesTags: [
+        { type: "PARTNERS", id: "LIST" },
+        { type: "DataCount", id: "LIST" },
+      ],
     }),
 
     editBusinessPartner: builder.mutation({
@@ -102,7 +113,10 @@ export const apiSlice = createApi({
         url: `business/delete-partner?partner_id=${partnerId}`,
         method: "DELETE",
       }),
-      invalidatesTags: [{ type: "PARTNERS", id: "LIST" }, { type: "DataCount", id: "LIST" }],
+      invalidatesTags: [
+        { type: "PARTNERS", id: "LIST" },
+        { type: "DataCount", id: "LIST" },
+      ],
     }),
 
     getAllCustomersData: builder.query({
@@ -130,7 +144,10 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "DRIVERS", id: "LIST" }, { type: "DataCount", id: "LIST" }],
+      invalidatesTags: [
+        { type: "DRIVERS", id: "LIST" },
+        { type: "DataCount", id: "LIST" },
+      ],
     }),
 
     deleteDriver: builder.mutation({
@@ -138,7 +155,10 @@ export const apiSlice = createApi({
         url: `driver/delete-driver?driver_id=${driverId}`,
         method: "DELETE",
       }),
-      invalidatesTags: [{ type: "DRIVERS", id: "LIST" }, { type: "DataCount", id: "LIST" }],
+      invalidatesTags: [
+        { type: "DRIVERS", id: "LIST" },
+        { type: "DataCount", id: "LIST" },
+      ],
     }),
 
     getFilteredDrivers: builder.query({
@@ -193,7 +213,7 @@ export const apiSlice = createApi({
         method: "GET",
         params,
       }),
-      providesTags: [{ type: "CARRIER", id: "LIST" },],
+      providesTags: [{ type: "CARRIER", id: "LIST" }],
     }),
 
     postCarrierMaster: builder.mutation({
@@ -202,7 +222,11 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "CARRIER", id: "LIST" }, { type: "DataCount", id: "LIST" }, { type: "DataCount", id: "LIST" }],
+      invalidatesTags: [
+        { type: "CARRIER", id: "LIST" },
+        { type: "DataCount", id: "LIST" },
+        { type: "DataCount", id: "LIST" },
+      ],
     }),
 
     editCarrierMaster: builder.mutation({
@@ -219,7 +243,10 @@ export const apiSlice = createApi({
         url: `carrier/delete-carrier?cr_id=${carrierId}`,
         method: "DELETE",
       }),
-      invalidatesTags: [{ type: "CARRIER", id: "LIST" }, { type: "DataCount", id: "LIST" }],
+      invalidatesTags: [
+        { type: "CARRIER", id: "LIST" },
+        { type: "DataCount", id: "LIST" },
+      ],
     }),
 
     //  location master
@@ -247,7 +274,10 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "LocationMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
+      invalidatesTags: [
+        { type: "LocationMaster", id: "LIST" },
+        { type: "DataCount", id: "LIST" },
+      ],
     }),
 
     editLocationMaster: builder.mutation({
@@ -264,7 +294,10 @@ export const apiSlice = createApi({
         url: `masLoc/delete-location?id=${locationId}`,
         method: "DELETE",
       }),
-      invalidatesTags: [{ type: "LocationMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
+      invalidatesTags: [
+        { type: "LocationMaster", id: "LIST" },
+        { type: "DataCount", id: "LIST" },
+      ],
     }),
 
     updateShipFromDefaultLocationId: builder.mutation({
@@ -304,11 +337,10 @@ export const apiSlice = createApi({
     }),
     getVehicleById: builder.query({
       query: ({ vehicle_ID }) => {
-        console.log("vehicle_ID:", vehicle_ID)
+        console.log("vehicle_ID:", vehicle_ID);
         return {
           url: `vehicle/vehicle?vehicle_ID=${vehicle_ID}`,
           method: "GET",
-
         };
       },
       providesTags: [{ type: "VehicleMaster", id: "LIST" }],
@@ -328,7 +360,10 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "VehicleMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
+      invalidatesTags: [
+        { type: "VehicleMaster", id: "LIST" },
+        { type: "DataCount", id: "LIST" },
+      ],
     }),
 
     editVehicleMaster: builder.mutation({
@@ -345,7 +380,10 @@ export const apiSlice = createApi({
         url: `vehicle/delete-vehicle?veh_id=${vehicleId}`,
         method: "DELETE",
       }),
-      invalidatesTags: [{ type: "VehicleMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
+      invalidatesTags: [
+        { type: "VehicleMaster", id: "LIST" },
+        { type: "DataCount", id: "LIST" },
+      ],
     }),
 
     // Package master
@@ -364,7 +402,10 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "PackageMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
+      invalidatesTags: [
+        { type: "PackageMaster", id: "LIST" },
+        { type: "DataCount", id: "LIST" },
+      ],
     }),
 
     editPackageMaster: builder.mutation({
@@ -381,7 +422,10 @@ export const apiSlice = createApi({
         url: `package/delete-package?package_id=${packageId}`,
         method: "DELETE",
       }),
-      invalidatesTags: [{ type: "PackageMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
+      invalidatesTags: [
+        { type: "PackageMaster", id: "LIST" },
+        { type: "DataCount", id: "LIST" },
+      ],
     }),
 
     // Lanes master
@@ -400,7 +444,10 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "LaneMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
+      invalidatesTags: [
+        { type: "LaneMaster", id: "LIST" },
+        { type: "DataCount", id: "LIST" },
+      ],
     }),
 
     editLaneMaster: builder.mutation({
@@ -417,7 +464,10 @@ export const apiSlice = createApi({
         url: `lane/delete-lane?ln_id=${laneId}`,
         method: "DELETE",
       }),
-      invalidatesTags: [{ type: "LaneMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
+      invalidatesTags: [
+        { type: "LaneMaster", id: "LIST" },
+        { type: "DataCount", id: "LIST" },
+      ],
     }),
 
     // Device master
@@ -436,7 +486,10 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "DeviceMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
+      invalidatesTags: [
+        { type: "DeviceMaster", id: "LIST" },
+        { type: "DataCount", id: "LIST" },
+      ],
     }),
 
     editDeviceMaster: builder.mutation({
@@ -453,7 +506,10 @@ export const apiSlice = createApi({
         url: `device/delete-device?device_id=${deviceId}`,
         method: "DELETE",
       }),
-      invalidatesTags: [{ type: "DeviceMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
+      invalidatesTags: [
+        { type: "DeviceMaster", id: "LIST" },
+        { type: "DataCount", id: "LIST" },
+      ],
     }),
 
     //  UOM Master
@@ -472,7 +528,10 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "UomMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
+      invalidatesTags: [
+        { type: "UomMaster", id: "LIST" },
+        { type: "DataCount", id: "LIST" },
+      ],
     }),
 
     editUomMaster: builder.mutation({
@@ -489,10 +548,13 @@ export const apiSlice = createApi({
         url: `masterUom/delete-uom?unit_id=1${uomId}`,
         method: "DELETE",
       }),
-      invalidatesTags: [{ type: "UomMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
+      invalidatesTags: [
+        { type: "UomMaster", id: "LIST" },
+        { type: "DataCount", id: "LIST" },
+      ],
     }),
 
-    // Dock master 
+    // Dock master
     getDockMaster: builder.query({
       query: (params) => ({
         url: `masterDock/all-docks`,
@@ -508,7 +570,10 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "DockMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
+      invalidatesTags: [
+        { type: "DockMaster", id: "LIST" },
+        { type: "DataCount", id: "LIST" },
+      ],
     }),
 
     editDockMaster: builder.mutation({
@@ -525,7 +590,10 @@ export const apiSlice = createApi({
         url: `masterDock/delete-dock?id=${dock_ID}`,
         method: "DELETE",
       }),
-      invalidatesTags: [{ type: "DockMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
+      invalidatesTags: [
+        { type: "DockMaster", id: "LIST" },
+        { type: "DataCount", id: "LIST" },
+      ],
     }),
 
     //Product Master
@@ -553,7 +621,10 @@ export const apiSlice = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "ProductMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
+      invalidatesTags: [
+        { type: "ProductMaster", id: "LIST" },
+        { type: "DataCount", id: "LIST" },
+      ],
     }),
 
     deleteProduct: builder.mutation({
@@ -561,7 +632,10 @@ export const apiSlice = createApi({
         url: `masterProducts/delete-product?prod_id=${productId}`,
         method: "DELETE",
       }),
-      invalidatesTags: [{ type: "ProductMaster", id: "LIST" }, { type: "DataCount", id: "LIST" }],
+      invalidatesTags: [
+        { type: "ProductMaster", id: "LIST" },
+        { type: "DataCount", id: "LIST" },
+      ],
     }),
 
     editProduct: builder.mutation({
@@ -641,7 +715,7 @@ export const apiSlice = createApi({
       },
       invalidatesTags: [{ type: "Orders", id: "LIST" }],
     }),
-        confirmDraft: builder.mutation({
+    confirmDraft: builder.mutation({
       query: (body) => {
         return {
           url: "order/confirm-draft-order",
@@ -652,16 +726,16 @@ export const apiSlice = createApi({
       invalidatesTags: [{ type: "Orders", id: "LIST" }],
     }),
 
-updateDraft: builder.mutation({
-  query: ({ order_ID, body }) => ({
-    url: `order/update-order-draft?order_ID=${order_ID}`,
-    method: "PUT",
-    body,
-  }),
-  invalidatesTags: [{ type: "Orders", id: "LIST" }],
-}),
+    updateDraft: builder.mutation({
+      query: ({ order_ID, body }) => ({
+        url: `order/update-order-draft?order_ID=${order_ID}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: [{ type: "Orders", id: "LIST" }],
+    }),
 
-        saveAsDraft: builder.mutation({
+    saveAsDraft: builder.mutation({
       query: (body) => {
         return {
           url: "order/save-order-draft",
@@ -678,7 +752,7 @@ updateDraft: builder.mutation({
           url: "order/edit-order",
           method: "PUT",
           body,
-          params
+          params,
         };
       },
       invalidatesTags: [{ type: "Orders", id: "LIST" }],
@@ -716,7 +790,10 @@ updateDraft: builder.mutation({
         method: "GET",
         params: { order_ID: orderId },
       }),
-      providesTags: [{ type: "Orders", id: "LIST" }, { type: "Orderss", id: "LIST" }],
+      providesTags: [
+        { type: "Orders", id: "LIST" },
+        { type: "Orderss", id: "LIST" },
+      ],
     }),
 
     getAllAssignedOrders: builder.query({
@@ -818,7 +895,7 @@ updateDraft: builder.mutation({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "Orderss", id: "LIST" }]
+      invalidatesTags: [{ type: "Orderss", id: "LIST" }],
     }),
 
     postAssignCarrierToOrder: builder.mutation({
@@ -827,7 +904,7 @@ updateDraft: builder.mutation({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "Orderss", id: "LIST" }]
+      invalidatesTags: [{ type: "Orderss", id: "LIST" }],
     }),
     getCarrierAssignmentReq: builder.query({
       query: (params) => ({
@@ -835,7 +912,7 @@ updateDraft: builder.mutation({
         method: "GET",
         params,
       }),
-      providesTags: [{ type: "Orderss", id: "LIST" }]
+      providesTags: [{ type: "Orderss", id: "LIST" }],
     }),
     postCarrierRejectigOrder: builder.mutation({
       query: (body) => ({
@@ -843,7 +920,7 @@ updateDraft: builder.mutation({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "Orderss", id: "LIST" }]
+      invalidatesTags: [{ type: "Orderss", id: "LIST" }],
     }),
 
     postCarrierAssigningOrderConfirm: builder.mutation({
@@ -852,7 +929,7 @@ updateDraft: builder.mutation({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "Orderss", id: "LIST" }]
+      invalidatesTags: [{ type: "Orderss", id: "LIST" }],
     }),
 
     postInitiateBidding: builder.mutation({
@@ -870,7 +947,7 @@ updateDraft: builder.mutation({
           url: "assignment-bid/edit-bid",
           method: "PUT",
           body,
-          params
+          params,
         };
       },
       invalidatesTags: [{ type: "Orders", id: "LIST" }],
@@ -881,7 +958,7 @@ updateDraft: builder.mutation({
         url: "assignment-bid/cancel-bid",
         method: "POST",
         // body,
-        params
+        params,
       }),
       invalidatesTags: [{ type: "Orders", id: "LIST" }],
     }),
@@ -899,24 +976,24 @@ updateDraft: builder.mutation({
       query: (params) => ({
         url: `carrier-assignment/assigned-order-by-id`,
         method: "GET",
-        params
+        params,
       }),
-      providesTags: [{ type: "Orderss", id: "LIST" }]
+      providesTags: [{ type: "Orderss", id: "LIST" }],
     }),
 
     getDockRequests: builder.query({
       query: (params) => ({
         url: `carrier-assignment/get-dock-reqs`,
         method: "GET",
-        params
+        params,
       }),
-      providesTags: [{ type: "DockCarrier", id: "LIST" }]
+      providesTags: [{ type: "DockCarrier", id: "LIST" }],
     }),
     getDocksByLocationId: builder.query({
       query: (params) => ({
         url: `masterDock/dock`,
         method: "GET",
-        params
+        params,
       }),
       // providesTags :[{type: "Orderss", id: "LIST"}]
     }),
@@ -949,77 +1026,77 @@ updateDraft: builder.mutation({
         url: `tracking/shipment-dashboard`,
         method: "GET",
       }),
-      providesTags: [{ type: "Orders", id: "LIST" }, { type: "Orderss", id: "LIST" }],
+      providesTags: [
+        { type: "Orders", id: "LIST" },
+        { type: "Orderss", id: "LIST" },
+      ],
     }),
-    
-//     getVehicleTracking: builder.query({
-//   async queryFn(_arg, _api, _extraOptions) {
-//     try {
-//       const result = await trackingBaseQuery(
-//         "getGrpDataForTrustedClients?providerName=9640881718&fcode=VAMTO",
-//         _api,
-//         _extraOptions
-//       );
 
-//       if (result.error) {
-//         return { error: result.error };
-//       }
+    getVehicleTracking: builder.query<VehicleTrackingApiResponse[], void>({
+      async queryFn(_arg, _api, _extraOptions) {
+        try {
+          const result = await trackingBaseQuery(
+            "getGrpDataForTrustedClients?providerName=9640881718&fcode=VAMTO",
+            _api,
+            _extraOptions,
+          );
 
-//       return {
-//         data: result.data,
-//       };
-//     } catch (error: any) {
-//       return {
-//         error: {
-//           status: "CUSTOM_ERROR",
-//           error: error.message,
-//         },
-//       };
-//     }
-//   },
+          if (result.error) {
+            return { error: result.error };
+          }
 
-//   providesTags: [
-//     {
-//       type: "VehicleTracking",
-//       id: "LIST",
-//     },
-//   ],
-// }),
-getVehicleTracking: builder.query<VehicleTrackingApiResponse[], void>({
-  async queryFn(_arg, _api, _extraOptions) {
-    try {
-      const result = await trackingBaseQuery(
-        "getGrpDataForTrustedClients?providerName=9640881718&fcode=VAMTO",
-        _api,
-        _extraOptions
-      );
+          return { data: result.data as VehicleTrackingApiResponse[] };
+        } catch (error: unknown) {
+          return {
+            error: {
+              status: "CUSTOM_ERROR",
+              error: error instanceof Error ? error.message : "Unknown error",
+            },
+          };
+        }
+      },
+      providesTags: [{ type: "VehicleTracking", id: "LIST" }],
+    }),
 
-      if (result.error) {
-        return { error: result.error };
-      }
+    // getVehicleGeoFenchingDetails: builder.query({
+    //   query: ({vehicle_ID}) => ({
+    //     url: `geofence-tracking/geofences`,
+    //     method: "GET",
+    //     params: { vehicle_ID: vehicle_ID },
+    //   }),
+    //   providesTags: [{ type: "VehicleTracking", id: "LIST" }],
+    // }),
 
-      return {
-        data: result.data as VehicleTrackingApiResponse[],
-      };
-    } catch (error: unknown) {
-  return {
-    error: {
-      status: "CUSTOM_ERROR",
-      error: error instanceof Error ? error.message : "Unknown error",
-    },
-  };
-}
-  },
+    getVehicleGeoFenchingDetails: builder.query<
+      GeoFenceResponse,
+      { vehicle_ID: string }
+    >({
+      query: ({ vehicle_ID }) => ({
+        url: "geofence-tracking/geofences",
+        method: "GET",
+        params: { vehicle_ID },
+      }),
+      providesTags: [{ type: "VehicleTracking", id: "LIST" }],
+    }),
 
-  providesTags: [
-    {
-      type: "VehicleTracking",
-      id: "LIST",
-    },
-  ],
-}),
+    createNewGeofenching: builder.mutation({
+      query: (body) => ({
+        url: "geofence-tracking/create-geofence",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "VehicleTracking", id: "LIST" }],
+    }),
+
+    editGeoFenchingByID: builder.mutation({
+      query: ({ body, geofenceId }) => ({
+        url: `geofence-tracking/update-geofence?geofence_code=${geofenceId}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: [{ type: "VehicleTracking", id: "LIST" }],
+    }),
   }),
-
 });
 
 export const {
@@ -1121,5 +1198,8 @@ export const {
   useSaveAsDraftMutation,
   useUpdateDraftMutation,
   useConfirmDraftMutation,
-  useGetVehicleTrackingQuery
+  useGetVehicleTrackingQuery,
+  useGetVehicleGeoFenchingDetailsQuery,
+  useCreateNewGeofenchingMutation,
+  useEditGeoFenchingByIDMutation,
 } = apiSlice;
